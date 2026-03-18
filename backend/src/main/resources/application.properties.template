@@ -1,0 +1,4 @@
+server.port=8080
+anthropic.api.key=YOUR_API_KEY_HERE
+cors.allowed-origins=http://localhost:3000
+logging.level.com.portfolio=DEBUG

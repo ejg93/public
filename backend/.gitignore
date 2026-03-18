@@ -1,0 +1,9 @@
+# API 키
+src/main/resources/application.properties
+
+# 빌드 결과물
+target/
+
+# IntelliJ 설정
+.idea/
+*.iml
