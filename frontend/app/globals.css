@@ -13,7 +13,7 @@
   --accent2: #ff6b35;
   --accent3: #4d9fff;
   --text: #e6edf3;
-  --muted: #8b949e;
+  --muted: #adbac7;
   --sidebar-w: 220px;
 }
 
@@ -66,15 +66,4 @@ html, body {
   position: fixed;
   inset: 0;
   z-index: 9999;
-}
-
-@keyframes blink-border {
-  0%, 100% {
-    outline-color: var(--accent);
-    box-shadow: 0 0 8px var(--accent);
-  }
-  50% {
-    outline-color: transparent;
-    box-shadow: none;
-  }
 }

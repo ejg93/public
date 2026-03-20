@@ -6,8 +6,8 @@ type Message = { role: Role; content: string }
 type PanelMsg = { from: 'ai1' | 'ai2' | 'human'; text: string; tokens?: number; groupId?: number }
 
 const SPRING = process.env.NEXT_PUBLIC_SPRING_URL || 'http://localhost:8080'
-const AI1_COLOR = '#00ff88'
-const AI2_COLOR = '#ff6b35'
+const AI1_COLOR = 'var(--accent)'
+const AI2_COLOR = 'var(--accent2)'
 
 function saveHistory(log: PanelMsg[]) {
   try { localStorage.setItem('battle_history', JSON.stringify(log)) } catch {}
@@ -65,7 +65,6 @@ function HumanLogItem({ m, onHover, onLeave, onClick }: {
 export default function AIBattle() {
   const [log, setLog] = useState<PanelMsg[]>([])
   const [highlightGroupId, setHighlightGroupId] = useState<number | null>(null)
-  const [darkMode, setDarkMode] = useState(true)
 
   const ai1History = useRef<Message[]>([])
   const ai2History = useRef<Message[]>([])
@@ -95,26 +94,6 @@ export default function AIBattle() {
   useEffect(() => { setLog(loadHistory()) }, [])
   useEffect(() => { logEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [log])
 
-  // 다크/라이트 모드 전환
-  useEffect(() => {
-    const root = document.documentElement
-    if (darkMode) {
-      root.style.setProperty('--bg', '#080c10')
-      root.style.setProperty('--surface', '#0d1117')
-      root.style.setProperty('--surface2', '#161b22')
-      root.style.setProperty('--border', '#21262d')
-      root.style.setProperty('--text', '#e6edf3')
-      root.style.setProperty('--muted', '#8b949e')
-    } else {
-      root.style.setProperty('--bg', '#f4f6f8')
-      root.style.setProperty('--surface', '#ffffff')
-      root.style.setProperty('--surface2', '#eef1f4')
-      root.style.setProperty('--border', '#d0d7de')
-      root.style.setProperty('--text', '#1a1f2e')
-      root.style.setProperty('--muted', '#6e7781')
-    }
-  }, [darkMode])
-
   // 클릭 시 해당 groupId 답변으로 스크롤
   const scrollToGroup = useCallback((gid: number) => {
     setHighlightGroupId(gid)
@@ -124,19 +103,13 @@ export default function AIBattle() {
       const container = ai1ScrollRef.current
       const elTop = el1.getBoundingClientRect().top
       const containerTop = container.getBoundingClientRect().top
-      container.scrollTo({
-        top: container.scrollTop + elTop - containerTop - 20,
-        behavior: 'smooth'
-      })
+      container.scrollTo({ top: container.scrollTop + elTop - containerTop - 20, behavior: 'smooth' })
     }
     if (el2 && ai2ScrollRef.current) {
       const container = ai2ScrollRef.current
       const elTop = el2.getBoundingClientRect().top
       const containerTop = container.getBoundingClientRect().top
-      container.scrollTo({
-        top: container.scrollTop + elTop - containerTop - 20,
-        behavior: 'smooth'
-      })
+      container.scrollTo({ top: container.scrollTop + elTop - containerTop - 20, behavior: 'smooth' })
     }
     setTimeout(() => setHighlightGroupId(null), 3000)
   }, [])
@@ -289,19 +262,6 @@ export default function AIBattle() {
             </h1>
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
-            {/* 다크/라이트 토글 */}
-            <button onClick={() => setDarkMode(!darkMode)} style={{
-              padding: '8px 16px',
-              background: 'transparent',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              color: 'var(--muted)',
-              cursor: 'pointer',
-              fontFamily: 'IBM Plex Mono, monospace',
-              fontSize: '12px',
-            }}>
-              {darkMode ? '☀ LIGHT' : '☾ DARK'}
-            </button>
             <button onClick={clearAll} style={{
               padding: '8px 16px',
               background: 'transparent',

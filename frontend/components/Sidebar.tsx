@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 const menus = [
   { label: 'HOME', href: '/', icon: '⌂', desc: 'INTRO' },
+  { label: 'ABOUT ME', href: '/about', icon: '◉', desc: 'EXPERIMENT_00' },
   { label: 'AI BATTLE', href: '/ai-battle', icon: '⚔', desc: 'EXPERIMENT_01' },
   { label: 'PUBLIC DATA', href: '/public-data', icon: '◈', desc: 'EXPERIMENT_02' },
 ]
@@ -13,11 +14,9 @@ export default function Sidebar() {
   const path = usePathname()
   const [collapsed, setCollapsed] = useState(false)
 
-  const width = collapsed ? '60px' : 'var(--sidebar-w)'
-
   return (
     <aside style={{
-      width,
+      width: collapsed ? '60px' : 'var(--sidebar-w)',
       background: 'var(--surface)',
       borderRight: '1px solid var(--border)',
       position: 'fixed',
@@ -30,41 +29,31 @@ export default function Sidebar() {
       overflow: 'hidden',
     }}>
 
-      {/* 로고 + 토글 버튼 */}
+      {/* 로고 + 토글 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: collapsed ? 'center' : 'space-between', marginBottom: '40px' }}>
         {!collapsed && (
           <div>
-            <div className="mono" style={{ fontSize: '10px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '6px' }}>
-              ◉ ONLINE
-            </div>
+            <div className="mono" style={{ fontSize: '10px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '6px' }}>◉ ONLINE</div>
             <div className="display" style={{ fontSize: '28px', color: 'var(--text)', lineHeight: 1 }}>DEV</div>
             <div className="display" style={{ fontSize: '28px', color: 'var(--accent)', lineHeight: 1 }}>PORTFOLIO</div>
-            <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '8px', letterSpacing: '1px' }}>
-              JAVA · SPRING · NEXT.JS
-            </div>
+            <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '8px', letterSpacing: '1px' }}>JAVA · SPRING · NEXT.JS</div>
           </div>
         )}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          style={{
-            background: 'transparent',
-            border: '1px solid var(--border)',
-            borderRadius: '6px',
-            color: 'var(--muted)',
-            cursor: 'pointer',
-            fontSize: '14px',
-            padding: '6px 8px',
-            lineHeight: 1,
-            flexShrink: 0,
-            transition: 'color 0.15s',
-          }}
-          title={collapsed ? '사이드바 열기' : '사이드바 접기'}
-        >
+        <button onClick={() => setCollapsed(!collapsed)} style={{
+          background: 'transparent',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--muted)',
+          cursor: 'pointer',
+          fontSize: '14px',
+          padding: '6px 8px',
+          lineHeight: 1,
+          flexShrink: 0,
+        }}>
           {collapsed ? '▶' : '◀'}
         </button>
       </div>
 
-      {/* 구분선 */}
       {!collapsed && <div style={{ height: '1px', background: 'var(--border)', marginBottom: '24px' }} />}
 
       {/* 메뉴 */}
