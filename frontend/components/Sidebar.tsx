@@ -4,10 +4,12 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 const menus = [
-  { label: 'HOME', href: '/', icon: '⌂', desc: 'INTRO' },
-  { label: 'ABOUT ME', href: '/about', icon: '◉', desc: 'EXPERIMENT_00' },
-  { label: 'AI BATTLE', href: '/ai-battle', icon: '⚔', desc: 'EXPERIMENT_01' },
-  { label: 'PUBLIC DATA', href: '/public-data', icon: '◈', desc: 'EXPERIMENT_02' },
+  { label: 'HOME',        href: '/',            icon: '⌂', desc: 'INTRO' },
+  { label: 'ABOUT ME',    href: '/about',        icon: '◉', desc: 'EXPERIMENT_00' },
+  { label: 'DEV LOG',     href: '/board',        icon: '✍', desc: 'EXPERIMENT_01' },
+  { label: 'AI BATTLE',   href: '/ai-battle',    icon: '⚔', desc: 'EXPERIMENT_02' },
+  { label: 'PUBLIC DATA', href: '/public-data',  icon: '◈', desc: 'EXPERIMENT_03' },
+  { label: 'YT COMMENTS', href: '/youtube',      icon: '▶', desc: 'EXPERIMENT_04' },
 ]
 
 export default function Sidebar() {
@@ -28,8 +30,6 @@ export default function Sidebar() {
       transition: 'width 0.25s ease, padding 0.25s ease',
       overflow: 'hidden',
     }}>
-
-      {/* 로고 + 토글 */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: collapsed ? 'center' : 'space-between', marginBottom: '40px' }}>
         {!collapsed && (
           <div>
@@ -40,15 +40,9 @@ export default function Sidebar() {
           </div>
         )}
         <button onClick={() => setCollapsed(!collapsed)} style={{
-          background: 'transparent',
-          border: '1px solid var(--border)',
-          borderRadius: '6px',
-          color: 'var(--muted)',
-          cursor: 'pointer',
-          fontSize: '14px',
-          padding: '6px 8px',
-          lineHeight: 1,
-          flexShrink: 0,
+          background: 'transparent', border: '1px solid var(--border)',
+          borderRadius: '6px', color: 'var(--muted)', cursor: 'pointer',
+          fontSize: '14px', padding: '6px 8px', lineHeight: 1, flexShrink: 0,
         }}>
           {collapsed ? '▶' : '◀'}
         </button>
@@ -56,19 +50,15 @@ export default function Sidebar() {
 
       {!collapsed && <div style={{ height: '1px', background: 'var(--border)', marginBottom: '24px' }} />}
 
-      {/* 메뉴 */}
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
         {menus.map(m => {
-          const active = path === m.href
+          const active = path === m.href || (m.href !== '/' && path.startsWith(m.href))
           return (
             <Link key={m.href} href={m.href} title={collapsed ? m.label : undefined} style={{
-              display: 'flex',
-              alignItems: 'center',
+              display: 'flex', alignItems: 'center',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: '10px',
-              padding: collapsed ? '12px 0' : '12px 14px',
-              borderRadius: '6px',
-              textDecoration: 'none',
+              gap: '10px', padding: collapsed ? '12px 0' : '12px 14px',
+              borderRadius: '6px', textDecoration: 'none',
               background: active ? 'rgba(0,255,136,0.08)' : 'transparent',
               border: active ? '1px solid rgba(0,255,136,0.2)' : '1px solid transparent',
               transition: 'all 0.15s',
@@ -85,7 +75,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* 하단 */}
       {!collapsed && (
         <div style={{ marginTop: 'auto' }}>
           <div style={{ height: '1px', background: 'var(--border)', marginBottom: '16px' }} />
