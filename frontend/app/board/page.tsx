@@ -11,7 +11,6 @@ const CATEGORY_COLOR: Record<string, string> = {
 export default function BoardPage() {
   return (
     <div style={{ maxWidth: '780px' }}>
-      {/* 헤더 */}
       <div style={{ marginBottom: '40px' }}>
         <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '8px' }}>
           EXPERIMENT_01
@@ -20,9 +19,12 @@ export default function BoardPage() {
           <span style={{ color: 'var(--text)' }}>DEV</span>
           <span style={{ color: 'var(--accent)' }}> LOG</span>
         </h1>
+        <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.8 }}>
+          UI/UX 설계, 개발 경험, 그리고 생각들.<br />
+          <span className="mono" style={{ fontSize: '11px' }}>코드가 포함된 글은 직접 실행해볼 수 있습니다.</span>
+        </p>
       </div>
 
-      {/* 게시물 목록 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {POSTS.map(post => {
           const color = CATEGORY_COLOR[post.category] || 'var(--accent)'
@@ -45,17 +47,11 @@ export default function BoardPage() {
                   e.currentTarget.style.transform = 'translateY(0)'
                 }}
               >
-                {/* 카테고리 + 날짜 */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <span style={{
-                    padding: '3px 10px',
-                    borderRadius: '999px',
-                    fontSize: '11px',
-                    fontWeight: 700,
-                    fontFamily: 'IBM Plex Mono, monospace',
-                    background: `${color}22`,
-                    color,
-                    border: `1px solid ${color}44`,
+                    padding: '3px 10px', borderRadius: '999px', fontSize: '11px',
+                    fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace',
+                    background: `${color}22`, color, border: `1px solid ${color}44`,
                   }}>
                     {post.category}
                   </span>
@@ -64,25 +60,19 @@ export default function BoardPage() {
                   </span>
                 </div>
 
-                {/* 제목 */}
                 <h2 style={{ fontSize: '20px', fontWeight: 700, color: 'var(--text)', marginBottom: '10px', lineHeight: 1.4 }}>
                   {post.title}
                 </h2>
 
-                {/* 요약 */}
                 <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '16px' }}>
                   {post.summary}
                 </p>
 
-                {/* 태그 */}
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   {post.tags.map(tag => (
                     <span key={tag} style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      fontSize: '11px',
-                      background: 'var(--surface2)',
-                      color: 'var(--muted)',
+                      padding: '2px 8px', borderRadius: '4px', fontSize: '11px',
+                      background: 'var(--surface2)', color: 'var(--muted)',
                       fontFamily: 'IBM Plex Mono, monospace',
                     }}>
                       #{tag}

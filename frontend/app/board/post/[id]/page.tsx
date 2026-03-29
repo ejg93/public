@@ -2,11 +2,17 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { POSTS } from '../../posts'
-import { BadButtonsDemo, GoodButtonsDemo } from '../../demos'
+import { BadButtonsDemo, GoodButtonsDemo, KakaoDarkPatternDemo, KakaoEmojiDemo, ButtonFeedbackDemo, CapsLockDemo, InstallCheckboxDemo, KioskDemo } from '../../demos'
 
 const DEMOS: Record<string, React.ReactNode> = {
-  'bad-buttons':  <BadButtonsDemo />,
-  'good-buttons': <GoodButtonsDemo />,
+  'bad-buttons':         <BadButtonsDemo />,
+  'good-buttons':        <GoodButtonsDemo />,
+  'kakao-dark-pattern':  <KakaoDarkPatternDemo />,
+  'kakao-emoji':         <KakaoEmojiDemo />,
+  'button-feedback':     <ButtonFeedbackDemo />,
+  'capslock-demo':       <CapsLockDemo />,
+  'install-checkbox':    <InstallCheckboxDemo />,
+  'kiosk-demo':          <KioskDemo />,
 }
 
 const CATEGORY_COLOR: Record<string, string> = {
@@ -80,25 +86,59 @@ export default function PostPage() {
 
       <div style={{ height: '1px', background: 'var(--border)', marginBottom: '40px' }} />
 
-      {/* 본문 블록 렌더링 */}
+      {/* 본문 블록 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
         {post.blocks.map((block, i) => {
           if (block.type === 'text') {
+            const parseLine = (line: string, lineKey: number) => {
+              const parts = line.split(/(\*\*.*?\*\*|\[.+?\]\((?:yt:)?https?:\/\/.+?\))/g)
+              return (
+                <p key={lineKey} style={{ margin: '0 0 8px 0' }}>
+                  {parts.map((p, k) => {
+                    if (p.startsWith('**') && p.endsWith('**')) {
+                      return <strong key={k} style={{ color: 'var(--text)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
+                    }
+                    const ytMatch = p.match(/^\[(.+?)\]\(yt:(https?:\/\/.+?)\)$/)
+                    if (ytMatch) {
+                      return (
+                        <a key={k} href={ytMatch[2]} target="_blank" rel="noopener noreferrer" style={{
+                          display: 'inline-flex', alignItems: 'center', height: '24px',
+                          marginLeft: '4px', padding: '0 12px 0 8px', borderRadius: '999px',
+                          fontSize: '11px', fontWeight: 700, gap: '6px',
+                          fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
+                          background: 'rgba(255,0,0,0.12)', color: '#ff4444',
+                          border: '1px solid rgba(255,0,0,0.3)', textDecoration: 'none',
+                          verticalAlign: 'middle',
+                        }}>
+                          <svg width="14" height="10" viewBox="0 0 24 17" fill="#ff4444">
+                            <path d="M23.5 2.5S23.2.6 22.4 0C21.4-.9 20.3-.9 19.8-.8 16.5 0 12 0 12 0S7.5 0 4.2-.8C3.7-.9 2.6-.9 1.6 0 .8.6.5 2.5.5 2.5S.2 4.7.2 6.9v2.1c0 2.2.3 4.4.3 4.4s.3 1.9 1.1 2.5c1 .9 2.4.9 3 1C5.8 17 12 17 12 17s4.5 0 7.8-.8c.5-.1 1.6-.1 2.6-1 .8-.6 1.1-2.5 1.1-2.5s.3-2.2.3-4.4V6.9c0-2.2-.3-4.4-.3-4.4zM9.7 11.5V5l6.3 3.3-6.3 3.2z"/>
+                          </svg>
+                          {ytMatch[1]}
+                        </a>
+                      )
+                    }
+                    const urlMatch = p.match(/^\[(.+?)\]\((https?:\/\/.+?)\)$/)
+                    if (urlMatch) {
+                      return (
+                        <a key={k} href={urlMatch[2]} target="_blank" rel="noopener noreferrer" style={{
+                          display: 'inline-flex', alignItems: 'center', height: '24px',
+                          marginLeft: '4px', padding: '0 10px', borderRadius: '999px',
+                          fontSize: '11px', fontWeight: 700,
+                          fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
+                          background: 'rgba(77,159,255,0.12)', color: 'var(--accent3)',
+                          border: '1px solid rgba(77,159,255,0.3)', textDecoration: 'none',
+                          verticalAlign: 'middle',
+                        }}>↗ {urlMatch[1]}</a>
+                      )
+                    }
+                    return <span key={k}>{p}</span>
+                  })}
+                </p>
+              )
+            }
             return (
-              <div key={i} style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 2, whiteSpace: 'pre-wrap' }}>
-                {block.content.split('\n').map((line, j) => {
-                  // **bold** 처리
-                  const parts = line.split(/(\*\*.*?\*\*)/g)
-                  return (
-                    <p key={j} style={{ margin: '0 0 8px 0' }}>
-                      {parts.map((p, k) =>
-                        p.startsWith('**') && p.endsWith('**')
-                          ? <strong key={k} style={{ color: 'var(--text)', fontWeight: 700 }}>{p.slice(2, -2)}</strong>
-                          : p
-                      )}
-                    </p>
-                  )
-                })}
+              <div key={i} style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 2 }}>
+                {block.content.split('\n').map((line, j) => parseLine(line, j))}
               </div>
             )
           }
@@ -112,14 +152,11 @@ export default function PostPage() {
                   </div>
                 )}
                 <div style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
+                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  borderRadius: '10px', overflow: 'hidden',
                 }}>
                   <div style={{
-                    padding: '8px 16px',
-                    borderBottom: '1px solid var(--border)',
+                    padding: '8px 16px', borderBottom: '1px solid var(--border)',
                     display: 'flex', alignItems: 'center', gap: '8px',
                   }}>
                     <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f57', display: 'inline-block' }} />
@@ -150,10 +187,8 @@ export default function PostPage() {
                   </div>
                 )}
                 <div style={{
-                  background: 'var(--surface)',
-                  border: `1px solid ${color}44`,
-                  borderRadius: '10px',
-                  padding: '24px',
+                  background: 'var(--surface)', border: `1px solid ${color}44`,
+                  borderRadius: '10px', padding: '24px',
                 }}>
                   {demo}
                 </div>
@@ -181,7 +216,7 @@ export default function PostPage() {
         })}
       </div>
 
-      {/* 하단 네비게이션 */}
+      {/* 하단 */}
       <div style={{ marginTop: '60px', paddingTop: '24px', borderTop: '1px solid var(--border)' }}>
         <Link href="/board" style={{
           display: 'inline-flex', alignItems: 'center', gap: '6px',
