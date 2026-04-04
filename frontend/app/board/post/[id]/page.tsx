@@ -212,6 +212,29 @@ export default function PostPage() {
             )
           }
 
+          if (block.type === 'image_pair') {
+            return (
+              <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                <div>
+                  <img src={block.src1} alt={block.caption1 || ''} style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border)', display: 'block' }} />
+                  {block.caption1 && (
+                    <div className="mono" style={{ fontSize: '11px', color: 'var(--muted)', textAlign: 'center', marginTop: '8px' }}>
+                      {block.caption1}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <img src={block.src2} alt={block.caption2 || ''} style={{ width: '100%', borderRadius: '8px', border: '1px solid var(--border)', display: 'block' }} />
+                  {block.caption2 && (
+                    <div className="mono" style={{ fontSize: '11px', color: 'var(--muted)', textAlign: 'center', marginTop: '8px' }}>
+                      {block.caption2}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          }
+
           return null
         })}
       </div>

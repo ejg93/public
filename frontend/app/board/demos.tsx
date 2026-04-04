@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 // ── 나쁜 버튼 데모 ────────────────────────────────────
 export function BadButtonsDemo() {
@@ -397,8 +397,8 @@ export function ButtonFeedbackDemo() {
             onClick={handleBad}
             style={{
               padding: '10px 24px', borderRadius: '6px',
-              background: '#3a3a3a', color: '#fff',
-              border: 'none', cursor: 'pointer', fontSize: '14px',
+              background: 'var(--surface2)', color: 'var(--text)',
+              border: '1px solid var(--border)', cursor: 'pointer', fontSize: '14px',
             }}
           >
             저장
@@ -457,168 +457,102 @@ export function ButtonFeedbackDemo() {
   )
 }
 
-// ── CapsLock / 자동대문자 데모 ────────────────────────
+// ── 입력 UX 데모 ─────────────────────────────────────
 export function CapsLockDemo() {
-  const [goodPw, setGoodPw] = useState('')
+  // 왼쪽: 나쁜 로그인
+  const [badId, setBadId] = useState('')
   const [badPw, setBadPw] = useState('')
-  const [badIdInput, setBadIdInput] = useState('')
-  const [badIdAutoCapital, setBadIdAutoCapital] = useState(false)
-  const [capsOn, setCapsOn] = useState(false)
-  const [goodPwVisible, setGoodPwVisible] = useState(false)
-  const [goodSubmitted, setGoodSubmitted] = useState(false)
-  const [badSubmitted, setBadSubmitted] = useState(false)
-  const [badAutoCapital, setBadAutoCapital] = useState(false)
+  const [badPasteBlocked, setBadPasteBlocked] = useState(false)
+  const [badSpaceWarning, setBadSpaceWarning] = useState(false)
+  const [isComposing, setIsComposing] = useState(false)
+  const [badLoginDone, setBadLoginDone] = useState(false)
+  const [badSubmitCount, setBadSubmitCount] = useState(0)
+
+  // 오른쪽: 전화번호 + 좋은 버튼
+  const [phone2, setPhone2] = useState('1234')
+  const [phone3, setPhone3] = useState('')
+  const [signupState, setSignupState] = useState<'idle' | 'loading' | 'done'>('idle')
   const [goodFocused, setGoodFocused] = useState<string | null>(null)
 
-  function handleGoodPw(e: React.ChangeEvent<HTMLInputElement>) {
-    setGoodPw(e.target.value)
-    setGoodSubmitted(false)
+  const phone2Ref = useRef<HTMLInputElement>(null)
+  const phone3Ref = useRef<HTMLInputElement>(null)
+
+  async function handleBadLogin() {
+    const count = isComposing ? 2 : 1
+    await new Promise(r => setTimeout(r, 1500))
+    setBadSubmitCount(c => c + count)
+    setBadLoginDone(true)
+    setTimeout(() => setBadLoginDone(false), 2500)
   }
 
-  function handleBadId(e: React.ChangeEvent<HTMLInputElement>) {
-    let val = e.target.value
-    if (val.length === 1 && /[a-zA-Z]/.test(val)) {
-      val = val.charAt(0).toUpperCase() + val.slice(1)
-      setBadIdAutoCapital(true)
-    } else if (val.length === 0) {
-      setBadIdAutoCapital(false)
+  function handlePhone2Change(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value.replace(/\D/g, '').slice(0, 4)
+    setPhone2(val)
+    if (val.length === 4) phone3Ref.current?.focus()
+  }
+
+  function handlePhone2Focus() {
+    setGoodFocused('phone2')
+    if (phone2.length === 4) {
+      setTimeout(() => phone3Ref.current?.focus(), 50)
     }
-    setBadIdInput(val)
-    setBadSubmitted(false)
   }
 
-  function handleBadPw(e: React.ChangeEvent<HTMLInputElement>) {
-    let val = e.target.value
-    if (val.length === 1) {
-      val = val.toUpperCase()
-      setBadAutoCapital(true)
-    } else if (val.length === 0) {
-      setBadAutoCapital(false)
-    }
-    setBadPw(val)
-    setBadSubmitted(false)
+  async function handleSignup() {
+    if (signupState !== 'idle') return
+    setSignupState('loading')
+    await new Promise(r => setTimeout(r, 1500))
+    setSignupState('done')
+    setTimeout(() => setSignupState('idle'), 2200)
   }
 
-  function checkGoodPw() { setGoodSubmitted(true) }
-  function checkBadPw() { setBadSubmitted(true) }
-
-  const goodConditions = [
-    { label: '8자 이상', ok: goodPw.length >= 8 },
-    { label: '대문자 포함', ok: /[A-Z]/.test(goodPw) },
-    { label: '소문자 포함', ok: /[a-z]/.test(goodPw) },
-    { label: '숫자 포함', ok: /[0-9]/.test(goodPw) },
-    { label: '특수문자 포함', ok: /[^a-zA-Z0-9]/.test(goodPw) },
-  ]
-
-  const focusedInputStyle = (field: string, extraStyle?: React.CSSProperties): React.CSSProperties => ({
+  const badInputStyle: React.CSSProperties = {
     width: '100%', padding: '8px 10px', borderRadius: '6px',
-    background: '#1a1a2e',
-    border: `2px solid ${goodFocused === field ? 'var(--accent3)' : '#333'}`,
-    color: 'var(--text)', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-    transition: 'border-color 0.15s ease',
-    ...extraStyle,
+    background: 'var(--surface2)', border: '1px solid var(--border)',
+    color: 'var(--text)', fontSize: '13px', outline: 'none',
+    boxSizing: 'border-box', caretColor: 'transparent',
+  }
+
+  const phoneInputStyle = (field: string): React.CSSProperties => ({
+    padding: '8px 6px', borderRadius: '6px',
+    background: 'var(--surface2)',
+    border: `2px solid ${goodFocused === field ? 'var(--accent3)' : 'var(--border)'}`,
+    color: 'var(--text)', fontSize: '13px', outline: 'none',
+    textAlign: 'center' as const, transition: 'border-color 0.15s',
+    boxSizing: 'border-box' as const,
   })
 
   return (
     <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
       <style>{`
-        @keyframes focus-placeholder { }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes check-fade { from { opacity: 0; } to { opacity: 1; } }
+        .check-anim { animation: check-fade 0.25s ease forwards; }
       `}</style>
 
-      {/* 좋은 케이스 */}
-      <div style={{
-        flex: 1, minWidth: '240px',
-        background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: '10px', padding: '18px',
-      }}>
-        <div style={{ fontSize: '12px', color: 'var(--accent)', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
-          ✓ 포커스 표시 + 조건 실시간 안내
-        </div>
-
-        <div style={{ marginBottom: '10px' }}>
-          <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>아이디</label>
-          <input
-            placeholder="아이디 입력"
-            onFocus={() => setGoodFocused('goodId')}
-            onBlur={() => setGoodFocused(null)}
-            style={focusedInputStyle('goodId')}
-          />
-        </div>
-
-        <div style={{ marginBottom: '8px' }}>
-          <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>비밀번호</label>
-          <div style={{ position: 'relative' }}>
-            <input
-              type={goodPwVisible ? 'text' : 'password'}
-              value={goodPw}
-              onChange={handleGoodPw}
-              onKeyDown={e => { if (e.getModifierState) setCapsOn(e.getModifierState('CapsLock')) }}
-              onFocus={() => setGoodFocused('goodPw')}
-              onBlur={() => setGoodFocused(null)}
-              placeholder="비밀번호 입력"
-              style={focusedInputStyle('goodPw', { padding: '8px 36px 8px 10px' })}
-            />
-            <button onClick={() => setGoodPwVisible(!goodPwVisible)} style={{
-              position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
-              background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: '14px',
-            }}>{goodPwVisible ? '🙈' : '👁'}</button>
-          </div>
-          {capsOn && (
-            <div style={{ fontSize: '11px', color: '#ffcc00', marginTop: '4px' }}>
-              ⚠ CapsLock이 켜져 있습니다
-            </div>
-          )}
-        </div>
-
-        {goodPw.length > 0 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginBottom: '10px' }}>
-            {goodConditions.map((c, i) => (
-              <div key={i} style={{ fontSize: '11px', color: c.ok ? '#00c864' : 'var(--muted)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span>{c.ok ? '✓' : '○'}</span> {c.label}
-              </div>
-            ))}
-          </div>
-        )}
-
-        <button onClick={checkGoodPw} style={{
-          width: '100%', padding: '9px', borderRadius: '6px',
-          background: 'var(--accent3)', color: '#000', border: 'none',
-          fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-        }}>로그인</button>
-
-        {goodSubmitted && goodConditions.every(c => c.ok) && (
-          <div style={{ fontSize: '11px', color: '#00c864', marginTop: '8px', textAlign: 'center' }}>✓ 조건을 모두 충족했습니다</div>
-        )}
-        {goodSubmitted && !goodConditions.every(c => c.ok) && (
-          <div style={{ fontSize: '11px', color: '#ff6666', marginTop: '8px', textAlign: 'center' }}>조건을 확인하세요</div>
-        )}
-      </div>
-
-      {/* 나쁜 케이스 */}
+      {/* 왼쪽: 나쁜 로그인 */}
       <div style={{
         flex: 1, minWidth: '240px',
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: '10px', padding: '18px',
       }}>
         <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
-          ✗ 포커스 표시 없음 + 자동 대문자
+          ✗ 포커스 없음 · 붙여넣기 차단 · 공백 허용
         </div>
 
         <div style={{ marginBottom: '10px' }}>
           <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '4px' }}>아이디</label>
           <input
-            value={badIdInput}
-            onChange={handleBadId}
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: '6px',
-              background: '#1a1a2e', border: '1px solid #333',
-              color: 'var(--text)', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-              caretColor: 'transparent',
+            value={badId}
+            onChange={e => {
+              setBadId(e.target.value)
+              setBadSpaceWarning(e.target.value.includes(' '))
             }}
+            style={badInputStyle}
           />
-          {badIdAutoCapital && badIdInput.length > 0 && (
+          {badSpaceWarning && (
             <div style={{ fontSize: '11px', color: '#ff6666', marginTop: '4px' }}>
-              ← 첫 글자가 자동으로 대문자가 됐습니다
+              ← 공백 포함됐지만 경고 없음
             </div>
           )}
         </div>
@@ -628,37 +562,124 @@ export function CapsLockDemo() {
           <input
             type="password"
             value={badPw}
-            onChange={handleBadPw}
-            style={{
-              width: '100%', padding: '8px 10px', borderRadius: '6px',
-              background: '#1a1a2e', border: `1px solid ${badSubmitted && badPw.length === 0 ? '#ff4444' : '#333'}`,
-              color: 'var(--text)', fontSize: '13px', outline: 'none', boxSizing: 'border-box',
-              caretColor: 'transparent',
+            onChange={e => setBadPw(e.target.value)}
+            onPaste={e => {
+              e.preventDefault()
+              setBadPasteBlocked(true)
+              setTimeout(() => setBadPasteBlocked(false), 2500)
             }}
+            onCompositionStart={() => setIsComposing(true)}
+            onCompositionEnd={() => setIsComposing(false)}
+            onKeyDown={e => { if (e.key === 'Enter') handleBadLogin() }}
+            style={badInputStyle}
           />
-          {badAutoCapital && badPw.length > 0 && (
+          {/[ㄱ-ㅎㅏ-ㅣ가-힣]/.test(badPw) && (
             <div style={{ fontSize: '11px', color: '#ff6666', marginTop: '4px' }}>
-              ← 첫 글자가 자동으로 대문자가 됐습니다
+              ← 한글이 입력됐지만 경고 없음 (로그인 실패 원인)
+            </div>
+          )}
+          {badPasteBlocked && (
+            <div style={{ fontSize: '11px', color: '#ff6666', marginTop: '4px' }}>← 붙여넣기 차단됐습니다</div>
+          )}
+        </div>
+
+        <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: '10px', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1.6 }}>
+          * 한글 입력 후 엔터 → 로그인 2회 시도
+        </div>
+
+        <button
+          onClick={handleBadLogin}
+          style={{
+            width: '100%', padding: '9px', borderRadius: '6px',
+            background: 'var(--surface2)', color: 'var(--text)',
+            border: '1px solid var(--border)', fontSize: '13px',
+            fontWeight: 700, cursor: 'pointer',
+          }}
+        >로그인</button>
+
+        {badLoginDone && (
+          <div style={{ marginTop: '8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '11px', color: '#ff6666' }}>아이디 또는 비밀번호를 확인하세요</div>
+            {badSubmitCount >= 2 && (
+              <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '2px' }}>
+                (로그인 {badSubmitCount}회 시도됨)
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* 오른쪽: 전화번호 자동이동 버그 + 좋은 버튼 피드백 */}
+      <div style={{
+        flex: 1, minWidth: '240px',
+        background: 'var(--surface)', border: '1px solid var(--border)',
+        borderRadius: '10px', padding: '18px',
+      }}>
+        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
+          ✗ 4자리 자동이동 — 이전 칸 수정 불가
+        </div>
+
+        <div style={{ marginBottom: '16px' }}>
+          <label style={{ fontSize: '12px', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>전화번호</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <input
+              value="010"
+              readOnly
+              style={{ ...phoneInputStyle(''), width: '50px' }}
+            />
+            <span style={{ color: 'var(--muted)', fontSize: '14px' }}>-</span>
+            <input
+              ref={phone2Ref}
+              value={phone2}
+              onChange={handlePhone2Change}
+              onFocus={handlePhone2Focus}
+              onBlur={() => setGoodFocused(null)}
+              maxLength={4}
+              style={{ ...phoneInputStyle('phone2'), width: '68px' }}
+            />
+            <span style={{ color: 'var(--muted)', fontSize: '14px' }}>-</span>
+            <input
+              ref={phone3Ref}
+              value={phone3}
+              onChange={e => setPhone3(e.target.value.replace(/\D/g, '').slice(0, 4))}
+              onFocus={() => setGoodFocused('phone3')}
+              onBlur={() => setGoodFocused(null)}
+              maxLength={4}
+              style={{ ...phoneInputStyle('phone3'), width: '68px' }}
+            />
+          </div>
+          {phone2.length === 4 && (
+            <div style={{ fontSize: '10px', color: '#ff6666', marginTop: '6px', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1.5 }}>
+              ← 가운데 칸 다시 클릭하거나 Shift+Tab 눌러보세요
             </div>
           )}
         </div>
 
-        <button onClick={checkBadPw} style={{
-          width: '100%', padding: '9px', borderRadius: '6px',
-          background: '#444', color: '#fff', border: 'none',
-          fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-        }}>로그인</button>
+        <div style={{ height: '1px', background: 'var(--border)', marginBottom: '14px' }} />
 
-        {badSubmitted && (
-          <div style={{ fontSize: '11px', color: '#ff6666', marginTop: '8px', textAlign: 'center' }}>
-            아이디 또는 비밀번호를 확인하세요
-          </div>
-        )}
-        {badSubmitted && (
-          <div style={{ fontSize: '10px', color: 'var(--muted)', marginTop: '4px', textAlign: 'center' }}>
-            (어떤 조건이 틀렸는지 알 수 없음)
-          </div>
-        )}
+        <button
+          onClick={handleSignup}
+          disabled={signupState === 'loading'}
+          style={{
+            width: '100%', padding: '9px', borderRadius: '6px',
+            background: signupState === 'done' ? '#00a854' : signupState === 'loading' ? '#2a2a2a' : 'var(--accent3)',
+            color: signupState === 'loading' ? '#555' : '#000',
+            border: 'none', fontSize: '13px', fontWeight: 700,
+            cursor: signupState === 'loading' ? 'not-allowed' : 'pointer',
+            transition: 'background 0.3s ease',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+            minHeight: '36px',
+          }}
+        >
+          {signupState === 'loading' ? (
+            <>
+              <span style={{ display: 'inline-block', animation: 'spin 0.7s linear infinite', fontSize: '16px', lineHeight: 1 }}>⟳</span>
+              <span>처리 중...</span>
+            </>
+          ) : signupState === 'done' ? (
+            <span className="check-anim">✓ 가입 완료</span>
+          ) : '회원가입'}
+        </button>
       </div>
 
     </div>
@@ -668,15 +689,20 @@ export function CapsLockDemo() {
 // ── 설치 프로그램 체크박스 데모 ──────────────────────
 export function InstallCheckboxDemo() {
   const [checks, setChecks] = useState({
-    terms: false,
-    privacy: false,
-    age: false,
-    marketing: false,
-    thirdParty: false,
-    newsletter: false,
+    terms: false, privacy: false, age: false,
+    marketing: false, thirdParty: false, newsletter: false,
   })
   const [submitted, setSubmitted] = useState(false)
   const [allClicked, setAllClicked] = useState(false)
+
+  // 설치 프로그램 사전체크
+  const [installChecks, setInstallChecks] = useState({
+    naver: true,
+    vaccine: true,
+    toolbar: true,
+    homepage: false,
+  })
+  const [installStep, setInstallStep] = useState<'idle'|'done'>('idle')
 
   function toggleAll(val: boolean) {
     setAllClicked(val)
@@ -693,28 +719,42 @@ export function InstallCheckboxDemo() {
 
   const required = ['terms', 'privacy', 'age'] as const
   const optional = ['marketing', 'thirdParty', 'newsletter'] as const
-
   const items = {
-    terms:      { label: '[필수] 이용약관 동의', required: true },
-    privacy:    { label: '[필수] 개인정보 처리방침 동의', required: true },
-    age:        { label: '[필수] 만 14세 이상 확인', required: true },
-    marketing:  { label: '[선택] 마케팅 정보 수신 동의', required: false },
-    thirdParty: { label: '[선택] 제3자 정보 제공 동의', required: false },
-    newsletter: { label: '[선택] 뉴스레터 수신 동의', required: false },
+    terms:      { label: '[필수] 이용약관 동의' },
+    privacy:    { label: '[필수] 개인정보 처리방침 동의' },
+    age:        { label: '[필수] 만 14세 이상 확인' },
+    marketing:  { label: '[선택] 마케팅 정보 수신 동의' },
+    thirdParty: { label: '[선택] 제3자 정보 제공 동의' },
+    newsletter: { label: '[선택] 뉴스레터 수신 동의' },
   }
-
   const canSubmit = required.every(k => checks[k])
   const optionalAllChecked = optional.every(k => checks[k])
 
+  const installItems = [
+    { key: 'naver' as const, label: '네이버 앱 설치 (기본 브라우저 변경 포함)', bad: true },
+    { key: 'vaccine' as const, label: '△△ 백신 설치 (시작 프로그램 자동 등록)', bad: true },
+    { key: 'toolbar' as const, label: '○○ 툴바 설치', bad: true },
+    { key: 'homepage' as const, label: '설치 후 홈페이지 변경하지 않기', bad: false },
+  ]
+
+  const cbStyle = (checked: boolean, bad: boolean) => ({
+    width: '15px', height: '15px', borderRadius: '3px', flexShrink: 0,
+    background: checked ? (bad ? '#ff6b35' : '#00c864') : 'transparent',
+    border: `2px solid ${checked ? (bad ? '#ff6b35' : '#00c864') : '#555'}`,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+  })
+
   return (
-    <div>
-      {/* 전체동의 = 선택까지 묶음 */}
+    <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+
+      {/* 왼쪽: 전체동의 선택항목 포함 */}
       <div style={{
+        flex: 1, minWidth: '240px',
         background: 'var(--surface)', border: '1px solid var(--border)',
-        borderRadius: '10px', padding: '18px', maxWidth: '400px',
+        borderRadius: '10px', padding: '18px',
       }}>
         <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
-          전체동의 클릭 시 선택 항목까지 자동 체크
+          전체동의 = 선택항목까지 자동 체크
         </div>
 
         <div style={{
@@ -737,9 +777,8 @@ export function InstallCheckboxDemo() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
           {(Object.keys(items) as Array<keyof typeof items>).map(key => (
-            <div key={key} style={{
-              display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 2px',
-            }} onClick={() => toggle(key)}>
+            <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '4px 2px' }}
+              onClick={() => toggle(key)}>
               <div style={{
                 width: '16px', height: '16px', borderRadius: '3px', flexShrink: 0,
                 background: checks[key] ? '#00c864' : 'transparent',
@@ -748,10 +787,9 @@ export function InstallCheckboxDemo() {
               }}>
                 {checks[key] && <span style={{ color: '#000', fontSize: '10px', fontWeight: 700 }}>✓</span>}
               </div>
-              <span style={{
-                fontSize: '12px',
-                color: items[key].required ? 'var(--text)' : 'var(--muted)',
-              }}>{items[key].label}</span>
+              <span style={{ fontSize: '12px', color: required.includes(key as any) ? 'var(--text)' : 'var(--muted)' }}>
+                {items[key].label}
+              </span>
             </div>
           ))}
         </div>
@@ -760,19 +798,85 @@ export function InstallCheckboxDemo() {
           width: '100%', padding: '9px', borderRadius: '6px',
           background: canSubmit ? '#00c864' : '#333', color: canSubmit ? '#000' : '#666',
           border: 'none', fontSize: '13px', fontWeight: 700, cursor: canSubmit ? 'pointer' : 'not-allowed',
-        }}>
-          동의하고 가입하기
-        </button>
+        }}>동의하고 가입하기</button>
 
         {submitted && optionalAllChecked && (
           <div style={{ fontSize: '11px', color: '#ff6666', marginTop: '10px', lineHeight: 1.6, padding: '8px 10px', background: 'rgba(255,68,68,0.08)', borderRadius: '6px', border: '1px solid rgba(255,68,68,0.2)' }}>
-            ⚠ 전체동의를 눌렀더니 마케팅 수신, 제3자 제공, 뉴스레터까지 전부 동의됐습니다.
+            ⚠ 마케팅 수신, 제3자 제공, 뉴스레터까지 전부 동의됐습니다
           </div>
         )}
         {submitted && !optionalAllChecked && (
           <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', textAlign: 'center' }}>가입 완료</div>
         )}
       </div>
+
+      {/* 오른쪽: 설치 프로그램 사전체크 */}
+      <div style={{
+        flex: 1, minWidth: '240px',
+        background: 'var(--surface)', border: '1px solid var(--border)',
+        borderRadius: '10px', padding: '18px',
+      }}>
+        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
+          설치 프로그램 — 원치 않는 항목 미리 체크
+        </div>
+
+        {installStep === 'idle' ? (
+          <>
+            <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px', lineHeight: 1.6 }}>
+              추가 설치 항목을 선택하세요
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+              {installItems.map(item => (
+                <div key={item.key}
+                  style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', cursor: 'pointer', padding: '6px 8px', borderRadius: '6px', background: item.bad && installChecks[item.key] ? 'rgba(255,107,53,0.07)' : 'transparent', transition: 'background 0.15s' }}
+                  onClick={() => setInstallChecks(prev => ({ ...prev, [item.key]: !prev[item.key] }))}
+                >
+                  <div style={{ ...cbStyle(installChecks[item.key], item.bad), marginTop: '2px' }}>
+                    {installChecks[item.key] && <span style={{ color: '#000', fontSize: '10px', fontWeight: 700 }}>✓</span>}
+                  </div>
+                  <span style={{ fontSize: '12px', color: item.bad && installChecks[item.key] ? '#ff6b35' : 'var(--muted)', lineHeight: 1.5 }}>
+                    {item.label}
+                    {item.bad && installChecks[item.key] && <span style={{ marginLeft: '4px', fontSize: '10px' }}>⚠</span>}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ fontSize: '10px', color: '#ff6666', marginBottom: '12px', lineHeight: 1.6, fontFamily: 'IBM Plex Mono, monospace' }}>
+              * 주황색 항목은 기본 체크된 상태로 표시됩니다
+            </div>
+
+            <button onClick={() => setInstallStep('done')} style={{
+              width: '100%', padding: '9px', borderRadius: '6px',
+              background: 'var(--accent3)', color: '#000', border: 'none',
+              fontSize: '13px', fontWeight: 700, cursor: 'pointer',
+            }}>다음 →</button>
+          </>
+        ) : (
+          <div>
+            <div style={{ fontSize: '13px', color: 'var(--text)', fontWeight: 700, marginBottom: '12px' }}>설치 완료</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '14px' }}>
+              {installItems.filter(i => installChecks[i.key]).map(item => (
+                <div key={item.key} style={{ fontSize: '12px', color: item.bad ? '#ff6b35' : 'var(--muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>{item.bad ? '⚠' : '✓'}</span> {item.label}
+                </div>
+              ))}
+            </div>
+            {installItems.some(i => i.bad && installChecks[i.key]) && (
+              <div style={{ fontSize: '11px', color: '#ff6666', padding: '8px 10px', background: 'rgba(255,68,68,0.08)', borderRadius: '6px', border: '1px solid rgba(255,68,68,0.2)', lineHeight: 1.6 }}>
+                ⚠ 체크 해제하지 않으면 원치 않는 프로그램이 함께 설치됩니다
+              </div>
+            )}
+            <button onClick={() => setInstallStep('idle')} style={{
+              marginTop: '12px', width: '100%', padding: '7px', borderRadius: '6px',
+              background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)',
+              fontSize: '12px', cursor: 'pointer',
+            }}>↺ 다시 체험</button>
+          </div>
+        )}
+      </div>
+
     </div>
   )
 }
