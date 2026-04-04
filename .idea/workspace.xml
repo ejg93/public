@@ -4,9 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c12a7ce-bb4d-4099-bda0-6194037dc01a" name="변경" comment="UI,UX 게시물3">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/backend/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/backend/.gitignore" afterDir="false" />
+    <list default="true" id="2c12a7ce-bb4d-4099-bda0-6194037dc01a" name="변경" comment="gitignore">
       <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties.template" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties.template" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -146,7 +144,7 @@
       <workItem from="1774875938230" duration="8664000" />
       <workItem from="1775023465006" duration="607000" />
       <workItem from="1775286879219" duration="1351000" />
-      <workItem from="1775288268847" duration="6772000" />
+      <workItem from="1775288268847" duration="7371000" />
     </task>
     <task id="LOCAL-00001" summary="UI,UX 게시물2">
       <option name="closed" value="true" />
@@ -164,7 +162,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775293998250</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="gitignore">
+      <option name="closed" value="true" />
+      <created>1775299211232</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1775299211232</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -174,7 +180,8 @@
     <MESSAGE value="UI,UX 게시물" />
     <MESSAGE value="UI,UX 게시물2" />
     <MESSAGE value="UI,UX 게시물3" />
-    <option name="LAST_COMMIT_MESSAGE" value="UI,UX 게시물3" />
+    <MESSAGE value="gitignore" />
+    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
