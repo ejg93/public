@@ -1,5 +1,5 @@
 # API 키
-src/main/resources/application.properties
+src/main/resources/applicationDEV.properties
 
 # 빌드 결과물
 target/
