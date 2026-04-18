@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 
 // ── 나쁜 버튼 데모 ────────────────────────────────────
 export function BadButtonsDemo() {
@@ -1241,6 +1241,554 @@ export function KioskDemo() {
       <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'IBM Plex Mono, monospace' }}>
         불고기버거 세트를 눌러보세요
       </div>
+    </div>
+  )
+}
+
+// ── Elasticsearch: 역인덱스 애니메이션 ───────────────────
+export function InvertedIndexDemo() {
+  const [step, setStep] = useState(0)
+
+  const docs = [
+    { id: 'DOC_1', text: '엘라스틱서치는 빠른 검색 엔진이다' },
+    { id: 'DOC_2', text: '검색 엔진은 문서를 색인한다' },
+    { id: 'DOC_3', text: '빠른 색인이 좋은 검색을 만든다' },
+  ]
+
+  const tokens: Record<string, string[]> = {
+    DOC_1: ['엘라스틱서치', '빠른', '검색', '엔진'],
+    DOC_2: ['검색', '엔진', '문서', '색인'],
+    DOC_3: ['빠른', '색인', '좋은', '검색'],
+  }
+
+  const invertedIndex: Record<string, string[]> = {}
+  Object.entries(tokens).forEach(([docId, toks]) => {
+    toks.forEach(t => {
+      if (!invertedIndex[t]) invertedIndex[t] = []
+      if (!invertedIndex[t].includes(docId)) invertedIndex[t].push(docId)
+    })
+  })
+
+  const steps = [
+    { label: '원본 문서', desc: '3개의 문서가 있습니다' },
+    { label: '토크나이징', desc: '각 문서를 단어 단위로 분리합니다 (Nori 분석기)' },
+    { label: '역인덱스 구축', desc: '단어 → 문서 목록으로 매핑합니다' },
+    { label: '검색', desc: '"검색 엔진" 입력 시 역인덱스에서 즉시 찾아냅니다' },
+  ]
+
+  const docColors = ['var(--accent)', 'var(--accent2)', 'var(--accent3)']
+
+  return (
+    <div>
+      <style>{`
+        @keyframes token-pop { from { opacity:0; transform:scale(0.7); } to { opacity:1; transform:scale(1); } }
+        @keyframes index-slide { from { opacity:0; transform:translateX(-10px); } to { opacity:1; transform:translateX(0); } }
+        .token-pop { animation: token-pop 0.3s ease forwards; }
+        .index-slide { animation: index-slide 0.4s ease forwards; }
+      `}</style>
+
+      {/* 스텝 버튼 */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', flexWrap: 'wrap' }}>
+        {steps.map((s, i) => (
+          <button key={i} onClick={() => setStep(i)} style={{
+            padding: '6px 14px', borderRadius: '999px', fontSize: '11px',
+            fontFamily: 'IBM Plex Mono, monospace',
+            background: step === i ? 'var(--accent3)' : step > i ? 'rgba(77,159,255,0.15)' : 'var(--surface2)',
+            color: step === i ? '#000' : step > i ? 'var(--accent3)' : 'var(--muted)',
+            border: `1px solid ${step >= i ? 'var(--accent3)' : 'var(--border)'}`,
+            cursor: 'pointer', transition: 'all 0.2s',
+          }}>
+            {i + 1}. {s.label}
+          </button>
+        ))}
+      </div>
+
+      <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px', fontFamily: 'IBM Plex Mono, monospace' }}>
+        → {steps[step].desc}
+      </div>
+
+      {/* STEP 0~1: 문서 & 토큰 */}
+      {step <= 1 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {docs.map((doc, di) => (
+            <div key={doc.id} style={{
+              background: 'var(--surface)', border: `1px solid ${docColors[di]}44`,
+              borderRadius: '8px', padding: '12px 16px',
+            }}>
+              <div className="mono" style={{ fontSize: '10px', color: docColors[di], marginBottom: '6px' }}>{doc.id}</div>
+              {step === 0 ? (
+                <div style={{ fontSize: '14px', color: 'var(--text)' }}>{doc.text}</div>
+              ) : (
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                  {tokens[doc.id].map((tok, ti) => (
+                    <span key={ti} className="token-pop" style={{
+                      animationDelay: `${ti * 0.1}s`, opacity: 0,
+                      padding: '3px 10px', borderRadius: '4px',
+                      background: `${docColors[di]}22`, color: docColors[di],
+                      border: `1px solid ${docColors[di]}44`,
+                      fontSize: '13px', fontFamily: 'IBM Plex Mono, monospace',
+                    }}>{tok}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* STEP 2: 역인덱스 */}
+      {step === 2 && (
+        <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '2px' }}>
+          <div style={{ padding: '6px 10px', background: 'var(--surface2)', borderRadius: '4px 0 0 0', fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', color: 'var(--muted)' }}>단어</div>
+          <div style={{ padding: '6px 10px', background: 'var(--surface2)', borderRadius: '0 4px 0 0', fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', color: 'var(--muted)' }}>문서 목록</div>
+          {Object.entries(invertedIndex).map(([term, docIds], i) => (
+            <React.Fragment key={i}>
+              <div className="index-slide" style={{
+                animationDelay: `${i * 0.08}s`, opacity: 0,
+                padding: '8px 10px', background: 'var(--surface)',
+                borderBottom: '1px solid var(--border)',
+                fontFamily: 'IBM Plex Mono, monospace', fontSize: '13px', color: 'var(--accent3)',
+              }}>{term}</div>
+              <div className="index-slide" style={{
+                animationDelay: `${i * 0.08 + 0.05}s`, opacity: 0,
+                padding: '8px 10px', background: 'var(--surface)',
+                borderBottom: '1px solid var(--border)',
+                display: 'flex', gap: '6px',
+              }}>
+                {docIds.map((did, j) => {
+                  const ci = docs.findIndex(d => d.id === did)
+                  return (
+                    <span key={j} style={{
+                      padding: '1px 8px', borderRadius: '4px',
+                      background: `${docColors[ci]}22`, color: docColors[ci],
+                      fontSize: '11px', fontFamily: 'IBM Plex Mono, monospace',
+                    }}>{did}</span>
+                  )
+                })}
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      {/* STEP 3: 검색 시뮬레이션 */}
+      {step === 3 && (
+        <div>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '10px',
+            padding: '10px 14px', background: 'var(--surface2)',
+            border: '1px solid var(--accent3)', borderRadius: '8px', marginBottom: '16px',
+          }}>
+            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>검색어:</span>
+            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '14px', color: 'var(--accent3)' }}>"검색 엔진"</span>
+            <span style={{ fontSize: '11px', color: 'var(--muted)' }}>→ 토큰: [검색] [엔진]</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {['검색', '엔진'].map((term, ti) => (
+              <div key={ti} className="index-slide" style={{ animationDelay: `${ti * 0.3}s`, opacity: 0 }}>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '4px', fontFamily: 'IBM Plex Mono, monospace' }}>
+                  역인덱스 조회: <span style={{ color: 'var(--accent3)' }}>{term}</span>
+                </div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {invertedIndex[term]?.map((did, j) => {
+                    const ci = docs.findIndex(d => d.id === did)
+                    return (
+                      <div key={j} style={{
+                        padding: '6px 14px', borderRadius: '6px',
+                        background: `${docColors[ci]}15`, border: `1px solid ${docColors[ci]}44`,
+                        color: docColors[ci], fontSize: '12px', fontFamily: 'IBM Plex Mono, monospace',
+                      }}>{did}</div>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
+            <div className="index-slide" style={{ animationDelay: '0.8s', opacity: 0, marginTop: '8px', padding: '10px 14px', background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)', borderRadius: '8px', fontSize: '13px', color: 'var(--accent)' }}>
+              ✓ 교집합: DOC_1, DOC_2 — 테이블 전체 스캔 없이 즉시 반환
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Elasticsearch: TF-IDF 시각화 ─────────────────────────
+export function TFIDFDemo() {
+  const docs = [
+    { id: 'DOC_1', text: '검색 엔진 검색 결과 검색', tokens: ['검색', '검색', '검색', '엔진', '결과'] },
+    { id: 'DOC_2', text: '엔진 설계 엔진 최적화', tokens: ['엔진', '엔진', '설계', '최적화'] },
+    { id: 'DOC_3', text: '검색 최적화 결과 분석', tokens: ['검색', '최적화', '결과', '분석'] },
+  ]
+
+  const allTerms = ['검색', '엔진', '결과', '최적화', '설계', '분석']
+  const N = docs.length
+
+  function tf(term: string, doc: typeof docs[0]) {
+    const count = doc.tokens.filter(t => t === term).length
+    return count / doc.tokens.length
+  }
+
+  function idf(term: string) {
+    const df = docs.filter(d => d.tokens.includes(term)).length
+    return Math.log(N / df)
+  }
+
+  function tfidf(term: string, doc: typeof docs[0]) {
+    return tf(term, doc) * idf(term)
+  }
+
+  const [selectedDoc, setSelectedDoc] = useState(0)
+  const [selectedTerm, setSelectedTerm] = useState<string | null>(null)
+
+  const doc = docs[selectedDoc]
+  const scores = allTerms.map(term => ({ term, score: tfidf(term, doc), tf: tf(term, doc), idf: idf(term) }))
+    .filter(s => s.tf > 0)
+    .sort((a, b) => b.score - a.score)
+
+  const maxScore = Math.max(...scores.map(s => s.score))
+
+  return (
+    <div>
+      {/* 문서 선택 */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        {docs.map((d, i) => (
+          <button key={i} onClick={() => { setSelectedDoc(i); setSelectedTerm(null) }} style={{
+            padding: '6px 16px', borderRadius: '6px',
+            background: selectedDoc === i ? 'var(--accent3)' : 'var(--surface2)',
+            color: selectedDoc === i ? '#000' : 'var(--muted)',
+            border: `1px solid ${selectedDoc === i ? 'var(--accent3)' : 'var(--border)'}`,
+            cursor: 'pointer', fontSize: '12px', fontFamily: 'IBM Plex Mono, monospace',
+          }}>{d.id}</button>
+        ))}
+      </div>
+
+      <div style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '16px' }}>
+        {doc.text}
+      </div>
+
+      {/* TF-IDF 바 차트 */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
+        {scores.map((s, i) => (
+          <div key={i} onClick={() => setSelectedTerm(selectedTerm === s.term ? null : s.term)} style={{ cursor: 'pointer' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px', color: selectedTerm === s.term ? 'var(--accent3)' : 'var(--text)' }}>{s.term}</span>
+              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', color: 'var(--muted)' }}>{s.score.toFixed(3)}</span>
+            </div>
+            <div style={{ height: '8px', background: 'var(--surface2)', borderRadius: '4px', overflow: 'hidden' }}>
+              <div style={{
+                height: '100%', borderRadius: '4px',
+                width: `${(s.score / maxScore) * 100}%`,
+                background: selectedTerm === s.term ? 'var(--accent3)' : 'var(--accent)',
+                transition: 'width 0.5s ease',
+              }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* 선택된 단어 상세 */}
+      {selectedTerm && (() => {
+        const s = scores.find(x => x.term === selectedTerm)!
+        return (
+          <div style={{ padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--accent3)', borderRadius: '8px', fontSize: '12px' }}>
+            <div className="mono" style={{ color: 'var(--accent3)', marginBottom: '8px', fontSize: '11px', letterSpacing: '2px' }}>"{selectedTerm}" 상세</div>
+            <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ color: 'var(--muted)', marginBottom: '2px' }}>TF (문서 내 빈도)</div>
+                <div style={{ color: 'var(--text)', fontFamily: 'IBM Plex Mono, monospace' }}>{s.tf.toFixed(3)}</div>
+                <div style={{ color: 'var(--muted)', fontSize: '11px' }}>{doc.tokens.filter(t => t === selectedTerm).length}/{doc.tokens.length}회</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--muted)', marginBottom: '2px' }}>IDF (희귀도)</div>
+                <div style={{ color: 'var(--text)', fontFamily: 'IBM Plex Mono, monospace' }}>{s.idf.toFixed(3)}</div>
+                <div style={{ color: 'var(--muted)', fontSize: '11px' }}>log({N}/{docs.filter(d => d.tokens.includes(selectedTerm)).length})</div>
+              </div>
+              <div>
+                <div style={{ color: 'var(--muted)', marginBottom: '2px' }}>TF-IDF</div>
+                <div style={{ color: 'var(--accent3)', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700 }}>{s.score.toFixed(3)}</div>
+                <div style={{ color: 'var(--muted)', fontSize: '11px' }}>중요도 점수</div>
+              </div>
+            </div>
+          </div>
+        )
+      })()}
+
+      <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+        * 단어 클릭 시 TF·IDF 상세 확인 / 문서마다 같은 단어의 점수가 달라집니다
+      </div>
+    </div>
+  )
+}
+
+// ── Elasticsearch: LIKE vs ES 검색 비교 ──────────────────
+export function SearchCompareDemo() {
+  const [keyword, setKeyword] = useState('삼선')
+  const [searched, setSearched] = useState(true)
+
+  const dataset = [
+    { id: 1, text: '삼성 갤럭시 스마트폰 최신 모델' },
+    { id: 2, text: '아이폰 15 프로 애플 스마트폰' },
+    { id: 3, text: '갤럭시 버즈 블루투스 이어폰' },
+    { id: 4, text: '샤오미 홍미 노트 중국 스마트폰' },
+    { id: 5, text: 'LG 그램 노트북 경량 울트라북' },
+    { id: 6, text: '삼선 갤락시 스마트폰 (오타)' },
+  ]
+
+  // LIKE 검색: 정확히 포함된 것만
+  function likeSearch(kw: string) {
+    if (!kw) return []
+    return dataset.filter(d => d.text.includes(kw))
+  }
+
+  // ES 유사도 검색 시뮬레이션
+  function esSearch(kw: string) {
+    if (!kw) return []
+    const kwTokens = kw.split(/\s+/).filter(Boolean)
+    return dataset
+      .map(d => {
+        let score = 0
+        const dLower = d.text.toLowerCase()
+        // 완전 포함
+        if (d.text.includes(kw)) score += 3
+        // 토큰 부분 매칭
+        kwTokens.forEach(tok => {
+          if (d.text.includes(tok)) score += 1
+          // 오타 허용: 편집거리 1 시뮬레이션
+          if (tok.length > 2) {
+            for (let i = 0; i < d.text.length - tok.length + 1; i++) {
+              const sub = d.text.slice(i, i + tok.length)
+              let diff = 0
+              for (let j = 0; j < tok.length; j++) if (sub[j] !== tok[j]) diff++
+              if (diff <= 1) score += 0.5
+            }
+          }
+        })
+        return { ...d, score }
+      })
+      .filter(d => d.score > 0)
+      .sort((a, b) => b.score - a.score)
+  }
+
+  const likeResults = searched ? likeSearch(keyword) : []
+  const esResults = searched ? esSearch(keyword) : []
+
+  return (
+    <div>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        <input
+          value={keyword}
+          onChange={e => { setKeyword(e.target.value); setSearched(false) }}
+          onKeyDown={e => { if (e.key === 'Enter') setSearched(true) }}
+          placeholder='"갤럭시 폰" 또는 "삼선 갤락시" (오타) 입력..."'
+          style={{
+            flex: 1, padding: '10px 14px', borderRadius: '8px',
+            background: 'var(--surface2)', border: '1px solid var(--border)',
+            color: 'var(--text)', fontSize: '13px', outline: 'none',
+          }}
+        />
+        <button onClick={() => setSearched(true)} style={{
+          padding: '10px 20px', borderRadius: '8px',
+          background: 'var(--accent3)', color: '#000',
+          border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
+        }}>검색</button>
+      </div>
+
+      {searched && (
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          {/* LIKE */}
+          <div>
+            <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '10px' }}>
+              ✗ SQL LIKE '%{keyword}%' — {likeResults.length}건
+            </div>
+            {likeResults.length === 0 ? (
+              <div style={{ padding: '16px', background: 'rgba(255,68,68,0.08)', border: '1px solid rgba(255,68,68,0.2)', borderRadius: '8px', fontSize: '13px', color: '#ff6666' }}>
+                결과 없음
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {likeResults.map(r => (
+                  <div key={r.id} style={{ padding: '8px 12px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '6px', fontSize: '13px', color: 'var(--text)' }}>
+                    {r.text}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ES */}
+          <div>
+            <div style={{ fontSize: '12px', color: 'var(--accent)', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '10px' }}>
+              ✓ Elasticsearch — {esResults.length}건 (관련도순)
+            </div>
+            {esResults.length === 0 ? (
+              <div style={{ padding: '16px', background: 'rgba(0,255,136,0.08)', border: '1px solid rgba(0,255,136,0.2)', borderRadius: '8px', fontSize: '13px', color: 'var(--accent)' }}>
+                결과 없음
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {esResults.map((r, i) => (
+                  <div key={r.id} style={{
+                    padding: '8px 12px', background: 'var(--surface)',
+                    border: `1px solid ${i === 0 ? 'var(--accent)' : 'var(--border)'}`,
+                    borderRadius: '6px', fontSize: '13px', color: 'var(--text)',
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  }}>
+                    <span>{r.text}</span>
+                    <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '10px', color: 'var(--accent)', marginLeft: '8px', flexShrink: 0 }}>
+                      {r.score.toFixed(1)}점
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {!searched && (
+        <div style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+          * "갤럭시 폰", "삼성폰", "삼선 갤락시"(오타) 등으로 차이를 확인해보세요
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Elasticsearch: 자동완성 n-gram 시뮬레이션 ────────────
+export function AutoCompleteDemo() {
+  const [query, setQuery] = useState('')
+  const [showDetail, setShowDetail] = useState(false)
+
+  const candidates = [
+    '엘라스틱서치', '엘라스틱', '검색 엔진', '검색 최적화', '검색어 분석',
+    '역인덱스', '인덱싱', '인덱스 설계', '색인', '색인 최적화',
+    'Nori 분석기', 'n-gram', 'TF-IDF', '형태소 분석', '자동완성',
+    '풀텍스트 검색', '텍스트 분석', '토크나이저', '필터 체인',
+  ]
+
+  function getNgrams(text: string, n: number): string[] {
+    const grams: string[] = []
+    for (let i = 0; i <= text.length - n; i++) grams.push(text.slice(i, i + n))
+    return grams
+  }
+
+  function score(candidate: string, q: string): number {
+    if (!q) return 0
+    const qLower = q.toLowerCase()
+    const cLower = candidate.toLowerCase()
+    if (cLower.startsWith(qLower)) return 10
+    if (cLower.includes(qLower)) return 7
+    // n-gram 매칭
+    const qGrams = getNgrams(qLower, 2)
+    const cGrams = getNgrams(cLower, 2)
+    const matched = qGrams.filter(g => cGrams.includes(g)).length
+    return matched > 0 ? matched * 1.5 : 0
+  }
+
+  const results = query.length >= 1
+    ? candidates
+        .map(c => ({ text: c, score: score(c, query), grams: getNgrams(c, 2) }))
+        .filter(c => c.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 6)
+    : []
+
+  const queryGrams = query.length >= 2 ? getNgrams(query, 2) : []
+
+  function highlight(text: string) {
+    const lower = text.toLowerCase()
+    const q = query.toLowerCase()
+    if (lower.includes(q)) {
+      const idx = lower.indexOf(q)
+      return (
+        <>
+          {text.slice(0, idx)}
+          <mark style={{ background: 'rgba(77,159,255,0.3)', color: 'var(--accent3)', borderRadius: '2px' }}>
+            {text.slice(idx, idx + q.length)}
+          </mark>
+          {text.slice(idx + q.length)}
+        </>
+      )
+    }
+    return <>{text}</>
+  }
+
+  return (
+    <div>
+      <div style={{ position: 'relative', marginBottom: '16px' }}>
+        <input
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="검색어 입력... (예: 엘라, 색인, ngr)"
+          style={{
+            width: '100%', padding: '12px 16px', borderRadius: '8px',
+            background: 'var(--surface2)',
+            border: `1px solid ${query ? 'var(--accent3)' : 'var(--border)'}`,
+            color: 'var(--text)', fontSize: '14px', outline: 'none', boxSizing: 'border-box',
+            transition: 'border-color 0.15s',
+          }}
+        />
+        {results.length > 0 && (
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            borderRadius: '0 0 8px 8px', overflow: 'hidden',
+            boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+          }}>
+            {results.map((r, i) => (
+              <div key={i}
+                onClick={() => setQuery(r.text)}
+                style={{
+                  padding: '10px 16px', cursor: 'pointer',
+                  borderBottom: i < results.length - 1 ? '1px solid var(--border)' : 'none',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  transition: 'background 0.1s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--surface2)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                <span style={{ fontSize: '14px', color: 'var(--text)' }}>{highlight(r.text)}</span>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                  {r.score >= 10 ? 'prefix' : r.score >= 7 ? 'contains' : 'n-gram'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* n-gram 상세 보기 */}
+      <button onClick={() => setShowDetail(!showDetail)} style={{
+        background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px',
+        color: 'var(--muted)', cursor: 'pointer', fontSize: '11px',
+        padding: '4px 12px', fontFamily: 'IBM Plex Mono, monospace',
+        marginBottom: '12px',
+      }}>
+        {showDetail ? '▲ n-gram 숨기기' : '▼ n-gram 분석 보기'}
+      </button>
+
+      {showDetail && query.length >= 2 && (
+        <div style={{ padding: '14px 16px', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '8px' }}>
+          <div className="mono" style={{ fontSize: '10px', color: 'var(--accent3)', marginBottom: '8px', letterSpacing: '2px' }}>2-GRAM 분석</div>
+          <div style={{ marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--muted)' }}>"{query}" → </span>
+            <span style={{ display: 'inline-flex', gap: '4px', flexWrap: 'wrap' }}>
+              {queryGrams.map((g, i) => (
+                <span key={i} style={{
+                  padding: '2px 8px', borderRadius: '4px',
+                  background: 'rgba(77,159,255,0.15)', color: 'var(--accent3)',
+                  fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px',
+                }}>{g}</span>
+              ))}
+            </span>
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--muted)', lineHeight: 1.7 }}>
+            후보 단어들도 같은 방식으로 n-gram 분해 후 겹치는 gram 수로 유사도를 계산합니다.<br />
+            prefix 매칭 → contains 매칭 → n-gram 매칭 순으로 우선순위가 적용됩니다.
+          </div>
+        </div>
+      )}
     </div>
   )
 }

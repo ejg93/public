@@ -28,9 +28,8 @@ export default function Home() {
         fontSize: '15px',
         marginBottom: '40px',
       }}>
-        JSP · Java · Spring 5년차 개발자.<br />
-        정규직 + 프리랜서 경험 보유.<br />
-        현재 Next.js로 스택 확장 중.
+        JSP · Java · Spring 5년차 개발자<br />
+        정규직 + 프리랜서 경험 보유<br />
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

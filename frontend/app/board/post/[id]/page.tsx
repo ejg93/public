@@ -2,7 +2,7 @@
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { POSTS } from '../../posts'
-import { BadButtonsDemo, GoodButtonsDemo, KakaoDarkPatternDemo, KakaoEmojiDemo, ButtonFeedbackDemo, CapsLockDemo, InstallCheckboxDemo, KioskDemo } from '../../demos'
+import { BadButtonsDemo, GoodButtonsDemo, KakaoDarkPatternDemo, KakaoEmojiDemo, ButtonFeedbackDemo, CapsLockDemo, InstallCheckboxDemo, KioskDemo, InvertedIndexDemo, SearchCompareDemo, AutoCompleteDemo } from '../../demos'
 
 const DEMOS: Record<string, React.ReactNode> = {
   'bad-buttons':         <BadButtonsDemo />,
@@ -13,6 +13,9 @@ const DEMOS: Record<string, React.ReactNode> = {
   'capslock-demo':       <CapsLockDemo />,
   'install-checkbox':    <InstallCheckboxDemo />,
   'kiosk-demo':          <KioskDemo />,
+  'es-inverted-index':   <InvertedIndexDemo />,
+  'es-search-compare':   <SearchCompareDemo />,
+  'es-autocomplete':     <AutoCompleteDemo />,
 }
 
 const CATEGORY_COLOR: Record<string, string> = {
@@ -138,7 +141,9 @@ export default function PostPage() {
             }
             return (
               <div key={i} style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 2 }}>
-                {block.content.split('\n').map((line, j) => parseLine(line, j))}
+                  {block.content.split('\n').map((line, j) =>
+                      line.trim() === '' ? <br key={j} /> : parseLine(line, j)
+                  )}
               </div>
             )
           }
