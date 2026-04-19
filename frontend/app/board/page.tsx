@@ -27,8 +27,7 @@ export default function BoardPage() {
           <span style={{ color: 'var(--accent)' }}> LOG</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.8 }}>
-          UI/UX 설계, 개발 경험, 그리고 생각들.<br />
-          <span className="mono" style={{ fontSize: '11px' }}>코드가 포함된 글은 직접 실행해볼 수 있습니다.</span>
+          개발 관련 이런저런 생각들<br />
         </p>
       </div>
 

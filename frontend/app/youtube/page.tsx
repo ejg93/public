@@ -102,7 +102,7 @@ function isQuotaError(msg: string): boolean {
 }
 
 export default function YoutubePage() {
-  const [url, setUrl] = useState('https://www.youtube.com/watch?v=4WYFN5CnXCg')
+  const [url, setUrl] = useState('')
   const [comments, setComments] = useState<Comment[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -229,9 +229,9 @@ export default function YoutubePage() {
           <span style={{ color: 'var(--text)' }}> COMMENTS</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.8 }}>
-          유튜브가 제공하지 않는 정렬 · 필터 · 키워드 검색<br />
+          유튜브 댓글 정렬 및 검색<br />
           <span className="mono" style={{ fontSize: '11px' }}>
-            ※ YouTube API 정책상 최대 1,000개 수집 / 하루 할당량 소진 시 이용 불가
+            ※ YouTube API 최대 1000개 사용가능 / 하루 할당량 소진 시 이용 불가
           </span>
         </p>
       </div>
