@@ -4,8 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="2c12a7ce-bb4d-4099-bda0-6194037dc01a" name="변경" comment="gitignore">
-      <change beforePath="$PROJECT_DIR$/backend/src/main/resources/application.properties.template" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties.template" afterDir="false" />
+    <list default="true" id="2c12a7ce-bb4d-4099-bda0-6194037dc01a" name="변경" comment="ㅁㄴㅇㄹ">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -32,6 +32,65 @@
     <commands />
     <urls />
   </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.1464258881334286" />
+      <entry key="MS500" value="2.738595860005714" />
+      <entry key="S2" value="4.901473235191589" />
+      <entry key="S5" value="6.075039654965404" />
+      <entry key="S10" value="6.757073432387048" />
+      <entry key="S30" value="7.479911212908259" />
+      <entry key="S60" value="7.722317465746912" />
+      <entry key="M2" value="7.856321496065556" />
+      <entry key="M5" value="7.941307880832159" />
+      <entry key="M10" value="7.970453898506216" />
+      <entry key="M15" value="7.981106651702143" />
+      <entry key="M30" value="8.132727741365342" />
+      <entry key="H1" value="10.111430125197288" />
+      <entry key="H2" value="16.3162105830286" />
+      <entry key="H4" value="24.550905736808794" />
+      <entry key="D1" value="37.41122234102817" />
+      <entry key="W1" value="40.461585478363496" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.0564580266929775" />
+      <entry key="MS500" value="2.579713314097852" />
+      <entry key="S2" value="4.824704766797332" />
+      <entry key="S5" value="6.03890999692309" />
+      <entry key="S10" value="6.73773730401831" />
+      <entry key="S30" value="7.47307590818244" />
+      <entry key="S60" value="7.718838827798555" />
+      <entry key="M2" value="7.8545656640518935" />
+      <entry key="M5" value="7.940601403601884" />
+      <entry key="M10" value="7.970099952488447" />
+      <entry key="M15" value="7.9808704955269425" />
+      <entry key="M30" value="8.132607725620597" />
+      <entry key="H1" value="10.111359560104832" />
+      <entry key="H2" value="16.316160264522686" />
+      <entry key="H4" value="24.550871057835135" />
+      <entry key="D1" value="37.41121415431284" />
+      <entry key="W1" value="40.46158422840232" />
+    </decayedShown>
+  </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="QODANA_PROBLEMS_VIEW_TAB" />
   </component>
@@ -44,40 +103,40 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RequestMappingsPanelOrder0": "0",
-    "RequestMappingsPanelOrder1": "1",
-    "RequestMappingsPanelWidth0": "75",
-    "RequestMappingsPanelWidth1": "75",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "Spring Boot.PortfolioApplication.executor": "Run",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "main",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/EJG/Downloads/portfolio/backend/src/main/resources",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "모듈",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.2",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.grazie",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "C:\\Users\\EJG\\AppData\\Roaming\\JetBrains\\IntelliJIdea2026.1\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RequestMappingsPanelOrder0&quot;: &quot;0&quot;,
+    &quot;RequestMappingsPanelOrder1&quot;: &quot;1&quot;,
+    &quot;RequestMappingsPanelWidth0&quot;: &quot;75&quot;,
+    &quot;RequestMappingsPanelWidth1&quot;: &quot;75&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;Spring Boot.PortfolioApplication.executor&quot;: &quot;Run&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/EJG/Downloads/portfolio/backend/src/main/resources&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;모듈&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.grazie&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\IntelliJ IDEA 2025.2.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\EJG\Downloads\portfolio\backend\src\main\resources" />
@@ -109,10 +168,13 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.32098.37" />
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-IU-253.32098.37" />
+        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.25134.95" />
+        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.25134.95" />
       </set>
     </attachedChunks>
+  </component>
+  <component name="StructureViewState">
+    <option name="selectedTab" value="논리" />
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="디폴트 작업">
@@ -144,7 +206,37 @@
       <workItem from="1774875938230" duration="8664000" />
       <workItem from="1775023465006" duration="607000" />
       <workItem from="1775286879219" duration="1351000" />
-      <workItem from="1775288268847" duration="7371000" />
+      <workItem from="1775288268847" duration="7669000" />
+      <workItem from="1775552999300" duration="1004000" />
+      <workItem from="1776407396443" duration="7559000" />
+      <workItem from="1776415017358" duration="142000" />
+      <workItem from="1776493581846" duration="715000" />
+      <workItem from="1776501610647" duration="2390000" />
+      <workItem from="1776579503758" duration="3984000" />
+      <workItem from="1776602299079" duration="4379000" />
+      <workItem from="1776931962390" duration="2406000" />
+      <workItem from="1777191569805" duration="4768000" />
+      <workItem from="1777271802867" duration="1309000" />
+      <workItem from="1777280686431" duration="2235000" />
+      <workItem from="1777452675910" duration="5744000" />
+      <workItem from="1777532195412" duration="1985000" />
+      <workItem from="1777894941262" duration="22000" />
+      <workItem from="1778127110860" duration="2555000" />
+      <workItem from="1778804375654" duration="1384000" />
+      <workItem from="1780464802893" duration="2678000" />
+      <workItem from="1780561727925" duration="529000" />
+      <workItem from="1780726906179" duration="2357000" />
+      <workItem from="1780964842712" duration="2797000" />
+      <workItem from="1781050780123" duration="3083000" />
+      <workItem from="1781136882699" duration="598000" />
+      <workItem from="1781139637518" duration="16000" />
+      <workItem from="1781756656868" duration="2199000" />
+      <workItem from="1781827201504" duration="583000" />
+      <workItem from="1781932363704" duration="1301000" />
+      <workItem from="1781961363927" duration="13000" />
+      <workItem from="1781961587642" duration="615000" />
+      <workItem from="1782102577523" duration="7127000" />
+      <workItem from="1782184933097" duration="596000" />
     </task>
     <task id="LOCAL-00001" summary="UI,UX 게시물2">
       <option name="closed" value="true" />
@@ -170,25 +262,70 @@
       <option name="project" value="LOCAL" />
       <updated>1775299211232</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="gitignore">
+      <option name="closed" value="true" />
+      <created>1775299847050</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1775299847050</updated>
+    </task>
+    <task id="LOCAL-00005" summary="추가 게시물">
+      <option name="closed" value="true" />
+      <created>1776414311932</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1776414311932</updated>
+    </task>
+    <task id="LOCAL-00006" summary="ㅁㄴㅇㄹ">
+      <option name="closed" value="true" />
+      <created>1782117563996</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1782117563996</updated>
+    </task>
+    <task id="LOCAL-00007" summary="ㅁㄴㅇㄹ">
+      <option name="closed" value="true" />
+      <created>1782118071103</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1782118071103</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="UI,UX 게시물" />
     <MESSAGE value="UI,UX 게시물2" />
     <MESSAGE value="UI,UX 게시물3" />
     <MESSAGE value="gitignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="gitignore" />
+    <MESSAGE value="추가 게시물" />
+    <MESSAGE value="ㅁㄴㅇㄹ" />
+    <option name="LAST_COMMIT_MESSAGE" value="ㅁㄴㅇㄹ" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
           <url>file://$PROJECT_DIR$/frontend/app/ai-battle/page.tsx</url>
-          <line>349</line>
+          <line>355</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>
       </breakpoints>

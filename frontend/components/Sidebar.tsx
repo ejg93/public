@@ -8,8 +8,9 @@ const menus = [
   { label: 'ABOUT ME',    href: '/about',        icon: '◉', desc: 'EXPERIMENT_00' },
   { label: 'DEV LOG',     href: '/board',        icon: '✍', desc: 'EXPERIMENT_01' },
   { label: 'AI BATTLE',   href: '/ai-battle',    icon: '⚔', desc: 'EXPERIMENT_02' },
-  { label: 'PUBLIC DATA', href: '/public-data',  icon: '◈', desc: 'EXPERIMENT_03' },
+  { label: 'JOB RADAR',   href: '/public-data',  icon: '◈', desc: 'EXPERIMENT_03' },
   { label: 'YT COMMENTS', href: '/youtube',      icon: '▶', desc: 'EXPERIMENT_04' },
+  { label: 'STOCK SIM',   href: '/stock',         icon: '📈', desc: 'EXPERIMENT_05' },
 ]
 
 export default function Sidebar() {

@@ -1,11 +1,10 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { SPRING } from '@/lib/api'
 
 type Role = 'user' | 'assistant'
 type Message = { role: Role; content: string }
 type PanelMsg = { from: 'ai1' | 'ai2' | 'human'; text: string; tokens?: number; groupId?: number }
-
-const SPRING = process.env.NEXT_PUBLIC_SPRING_URL || 'http://localhost:8080'
 const AI1_COLOR = 'var(--accent)'
 const AI2_COLOR = 'var(--accent2)'
 
@@ -91,7 +90,14 @@ export default function AIBattle() {
   const ai1ScrollRef = useRef<HTMLDivElement>(null)
   const ai2ScrollRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { setLog(loadHistory()) }, [])
+  useEffect(() => {
+    const history = loadHistory()
+    setLog(history)
+    // 기존 history에서 최대 groupId 찾아서 counter 세팅
+    const maxGroupId = history.reduce((max, m) =>
+        m.groupId !== undefined ? Math.max(max, m.groupId) : max, -1)
+    groupCounter.current = maxGroupId + 1
+  }, [])
   useEffect(() => { logEndRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [log])
 
   // 클릭 시 해당 groupId 답변으로 스크롤

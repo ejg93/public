@@ -35,7 +35,7 @@ export default function Home() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {[
           { label: 'AI BATTLE', desc: 'Claude Opus vs Sonnet 토론 배틀', href: '/ai-battle', color: 'var(--accent)' },
-          { label: 'PUBLIC DATA', desc: '공공데이터 시각화', href: '/public-data', color: 'var(--accent3)' },
+          { label: 'JOB RADAR', desc: '사람인 IT 구인 · 거리/급여/경력 정렬', href: '/public-data', color: 'var(--accent3)' },
         ].map(item => (
           <a key={item.href} href={item.href} style={{
             display: 'flex',

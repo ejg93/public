@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 
-const SPRING = process.env.NEXT_PUBLIC_SPRING_URL || 'http://localhost:8080'
+import { SPRING } from '@/lib/api'
 
 type Reply = {
   id: string
@@ -222,7 +222,7 @@ export default function YoutubePage() {
       {/* 헤더 */}
       <div style={{ marginBottom: '32px' }}>
         <div className="mono" style={{ fontSize: '11px', color: '#ff4444', letterSpacing: '4px', marginBottom: '8px' }}>
-          EXPERIMENT_03
+          EXPERIMENT_04
         </div>
         <h1 className="display" style={{ fontSize: '52px', lineHeight: 1, marginBottom: '8px' }}>
           <span style={{ color: '#ff4444' }}>YT</span>
