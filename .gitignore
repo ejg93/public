@@ -1,0 +1,15 @@
+# IDE
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+*.env
+.env*
+
+# 브라우저 저장 스크래핑 참고자료 (임시)
+*html/
+*html_files/
