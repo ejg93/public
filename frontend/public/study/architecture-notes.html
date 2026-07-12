@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>아키텍처 학습노트</title>
+<style>
+  :root{
+    --bg:#0F2036;
+    --bg-2:#0B1930;
+    --panel:#152B47;
+    --panel-2:#1B3958;
+    --line:#2A4A6E;
+    --line-soft:#1F3958;
+    --ink:#E8F1FA;
+    --ink-dim:#8FAAC7;
+    --ink-faint:#5E7FA0;
+    --accent:#FFC24B;
+    --accent-2:#68E3C4;
+    --accent-3:#7BA9FF;
+    --danger:#FF8A80;
+    --radius:10px;
+    --fs-base:15px;
+    font-size:var(--fs-base);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+
+  /* ---------- Header ---------- */
+  header.app-bar{
+    position:sticky; top:0; z-index:40;
+    background:rgba(11,25,48,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .app-bar-row{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    max-width:760px; margin:0 auto;
+  }
+  .icon-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    width:38px; height:38px; border-radius:8px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px; cursor:pointer; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .icon-btn:active{background:var(--panel-2);}
+  .app-title{
+    flex:1; min-width:0;
+  }
+  .app-title .eyebrow{
+    font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;
+  }
+  .app-title h1{
+    font-size:15px; margin:1px 0 0; font-weight:700; color:var(--ink);
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .progress-pill{
+    font-size:11px; color:var(--ink-dim);
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:20px; padding:5px 10px; flex-shrink:0;
+    display:flex; align-items:center; gap:5px;
+  }
+  .progress-pill b{color:var(--accent); font-weight:700;}
+  .progress-track{
+    height:3px; background:var(--line-soft); position:relative; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:0%; background:linear-gradient(90deg,var(--accent-3),var(--accent-2));
+    transition:width .1s linear;
+  }
+  .toolbar-row{
+    display:flex; gap:6px; padding:0 12px 10px; max-width:760px; margin:0 auto;
+    overflow-x:auto;
+  }
+  .chip-btn{
+    font-size:11.5px; color:var(--ink-dim); background:var(--panel);
+    border:1px solid var(--line); border-radius:20px; padding:6px 11px;
+    white-space:nowrap; cursor:pointer; -webkit-tap-highlight-color:transparent;
+  }
+  .chip-btn:active{background:var(--panel-2); color:var(--ink);}
+
+  /* ---------- Drawer ---------- */
+  .scrim{
+    position:fixed; inset:0; background:rgba(4,10,20,0.6);
+    z-index:49; opacity:0; pointer-events:none; transition:opacity .18s ease;
+  }
+  .scrim.open{opacity:1; pointer-events:auto;}
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:82vw; max-width:320px;
+    background:var(--bg-2); border-right:1px solid var(--line);
+    z-index:50; transform:translateX(-100%); transition:transform .2s ease;
+    display:flex; flex-direction:column;
+  }
+  .drawer.open{transform:translateX(0);}
+  .drawer-head{
+    padding:16px 16px 10px; border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .drawer-head .eyebrow{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;}
+  .drawer-head h2{font-size:14px; margin:2px 0 0;}
+  .drawer-list{overflow-y:auto; padding:8px 0 20px; flex:1;}
+  .drawer-stage{
+    font-size:10.5px; letter-spacing:.08em; color:var(--ink-faint);
+    padding:12px 16px 4px; text-transform:uppercase;
+  }
+  .drawer-link{
+    display:flex; align-items:center; gap:8px;
+    width:100%; text-align:left; background:none; border:none; color:var(--ink-dim);
+    font-size:13px; padding:8px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    line-height:1.4;
+  }
+  .drawer-link:active{background:var(--panel);}
+  .drawer-link .dot{
+    width:6px; height:6px; border-radius:50%; background:var(--line); flex-shrink:0;
+  }
+  .drawer-link.done .dot{background:var(--accent-2);}
+  .drawer-link.done{color:var(--ink);}
+
+  /* ---------- Layout ---------- */
+  main{max-width:760px; margin:0 auto; padding:18px 14px 40px;}
+  .intro{
+    padding:4px 4px 20px; border-bottom:1px dashed var(--line); margin-bottom:18px;
+  }
+  .intro h1{
+    font-size:21px; margin:0 0 8px; color:var(--ink); letter-spacing:-.01em;
+  }
+  .intro blockquote{margin:0; padding-left:12px; border-left:2px solid var(--accent-2); color:var(--ink-dim); font-size:13px;}
+
+  /* ---------- Stage ---------- */
+  .stage{
+    border:1px solid var(--line); border-radius:var(--radius);
+    margin-bottom:14px; overflow:hidden; background:rgba(21,43,71,0.35);
+  }
+  .stage-toggle{
+    width:100%; display:flex; align-items:center; gap:10px;
+    background:var(--panel); border:none; color:var(--ink);
+    padding:13px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent;
+  }
+  .stage-badge{
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:11px; font-weight:700; color:var(--bg);
+    background:var(--accent); border-radius:6px; padding:3px 7px; flex-shrink:0;
+  }
+  .stage-toggle h2{font-size:14.5px; margin:0; flex:1; font-weight:700;}
+  .stage-chevron{color:var(--ink-faint); transition:transform .18s ease; font-size:12px;}
+  .stage.open .stage-chevron{transform:rotate(90deg); color:var(--accent-2);}
+  .stage-body{display:none; padding:6px 14px 14px;}
+  .stage.open .stage-body{display:block;}
+  .stage-flow{font-size:13.5px; color:var(--ink-dim); margin-bottom:8px;}
+
+  /* ---------- Topic (details) ---------- */
+  details.topic{
+    border:1px solid var(--line-soft); border-radius:8px; margin:8px 0;
+    background:rgba(11,25,48,0.5);
+  }
+  details.topic > summary{
+    list-style:none; cursor:pointer; padding:10px 12px;
+    display:flex; align-items:center; gap:10px; -webkit-tap-highlight-color:transparent;
+  }
+  details.topic > summary::-webkit-details-marker{display:none;}
+  .chk-wrap{flex-shrink:0; display:flex; align-items:center;}
+  .chk-wrap input{
+    appearance:none; -webkit-appearance:none; width:19px; height:19px;
+    border:1.5px solid var(--ink-faint); border-radius:5px; background:transparent;
+    cursor:pointer; position:relative; flex-shrink:0;
+  }
+  .chk-wrap input:checked{background:var(--accent-2); border-color:var(--accent-2);}
+  .chk-wrap input:checked::after{
+    content:""; position:absolute; left:5px; top:1px; width:5px; height:10px;
+    border:solid var(--bg-2); border-width:0 2px 2px 0; transform:rotate(45deg);
+  }
+  .topic-title{flex:1; font-size:13.5px; font-weight:600; color:var(--ink);}
+  details.topic[open] .topic-title{color:var(--accent-3);}
+  .topic-chevron{color:var(--ink-faint); font-size:11px; transition:transform .18s ease;}
+  details.topic[open] .topic-chevron{transform:rotate(90deg);}
+  .topic-content{padding:2px 14px 14px 41px; font-size:13.5px;}
+
+  /* ---------- Markdown element styling ---------- */
+  .topic-content h4, .stage-flow h4{font-size:13px; color:var(--accent-2); margin:14px 0 6px;}
+  .topic-content p, .stage-flow p{margin:8px 0; color:var(--ink);}
+  .topic-content strong, .stage-flow strong{color:var(--accent);}
+  .topic-content blockquote, .stage-flow blockquote{
+    margin:10px 0; padding:8px 12px; border-left:3px solid var(--accent-2);
+    background:rgba(104,227,196,0.06); color:var(--ink-dim); font-size:13px; border-radius:0 6px 6px 0;
+  }
+  .topic-content ul, .topic-content ol, .stage-flow ul, .stage-flow ol{padding-left:20px; margin:8px 0;}
+  .topic-content li, .stage-flow li{margin:4px 0;}
+  .topic-content hr, .stage-flow hr{
+    border:none; border-top:1px dashed var(--line); margin:16px 0;
+  }
+  .topic-content code, .stage-flow code{
+    font-family:"SFMono-Regular",Consolas,monospace; font-size:12px;
+    background:var(--panel-2); color:var(--accent-2); padding:1px 5px; border-radius:4px;
+  }
+  .topic-content pre, .stage-flow pre{
+    background:#081627; border:1px solid var(--line); border-radius:8px;
+    padding:12px; overflow-x:auto; margin:10px 0;
+  }
+  .topic-content pre code, .stage-flow pre code{background:none; padding:0; color:#CFE8E0; font-size:12px; line-height:1.55;}
+  .table-wrap{overflow-x:auto; margin:12px 0; border:1px solid var(--line); border-radius:8px;}
+  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:340px;}
+  thead th{
+    background:var(--panel-2); color:var(--accent-2); text-align:left;
+    padding:8px 10px; white-space:nowrap; border-bottom:1px solid var(--line);
+  }
+  tbody td{padding:7px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-dim); vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
+
+  footer.credit{
+    max-width:760px; margin:20px auto 0; padding:14px; text-align:center;
+    color:var(--ink-faint); font-size:11px; border-top:1px dashed var(--line);
+  }
+  ::selection{background:var(--accent); color:#0B1930;}
+</style>
+</head>
+<body>
+
+<header class="app-bar">
+  <div class="app-bar-row">
+    <button class="icon-btn" id="drawerOpenBtn" aria-label="목차">☰</button>
+    <div class="app-title">
+      <div class="eyebrow">STUDY NOTES</div>
+      <h1>아키텍처 학습노트</h1>
+    </div>
+    <div class="progress-pill"><b id="doneCount">0</b>/<span id="totalCount">0</span> 완료</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="scrollFill"></div></div>
+  <div class="toolbar-row">
+    <button class="chip-btn" id="expandAllBtn">전체 펼치기</button>
+    <button class="chip-btn" id="collapseAllBtn">전체 접기</button>
+    <button class="chip-btn" id="fontMinusBtn">가− </button>
+    <button class="chip-btn" id="fontPlusBtn">가+</button>
+    <button class="chip-btn" id="resetProgressBtn">진행률 초기화</button>
+  </div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+<nav class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div>
+      <div class="eyebrow">목차</div>
+      <h2>Contents</h2>
+    </div>
+    <button class="icon-btn" id="drawerCloseBtn" aria-label="닫기">✕</button>
+  </div>
+  <div class="drawer-list" id="drawerList"></div>
+</nav>
+
+<main id="mainContent">
+  <div class="intro" id="introBlock"></div>
+  <div id="stagesRoot"></div>
+</main>
+
+<footer class="credit">코딩하는기술사 (@codingpe) 영상 정리 · 학습용 개인 노트</footer>
+
+<script type="text/markdown" id="source-md">
+# Architecture Study Notes
+> 코딩하는기술사 (@codingpe) 영상 정리
+
+---
+
+## 1단계 — 아키텍처 철학 기초
+
+### 1. Tier vs Layer
+> 개발자 필독 | 티어와 레이어 구분 #개발자개념장착 (5분 32초)
+
+| 구분 | Tier | Layer |
+|------|------|-------|
+| 원래 뜻 | 층, 단계 | 층, 겹 |
+| 관점 | **물리적** 분리 | **논리적** 분리 |
+| 위치 | 다른 서버 / 프로세스 | 같은 소프트웨어 구성 내 |
+| 통신 | 네트워크 호출 | 함수 호출 |
+| 예시 | Client ↔ Server ↔ DB | Controller → Service → Repository |
+
+**Tier** : SW System을 구성하는 물리적으로 분리된 실행 계층
+- 네트워크로 연결 → 요청/응답이 양방향으로 오감
+```
+[Client] ↔ [Server] ↔ [DB]
+```
+
+**Layer** : SW 구성을 역할과 책임에 따라 논리적으로 나눈 구조
+- 함수 호출로 연결 → **의존 방향이 단방향** (상위 → 하위만 호출, 역방향 금지)
+```
+Presentation (Controller)
+      ↓ 함수 호출
+  Business (Service)
+      ↓ 함수 호출
+ Data Access (Repository)
+```
+
+> **핵심 차이**: Tier는 ↔ (네트워크 왕복), Layer는 → (의존 단방향)  
+> Repository가 Service를 직접 호출하면 Layer 위반 — 의존성 역전이 필요한 경우 DIP 패턴 사용
+
+> 둘은 독립적 — 1-Tier 안에 3-Layer 가능, 3-Tier 각각이 또 내부 Layer 가질 수 있음
+
+**Tier 역사: 2-Tier (Fat Client 시대, 1990년대 ~ 2000년대 초)**
+
+```
+[클라이언트 (Fat Client)]   ← 1st Tier
+  설치형 데스크톱 .exe
+  화면 + 업무로직 + SQL 전부 클라이언트에 존재
+       ↕ 직접 연결
+      [DB 서버]             ← 2nd Tier
+```
+
+- 대표 기술: Visual Basic, Delphi, PowerBuilder, C++ Builder
+- 클라이언트가 DB에 직접 접속 권한을 가짐
+
+**2-Tier의 문제점 — 공통 원인: "업무 로직이 클라이언트에 있었기 때문"**
+
+| 문제 | 내용 |
+|------|------|
+| 보안 | 클라이언트가 DB 직접 접속 권한 보유 → DB 접속 정보 유출 시 직접 접근 가능 |
+| 유지보수 | 업무 로직이 여러 클라이언트에 분산 → 정책 변경 시 모든 클라이언트 수정·재배포 필요 |
+| 확장성 | 커넥션 풀이 클라이언트 PC마다 분산 → DB가 감당할 커넥션 수를 중앙에서 통제 불가 |
+
+> 이 문제들이 3-Tier (Server 계층 추가) 탄생의 이유
+
+> **핵심**: "통제"는 중간 계층이 있어야 가능. DB는 데이터 저장이 목적이지 트래픽 관리가 목적이 아님.  
+> 2-Tier = DB가 최전선. 커넥션 한계 초과 시 그냥 거부, 대기열/안내 없음.  
+> 3-Tier = App Server가 트래픽 통제 → DB엔 정해진 수만 연결 (커넥션 풀)
+
+**Tier 역사: 3-Tier (App Server 등장, 1990년대 후반 ~ 2000년대)**
+
+```
+[클라이언트 (화면만)]   ← 1st Tier
+       ↕ 네트워크
+  [Application Server] ← 2nd Tier  ← 업무 로직 여기로 이동
+       ↕ 네트워크
+      [DB 서버]         ← 3rd Tier
+```
+
+App Server의 역할 (2-Tier 문제 전부 해결):
+- 업무 로직을 서버로 이동 → 클라이언트 재배포 불필요
+- DB 커넥션 풀 중앙 관리 → 확장성 확보
+- 트랜잭션 관리
+- 클라이언트와 DB 사이의 보안 경계 역할
+
+> C/S 기반: Tuxedo, CORBA, COM+, 초기 EJB  
+> Web 기반: WebLogic, WebSphere (WAS) — 웹 시대로 넘어가며 주류
+
+---
+
+**웹/모바일 시대 — 구조 변화 흐름**
+
+| 시기 | 변화 |
+|------|------|
+| 2000년대 초 | 브라우저가 클라이언트가 됨 → Fat Client 사라지기 시작 |
+| RIA 시대 | ActiveX, Flash, Applet으로 브라우저가 다시 무거워짐 → 사실상 Fat Client 재현 |
+| **핵심 변화** | **브라우저는 일반적으로 DB에 직접 연결하지 않는다** (DB 드라이버 부재, 보안 정책, 계정 노출 위험) |
+| 2010년대 | HTML5 표준화 · ActiveX 퇴출 → 브라우저가 진정한 Thin Client로 / 스마트폰 앱 등장 |
+| 현재 | REST API / GraphQL이 프론트-백 경계의 표준 |
+
+> 3-Tier 원칙은 그대로 — 클라이언트 / API 서버 / DB로 이름만 바뀐 것
+
+---
+
+**현대 Architecture — N-Tier**
+
+```
+[앱 / 브라우저 클라이언트]
+       ↕ HTTPS / REST / GraphQL
+      [API 서버]
+           ↕
+    [캐시 / 메시지큐]
+           ↕
+      [DB / 저장소]
+```
+
+- N-Tier = 3-Tier 이상으로 계층이 늘어난 구조
+- 캐시, 메시지큐, 인증 서버 등이 별도 Tier로 분리
+- MSA에서는 여러 개의 3-Tier 서비스가 공존
+
+> Tier가 늘수록 유연성↑ 복잡성↑ — 적절한 수준이 중요
+
+**Tier "물리적 분리"의 현대적 해석**
+- 고전: 기계(서버)가 물리적으로 다름
+- 현대 기준: **네트워크 없이는 통신 불가능한 경계**가 존재하면 Tier로 취급
+- Docker 컨테이너도 Tier — 같은 기기여도 HTTP/TCP 쳐야 통신 가능
+- 판단 기준: `네트워크 호출 필요?` → YES = Tier, `함수 호출로 끝?` → YES = Layer
+
+```
+실제 사례 (Spring + MyBatis 환경):
+[브라우저] ↔ [Spring 서버] ↔ [MySQL]   ← Tier (네트워크 경계)
+              ↑ 서버 내부
+         Controller (@Controller)
+              ↓
+          Service (@Service / ServiceImpl)
+              ↓
+         Repository (@Mapper / MyBatis)    ← Layer (함수 호출)
+```
+
+**Layer 단방향이어야 하는 이유**
+- 역방향 호출 시 **순환 의존** 발생 → 수정 한 곳이 전체에 영향
+- 계층 간 **책임 경계 붕괴** → 어디서 뭘 해야 하는지 모호
+- **테스트 불가** → Repository 단위 테스트하려면 Service, Controller까지 올려야 함
+- `Service` 인터페이스 + `ServiceImpl` 구현체 분리 = 상위 계층이 구현체가 아닌 **추상에만 의존**하도록 강제 (각 계층은 자기 바로 아래 인터페이스만 알면 됨)
+
+---
+
+**[심화] 웹 vs 게임 통신 방식 비교**
+
+| | 웹 | 실시간 게임 |
+|--|--|--|
+| 연결 | 요청마다 새로 (HTTP) | 상시 유지 (TCP Socket / WebSocket) |
+| 상태 유지 | 세션ID 쿠키 | 연결 자체가 상태 |
+| 프로토콜 | TCP | 위치/이펙트 → UDP, 결제/채팅 → TCP |
+
+**HTTP는 Stateless** — 요청/응답 후 연결 끊김. 로그인 유지는 세션ID 쿠키로 흉내냄.
+
+**게임 데이터 분리:**
+```
+서버 보유 (검증 필요): 위치, 체력, 골드, 스킬 판정
+클라 보유 (렌더링용): 스킨, 모델, 이펙트, 미니맵
+→ 커스텀 스킨이 본인 화면에만 적용되는 이유
+```
+
+**UDP 쓰는 이유** — 위치 패킷 하나 손실돼도 다음 프레임에 새 위치 옴. 재전송 기다리는 딜레이가 더 치명적.  
+**보간(interpolation)** 으로 손실된 위치 추정. 스킬 적중 판정은 서버가 최종 결정.  
+→ "분명히 피했는데 맞음" = 핑 차이 + UDP 손실 + 서버 판정 타이밍 차이
+
+**[심화] 브라우저 제약**
+
+브라우저 = 샌드박스. TCP/UDP 직접 못 씀. 실시간 연결 우회책만 허용:
+- `WebSocket` — HTTP 업그레이드 후 양방향 유지 (채팅, 주식차트)
+- `SSE` — 서버→클라 단방향
+- `WebRTC` — 브라우저끼리 P2P (화상통화)
+
+게임 클라이언트(.exe) = OS 위 직접 실행 → TCP/UDP 자유, 제약 없음.  
+브라우저 게임 성능 한계 / 플래시 망한 이유 = 이 샌드박스 제약 때문.
+
+---
+
+**[1번 영상 복습 질문] — 스스로 답 내보기**
+1. MSA는 몇 Tier일까? Tier와 서비스 개수는 다른 개념인가?
+2. Firebase · Supabase 같은 BaaS를 쓰면 백엔드 개발자가 필요 없어질까?
+3. 왜 CORBA·DCOM은 사라지고 REST API가 살아남았을까?
+
+---
+
+### 2. 모놀리식이 먼저입니다
+> 모놀리식이 먼저 입니다. 😊 (4분 3초)
+
+**Why MSA?**
+
+MSA는 모놀리식 아키텍처의 한계에서 출발한 해결책.  
+그 한계를 모르면 MSA도 이해할 수 없음.
+
+> "모놀리식을 제대로 해본 사람이 MSA를 제대로 씁니다"
+
+**모놀리식이 커지면 나타나는 대표적인 한계**  
+(Martin Fowler & James Lewis, 2014 / Conway's Law 기반)
+
+| 한계 | 문제 | MSA 해결책 |
+|------|------|-----------|
+| 배포 | 버튼 하나 바꿔도 전체 애플리케이션 재배포. 배포 범위·위험도 증가 | 서비스 단위 독립 배포 |
+| 확장 | 특정 기능만 과부하여도 전체 애플리케이션을 함께 확장 | 서비스 단위 독립 스케일 |
+| 협업 | 팀이 커질수록 변경 하나가 다른 팀 작업을 망침. 독립 개발 어려움 | 팀 단위 독립 개발 지원 |
+
+> 이 한계를 직접 경험해봐야 MSA의 설계 결정들이 납득됨
+
+**[추가] 모놀리식 한계 보완**
+
+| 한계 | 문제 | MSA 해결책 |
+|------|------|-----------|
+| 장애 격리 (SPOF) | 결제 모듈 하나 죽으면 전체 서비스 다운 | 서비스별 독립 장애 격리 |
+| 스케일링 비효율 | 트래픽 몰리는 기능만 키우고 싶어도 전체 애플리케이션을 스케일업해야 함 | 트래픽 몰리는 서비스만 스케일아웃 (주문 서비스만 10개 띄우기) |
+| 기술 스택 고착 | 전체가 한 언어/프레임워크에 묶임 | 서비스별 최적 스택 선택 가능 (추천 → Python, 결제 → Java) |
+
+**[추가] MSA 단점 상세**
+
+영상에서 "관리 복잡성" 으로 묶인 것의 실체:
+
+| 단점 | 내용 |
+|------|------|
+| 분산 트랜잭션 | 주문 + 결제 + 재고 동시 성공해야 하는데 중간 하나 실패 시 롤백 처리 매우 복잡 |
+| 네트워크 레이턴시 | 함수 호출이 네트워크 호출로 바뀜 → 느려짐, 실패 가능성 추가 |
+| 데이터 일관성 | 서비스마다 DB 분리 → 정합성 맞추기 어려움 |
+| 배포 파이프라인 | 서비스 수만큼 CI/CD 파이프라인 관리 |
+| 로컬 개발 | 서비스 여러 개 동시 기동해야 개발 가능 |
+
+> 결론: 모놀리식 문제 = **결합도**, MSA 문제 = **분산 복잡성**. 트레이드오프.  
+> 시스템이 충분히 크지 않으면 MSA가 오히려 일을 늘림.
+
+---
+
+**STEP 1 — 모놀리식 기본기부터**
+
+| 기본기 (토대) | 모놀리식 기본기 (메인) |
+|---|---|
+| 네트워크 (HTTP) | REST API · JSON |
+| OS (프로세스/스레드) | 인증 (세션 · JWT) |
+| 자료구조 | DB 연동 CRUD |
+| Docker 기초 | 트랜잭션 처리 |
+| | 캐싱 |
+| | DB 설계 ← MSA에서도 결국 이걸 잘해야 함 |
+
+추천 실습: Spring Boot로 CRUD + JWT 인증 + 트랜잭션 적용한 개인 프로젝트 1~2개 완성하기
+
+---
+
+**STEP 2 — 개념은 미리 알아둬도 좋습니다**
+
+> 채용공고에서 MSA 환경은 매우 흔해짐. 구현보다 먼저 개념은 알아두는 것이 좋음.
+
+**이 정도는 미리 — 개념 수준으로**
+- MSA가 왜 등장했는가
+- 서비스 분리의 기준
+- API Gateway의 역할
+- 서비스 간 통신 방식 (동기 / 비동기)
+- 분산 트랜잭션 문제
+
+**아직은 괜찮음 — 구현은 나중에**
+- Kafka 직접 구축
+- Kubernetes 운영
+- Service Mesh 설정
+- 분산 추적 (Jaeger 등)
+
+> 기본기 없이 배우면 기술 스택 암기에 그침
+
+---
+
+**STEP 3 — 기본기가 되면 MSA가 납득됩니다**
+
+> 모놀리식의 고통을 직접 겪은 사람은 MSA의 복잡한 설계 결정들이 왜 그렇게 됐는지 자연스럽게 납득됨
+
+**이때 비로소 보이는 것**
+- 트랜잭션 처리 → 분산 트랜잭션의 어려움
+- DB 설계 → 서비스별 DB 분리 이유
+- 캐싱 → 분산 캐시 전략
+- 인증 → API G/W 인증 위임 구조
+
+**이때 공부하면 효과적인 것**
+- Kafka / RabbitMQ (MSA 외에도 널리 쓰임)
+- Kubernetes · Service Mesh
+- Service Mesh (Istio 등)
+- 분산 추적 · 모니터링
+
+---
+
+**[2번 영상 복습 질문]**
+1. 모놀리식이 커질수록 나타나는 3가지 한계는?
+2. 모놀리스냐 MSA냐 — 언제 MSA로 전환을 고려해야 하는가?
+3. 모놀리식 기본기(트랜잭션, DB 설계, 캐싱, 인증)를 먼저 해야 MSA가 납득되는 이유는?
+
+---
+
+### 3. 모놀리스 vs MSA
+> 스타트업 딜레마! 모놀리스냐 MSA냐? (7분 20초)
+
+| 구분 | 모놀리스 | MSA |
+|------|----------|-----|
+| 배포 | 단순 | 복잡 |
+| 확장성 | 비효율적 | 효율적 |
+| 장애 격리 | 취약 | 우수 |
+| 기술 복잡도 | 낮음 (구조) | 높음 (운영) |
+
+**콘웨이의 법칙 (Conway's Law)**
+> 시스템의 구조는 그것을 만드는 조직의 커뮤니케이션 구조를 닮아간다는 법칙.
+
+**[3번 영상 복습 질문]**
+1. 스타트업에서 모놀리스와 MSA 중 무엇을 선택해야 하는가?
+
+    힌트 각도:
+    - 사업 불확실성 — 초기에 규모를 알 수 있는가?
+    - 트래픽 — 팀 크기보다 트래픽 폭발 가능성이 더 중요할 수도
+    - 팀 구조 — Conway's Law: 조직이 분리 안 됐으면 MSA 해도 모놀리식처럼 됨
+    - 전환 전략 — 모놀리식 먼저 → 한계 느낄 때 분리 (Martin Fowler 권장)
+    - 인프라 비용 — MSA는 Docker/K8s/Gateway 등 초반 셋업 비용 큼
+
+2. MSA에서 서비스 간 트랜잭션은 어떻게 처리해야 하는가?
+3. 수많은 MSA 서비스들은 어떤 방식으로 통신하는 것이 좋은가?
+
+---
+
+### 4. 모듈러 모놀리스
+> 모듈러 모놀리스로 시작하세요 (5분 43초)
+
+**모놀리스 시절**
+
+| 모놀리스 | 그래도 구조는 있었다 |
+|----------|---------------------|
+| 단일 코드베이스 | 모듈화 — 기능별 코드 분리 |
+| 단일 배포 단위 | MVC / 레이어드 아키텍처 |
+| 시스템이 커질수록 뒤엉킴 | 경계를 나누려는 시도는 계속 있었음 |
+
+> 모놀리스 ≠ 구조 없음. 그래도 시스템이 커지면 **덩어리가 너무 커지는 문제**는 남음.
+
+---
+
+**MSA의 등장**
+
+> "언젠가부터 너도나도 MSA로… MSA = 현대적인 아키텍처"라는 분위기
+
+- MSA의 약속: 서비스별 독립 배포, 개별 확장, 장애 격리
+- 대형 사례(Netflix·Amazon): 수백 개 마이크로서비스, 수천 명 개발자 조직, 엄청난 트래픽 규모
+
+**그러나 부작용이 서서히 드러났다**
+
+| MSA의 현실 (운영 복잡도 급증) | 팀이 작으면 역효과 |
+|-------------------------------|-------------------|
+| 네트워크 통신 / 장애 포인트 증가 | 서비스 수 > 감당 가능한 팀 수 |
+| 분산 트랜잭션 처리 | Conway's Law — 조직이 아키텍처를 결정 |
+| 모니터링·배포 파이프라인 부담 | 복잡성이 오히려 속도를 늦춤 |
+
+> "우리 팀 규모에 MSA가 맞나?"
+
+---
+
+**모듈러 모놀리스**
+
+> 그냥 모놀리스 말고, **모듈러 모놀리스**  
+> 단일 배포 단위를 유지하면서, 내부를 도메인 경계로 명확히 분리한 구조
+
+**세 가지 아키텍처 비교**
+
+| 구분 | 모놀리스 | 모듈러 모놀리스 | MSA |
+|------|----------|----------------|-----|
+| 경계 | 없음 | 도메인 경계 강제 | 독립 배포 단위 |
+| 배포 | 단일 | 단일 | 서비스별 독립 |
+| 운영 복잡도 | 낮음 | 낮음 | 높음 |
+| 특징 | 유지보수 어려움 | 도메인 분리 유지 | 개별 확장 가능 |
+
+**언제 무엇을 선택하는가?** (절대적 기준 없음)
+
+| 기준 | 모듈러 모놀리스 | MSA |
+|------|----------------|-----|
+| 팀 규모 | ~10명 이하 | 팀이 서비스별로 분리될 수 있을 때 |
+| 배포 독립성 | 불필요 or 낮음 | 서비스별 독립 배포 필수 |
+| 도메인 복잡도 | 중간 수준 | 높고, 도메인별 성장 속도가 다를 때 |
+| 장애 격리 | 불필요 or 낮음 | 서비스별 격리가 비즈니스 요구사항 |
+| 운영 역량 | 일반 수준 | 분산 시스템 운영 역량 필요 |
+
+---
+
+**전환 전략 — 모놀리스 → 모듈러 → MSA**
+
+> 모듈러 모놀리스는 MSA의 예행연습. 경계를 코드로 강제해두면 필요할 때 쪼개기가 훨씬 수월함.
+
+```
+1단계: 모놀리스 정리     → 도메인 경계 식별, 의존성 정리
+2단계: 모듈러 모놀리스   → 경계를 코드로 강제, 인터페이스 명확화
+3단계: MSA 전환 (필요시) → 경계가 이미 잡혀있음, 모듈 → 서비스 분리
+```
+
+**구현 도구**
+
+| 언어 | 도구 | 특징 |
+|------|------|------|
+| Java | Spring Modulith | Spring 공식 지원, 모듈 경계 위반 자동 감지, 이벤트 기반 모듈 간 통신 |
+| .NET | Clean Architecture + ASP.NET Core | 실무에서 가장 흔한 조합, MediatR + CQRS 패턴, 프로젝트 구조로 경계 강제 |
+| Node.js | NestJS | 모듈 시스템이 프레임워크 핵심 설계에 내장, TypeScript 기반 |
+
+> 프레임워크보다 중요한 건 **팀이 경계를 지키겠다는 합의**
+
+**자주 나오는 오해**
+
+> "모듈러 모놀리스는 MSA 가기 전 임시방편 아닌가요?"  
+> → 아님. 서비스 규모와 팀 상황에 따라 **최종 목적지**가 될 수 있음. MSA는 필연적 목표가 아님.
+
+기억할 원칙: 복잡성을 감수할 만큼 **팀과 서비스가 성장했을 때** MSA를 고려. 그 전까지는 모듈러 모놀리스가 합리적인 선택.
+
+---
+
+**[추가 메모] 모듈러 모놀리스 실제 구현**
+
+경계는 **패키지 구조 + 접근제어자**로 구현. 특별한 프레임워크 필요 없음.
+
+```
+src/main/java/com/app/
+├── user/
+│   ├── UserService.java       ← public (외부 접근 허용)
+│   └── UserRepository.java   ← package-private (외부 접근 금지)
+├── order/
+│   ├── OrderService.java      ← public
+│   └── OrderRepository.java  ← package-private
+```
+
+- `order`에서 `user.UserRepository` 직접 쓰면 컴파일 에러 → 경계 강제
+- 모듈 간 통신은 이벤트(`ApplicationEventPublisher`)로
+- Spring Modulith = 위반 시 테스트에서 잡아주는 편의도구 (필수 아님)
+
+**경계 개념은 MSA와 동일** — 차이는 경계를 코드가 막냐(모듈러 모놀리스) vs 네트워크가 막냐(MSA)
+
+**MSA 일찍 시작하면 생기는 고통 (모듈러 모놀리스는 전부 없음)**
+- 배포 파이프라인 서비스 수만큼 관리
+- 서비스 간 네트워크 실패 처리 (재시도, 타임아웃, 서킷브레이커)
+- 로컬 개발 시 서비스 여러 개 동시 기동
+- 분산 트랜잭션 (주문 성공 + 결제 실패 → 어떻게 롤백?)
+
+---
+
+## 2단계 — DB / 트랜잭션
+
+### 5. 트랜잭션 ACID
+> 백엔드 개발자라면 반드시 알아야 하는, 트랜잭션 ACID (5분 54초)
+
+**트랜잭션이란?**
+> 여러 DB 연산을 하나의 논리적 작업 단위로 묶은 것. 전부 성공하거나 전부 없던 일이 되어야 함.
+
+```
+예: 계좌이체
+1. A 계좌 -10,000원
+2. B 계좌 +10,000원
+→ 1만 성공하고 2가 실패하면? DB는 절대 그 상태로 남으면 안 됨
+```
+---
+
+**A — Atomicity (원자성)**
+
+> 트랜잭션 내 모든 연산은 전부 성공(COMMIT) 또는 전부 실패(ROLLBACK). 중간 상태 없음.
+
+- "All or Nothing"
+- 실패 시 DB는 트랜잭션 시작 전 상태로 되돌아감
+- 구현: UNDO 로그 (실패 시 이전 값으로 복구)
+
+---
+
+**C — Consistency (일관성)**
+
+> 트랜잭션 전후로 DB의 무결성 제약 조건이 항상 유지되어야 함.
+
+- 잔액이 음수가 되면 안 된다는 규칙 → 트랜잭션 후에도 유지
+- NOT NULL, UNIQUE, FK 제약 등 모두 포함
+- 비즈니스 규칙을 DB가 보장
+
+```
+잔액 >= 0 제약이 있다면:
+A 계좌 잔액 5,000원인데 10,000원 이체 시도 → 트랜잭션 거부
+```
+
+---
+
+**I — Isolation (격리성)**
+
+> 동시에 실행 중인 트랜잭션들은 서로의 중간 상태를 볼 수 없어야 함.
+
+- 트랜잭션 A가 진행 중일 때 트랜잭션 B는 A의 미완료 변경사항을 못 봄
+- **완벽한 격리 = 성능 저하** → 격리 수준(Isolation Level)으로 트레이드오프 조절
+- 다음 영상(6번)에서 격리 수준 4단계 상세 다룸
+
+| 격리 낮음 ↔ 높음 | 문제 현상 |
+|--|--|
+| 격리 낮으면 | Dirty Read, Non-Repeatable Read, Phantom Read 발생 |
+| 격리 높으면 | 동시성 낮아짐, 성능 저하 |
+
+---
+
+**D — Durability (지속성)**
+
+> 커밋된 트랜잭션의 결과는 장애가 발생해도 영구적으로 유지되어야 함.
+
+- DB 서버 다운, 정전 → 재시작 후에도 커밋된 데이터 보존
+- 구현: REDO 로그 (커밋 후 장애 시 로그로 복구)
+- `COMMIT` 응답을 받았다면 디스크에 쓰여진 것이 보장됨
+
+---
+
+**ACID 한눈에**
+
+| 속성 | 핵심 한 줄 | 구현 수단 |
+|------|-----------|----------|
+| Atomicity | 전부 or 없음 | UNDO 로그, ROLLBACK |
+| Consistency | 제약 조건 항상 유지 | DB 제약, 비즈니스 규칙 |
+| Isolation | 중간 상태 안 보임 | 락, MVCC |
+| Durability | 커밋 = 영구 보존 | REDO 로그, WAL |
+
+> ACID는 DB가 "믿을 수 있는 저장소"임을 보장하는 4가지 약속.  
+> 이 중 하나라도 깨지면 데이터 정합성 보장 불가.
+
+**Spring에서 트랜잭션**
+
+```java
+@Transactional  // 이 어노테이션 하나가 ACID 전부 보장
+public void transfer(Long fromId, Long toId, int amount) {
+    accountRepository.decrease(fromId, amount);  // 실패하면
+    accountRepository.increase(toId, amount);    // 전체 ROLLBACK
+}
+```
+
+**[5번 영상 복습 질문]**
+1. 계좌이체에서 Atomicity가 없으면 어떤 일이 생기는가?
+2. Consistency는 누가 보장하는가 — DB인가 애플리케이션인가?
+3. Isolation이 완벽하면 왜 성능이 낮아지는가?
+
+---
+
+### 6. 트랜잭션 격리수준
+> 트랜잭션 격리수준 4단계 완전 이해 (12분 19초)
+
+**핵심 면접 질문**
+> "왜 무조건 최고 수준(SERIALIZABLE)으로 설정하지 않나요?"  
+> → 격리 높을수록 락 범위 넓어짐 → 대기 트랜잭션 쌓임 → 처리량 저하. 신뢰성과 성능의 트레이드오프.
+
+---
+
+**격리가 낮을 때 생기는 문제 현상 3가지**
+
+| 현상 | 설명 | 예시 |
+|------|------|------|
+| Dirty Read | 커밋 안 된 값 읽음 | A가 롤백할 값을 B가 이미 읽어서 사용 |
+| Non-Repeatable Read | 같은 쿼리 두 번 날렸는데 결과 다름 | 트랜잭션 중 다른 트랜잭션이 UPDATE·DELETE |
+| Phantom Read | 같은 조건 두 번 조회했는데 행 수 다름 | 트랜잭션 중 다른 트랜잭션이 INSERT |
+
+```
+Dirty Read:
+  A: UPDATE money = 0           (미커밋)
+  B: SELECT money → 0 읽음
+  A: ROLLBACK → 다시 10000
+  B는 존재한 적 없는 0을 읽은 것
+
+Non-Repeatable Read:
+  B: SELECT money → 10000
+  A: UPDATE money = 5000; COMMIT
+  B: SELECT money → 5000  ← 같은 트랜잭션인데 다른 결과
+
+Phantom Read:
+  B: SELECT COUNT(*) WHERE age > 20 → 5건
+  A: INSERT 새 행 (age=25); COMMIT
+  B: SELECT COUNT(*) WHERE age > 20 → 6건  ← 유령 행 등장
+```
+
+---
+
+**격리 수준 4단계 (낮음 → 높음)**
+
+| 단계 | 수준 | Dirty Read | Non-Repeatable Read | Phantom Read | 성능 |
+|------|------|-----------|---------------------|--------------|------|
+| 1단계 | READ UNCOMMITTED | 발생 | 발생 | 발생 | 최고 |
+| 2단계 | READ COMMITTED | 방지 | 발생 | 발생 | 높음 |
+| 3단계 | REPEATABLE READ | 방지 | 방지 | 발생 | 중간 |
+| 4단계 | SERIALIZABLE | 방지 | 방지 | 방지 | 최저 |
+
+---
+
+**각 수준 설명**
+
+**READ UNCOMMITTED** — 커밋 안 된 것도 다 읽음. 실무 사용 거의 없음. Dirty Read 허용.
+
+**READ COMMITTED** — 커밋된 것만 읽음. **PostgreSQL·Oracle 기본값**. 대부분 서비스에서 충분.
+
+**REPEATABLE READ** — 트랜잭션 시작 시점 스냅샷 고정. 같은 SELECT 항상 같은 결과. **MySQL InnoDB 기본값**. MVCC로 구현.
+
+**SERIALIZABLE** — 완전 직렬 실행. 모든 문제 방지. 락 경합 심해 처리량 급락. 금융 일부 배치 처리에서만 사용.
+
+---
+
+**MVCC (Multi-Version Concurrency Control)**
+
+> MySQL InnoDB가 REPEATABLE READ를 성능 저하 없이 구현하는 방법
+
+락 없이 격리 구현:
+- 트랜잭션 시작 시점에 스냅샷 찍음 (Undo 로그에 이전 버전 보관)
+- 트랜잭션 안에서 SELECT는 스냅샷 기준으로 읽음
+- **남이 바꾼 건 스냅샷 기준으로 무시, 내가 직접 바꾼 건 즉시 반영**
+- 읽기와 쓰기가 서로 블로킹 안 함
+
+```
+B 트랜잭션 시작 → 스냅샷: money=10000
+
+A: UPDATE money=5000; COMMIT   ← DB 실제값 바뀜
+B: SELECT money → 10000        ← 남이 바꾼 건 스냅샷 기준
+
+B: UPDATE money=7000           ← 본인이 직접 바꿈
+B: SELECT money → 7000         ← 본인 변경은 즉시 반영
+
+B 트랜잭션 종료 후 새 조회 → 7000 (최신값)
+```
+
+---
+
+**실무 기본값**
+
+| DB | 기본 격리 수준 |
+|----|--------------|
+| MySQL InnoDB | REPEATABLE READ |
+| PostgreSQL | READ COMMITTED |
+| Oracle | READ COMMITTED |
+| SQL Server | READ COMMITTED |
+
+> Spring `@Transactional`은 DB 기본값 따라감. 변경 필요 시 `@Transactional(isolation = Isolation.SERIALIZABLE)`
+
+---
+
+**격리수준 적용 단위 — 테이블 아니고 트랜잭션(세션)**
+
+> 격리수준은 테이블·DB 전체에 고정되는 설정이 아님. **트랜잭션 단위**로 그때그때 다르게 걸 수 있음.
+
+```java
+@Transactional(isolation = Isolation.SERIALIZABLE)
+public void monthEndInterestBatch() { ... }   // 이 트랜잭션만 SERIALIZABLE
+
+@Transactional  // 기본값 (예: READ COMMITTED)
+public void normalTransfer() { ... }          // 평소 이체는 기본 격리로 빠르게
+```
+
+- 같은 테이블이라도 **어떤 트랜잭션이 접근하냐**에 따라 그 순간 격리수준이 다를 수 있음
+- 실무 패턴: 평상시 트래픽(이체·조회)은 기본 격리로 처리, 월말 이자 계산처럼 "계산 중 아무도 못 건드려야 하는" 배치 작업만 그 트랜잭션에 SERIALIZABLE 적용
+- 이런 배치는 보통 트래픽 적은 새벽 시간대에 짧게 실행 → 락 경합 비용 낮음
+- 세션 레벨(`SET SESSION TRANSACTION ISOLATION LEVEL ...`)로 커넥션 전체 기본값 바꾸는 것도 가능하지만, 실무에서는 필요한 트랜잭션에만 국소적으로 지정하는 게 일반적
+
+---
+
+**SELECT ... FOR UPDATE (비관적 락)**
+
+> 스냅샷 무시하고 실제 최신값 읽으면서 동시에 락 걸기. "읽고 → 판단 → 쓰는" 패턴에서 사용.
+
+```sql
+SELECT * FROM item WHERE id = 1 FOR UPDATE;
+-- 해당 행에 쓰기 락(exclusive lock)
+-- 다른 트랜잭션의 UPDATE/DELETE → 대기
+-- 다른 트랜잭션의 FOR UPDATE SELECT → 대기
+-- 다른 트랜잭션의 일반 SELECT → 통과 (스냅샷 읽기라 락 안 봄)
+```
+
+스냅샷 읽기는 "남이 바꾼 거 안 보임" → 재고 10 읽고 차감했는데 실제론 이미 0이면 문제.  
+`FOR UPDATE`는 최신값 읽고 **수정만 막음** (일반 읽기는 허용). 내 트랜잭션 끝날 때까지 다른 트랜잭션 수정 대기.
+
+```java
+// Spring Data JPA
+@Lock(LockModeType.PESSIMISTIC_WRITE)  // FOR UPDATE
+Item findByIdForUpdate(@Param("id") Long id);
+
+// 사용
+@Transactional
+public void order(Long itemId) {
+    Item item = itemRepo.findByIdForUpdate(itemId);  // 최신값 + 락
+    if (item.getStock() < 1) throw new SoldOutException();
+    item.decreaseStock();  // 안전하게 차감
+}
+```
+
+---
+
+**Gap Lock (MySQL InnoDB 전용)**
+
+> 행 자체가 아니라 **행 사이의 빈 공간**에 락 거는 것. Phantom Read 방지 목적.
+
+```
+현재 age 데이터: 10, 20, 30
+
+B: SELECT * WHERE age > 20
+   → (20초과~30 사이, 30 이후 공간에 Gap Lock 걸림)
+
+A: INSERT age=25  ← 그 공간에 삽입 시도 → B 끝날 때까지 대기
+A: INSERT age=35  ← 마찬가지 대기
+```
+
+REPEATABLE READ는 ANSI 표준상 Phantom Read 허용인데, InnoDB가 Gap Lock으로 추가 방어.  
+→ MySQL에서 3단계(REPEATABLE READ)로도 Phantom Read 거의 안 터지는 이유.
+
+PostgreSQL은 Gap Lock 없고 MVCC를 더 정교하게 구현해서 다른 방식으로 처리.
+
+---
+
+**[6번 영상 복습 질문]**
+1. Dirty Read가 왜 위험한가? 실제 사례로 설명하면?
+2. MySQL 기본값이 REPEATABLE READ인데 Phantom Read는 왜 실제로 잘 안 터지는가?
+3. SERIALIZABLE을 쓰면 안 되는 상황은? 써야 하는 상황은?
+
+---
+
+### 7. 동시성 vs 병렬성
+> 둘 다 동시에 실행? 아닙니다. 동시성과 병렬성! #개발자개념장착 (7분 21초)
+
+**완벽한 비유 — 요리사**
+
+| | Concurrency (동시성) | Parallelism (병렬성) |
+|--|--|--|
+| 요리사 | 1명 | 2명 |
+| 방식 | 양파 썰고, 물 올리고, 계란 풀고… 번갈아 처리 (Switching) | 한 명은 썰고 한 명은 끓이고 — 진짜 동시 실행 (Simultaneous) |
+
+---
+
+**CPU 코어 관점**
+
+```
+1. 동시성 (Single Core)
+[■■□□■■□□■■□□]  ← Core 1 하나가 Time Slicing
+아주 빠르게 번갈아 실행 → 사용자 눈엔 "동시"처럼 보임
+
+2. 병렬성 (Multi Core)
+Core 1 → Task A
+Core 2 → Task B
+Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 지원 필수)
+```
+
+---
+
+**핵심 구분 (가장 헷갈리는 포인트)**
+
+| 구분 | 동시성 (Concurrency) | 병렬성 (Parallelism) |
+|------|----------------------|----------------------|
+| 핵심 | 설계 / 구조 (Structure) | 실행 / 자원 (Execution) |
+| 싱글 코어 | 가능 ✅ | 불가능 ❌ |
+| 개념 | 논리적 (Logical) | 물리적 (Physical) |
+| 사례 | 싱글 코어 멀티태스킹, 이벤트 루프 기반 서버 (Node.js), 비동기 I/O 처리 | 멀티코어에서 CPU 연산 병렬처리, GPU 병렬연산, 비디오/이미지 렌더링 |
+
+---
+
+**100점짜리 모범 답안**
+
+1. 동시성(Concurrency)은 논리적인 개념으로, 여러 작업을 아주 빠르게 번갈아 가며 처리해 동시에 실행되는 것처럼 보이게 하는 것.
+2. 병렬성(Parallelism)은 물리적인 개념으로, 멀티 코어에서 실제로 동시에 작업을 수행하는 것.
+3. 동시성은 여러 작업을 겹쳐 다룰 수 있도록 구성하는 **구조와 설계**의 개념이고, 병렬성은 멀티 코어에서 작업이 **물리적으로 동시에 실행**되는 상태.
+   (동시성은 구조, 병렬성은 실행이다)
+
+---
+
+**꼬리에 꼬리를 무는 질문**
+1. 싱글 코어에서 동시성이 왜 필요한가요?
+   - 키워드: I/O 대기, CPU 유휴, Time Slicing, 이벤트 루프 / Node.js, 인터럽트
+   - I/O 대기: 디스크/네트워크 응답은 CPU 연산보다 수만~수십만 배 느림. `data = read()` 다음 줄은 data값 없으면 실행 불가 → 그 스레드만 멈춤(Blocked)
+   - CPU 유휴: 그 대기 시간 동안 CPU가 아무것도 안 하면 자원 낭비
+   - Time Slicing: CPU 시간을 잘게 쪼개서(수ms) 여러 작업에 번갈아 배정 → 유휴 시간에 딴 작업 끼워넣기
+   - 이벤트 루프(Node.js): I/O 요청 던지고 결과 안 기다리고 바로 다음 코드로 진행. 결과 오면 콜백을 이벤트 큐에 넣고, 루프가 짬날 때 꺼내 실행 (블로킹 read()와 정반대 방식)
+   - 인터럽트: I/O 완료를 CPU에 "알려주는" 하드웨어 신호. 폴링(계속 확인하러 감)과 반대로, 끝나면 그때 CPU 하던 일 끊고 처리 → 낭비 없이 대기 가능하게 해주는 장치
+2. 병렬성이 무조건 빠를까요?
+   - 키워드: Amdahl's Law, 순차 구간, 자원 경합(Contention), Cache Coherence, 작업 분할 오버헤드, 병목(Bottleneck)
+3. 파이썬은 멀티코어 환경에서도 쓰레드 병렬 처리가 안 된다던데?
+   - 키워드: GIL(Global Interpreter Lock), CPython, 프로세스 vs 스레드, multiprocessing, 동시 실행 자체를 봉쇄(자바의 synchronized와 대조)
+
+---
+
+## 3단계 — 캐시
+
+**[개념 정리] 캐싱은 어디서든 같은 원리**
+> 원본(느리고 크고 멂)에서 매번 안 가져오고, 자주 쓰는 걸 더 빠르고 가까운 곳에 임시 복사본으로 두는 것. 이 원리는 계층만 다를 뿐 CPU 캐시, DB 캐시, CDN/엣지 캐시 전부 동일.
+
+| 계층 | 원본(느림) | 캐시(빠름) |
+|---|---|---|
+| CPU | RAM | L1/L2/L3 캐시 |
+| 웹/앱 | Origin 서버, DB | CDN 엣지 서버, Redis |
+
+- 캐시는 항상 **사본이자 임시 저장소** — 원본이 진짜 정답, 캐시는 사라지거나 만료돼도 원본에서 다시 채우면 됨 (그래서 안전하게 버릴 수 있음)
+- 캐싱 가능 기준은 "중요하냐"가 아니라 **"모두에게 동일하고 자주 안 바뀌냐"** — 중요한 정보(가격표)도 모두에게 같으면 캐싱 가능, 안 중요해도 개인화됐으면 캐싱 불가
+
+**[헷갈림 주의] "매체가 빠르다"(하드웨어 성질) ≠ "캐시다"(상대적 역할)**
+- RAM 자체가 빠른 건 물리적 특성(재료 성질)이지 캐시 아님
+- 캐시는 절대적 속성이 아니라 **비교 대상에 따라 바뀌는 상대적 역할** — 디스크 대비 RAM은 캐시(OS 페이지 캐시), CPU 캐시 대비 RAM은 원본
+- 캐시 여부 = "무엇의 복사본으로 쓰이냐"로 결정, "그 매체가 원래 빠르냐"와는 별개
+
+**[개념 정리] 캐시 종류 비교 — "누구랑 공유하냐 + 얼마나 자주 갱신되냐"**
+
+| 구분 | CPU 캐시 | 폰 앱 캐시(클라이언트) | 좌석/재고 현황 캐시 | CDN 캐시(엣지) |
+|---|---|---|---|---|
+| 위치 | 프로세서 내부(L1/L2/L3) | 내 기기 저장소 | 서버측(Redis 등) | 지역별 엣지서버 |
+| 공유범위 | 그 프로세스 혼자 | 나 혼자(private) | 여러 사용자 공유(public) | 같은 지역 사용자 전부(public) |
+| 신선도(TTL) | 즉시(수 나노초 단위 갱신) | 삭제 전까지 무기한 | 초단위로 짧음(실시간성 필요) | 길게(안 바뀌는 데이터라서) |
+| 제어 주체 | 하드웨어가 자동 관리 | 사용자가 앱 설정에서 직접 삭제 | 서버가 TTL로 자동 관리 | 서버가 TTL/헤더로 관리 |
+| 예시 데이터 | 자주 쓰는 연산값 | 로그인 유지, 이전 화면(개인화) | "몇 석 남았나", 재고 수량 | 가게 사진, 메뉴, UI 리소스 |
+
+요청 흐름(웹/앱 기준): **내 폰 캐시 확인(1차) → 없으면 네트워크로 나가서 엣지 캐시 확인(2차) → 없으면 origin까지 감(3차)**. "캐시 삭제하면 다음 로딩만 느림, 그 후 다시 빨라짐"은 폰 앱 캐시 얘기, 캐치테이블 CDN 예시의 히트/미스는 엣지 캐시 얘기 — 서로 다른 계층.
+
+핵심: 캐시는 "몇 종류"로 딱 나뉘는 게 아니라, "어디 위치하냐"(계층) × "누구와 공유하고 얼마나 자주 갱신되냐"(정책) 조합으로 매번 달라지는 하나의 원리.
+
+### 8. Cache-Control
+> 헷갈리는 캐시 설정, 쉽게 정리해 드립니다 (feat Cache-Control) (20분)
+
+**캐싱 가능 여부를 가르는 3가지 축**
+
+| 축 | 질문 | HTTP 지시어 |
+|---|---|---|
+| 신선도(Freshness) | 얼마나 자주 바뀌나, 오래 캐싱해도 되나 | `max-age`, `s-maxage` (유효 초) |
+| 공유범위(Scope) | 여러 사용자가 같이 써도 되나 | `public`(공유 캐시 허용) vs `private`(개인 기기만) |
+| 민감도(Sensitivity) | 아예 저장하면 안 되는 정보인가 | `no-store`(캐싱 자체 금지) |
+
+**조합 예시**
+
+| 데이터 | 조합 | 결과 |
+|---|---|---|
+| 가게 사진, 메뉴 | public + max-age 김 | CDN 상시 캐싱 |
+| 좌석/재고 현황 | public + max-age 짧음(초단위) | 짧게 캐싱 또는 실시간 갱신 |
+| 내 예약내역 | private | CDN 못 감, 내 기기 캐시만 |
+| 결제/계좌 정보 | no-store | 어디에도 저장 안 함 |
+
+---
+
+### 9. 캐시 무효화
+> 캐시 무효화에 관한 모든 것 (14분 20초)
+
+---
+
+### 10. Cache Miss 폭발 방어
+> 대규모 트래픽에서 Cache Miss 폭발을 막는 아키텍처 전략 (10분 23초)
+
+---
+
+### 11. Redis 키 설계
+> 키 설계 잘못하면 Redis가 뻗습니다. #redis (4분 39초)
+
+---
+
+### 12. Cache Stampede 방어
+> 실무구현 - 분산 락을 이용한 Cache Stampede 방어 (17분)
+
+---
+
+## 4단계 — MSA
+
+### 13. API Gateway
+> MSA아키텍처, API 게이트웨이 어떻게 설계하시나요? (6분 27초)
+
+---
+
+### 14. Service Discovery
+> MSA에서 똑똑하게 서비스 찾기! Service Discovery (7분 41초)
+
+---
+
+### 15. Circuit Breaker
+> MSA에서 장애를 다루는 방법, 서킷 브레이커 (7분 1초)
+
+---
+
+### 16. MSA 분산 트랜잭션
+> [논문리뷰] MSA 분산 트랜잭션 설계의 기원이 되었던 40년 전 논문 (22분)
+
+---
+
+## 5단계 — 메시지 / 이벤트
+
+### 17. Kafka 기초
+> [카프카 창시자 원문 리뷰] Kafka 제대로 이해하기 (33분)
+
+---
+
+### 18. Kafka 설계 원칙
+> [논문리뷰] 카프카를 탄생시킨 핵심 설계 원칙들 (32분)
+
+---
+
+## 6단계 — 분산 시스템 고급
+
+### 19. 분산 시스템 일관성
+> 대규모 분산시스템에서의 일관성 설계 🤔 #개발자개념장착 (7분 13초)
+
+---
+
+### 20. 연쇄 장애 원인 (Google SRE Part 1)
+> 견고한 분산 시스템이 한순간에 무너지는 이유 (18분)
+
+---
+
+### 21. 연쇄 장애 방어 (Google SRE Part 2)
+> 대규모 분산 시스템의 연쇄 장애 방어 전략 (38분)
+
+---
+
+## 7단계 — 실전 설계 케이스
+
+### 22. 읽기 최적화 아키텍처
+> [Case Study] 읽기 최적화 아키텍처 (23분)
+
+---
+
+### 23. 예매 시스템 설계
+> 수백만 동시 접속을 처리하는 예매 시스템 아키텍처 설계 (18분)
+
+---
+
+### 24. 대량 쿠폰 발급 시스템
+> 아키텍처 설계: 대량 쿠폰 발급 시스템 개발3 (14분 58초)
+
+---
+
+### 25. CDN 활용
+> 동적 API도 CDN을 사용하면 좋은 이유 (9분 51초)
+
+---
+
+### 26. Pre-rendering
+> 메인페이지 Pre-rendering 아키텍처 설계와 구현 (14분 51초)
+
+---
+
+### 27. 커넥션 풀
+> 아키텍트가 알아야 할 커넥션 풀의 기본과 함정 (37분)
+
+---
+
+## 8단계 — 아키텍처 평가 / 원칙
+
+### 28. 좋은 아키텍트의 기준
+> 좋은 아키텍트는 명확한 기준을 가지고 있습니다. (10분 23초)
+
+---
+
+### 29. ATAM 평가법
+> 아키텍처는 이렇게 평가합니다. | SEI 공식 평가법 ATAM (32분)
+
+---
+
+## 부록 — 모니터링
+
+### 30. USE / RED 메트릭
+> [모니터링 시리즈] 인프라는 USE, 서비스는 RED (12분 23초)
+
+---
+
+## 부록 — 캐치테이블 예시
+> 실전 Q&A 정리 — 인기 예약(오픈런) 시스템이 순간 트래픽 스파이크를 어떻게 버티는가
+
+**문제 상황**
+- 인기 매장 예약(정오 오픈, 슬롯 소수) → 수만 명 동시 접속
+- 인터파크식 대기열 없음 — "먼저 누른 사람이 임자" 구조
+- 체감상 타이밍 승부처럼 보이지만, 이면엔 계층별 방어 설계가 있음
+
+---
+
+**1. 트래픽 흡수 계층 — CDN / 엣지 캐싱** (→ 10번 Cache Miss 폭발 방어, 25번 CDN 활용과 연결)
+
+정각에 몰리는 요청 대부분은 예약 로직과 무관한 "화면 그리는 데 필요한 데이터" (가게 사진, UI, 메뉴, 날짜 목록). 이걸 매번 origin 서버가 처리하면 예약 로직 돌기도 전에 서버가 죽음.
+
+| 개념 | 설명 |
+|------|------|
+| Origin 서버 | 진짜 로직·DB 처리하는 본서버 |
+| CDN (Content Delivery Network) | 엣지 서버들을 모아놓은 전송망 서비스 |
+| 엣지 서버 | CDN 안의 개별 지역 서버. 콘텐츠 복사본을 들고 있다가 origin 대신 응답 |
+| 캐시 히트 / 미스 | 엣지가 이미 들고 있으면 히트(origin 안 감), 없으면 미스(origin 한 번 조회 후 저장) |
+| TTL (Time To Live) | 캐시 유효기간. 사진·UI는 길게, "잔여석 여부"처럼 실시간성 있는 데이터는 짧게(또는 캐싱 안 함) — 안 그러면 마감된 날짜가 계속 "예약 가능"으로 보이는 오류 발생 |
+
+핵심: 안 바뀌는 데이터는 CDN에서 걸러내고, origin 서버는 "예약 확정" 같은 진짜 중요한 요청만 받게 만드는 것.
+
+**데이터 종류별 캐싱 정책 (앱 전체가 하나의 스위치 아님)**
+
+| 데이터 | 캐싱 여부 | 이유 |
+|---|---|---|
+| 가게 사진, 로고, 메뉴 이미지 | CDN 상시 캐싱, TTL 김 | 안 바뀜 |
+| 가게 소개, 리뷰, 위치정보 | CDN 캐싱, TTL 중간 | 자주 안 바뀜 |
+| 날짜별 "예약 가능/마감" 상태 | 캐싱 안 하거나 TTL 초단위 | 실시간성 필요 |
+| "예약하기" 버튼 누르는 순간(재고 차감) | 캐싱 절대 안 함, origin 직행 | 원자적 연산 필요 |
+
+캐치테이블은 웹이 아니라 네이티브 앱이라 UI 골격(버튼 배치, 폰트, 아이콘)은 이미 설치 시점에 로컬에 있음. CDN이 필요한 건 그때그때 바뀌는 콘텐츠(사진·메뉴·예약현황)뿐 — 이 점이 매번 HTML/JS 받아야 하는 웹(Next.js 케이스)과 다름.
+
+**중요: 캐싱은 "트래픽 몰릴 때만 켜는 스위치"가 아니라 상시 기본 설정.** 배포 시점에 헤더(`Cache-Control`)로 미리 정해두는 것이지, 실시간으로 온오프 안 함. 오히려 평소엔 꺼뒀다가 스파이크 순간에만 켜면 그 순간 다 같이 origin 몰려서 **Cache Stampede**(12번 항목) 터짐. 캐싱은 미리, 상시 걸어둬야 스파이크 순간에 이미 준비된 상태가 됨.
+
+---
+
+**2. 진짜 승부처 — 원자적 연산 (재고 차감)** (→ 6번 트랜잭션 격리수준, `SELECT ... FOR UPDATE`와 동일 원리)
+
+슬롯 1개에 수백 명이 동시에 "확인 → 차감" 시도하면, 확인과 차감 사이 텀에 여러 요청이 끼어들어 동시에 성공 처리되는 **레이스 컨디션** 발생 가능. 이게 막히지 않으면 **오버부킹**(정원 초과 확정) 터짐.
+
+```
+잘못된 방식 (원자적이지 않음):
+1. count = SELECT stock FROM slot WHERE id=1   ← A, B 둘 다 count=1 읽음
+2. if count > 0: UPDATE stock -= 1              ← A, B 둘 다 성공 처리
+→ 재고 1개인데 2명 확정 (오버부킹)
+
+원자적 방식 (락/원자연산으로 확인+차감을 한 덩어리로):
+- DB: SELECT stock FROM slot WHERE id=1 FOR UPDATE  (6번 항목의 비관적 락)
+      → 다른 트랜잭션은 이 행 UPDATE 끝날 때까지 대기, 순서 보장
+- 또는 Redis: DECR 커맨드나 Lua 스크립트로 "확인+차감"을 단일 원자 연산 처리
+```
+
+즉 캐치테이블도 겉보기엔 "먼저 누른 사람이 임자"지만, 뒤에서는 DB 락 또는 Redis 원자 연산이 순서를 강제하고 있음. 대기열 시스템(인터파크식)이 없는 대신, 이 원자적 연산 지점에서 승부가 갈림.
+
+---
+
+**3. 예측 가능한 스파이크 대비 — 오토스케일 / 커넥션 풀** (→ 27번 커넥션 풀)
+
+정오 오픈처럼 트래픽 몰리는 시각이 예측 가능하면, 실시간 트래픽보다 대응이 쉬움:
+- 오토스케일: 오픈 직전 서버 대수 미리 늘려둠
+- DB 커넥션 풀: 동시 요청 받아낼 커넥션 수 미리 넉넉히 확보 → 커넥션 부족으로 요청이 대기열에 밀리는 것 방지
+
+---
+
+**"상시 방어" vs "순간 반응" — 둘 다 있음, 역할이 다름**
+
+> Q. 캐싱도 상시, 원자적 연산 구조도 상시라면, 그 순간(스파이크)에만 작동하는 위기 대응 기능은 따로 없는 건가?
+> A. 있음. 다만 캐싱/락 "구조"는 상시 존재하고, 그 위에서 실시간 부하에 따라 강도가 달라지는 반응형 계층이 따로 있음.
+
+| 구분 | 상시 존재 (항상 켜져 있음) | 순간 반응 (실시간 부하에 따라 동적으로 작동) |
+|---|---|---|
+| 정체 | 미리 설계해둔 구조 자체 | 실시간 지표(요청량, 에러율, 지연시간) 보고 그때그때 반응 |
+| 예시 | CDN 캐싱, DB 락/원자적 연산 구조 | Rate limiting 강도 조절, Circuit Breaker 트립(15번), 오토스케일 트리거, DB 커넥션 풀 대기열 |
+| 비유 | 건물 소화 설비(항상 설치돼 있음) | 화재감지기가 실제 불 감지하면 스프링클러 작동(그 순간에만 트립) |
+
+즉 "구조"는 미리 다 짜여있고 상시 대기 중이며, 그 구조 위에서 실시간 부하를 감지해 강도를 조절하는 반응형 계층(서킷브레이커, 오토스케일 트리거, 커넥션 풀 대기)이 "그 순간의 위기"를 넘기는 역할을 함. 즉석에서 뭔가 새로 만드는 게 아니라, 미리 준비된 도구를 그 순간에 꺼내 쓰는 것에 가까움.
+
+---
+
+**왜 예전엔 예약 시스템에 문제가 잦았나**
+
+지금 열거한 계층들(CDN, 원자적 락, 오토스케일, 서킷브레이커)이 표준 관행으로 자리잡은 게 비교적 최근(2010년대 클라우드 대중화 이후)임. 예전엔:
+
+| 원인 | 문제 |
+|---|---|
+| 클라우드 이전 = 고정 서버 | 오토스케일 자체가 불가능. 물리 서버 증설에 며칠~몇 주 걸림 → 스파이크에 서버 대수 못 늘림 |
+| 캐싱 계층 미비 | 모든 요청이 origin/DB 직행 → DB가 병목되며 다운 |
+| 원자적 락 미적용 | "확인 후 차감"을 트랜잭션 없이 구현 → 레이스 컨디션으로 오버부킹 흔함 |
+| 모놀리식 구조 (1~4번 항목) | 예약 기능 하나 과부하돼도 전체 애플리케이션이 함께 죽음, 장애 격리 안 됨 |
+| 서킷브레이커 개념 미성숙 | DB가 느려지면 그 지연이 앞단까지 그대로 전파돼 연쇄 장애(20·21번 항목) |
+
+정리: 예전 실패는 "위기의 순간에 뭔가 특별한 대응을 못해서"가 아니라, 애초에 지금은 당연한 상시 구조(캐싱·원자적 락·오토스케일·서킷브레이커)들이 아직 실무 표준이 아니었거나 구축 비용이 커서 못 갖췄기 때문. 지금 시스템이 "심심하게 상시로만 돌아가는 것처럼" 보이는 이유가 바로, 예전엔 위기 때마다 즉흥 대응해야 했던 걸 지금은 미리 다 준비해놔서 위기 자체가 안 생기게 만든 것.
+
+---
+
+**4. 왜 인터파크식 대기열이 없는가**
+
+뮤지컬 티켓팅은 유입 자체를 순서대로 통제(가상대기실)해야 할 만큼 트래픽 지속시간이 김. 캐치테이블은 슬롯 수 자체가 적고 승부가 몇 초~1분 안에 끝나 대기열 만들 실익이 적음 — 대신 1·2번 계층(캐싱 + 원자적 연산)으로 짧고 굵게 버팀.
+
+**캐치테이블(시간대 예약) vs 좌석 예매 — 왜 후자가 더 오래 걸리나**
+
+캐치테이블: 확인+결제가 원자적 연산 한 방(순식간) → 중간 상태 없음.
+
+좌석 예매: 아래 이유로 한 사람이 시스템 붙잡는 시간 자체가 훨씬 김 → 순간 트래픽이 아니라 몇 분간 지속되는 트래픽이 됨 → 그래서 입장을 순서대로 흘리는 대기열이 필요해짐.
+- 좌석맵 실시간 렌더링(빈자리/선택중/팔림) + 좌석별 임시 홀드(hold) 필요 — 결제 넘어가는 몇 분간 그 좌석 남한테 안 팔리게 잠가둠(타이머 만료 시 자동 해제)
+- 동행 인원과 상의(같이 갈 자리 붙어있나), 시야 취향(가까이 vs 멀리) 비교 — 선택 자체에 고민 시간 소요, 혼자 빠르게 못 끝냄
+
+캐치테이블의 "임시 홀드" 부재(찍으면 바로 확정)가 대기열 없이도 버틸 수 있는 핵심 이유.
+
+---
+
+**용어 정리** (CDN·엣지 서버·캐시 히트/미스·TTL은 위 "1. 트래픽 흡수 계층" 표 참고, 중복 생략)
+
+| 용어 | 뜻 |
+|------|-----|
+| Traffic (트래픽) | 서버로 오가는 요청/데이터의 양·흐름. "트래픽 몰린다" = 동시 요청 수가 급증한다는 뜻 |
+| 서버시간 vs 로컬시간 오차 | 내 기기 시계와 실제 서버 판단 시간 차이. 카운트다운은 서버 시간 기준 |
+| Rate limiting | IP/기기당 요청 수 제한. 매크로 방지 겸 서버 보호 |
+| 원자적 연산 | "확인+차감"을 쪼개지지 않게 한 번에 처리 |
+| 레이스 컨디션 | 동시 요청 순서가 꼬여 충돌하는 상황 |
+| 오버부킹 | 정원 초과로 확정돼버리는 사고 |
+
+**흐름 요약**: 정각 몰리는 트래픽 → CDN이 "구경하는 부하" 걸러냄 → 오토스케일/커넥션 풀로 몰리는 시간대 미리 대비 → 마지막 승부처인 원자적 연산(DB 락 또는 Redis)이 레이스 컨디션·오버부킹 차단.
+
+---
+
+**체감 속도 차이 = "캐싱 가능한 데이터 비율" 차이**
+
+서버 성능 차이가 아니라 데이터 성격 차이. 내 포트폴리오(frontend Vercel/엣지 자동 배포, backend Railway 단일 리전)가 빠른 이유는 정적 콘텐츠 비율이 높아서. 반대로 은행(신분확인·계좌·이체)·증권(실시간 시세)이 버벅이는 이유는 캐싱 자체가 불가능한 데이터 비율이 높기 때문:
+- 개인화·보안 민감 데이터(계좌, 인증) → 캐싱 불가, 매번 origin + 다중 검증(잔액·한도·이상거래탐지) 직행
+- 실시간성 요구 데이터(주식 시세) → TTL을 극도로 짧게 잡아야 해서 캐싱 이점 거의 없음, 외부 시세 API 홉까지 추가돼 지연 누적
+
+→ "안 바뀌는 정적 데이터 비율"이 높을수록 체감 빠르고, "캐싱 못 하는 민감·실시간 데이터 비율"이 높을수록 체감 느림.
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
+<script>
+(function(){
+  var STORAGE_KEY = 'arch-notes-progress-v1';
+  var FONT_KEY = 'arch-notes-fontsize-v1';
+  var progress = {};
+  var totalTopics = 0;
+
+  function safeGet(key){
+    try{
+      var v = localStorage.getItem(key);
+      return Promise.resolve(v === null ? null : { value: v });
+    }catch(e){
+      return Promise.resolve(null);
+    }
+  }
+  function safeSet(key, value){
+    try{
+      localStorage.setItem(key, value);
+    }catch(e){
+      console.error('storage set failed', e);
+    }
+    return Promise.resolve(null);
+  }
+
+  function loadProgress(){
+    safeGet(STORAGE_KEY).then(function(res){
+      if(res && res.value){
+        try{ progress = JSON.parse(res.value); }catch(e){ progress = {}; }
+        applyProgressToDom();
+        updateProgressBadge();
+      }
+    }).catch(function(){ progress = {}; });
+  }
+
+  function saveProgress(){
+    safeSet(STORAGE_KEY, JSON.stringify(progress));
+  }
+
+  function loadFontSize(){
+    safeGet(FONT_KEY).then(function(res){
+      if(res && res.value){
+        document.documentElement.style.setProperty('--fs-base', res.value);
+      }
+    }).catch(function(){});
+  }
+
+  function applyProgressToDom(){
+    Object.keys(progress).forEach(function(id){
+      if(!progress[id]) return;
+      var chk = document.getElementById('chk-'+id);
+      if(chk) chk.checked = true;
+      var link = document.querySelector('.drawer-link[data-id="'+id+'"]');
+      if(link) link.classList.add('done');
+    });
+  }
+
+  function updateProgressBadge(){
+    var done = Object.keys(progress).filter(function(k){ return progress[k]; }).length;
+    document.getElementById('doneCount').textContent = done;
+    document.getElementById('totalCount').textContent = totalTopics;
+  }
+
+  // ---------- Parse markdown ----------
+  var rawMd = document.getElementById('source-md').textContent;
+  marked.setOptions({ gfm:true, breaks:false });
+  var html = marked.parse(rawMd);
+  var temp = document.createElement('div');
+  temp.innerHTML = html;
+  var nodes = Array.prototype.slice.call(temp.childNodes);
+
+  var introFrag = document.createDocumentFragment();
+  var stages = [];
+  var current = null;
+  var currentTopic = null;
+  var phase = 'intro';
+
+  nodes.forEach(function(node){
+    if(node.nodeType === 1 && node.tagName === 'H2'){
+      current = { headingEl: node, contentNodes: [], topics: [] };
+      stages.push(current);
+      currentTopic = null;
+      phase = 'stage';
+      return;
+    }
+    if(node.nodeType === 1 && node.tagName === 'H3' && current){
+      currentTopic = { headingEl: node, contentNodes: [] };
+      current.topics.push(currentTopic);
+      return;
+    }
+    if(phase === 'intro'){ introFrag.appendChild(node); return; }
+    if(currentTopic) currentTopic.contentNodes.push(node);
+    else if(current) current.contentNodes.push(node);
+  });
+
+  document.getElementById('introBlock').appendChild(introFrag);
+
+  var stagesRoot = document.getElementById('stagesRoot');
+  var drawerList = document.getElementById('drawerList');
+  var globalTopicIdx = 0;
+
+  stages.forEach(function(stage, sIdx){
+    var stageText = stage.headingEl.textContent.trim();
+    var badgeMatch = stageText.match(/^(\d+)\s*단계/);
+    var badgeLabel = badgeMatch ? ('S' + badgeMatch[1]) : (stageText.indexOf('부록') === 0 ? 'EX' : ('S' + (sIdx+1)));
+
+    var stageEl = document.createElement('section');
+    stageEl.className = 'stage' + (sIdx === 0 ? ' open' : '');
+    stageEl.id = 'stage-' + sIdx;
+
+    var toggle = document.createElement('button');
+    toggle.className = 'stage-toggle';
+    toggle.innerHTML =
+      '<span class="stage-badge mono">'+badgeLabel+'</span>' +
+      '<h2>'+stageText+'</h2>' +
+      '<span class="stage-chevron">▶</span>';
+    toggle.addEventListener('click', function(){
+      stageEl.classList.toggle('open');
+    });
+
+    var body = document.createElement('div');
+    body.className = 'stage-body';
+
+    if(stage.contentNodes.length){
+      var flow = document.createElement('div');
+      flow.className = 'stage-flow';
+      stage.contentNodes.forEach(function(n){ flow.appendChild(n); });
+      body.appendChild(flow);
+    }
+
+    // drawer stage group label
+    var drawerStageLabel = document.createElement('div');
+    drawerStageLabel.className = 'drawer-stage';
+    drawerStageLabel.textContent = badgeLabel + ' · ' + stageText;
+    drawerList.appendChild(drawerStageLabel);
+
+    stage.topics.forEach(function(topic, tIdx){
+      var id = sIdx + '-' + tIdx;
+      totalTopics++;
+      var topicText = topic.headingEl.textContent.trim();
+
+      var det = document.createElement('details');
+      det.className = 'topic';
+      det.id = 'topic-' + id;
+
+      var summary = document.createElement('summary');
+      summary.innerHTML =
+        '<span class="chk-wrap"><input type="checkbox" id="chk-'+id+'" aria-label="학습 완료"></span>' +
+        '<span class="topic-title">'+topicText+'</span>' +
+        '<span class="topic-chevron">▶</span>';
+      det.appendChild(summary);
+
+      var contentDiv = document.createElement('div');
+      contentDiv.className = 'topic-content';
+      topic.contentNodes.forEach(function(n){ contentDiv.appendChild(n); });
+      det.appendChild(contentDiv);
+
+      body.appendChild(det);
+
+      // checkbox behavior
+      var chk = summary.querySelector('input[type="checkbox"]');
+      chk.addEventListener('click', function(e){ e.stopPropagation(); });
+      chk.addEventListener('change', function(){
+        progress[id] = chk.checked;
+        saveProgress();
+        updateProgressBadge();
+        var link = document.querySelector('.drawer-link[data-id="'+id+'"]');
+        if(link) link.classList.toggle('done', chk.checked);
+      });
+
+      // drawer link
+      var link = document.createElement('button');
+      link.className = 'drawer-link';
+      link.setAttribute('data-id', id);
+      link.innerHTML = '<span class="dot"></span><span>'+topicText+'</span>';
+      link.addEventListener('click', function(){
+        stageEl.classList.add('open');
+        det.open = true;
+        closeDrawer();
+        setTimeout(function(){
+          det.scrollIntoView({behavior:'smooth', block:'start'});
+        }, 180);
+      });
+      drawerList.appendChild(link);
+    });
+
+    // wrap tables for horizontal scroll
+    body.querySelectorAll('table').forEach(function(t){
+      var wrap = document.createElement('div');
+      wrap.className = 'table-wrap';
+      t.parentNode.insertBefore(wrap, t);
+      wrap.appendChild(t);
+    });
+
+    stageEl.appendChild(toggle);
+    stageEl.appendChild(body);
+    stagesRoot.appendChild(stageEl);
+  });
+
+  updateProgressBadge();
+  loadProgress();
+  loadFontSize();
+
+  // ---------- Drawer open/close ----------
+  var drawer = document.getElementById('drawer');
+  var scrim = document.getElementById('scrim');
+  function openDrawer(){ drawer.classList.add('open'); scrim.classList.add('open'); }
+  function closeDrawer(){ drawer.classList.remove('open'); scrim.classList.remove('open'); }
+  document.getElementById('drawerOpenBtn').addEventListener('click', openDrawer);
+  document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
+  scrim.addEventListener('click', closeDrawer);
+
+  // ---------- Expand / collapse all ----------
+  document.getElementById('expandAllBtn').addEventListener('click', function(){
+    document.querySelectorAll('.stage').forEach(function(s){ s.classList.add('open'); });
+    document.querySelectorAll('details.topic').forEach(function(d){ d.open = true; });
+  });
+  document.getElementById('collapseAllBtn').addEventListener('click', function(){
+    document.querySelectorAll('.stage').forEach(function(s){ s.classList.remove('open'); });
+    document.querySelectorAll('details.topic').forEach(function(d){ d.open = false; });
+  });
+
+  // ---------- Font size ----------
+  function currentFontPx(){
+    var v = getComputedStyle(document.documentElement).getPropertyValue('--fs-base').trim();
+    return parseInt(v, 10) || 15;
+  }
+  document.getElementById('fontPlusBtn').addEventListener('click', function(){
+    var next = Math.min(currentFontPx() + 1, 19);
+    document.documentElement.style.setProperty('--fs-base', next + 'px');
+    safeSet(FONT_KEY, next + 'px');
+  });
+  document.getElementById('fontMinusBtn').addEventListener('click', function(){
+    var next = Math.max(currentFontPx() - 1, 12);
+    document.documentElement.style.setProperty('--fs-base', next + 'px');
+    safeSet(FONT_KEY, next + 'px');
+  });
+
+  // ---------- Reset progress ----------
+  document.getElementById('resetProgressBtn').addEventListener('click', function(){
+    progress = {};
+    saveProgress();
+    document.querySelectorAll('input[type="checkbox"]').forEach(function(c){ c.checked = false; });
+    document.querySelectorAll('.drawer-link').forEach(function(l){ l.classList.remove('done'); });
+    updateProgressBadge();
+  });
+
+  // ---------- Scroll progress bar ----------
+  window.addEventListener('scroll', function(){
+    var h = document.documentElement;
+    var scrollTop = h.scrollTop || document.body.scrollTop;
+    var scrollHeight = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    document.getElementById('scrollFill').style.width = pct + '%';
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
