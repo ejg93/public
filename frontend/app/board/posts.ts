@@ -33,6 +33,12 @@ export type ImagePairBlock = {
 
 export type Block = TextBlock | CodeBlock | DemoBlock | ImageBlock | ImagePairBlock
 
+// PPT형 게시물의 슬라이드 한 장. 기존 Block을 그대로 담는다.
+export type Slide = {
+  title?: string
+  blocks: Block[]
+}
+
 export type Post = {
   id: string
   title: string
@@ -41,10 +47,104 @@ export type Post = {
   summary: string
   tags: string[]
   blocks: Block[]
+  slides?: Slide[] // 있으면 PPT형 게시물 — 슬라이드 뷰어로 열림
 }
 
 // ── 게시물 목록 ────────────────────────────────────────
 export const POSTS: Post[] = [
+  {
+    id: 'portfolio-architecture-slides',
+    title: '포트폴리오 아키텍처 한눈에 보기',
+    category: 'PPT',
+    date: '2026-07-15',
+    summary: '이 사이트가 어떻게 굴러가는지 슬라이드 5장으로 정리',
+    tags: ['아키텍처', 'Next.js', 'SpringBoot', '슬라이드'],
+    blocks: [
+      {
+        type: 'text',
+        content: `이 게시물은 PPT 형식입니다. 위 버튼으로 슬라이드를 열어주세요.`,
+      },
+    ],
+    slides: [
+      {
+        title: '포트폴리오 아키텍처 한눈에 보기',
+        blocks: [
+          {
+            type: 'text',
+            content: `**Next.js + Spring Boot 모노레포 포트폴리오**
+
+이 사이트가 어떻게 굴러가는지 5장으로 정리했다.
+게시물로 길게 쓰는 대신, 발표 자료처럼 넘겨볼 수 있게 만들었다.
+
+← → 방향키, 좌우 버튼, 모바일에서는 스와이프로 넘어간다.`,
+          },
+        ],
+      },
+      {
+        title: '전체 구조 — 리포 하나, 배포 두 곳',
+        blocks: [
+          {
+            type: 'image',
+            src: '/images/arch-overview.svg',
+            caption: 'GitHub main에 push하면 Vercel과 Railway가 각자 자기 폴더를 빌드한다',
+          },
+          {
+            type: 'text',
+            content: `프론트와 백엔드를 리포 하나(모노레포)에 두고,
+배포만 Vercel(frontend/)과 Railway(backend/)로 나눴다.
+도메인이 서로 다르므로 백엔드에 CORS 설정이 필수다.`,
+          },
+        ],
+      },
+      {
+        title: '프론트엔드 — 폴더가 곧 URL',
+        blocks: [
+          {
+            type: 'image',
+            src: '/images/arch-frontend.svg',
+            caption: 'Next.js 14 App Router — app/ 폴더 구조가 그대로 라우트가 된다',
+          },
+          {
+            type: 'text',
+            content: `JSP에서 파일 경로가 URL이 되듯, App Router는 폴더가 URL이 된다.
+차트는 Recharts, 지도는 Kakao Maps SDK. 지금 보고 있는 이 슬라이드 뷰어도
+라이브러리 없이 React 상태 하나로 구현했다.`,
+          },
+        ],
+      },
+      {
+        title: '백엔드 — 계층형 Spring Boot',
+        blocks: [
+          {
+            type: 'image',
+            src: '/images/arch-backend.svg',
+            caption: 'Controller → Service → Repository → PostgreSQL, 외부 API 5종은 Service에서 호출',
+          },
+          {
+            type: 'text',
+            content: `요청은 Controller에서 받고, Service가 외부 API(Claude, YouTube 등)를 호출하고,
+주가 데이터만 JPA로 PostgreSQL에 저장해 캐시처럼 쓴다.`,
+          },
+        ],
+      },
+      {
+        title: '마무리',
+        blocks: [
+          {
+            type: 'text',
+            content: `**여기까지 5장 요약.**
+
+더 깊은 내용이 궁금하다면 —
+
+각 기술의 상세 문서는 리포의 doc/ 폴더에 정리되어 있고,
+개발하면서 든 생각들은 이 게시판(DEV LOG)의 다른 글에 있다.
+
+ESC 또는 닫기 버튼으로 나가면 게시판으로 돌아간다.`,
+          },
+        ],
+      },
+    ],
+  },
   {
     id: 'bad-ux-button',
     title: '일상에서 겪는 불편함',

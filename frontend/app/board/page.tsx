@@ -7,6 +7,7 @@ const CATEGORY_COLOR: Record<string, string> = {
   'UI/UX': 'var(--accent)',
   '개발': 'var(--accent3)',
   '게임': 'var(--accent2)',
+  'PPT': 'var(--accent2)',
 }
 
 export default function BoardPage() {
@@ -82,6 +83,15 @@ export default function BoardPage() {
                   paddingRight: '16px',
                 }}>
                   {post.title}
+                  {post.slides?.length ? (
+                    <span className="mono" style={{
+                      marginLeft: '8px', padding: '2px 8px', borderRadius: '999px',
+                      fontSize: '10px', fontWeight: 700, letterSpacing: '1px',
+                      background: 'rgba(255,107,53,0.12)', color: 'var(--accent2)',
+                      border: '1px solid rgba(255,107,53,0.35)',
+                      verticalAlign: 'middle',
+                    }}>▶ SLIDES</span>
+                  ) : null}
                 </span>
                 <span style={{
                   fontSize: '11px',

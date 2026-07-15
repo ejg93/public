@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="70" fill="#00ff88" font-size="16" letter-spacing="6">FRONTEND_STACK</text>
+  <text x="60" y="115" fill="#e6edf3" font-size="34" font-weight="bold">폴더가 곧 URL — App Router</text>
+
+  <!-- route tree -->
+  <rect x="60" y="160" width="520" height="440" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="90" y="200" fill="#00ff88" font-size="16" font-weight="bold">frontend/app/</text>
+  <text x="110" y="240" fill="#e6edf3" font-size="15">├─ page.tsx</text>
+  <text x="420" y="240" fill="#adbac7" font-size="14">/</text>
+  <text x="110" y="275" fill="#e6edf3" font-size="15">├─ about/</text>
+  <text x="420" y="275" fill="#adbac7" font-size="14">/about</text>
+  <text x="110" y="310" fill="#e6edf3" font-size="15">├─ ai-battle/</text>
+  <text x="420" y="310" fill="#adbac7" font-size="14">/ai-battle</text>
+  <text x="110" y="345" fill="#e6edf3" font-size="15">├─ stock/</text>
+  <text x="420" y="345" fill="#adbac7" font-size="14">/stock</text>
+  <text x="110" y="380" fill="#e6edf3" font-size="15">├─ youtube/</text>
+  <text x="420" y="380" fill="#adbac7" font-size="14">/youtube</text>
+  <text x="110" y="415" fill="#e6edf3" font-size="15">├─ public-data/</text>
+  <text x="420" y="415" fill="#adbac7" font-size="14">/public-data</text>
+  <text x="110" y="450" fill="#e6edf3" font-size="15">└─ board/</text>
+  <text x="420" y="450" fill="#adbac7" font-size="14">/board</text>
+  <text x="140" y="485" fill="#e6edf3" font-size="15">└─ post/[id]/</text>
+  <text x="420" y="485" fill="#00ff88" font-size="14">/board/post/글ID</text>
+  <text x="90" y="555" fill="#adbac7" font-size="13">[id] 폴더명 = URL 파라미터 (동적 라우트)</text>
+
+  <!-- stack cards -->
+  <rect x="640" y="160" width="500" height="95" rx="12" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="670" y="200" fill="#00ff88" font-size="18" font-weight="bold">React 18 + TypeScript 5</text>
+  <text x="670" y="230" fill="#adbac7" font-size="14">useState / useEffect / useRef · 타입 안전</text>
+
+  <rect x="640" y="275" width="500" height="95" rx="12" fill="#161b22" stroke="#4d9fff" stroke-width="2"/>
+  <text x="670" y="315" fill="#4d9fff" font-size="18" font-weight="bold">Recharts 3.8</text>
+  <text x="670" y="345" fill="#adbac7" font-size="14">/stock 주가 라인 차트 (SVG)</text>
+
+  <rect x="640" y="390" width="500" height="95" rx="12" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="670" y="430" fill="#ff6b35" font-size="18" font-weight="bold">Kakao Maps JS SDK</text>
+  <text x="670" y="460" fill="#adbac7" font-size="14">/public-data 채용정보 지도 마커</text>
+
+  <rect x="640" y="505" width="500" height="95" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="670" y="545" fill="#e6edf3" font-size="18" font-weight="bold">'use client'</text>
+  <text x="670" y="575" fill="#adbac7" font-size="14">상호작용 페이지는 클라이언트 컴포넌트로</text>
+</svg>

@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="70" fill="#4d9fff" font-size="16" letter-spacing="6">BACKEND_STACK</text>
+  <text x="60" y="115" fill="#e6edf3" font-size="34" font-weight="bold">계층형 Spring Boot + 외부 API</text>
+
+  <!-- layers -->
+  <rect x="60" y="170" width="480" height="80" rx="12" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="90" y="205" fill="#00ff88" font-size="18" font-weight="bold">Controller (@RestController)</text>
+  <text x="90" y="232" fill="#adbac7" font-size="13">Battle · Job · Stock · Youtube — JSON 응답</text>
+
+  <path d="M 300 250 L 300 285" stroke="#adbac7" stroke-width="2" marker-end="url(#am)"/>
+
+  <rect x="60" y="290" width="480" height="80" rx="12" fill="#161b22" stroke="#4d9fff" stroke-width="2"/>
+  <text x="90" y="325" fill="#4d9fff" font-size="18" font-weight="bold">Service (@Service)</text>
+  <text x="90" y="352" fill="#adbac7" font-size="13">비즈니스 로직 + HttpClient 5로 외부 API 호출</text>
+
+  <path d="M 300 370 L 300 405" stroke="#adbac7" stroke-width="2" marker-end="url(#am)"/>
+
+  <rect x="60" y="410" width="480" height="80" rx="12" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="90" y="445" fill="#ff6b35" font-size="18" font-weight="bold">Repository (Spring Data JPA)</text>
+  <text x="90" y="472" fill="#adbac7" font-size="13">StockPriceRepository — 인터페이스만으로 CRUD</text>
+
+  <path d="M 300 490 L 300 525" stroke="#adbac7" stroke-width="2" marker-end="url(#am)"/>
+
+  <rect x="60" y="530" width="480" height="70" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="90" y="572" fill="#e6edf3" font-size="18" font-weight="bold">PostgreSQL (Railway)</text>
+
+  <!-- external apis -->
+  <text x="640" y="200" fill="#adbac7" font-size="15" letter-spacing="3">EXTERNAL_APIS (Service에서 호출)</text>
+  <rect x="640" y="220" width="500" height="60" rx="10" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="670" y="257" fill="#e6edf3" font-size="15">Anthropic Claude API — /ai-battle</text>
+  <rect x="640" y="295" width="500" height="60" rx="10" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="670" y="332" fill="#e6edf3" font-size="15">YouTube Data API v3 — /youtube 댓글</text>
+  <rect x="640" y="370" width="500" height="60" rx="10" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="670" y="407" fill="#e6edf3" font-size="15">Yahoo Finance — /stock 시세</text>
+  <rect x="640" y="445" width="500" height="60" rx="10" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="670" y="482" fill="#e6edf3" font-size="15">사람인 API + Kakao Local — /public-data</text>
+
+  <text x="640" y="560" fill="#adbac7" font-size="13">응답 파싱은 Jackson(ObjectMapper.readTree) ·</text>
+  <text x="640" y="585" fill="#adbac7" font-size="13">API 키는 application.properties → Railway Variables 주입</text>
+
+  <defs>
+    <marker id="am" markerWidth="10" markerHeight="10" refX="4" refY="6" orient="auto"><path d="M1,1 L4,6 L7,1" fill="none" stroke="#adbac7" stroke-width="2"/></marker>
+  </defs>
+</svg>

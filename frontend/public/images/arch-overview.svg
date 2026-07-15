@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="70" fill="#00ff88" font-size="16" letter-spacing="6">ARCHITECTURE_OVERVIEW</text>
+  <text x="60" y="115" fill="#e6edf3" font-size="34" font-weight="bold">모노레포 하나, 배포 두 곳</text>
+
+  <!-- GitHub -->
+  <rect x="450" y="170" width="300" height="90" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="600" y="210" fill="#e6edf3" font-size="22" text-anchor="middle" font-weight="bold">GitHub (main)</text>
+  <text x="600" y="240" fill="#adbac7" font-size="15" text-anchor="middle">portfolio/ 모노레포</text>
+
+  <!-- arrows -->
+  <path d="M 520 260 L 330 350" stroke="#00ff88" stroke-width="2" fill="none" marker-end="url(#ag)"/>
+  <path d="M 680 260 L 870 350" stroke="#4d9fff" stroke-width="2" fill="none" marker-end="url(#ab)"/>
+  <text x="360" y="300" fill="#00ff88" font-size="13">push 시 자동 배포</text>
+  <text x="720" y="300" fill="#4d9fff" font-size="13">push 시 자동 배포</text>
+
+  <!-- Vercel -->
+  <rect x="130" y="360" width="400" height="150" rx="12" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="330" y="400" fill="#00ff88" font-size="22" text-anchor="middle" font-weight="bold">Vercel — frontend/</text>
+  <text x="330" y="435" fill="#e6edf3" font-size="16" text-anchor="middle">Next.js 14 (App Router)</text>
+  <text x="330" y="465" fill="#adbac7" font-size="14" text-anchor="middle">React 18 · TypeScript 5 · Recharts</text>
+  <text x="330" y="490" fill="#adbac7" font-size="14" text-anchor="middle">Kakao Maps JS SDK</text>
+
+  <!-- Railway -->
+  <rect x="670" y="360" width="400" height="150" rx="12" fill="#161b22" stroke="#4d9fff" stroke-width="2"/>
+  <text x="870" y="400" fill="#4d9fff" font-size="22" text-anchor="middle" font-weight="bold">Railway — backend/</text>
+  <text x="870" y="435" fill="#e6edf3" font-size="16" text-anchor="middle">Spring Boot 3.2 (Java 17)</text>
+  <text x="870" y="465" fill="#adbac7" font-size="14" text-anchor="middle">Spring Data JPA · Lombok</text>
+  <text x="870" y="490" fill="#adbac7" font-size="14" text-anchor="middle">+ PostgreSQL 플러그인</text>
+
+  <!-- connection -->
+  <path d="M 530 435 L 670 435" stroke="#ff6b35" stroke-width="2" stroke-dasharray="8 6" fill="none" marker-end="url(#ao)"/>
+  <text x="600" y="560" fill="#ff6b35" font-size="15" text-anchor="middle">NEXT_PUBLIC_SPRING_URL → REST 호출 (CORS는 WebConfig에서 허용)</text>
+  <text x="600" y="620" fill="#adbac7" font-size="13" text-anchor="middle">브라우저 → Vercel(화면) → Railway(API) → PostgreSQL / 외부 API</text>
+
+  <defs>
+    <marker id="ag" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#00ff88" stroke-width="2"/></marker>
+    <marker id="ab" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#4d9fff" stroke-width="2"/></marker>
+    <marker id="ao" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#ff6b35" stroke-width="2"/></marker>
+  </defs>
+</svg>

@@ -1,32 +1,24 @@
 'use client'
+import { useState } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { POSTS } from '../../posts'
-import { BadButtonsDemo, GoodButtonsDemo, KakaoDarkPatternDemo, KakaoEmojiDemo, ButtonFeedbackDemo, CapsLockDemo, InstallCheckboxDemo, KioskDemo, InvertedIndexDemo, SearchCompareDemo, AutoCompleteDemo } from '../../demos'
-
-const DEMOS: Record<string, React.ReactNode> = {
-  'bad-buttons':         <BadButtonsDemo />,
-  'good-buttons':        <GoodButtonsDemo />,
-  'kakao-dark-pattern':  <KakaoDarkPatternDemo />,
-  'kakao-emoji':         <KakaoEmojiDemo />,
-  'button-feedback':     <ButtonFeedbackDemo />,
-  'capslock-demo':       <CapsLockDemo />,
-  'install-checkbox':    <InstallCheckboxDemo />,
-  'kiosk-demo':          <KioskDemo />,
-  'es-inverted-index':   <InvertedIndexDemo />,
-  'es-search-compare':   <SearchCompareDemo />,
-  'es-autocomplete':     <AutoCompleteDemo />,
-}
+import { DEMOS } from '../../demoMap'
+import SlideViewer from '../../SlideViewer'
 
 const CATEGORY_COLOR: Record<string, string> = {
   'UI/UX': 'var(--accent)',
   '개발': 'var(--accent3)',
   '게임': 'var(--accent2)',
+  'PPT': 'var(--accent2)',
 }
 
 export default function PostPage() {
   const { id } = useParams()
   const post = POSTS.find(p => p.id === id)
+  const isSlides = !!post?.slides?.length
+  // PPT형 게시물은 진입 즉시 슬라이드 뷰어를 띄운다
+  const [viewerOpen, setViewerOpen] = useState(isSlides)
 
   if (!post) return (
     <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--muted)' }}>
@@ -89,9 +81,34 @@ export default function PostPage() {
 
       <div style={{ height: '1px', background: 'var(--border)', marginBottom: '40px' }} />
 
+      {/* PPT형: 슬라이드 뷰어 + 시작 카드 */}
+      {isSlides && viewerOpen && <SlideViewer post={post} onClose={() => setViewerOpen(false)} />}
+      {isSlides && (
+        <button
+          onClick={() => setViewerOpen(true)}
+          style={{
+            width: '100%', padding: '48px 24px', marginBottom: '28px',
+            background: 'var(--surface)', border: `1px dashed ${color}66`,
+            borderRadius: '12px', cursor: 'pointer',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
+            transition: 'border-color 0.15s',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.borderColor = color)}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = `${color}66`)}
+        >
+          <span style={{ fontSize: '40px', color }}>▶</span>
+          <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)' }}>
+            슬라이드 보기 ({post.slides!.length}장)
+          </span>
+          <span className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+            ← → 방향키 · 스와이프 · ESC로 닫기
+          </span>
+        </button>
+      )}
+
       {/* 본문 블록 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-        {post.blocks.map((block, i) => {
+        {(isSlides ? [] : post.blocks).map((block, i) => {
           if (block.type === 'text') {
             const parseLine = (line: string, lineKey: number) => {
               const parts = line.split(/(\*\*.*?\*\*|\[.+?\]\((?:yt:)?https?:\/\/.+?\))/g)
