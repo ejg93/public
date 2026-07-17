@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="70" fill="#00ff88" font-size="22" letter-spacing="6">LEGAL_NUMBERING</text>
+  <text x="60" y="120" fill="#e6edf3" font-size="40" font-weight="bold">법령 조문 체계로 표기 교체</text>
+
+  <!-- BEFORE -->
+  <rect x="60" y="170" width="300" height="330" rx="14" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="90" y="222" fill="#ff6b35" font-size="24" font-weight="bold">BEFORE</text>
+  <g font-size="34" fill="#e6edf3">
+    <text x="105" y="290">1. ...</text>
+    <text x="105" y="350">2. ...</text>
+    <text x="105" y="410">3. ...</text>
+  </g>
+  <text x="90" y="470" fill="#6e7681" font-size="20">단계 구분 없는 나열</text>
+
+  <!-- arrow -->
+  <path d="M 378 335 L 460 335" stroke="#00ff88" stroke-width="4" fill="none" marker-end="url(#a)"/>
+  <text x="419" y="315" fill="#00ff88" font-size="20" text-anchor="middle">교체</text>
+
+  <!-- AFTER -->
+  <rect x="490" y="170" width="330" height="330" rx="14" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="520" y="222" fill="#00ff88" font-size="24" font-weight="bold">AFTER</text>
+  <g font-size="30">
+    <text x="530" y="284" fill="#4d9fff" font-weight="bold">제1조</text><text x="700" y="284" fill="#6e7681" font-size="22">조</text>
+    <text x="560" y="338" fill="#e6edf3">①</text><text x="700" y="338" fill="#6e7681" font-size="22">항</text>
+    <text x="590" y="392" fill="#e6edf3">1.</text><text x="700" y="392" fill="#6e7681" font-size="22">호</text>
+    <text x="620" y="446" fill="#e6edf3">가.</text><text x="700" y="446" fill="#6e7681" font-size="22">목</text>
+  </g>
+  <text x="520" y="484" fill="#adbac7" font-size="19">조·항·호·목 4단계 정렬</text>
+
+  <!-- 특수문자 도구 -->
+  <rect x="855" y="170" width="285" height="330" rx="14" fill="#161b22" stroke="#4d9fff" stroke-width="2"/>
+  <text x="880" y="212" fill="#4d9fff" font-size="21" font-weight="bold">특수문자_모음.html</text>
+  <text x="880" y="240" fill="#6e7681" font-size="17">직접 만든 복사 도구</text>
+  <g font-size="26" fill="#e6edf3">
+    <rect x="880" y="256" width="48" height="48" rx="7" fill="#21262d"/><text x="892" y="290">①</text>
+    <rect x="936" y="256" width="48" height="48" rx="7" fill="#21262d"/><text x="948" y="290">②</text>
+    <rect x="992" y="256" width="48" height="48" rx="7" fill="#21262d"/><text x="1006" y="290">「</text>
+    <rect x="1048" y="256" width="48" height="48" rx="7" fill="#21262d"/><text x="1062" y="290">」</text>
+    <rect x="880" y="312" width="48" height="48" rx="7" fill="#21262d"/><text x="888" y="346" font-size="22">가.</text>
+    <rect x="936" y="312" width="48" height="48" rx="7" fill="#21262d"/><text x="952" y="346">·</text>
+    <rect x="992" y="312" width="48" height="48" rx="7" fill="#21262d"/><text x="1006" y="346">※</text>
+    <rect x="1048" y="312" width="48" height="48" rx="7" fill="#21262d"/><text x="1062" y="346">→</text>
+  </g>
+  <text x="880" y="404" fill="#00ff88" font-size="18">클릭 = 복사</text>
+  <text x="880" y="432" fill="#adbac7" font-size="18">조문형식 프리셋 내장</text>
+
+  <text x="60" y="562" fill="#adbac7" font-size="24">몰랐던 규칙이지만, 법적 문서라면 지키는 게 맞다고 판단했다.</text>
+  <text x="60" y="602" fill="#6e7681" font-size="21">→ new 파일은 조문 체계대로 표기를 맞췄다.</text>
+
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#00ff88" stroke-width="2"/></marker>
+  </defs>
+</svg>

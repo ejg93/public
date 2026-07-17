@@ -10,6 +10,10 @@ const nextConfig = {
         source: '/study/architecture-notes',
         destination: '/study/architecture-notes.html',
       },
+      {
+        source: '/toolbox',
+        destination: '/toolbox/index.html',
+      },
     ]
   },
 }

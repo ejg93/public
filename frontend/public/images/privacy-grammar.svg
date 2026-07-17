@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="70" fill="#00ff88" font-size="22" letter-spacing="6">TEXT_REVISION</text>
+  <text x="60" y="120" fill="#e6edf3" font-size="40" font-weight="bold">문장 다듬기</text>
+
+  <text x="330" y="168" fill="#ff6b35" font-size="22" font-weight="bold" text-anchor="middle">old</text>
+  <text x="800" y="168" fill="#00ff88" font-size="22" font-weight="bold" text-anchor="middle">new</text>
+
+  <!-- 1. 조사 누락 -->
+  <text x="60" y="220" fill="#4d9fff" font-size="20">① 조사 누락</text>
+  <rect x="185" y="188" width="290" height="70" rx="10" fill="#161b22" stroke="#3a2626"/>
+  <rect x="545" y="188" width="290" height="70" rx="10" fill="#161b22" stroke="#26362a"/>
+  <text x="200" y="232" fill="#adbac7" font-size="20">…정보원<tspan fill="#ff6b35">개인정보</tspan></text>
+  <text x="560" y="232" fill="#e6edf3" font-size="20">…정보원<tspan fill="#00ff88">은 개인정보</tspan></text>
+  <path d="M 480 223 L 540 223" stroke="#4d9fff" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 2. 표준문안 압축 -->
+  <text x="60" y="316" fill="#4d9fff" font-size="20">② 표준문안</text>
+  <rect x="185" y="284" width="290" height="70" rx="10" fill="#161b22" stroke="#3a2626"/>
+  <rect x="545" y="284" width="290" height="70" rx="10" fill="#161b22" stroke="#26362a"/>
+  <text x="200" y="320" fill="#adbac7" font-size="18">…이행할</text>
+  <text x="200" y="344" fill="#adbac7" font-size="18">예정입니다</text>
+  <text x="560" y="320" fill="#e6edf3" font-size="18">…처리·보유</text>
+  <text x="560" y="344" fill="#e6edf3" font-size="18">합니다</text>
+  <path d="M 480 319 L 540 319" stroke="#4d9fff" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 3. 낫표 -->
+  <text x="60" y="412" fill="#4d9fff" font-size="20">③ 낫표「」</text>
+  <rect x="185" y="380" width="290" height="70" rx="10" fill="#161b22" stroke="#3a2626"/>
+  <rect x="545" y="380" width="290" height="70" rx="10" fill="#161b22" stroke="#26362a"/>
+  <text x="200" y="424" fill="#adbac7" font-size="19">개인정보 보호법</text>
+  <text x="560" y="424" fill="#e6edf3" font-size="19"><tspan fill="#00ff88">「</tspan>개인정보 보호법<tspan fill="#00ff88">」</tspan></text>
+  <path d="M 480 415 L 540 415" stroke="#4d9fff" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 4. 태 정돈 -->
+  <text x="60" y="508" fill="#4d9fff" font-size="20">④ 태 정돈</text>
+  <rect x="185" y="476" width="290" height="70" rx="10" fill="#161b22" stroke="#3a2626"/>
+  <rect x="545" y="476" width="290" height="70" rx="10" fill="#161b22" stroke="#26362a"/>
+  <text x="200" y="520" fill="#adbac7" font-size="18">…확인합니다(나열)</text>
+  <text x="560" y="520" fill="#e6edf3" font-size="18">주어＋서술어 짝</text>
+  <path d="M 480 511 L 540 511" stroke="#4d9fff" stroke-width="2" marker-end="url(#a)"/>
+
+  <!-- 우측 요약 -->
+  <rect x="880" y="188" width="260" height="358" rx="14" fill="#0d1117" stroke="#26362a" stroke-width="1.5"/>
+  <text x="1010" y="290" fill="#adbac7" font-size="50" text-anchor="middle">4가지</text>
+  <text x="1010" y="330" fill="#adbac7" font-size="40" text-anchor="middle">유형 교정</text>
+  <line x1="910" y1="368" x2="1110" y2="368" stroke="#21262d"/>
+  <text x="1010" y="418" fill="#6e7681" font-size="19" text-anchor="middle">법률·문법</text>
+  <text x="1010" y="448" fill="#6e7681" font-size="19" text-anchor="middle">직접 확인</text>
+  <text x="1010" y="508" fill="#00ff88" font-size="22" text-anchor="middle">완성도 ▲</text>
+
+  <defs>
+    <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#4d9fff" stroke-width="1.5"/></marker>
+  </defs>
+</svg>

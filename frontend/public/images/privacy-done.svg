@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="64" fill="#2dd4bf" font-size="22" letter-spacing="6">RESULT_TABLE</text>
+  <text x="60" y="108" fill="#e6edf3" font-size="34" font-weight="bold">제1조 — 처리목적·수집항목·보유기간</text>
+
+  <!-- ===== 카드 1: 종사자 정보 ===== -->
+  <text x="60" y="152" fill="#2dd4bf" font-size="18" font-weight="bold">● 종사자 정보 (시스템 사용자)</text>
+  <g>
+    <rect x="60" y="166" width="540" height="356" rx="10" fill="#161b22" stroke="#2dd4bf" stroke-width="1.5"/>
+    <!-- 라벨 컬럼 배경 -->
+    <rect x="60" y="166" width="130" height="356" fill="#132b28"/>
+    <!-- rows -->
+    <line x1="60" y1="206" x2="600" y2="206" stroke="#21262d"/>
+    <line x1="60" y1="246" x2="600" y2="246" stroke="#21262d"/>
+    <line x1="60" y1="378" x2="600" y2="378" stroke="#21262d"/>
+    <line x1="190" y1="166" x2="190" y2="418" stroke="#21262d"/>
+
+    <g font-size="15" fill="#7fe3d4"><text x="80" y="192">파일명</text><text x="80" y="232">처리 목적</text><text x="80" y="286">운영 근거</text><text x="80" y="404">보유기간</text></g>
+    <g font-size="15" fill="#e6edf3">
+      <text x="206" y="192">종사자 정보 (시스템 사용자)</text>
+      <text x="206" y="232">○○서비스 제공을 위한 종사자 관리</text>
+      <text x="206" y="404">탈퇴 후 5년</text>
+    </g>
+    <!-- 운영 근거: 법령 마스킹 -->
+    <g font-size="14" fill="#8b949e">
+      <text x="206" y="276">■ 「○○법」 제○조</text>
+      <text x="206" y="300">■ 「○○법 시행령」 제○조</text>
+      <text x="206" y="324">■ 「△△법」 제○조의○</text>
+      <text x="206" y="348">■ 「△△법 시행령」 제○조의○</text>
+    </g>
+
+    <!-- 개인정보 항목 헤더 -->
+    <rect x="60" y="418" width="540" height="34" fill="#1f8a70"/>
+    <text x="330" y="441" fill="#0d1117" font-size="15" font-weight="bold" text-anchor="middle">개인정보 항목</text>
+    <!-- 필수 -->
+    <rect x="60" y="452" width="540" height="28" fill="#123a32"/>
+    <text x="330" y="471" fill="#2dd4bf" font-size="14" font-weight="bold" text-anchor="middle">필수</text>
+    <text x="330" y="506" fill="#e6edf3" font-size="14" text-anchor="middle">이름, 생년월일, 성별, 아이디, 비밀번호, 휴대전화</text>
+  </g>
+
+  <!-- ===== 카드 2: 이용자 정보 ===== -->
+  <text x="660" y="152" fill="#4d9fff" font-size="18" font-weight="bold">● 이용자 정보 (서비스 대상자)</text>
+  <g>
+    <rect x="660" y="166" width="480" height="356" rx="10" fill="#161b22" stroke="#4d9fff" stroke-width="1.5"/>
+    <rect x="660" y="166" width="130" height="356" fill="#132433"/>
+    <line x1="660" y1="206" x2="1140" y2="206" stroke="#21262d"/>
+    <line x1="660" y1="246" x2="1140" y2="246" stroke="#21262d"/>
+    <line x1="660" y1="378" x2="1140" y2="378" stroke="#21262d"/>
+    <line x1="790" y1="166" x2="790" y2="418" stroke="#21262d"/>
+
+    <g font-size="15" fill="#9cc7ff"><text x="680" y="192">파일명</text><text x="680" y="232">처리 목적</text><text x="680" y="286">운영 근거</text><text x="680" y="404">보유기간</text></g>
+    <g font-size="15" fill="#e6edf3">
+      <text x="806" y="192">이용자 정보 (대상자)</text>
+      <text x="806" y="232">○○서비스 대상자 관리</text>
+      <text x="806" y="404">자격 종료 후 5년</text>
+    </g>
+    <g font-size="14" fill="#8b949e">
+      <text x="806" y="276">■ 「○○법」 제○조</text>
+      <text x="806" y="300">■ 「○○법 시행령」 제○조</text>
+      <text x="806" y="324">■ 「△△법」 제○조의○</text>
+      <text x="806" y="348">■ 「△△법 시행령」 제○조의○</text>
+    </g>
+
+    <rect x="660" y="418" width="480" height="34" fill="#1f6feb"/>
+    <text x="900" y="441" fill="#0d1117" font-size="15" font-weight="bold" text-anchor="middle">개인정보 항목</text>
+    <rect x="660" y="452" width="480" height="28" fill="#12253a"/>
+    <text x="900" y="471" fill="#4d9fff" font-size="14" font-weight="bold" text-anchor="middle">필수</text>
+    <text x="900" y="506" fill="#e6edf3" font-size="14" text-anchor="middle">이름, 집주소, 휴대전화, 생년월일, 성별</text>
+  </g>
+
+  <!-- 하단 배지 -->
+  <g font-size="16">
+    <rect x="60" y="556" width="230" height="46" rx="23" fill="#161b22" stroke="#2dd4bf"/>
+    <text x="175" y="585" fill="#2dd4bf" text-anchor="middle">동의 없이 처리</text>
+    <rect x="310" y="556" width="230" height="46" rx="23" fill="#161b22" stroke="#4d9fff"/>
+    <text x="425" y="585" fill="#4d9fff" text-anchor="middle">파일별 카드 정렬</text>
+    <rect x="560" y="556" width="260" height="46" rx="23" fill="#161b22" stroke="#3fb950"/>
+    <text x="690" y="585" fill="#3fb950" text-anchor="middle">✓ 표준 양식 완성</text>
+  </g>
+  <text x="850" y="586" fill="#6e7681" font-size="14">* 법령·기관명은 마스킹 처리</text>
+</svg>
