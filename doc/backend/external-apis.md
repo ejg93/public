@@ -41,7 +41,7 @@
 
 - 사용처: 채용공고 주소 → 좌표 변환 → `JobService.java`
 - 엔드포인트: `GET https://dapi.kakao.com/v2/local/search/keyword.json`
-- 인증: `Authorization: KakaoAK {REST_API_키}` 헤더 (`kakao.rest.key`) — 프론트의 JavaScript 키와 다른 키다 ([kakao-maps-sdk.md](kakao-maps-sdk.md) 참고)
+- 인증: `Authorization: KakaoAK {REST_API_키}` 헤더 (`kakao.rest.key`) — 프론트의 JavaScript 키와 다른 키다 ([kakao-maps-sdk.md](../frontend/kakao-maps-sdk.md) 참고)
 - 정식 문서:
   - Local API 가이드: https://developers.kakao.com/docs/latest/ko/local/dev-guide
   - 키워드 장소 검색: https://developers.kakao.com/docs/latest/ko/local/dev-guide#search-by-keyword

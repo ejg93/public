@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="70" fill="#00ff88" font-size="22" letter-spacing="6">DIAGRAMS_ADDED</text>
+  <text x="60" y="120" fill="#e6edf3" font-size="38" font-weight="bold">플로우차트 3종 + 접수 부서 표 추가</text>
+
+  <!-- 차트 1 -->
+  <rect x="60" y="170" width="345" height="290" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="82" y="212" fill="#4d9fff" font-size="21" font-weight="bold">① 열람 요구 처리</text>
+  <rect x="110" y="232" width="245" height="40" rx="20" fill="#3f6fb5"/><text x="232" y="259" fill="#fff" font-size="16" text-anchor="middle">파일 목록 검색</text>
+  <text x="232" y="296" fill="#3f6fb5" font-size="18" text-anchor="middle">▼</text>
+  <rect x="90" y="306" width="125" height="56" rx="8" fill="#0d1117" stroke="#30363d"/><text x="152" y="340" fill="#adbac7" font-size="16" text-anchor="middle">열람청구</text>
+  <rect x="250" y="306" width="125" height="56" rx="8" fill="#0d1117" stroke="#30363d"/><text x="312" y="331" fill="#adbac7" font-size="15" text-anchor="middle">정정·삭제</text><text x="312" y="351" fill="#6e7681" font-size="14" text-anchor="middle">처리정지</text>
+  <text x="152" y="392" fill="#3f6fb5" font-size="18" text-anchor="middle">▼</text>
+  <rect x="112" y="404" width="80" height="34" rx="6" fill="#3f6fb5"/><text x="152" y="428" fill="#fff" font-size="16" text-anchor="middle">열람</text>
+
+  <!-- 차트 2 -->
+  <rect x="425" y="170" width="345" height="290" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="447" y="212" fill="#4d9fff" font-size="21" font-weight="bold">② 인터넷 청구</text>
+  <rect x="447" y="256" width="95" height="60" rx="8" fill="#1f3864"/><text x="494" y="292" fill="#fff" font-size="16" text-anchor="middle">청구인</text>
+  <path d="M 544 286 L 592 286" stroke="#8a8a8a" stroke-width="2" marker-end="url(#g)"/>
+  <rect x="597" y="256" width="80" height="60" rx="8" fill="#dce9f7"/><text x="637" y="285" fill="#36435c" font-size="13" text-anchor="middle">개인정보</text><text x="637" y="303" fill="#36435c" font-size="13" text-anchor="middle">보호위</text>
+  <path d="M 679 286 L 705 286" stroke="#8a8a8a" stroke-width="2" marker-end="url(#g)"/>
+  <rect x="672" y="256" width="88" height="60" rx="8" fill="#56862a"/><text x="716" y="292" fill="#fff" font-size="13" text-anchor="middle">○○시스템</text>
+  <path d="M 705 356 L 500 356" stroke="#8a8a8a" stroke-width="2" marker-end="url(#g)"/>
+  <text x="600" y="392" fill="#8a8a8a" font-size="15" text-anchor="middle">10일 내 결과 통보</text>
+
+  <!-- 차트 3 -->
+  <rect x="790" y="170" width="350" height="290" rx="12" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="812" y="212" fill="#4d9fff" font-size="21" font-weight="bold">③ 서면 청구</text>
+  <rect x="812" y="272" width="110" height="66" rx="8" fill="#1f3864"/><text x="867" y="311" fill="#fff" font-size="16" text-anchor="middle">청구인</text>
+  <path d="M 926 296 L 1006 296" stroke="#8a8a8a" stroke-width="2" marker-end="url(#g)"/>
+  <text x="966" y="286" fill="#8a8a8a" font-size="14" text-anchor="middle">서식 청구</text>
+  <path d="M 1006 322 L 926 322" stroke="#8a8a8a" stroke-width="2" marker-end="url(#g)"/>
+  <text x="966" y="340" fill="#8a8a8a" font-size="13" text-anchor="middle">10일 내 통보</text>
+  <rect x="1012" y="272" width="115" height="66" rx="8" fill="#56862a"/><text x="1069" y="311" fill="#fff" font-size="14" text-anchor="middle">○○시스템</text>
+
+  <!-- 접수 부서 표 -->
+  <rect x="60" y="480" width="1080" height="140" rx="12" fill="#161b22" stroke="#e6890a" stroke-width="2"/>
+  <text x="82" y="522" fill="#e6890a" font-size="22" font-weight="bold">＋ 열람 등 청구 접수·처리 부서 표</text>
+  <g font-size="20">
+    <text x="92" y="562" fill="#8b949e">담당</text><text x="240" y="562" fill="#e6edf3">○○정보관리부</text>
+    <text x="640" y="562" fill="#8b949e">연락처</text><text x="790" y="562" fill="#e6edf3">00-000-0000</text>
+    <text x="92" y="600" fill="#8b949e">주소</text><text x="240" y="600" fill="#e6edf3">△△시 △△구 △△로 000, 0층</text>
+  </g>
+
+  <text x="700" y="70" fill="#6e7681" font-size="18">CSS는 그대로, style 속성으로 처리</text>
+
+  <defs>
+    <marker id="g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6" fill="none" stroke="#8a8a8a" stroke-width="1.5"/></marker>
+  </defs>
+</svg>

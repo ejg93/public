@@ -23,7 +23,7 @@
 | 키 | 용도 | 이 프로젝트 |
 |---|---|---|
 | JavaScript 키 | 브라우저 SDK (지도 표시) | `NEXT_PUBLIC_KAKAO_JS_KEY` (frontend) |
-| REST API 키 | 서버사이드 REST 호출 (주소→좌표 등) | `kakao.rest.key` (backend, [external-apis.md](external-apis.md) 참고) |
+| REST API 키 | 서버사이드 REST 호출 (주소→좌표 등) | `kakao.rest.key` (backend, [external-apis.md](../backend/external-apis.md) 참고) |
 
 카카오 개발자 콘솔에서 도메인(플랫폼) 등록 필수 — 등록 안 된 도메인에서는 지도가 안 뜬다.
 

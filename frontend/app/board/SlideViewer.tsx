@@ -160,7 +160,7 @@ export default function SlideViewer({ post, onClose }: { post: Post; onClose: ()
             <div key={i} style={{
               width: '100%', height: '100%', flexShrink: 0,
               overflowY: 'auto', padding: 'clamp(20px, 4vw, 48px)',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'safe center',
             }}>
               <div style={{ width: '100%', maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 {slide.title && (
