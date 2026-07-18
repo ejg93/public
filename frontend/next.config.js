@@ -14,6 +14,10 @@ const nextConfig = {
         source: '/toolbox',
         destination: '/toolbox/index.html',
       },
+      {
+        source: '/tools/:path*',
+        destination: '/toolbox/tools/:path*',
+      },
     ]
   },
 }
