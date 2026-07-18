@@ -48,15 +48,15 @@ a.card:hover { border-color: var(--accent); transform: translateY(-2px); }
 <p class="foot">새 탭으로 열림 · 이 폴더째 복사하면 어디서든 동작</p>
 <script>
 var TOOLS = [
-	{ file: "dev_tools.html", icon: "🛠", name: "개발자 도구 모음",
+	{ file: "tools/dev_tools.html", icon: "🛠", name: "개발자 도구 모음",
 	  desc: "카멜 변환 / JSON / 날짜 / INSERT 생성 / 정규식 / Base64·data URI / SQL 페이징 / URL / JWT" },
-	{ file: "sql_snippets.html", icon: "🗄", name: "SQL 스니펫",
+	{ file: "tools/sql_snippets.html", icon: "🗄", name: "SQL 스니펫",
 	  desc: "운영 조회 단골 쿼리 모음 — Tibero·Oracle / MySQL·MariaDB / PostgreSQL / SQL Server / Sybase 방언 전환, 검색, 즐겨찾기" },
-	{ file: "특수문자_모음.html", icon: "①", name: "특수문자 모음",
+	{ file: "tools/특수문자_모음.html", icon: "①", name: "특수문자 모음",
 	  desc: "공문서·SR용 특수문자 클릭 복사 + 한글 IME 입력법 + 즐겨찾기 + 조합 모드" },
-	{ file: "jsp_formatter.html", icon: "🧹", name: "JSP/HTML 줄정리",
+	{ file: "tools/jsp_formatter.html", icon: "🧹", name: "JSP/HTML 줄정리",
 	  desc: "들여쓰기 재배치 — 스크립틀릿 { } 인지, 보존 블록 원형 유지" },
-	{ file: "산출물_sql.html", icon: "📋", name: "산출물 SQL 가이드",
+	{ file: "tools/산출물_sql.html", icon: "📋", name: "산출물 SQL 가이드",
 	  desc: "공공 데이터 산출물 9종 문서별 추출 SQL + 기입 규칙 — 방언 5종(Tibero·MySQL·PG·MSSQL·Sybase) 전환, 스키마 일괄 치환, 편집 모드" }
 ];
 var wrap = document.getElementById("cards");
