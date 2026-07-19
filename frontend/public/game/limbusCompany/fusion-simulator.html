@@ -1,7 +1,7 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="utf-8">
+<!DOCTYPE html>
+<!-- saved from url=(0047)https://verdant-profiterole-8392d5.netlify.app/ -->
+<html lang="ko"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>림버스 컴퍼니 - 합 시뮬레이터 (프로토타입)</title>
 <style>
@@ -123,6 +123,18 @@
     -moz-appearance:textfield;
   }
   .num.sm{width:44px;font-size:15px}
+
+  /* 마비 증감 버튼 */
+  .stepper{display:flex;align-items:center;gap:4px}
+  .step{
+    width:22px;height:22px;line-height:1;
+    background:rgba(0,0,0,.55);
+    border:1px solid rgba(150,115,45,.45);
+    color:var(--gold);font-family:inherit;font-size:15px;font-weight:800;
+    border-radius:3px;cursor:pointer;padding:0;
+  }
+  .step:hover{border-color:var(--gold);background:rgba(150,115,45,.2)}
+  .step:active{background:rgba(150,115,45,.35)}
   /* 기본위력 = 가장 크고 밝게 (게임에서도 제일 강조됨) */
   .num.base{width:52px;font-size:21px;color:#fff6de;border-color:rgba(210,170,90,.55)}
   /* 코인위력 = 한 단계 작게 */
@@ -303,89 +315,118 @@
     <div class="side left">
       <div class="statcol">
         <div class="powline">
-          <input class="cnt" type="number" id="cntM" value="2" min="1" max="9"
-                 data-tip="코인 갯수&#10;합에서 이 수만큼 코인을 굴린다. 진 쪽이 1개씩 파괴됨.">
-          <span class="coinicons" id="coinsM" data-tip="코인 갯수&#10;합·공격에서 던지는 코인 수. 많을수록 합에서 유리."></span>
-          <input class="num cp" type="number" id="cpM" value="3"
-                 data-tip="코인 위력&#10;앞면 1개당 위력에 더해지는 값.&#10;빼기 코인이면 음수로 입력.">
+          <input class="cnt" type="number" id="cntM" value="2" min="1" max="9" data-tip="코인 갯수
+합에서 이 수만큼 코인을 굴린다." style="opacity: 1;">
+          <span class="coinicons" id="coinsM" data-tip="코인 갯수
+합·공격에서 던지는 코인 수. 많을수록 합에서 유리."><span class="coin" data-coin="M:0" data-tip="1번째 코인 — 일반
+클릭하면 파괴 불가로 바꾼다.
+코인은 앞에서부터 파괴되므로 몇 번째가 파괴 불가인지가 결과를 바꾼다."></span><span class="coin" data-coin="M:1" data-tip="2번째 코인 — 일반
+클릭하면 파괴 불가로 바꾼다.
+코인은 앞에서부터 파괴되므로 몇 번째가 파괴 불가인지가 결과를 바꾼다."></span></span>
+          <input class="num cp" type="number" id="cpM" value="3" data-tip="코인 위력
+앞면 1개당 위력에 더해지는 값.
+빼기 코인이면 음수로 입력.">
           <span class="op">＋</span>
-          <input class="num base" type="number" id="baseM" value="4"
-                 data-tip="기본 위력&#10;코인이 전부 뒷면일 때의 위력.">
+          <input class="num base" type="number" id="baseM" value="4" data-tip="기본 위력
+코인이 전부 뒷면일 때의 위력.">
         </div>
         <div class="lvline">
-          <input class="num lv def" type="number" id="defM" value="45"
-                 data-tip="수비 레벨&#10;상대 공격레벨 − 내 수비레벨 로 상대 피해량이 보정됨.">
-          <span class="lvicon" data-tip="수비 레벨&#10;상대가 나를 때릴 때 피해 레벨차 보정의 기준값.">🛡</span>
-          <input class="num lv atk" type="number" id="atkM" value="45"
-                 data-tip="공격 레벨&#10;인격 레벨 + 스킬 보정 + 공명 보정.&#10;상대보다 높으면 ⌊레벨차÷3⌋ 만큼 합 위력 보너스.">
+          <input class="num lv def" type="number" id="defM" value="45" data-tip="수비 레벨
+상대가 나를 때릴 때 피해 레벨차 보정의 기준값.
+합 승률에는 영향이 없다.">
+          <span class="lvicon" data-tip="수비 레벨
+상대가 나를 때릴 때 피해 레벨차 보정의 기준값.">🛡</span>
+          <input class="num lv atk" type="number" id="atkM" value="45" data-tip="공격 레벨
+합 위력 보너스 = ⌊레벨차÷3⌋ (높은 쪽만)
+피해 레벨차 보정에도 쓰인다." style="opacity: 1;">
           <span class="lvtag" data-tip="공격 레벨">Lv</span>
         </div>
       </div>
 
       <div class="hexwrap">
-        <div class="pct locked" id="pctM"
-             data-tip="피해량 증감 (계산값)&#10;상대의 유형 내성 + 속성 내성 + 레벨차 보정 + 취약 수치로 결정됨.&#10;직접 입력하는 값이 아님.">+0%</div>
-        <div class="hex" id="hexM">
+        <div class="pct locked" id="pctM" data-tip="피해량 증감 (계산값)
+맞는 쪽의 참격 내성 보통 +0
+맞는 쪽의 분노 내성 보통 +0
+레벨차 보정 0.0%
+맞는 쪽 취약 0 → +0%
+합 1회당 +3%는 별도 가산" style="color: rgb(255, 210, 74);">+0%</div>
+        <div class="hex" id="hexM" data-tip="죄악 속성: 분노
+상대의 속성 내성 판정 기준." style="background: linear-gradient(160deg, rgb(211, 47, 47) 0%, rgb(116, 26, 26) 60%, rgb(53, 12, 12) 100%);">
           ⚔
-          <span class="typebadge" id="typeBadgeM" data-tip="공격 유형&#10;참격·관통·타격. 상대의 유형 내성 판정에 쓰임."></span>
+          <span class="typebadge" id="typeBadgeM" data-tip="공격 유형
+참격·관통·타격. 상대의 유형 내성 판정에 쓰임.">참격</span>
         </div>
         <div class="skillname mine">나의 스킬</div>
       </div>
 
-      <div class="clashpow locked"
-           data-tip="합 최소 / 최대 위력 (계산값)&#10;최소 = 기본위력 + 합 위력 보너스&#10;최대 = 기본위력 + 코인위력×코인갯수 + 보너스">
-        <span id="minM">0</span>
+      <div class="clashpow locked" data-tip="합 최소 / 최대 위력 (계산값)
+최소 = 기본위력 + 합 위력 보너스
+최대 = 기본위력 + 코인위력×코인갯수 + 보너스">
+        <span id="minM">4</span>
         <span class="bar"></span>
-        <span id="maxM">0</span>
+        <span id="maxM">10</span>
       </div>
     </div>
 
     <!-- ================= 중앙 ================= -->
     <div class="center">
       <div class="spark"></div>
-      <div class="wrlabel">예상 승률</div>
-      <div class="wr" id="wr">--%</div>
-      <div class="wrsub" id="wrsub"></div>
+      <div class="wrlabel">합 승률</div>
+      <div class="wr" id="wr" style="font-size: 52px; color: rgb(246, 127, 35);">50.1%</div>
+      <div class="wrsub" id="wrsub">4~10  vs  4~10</div>
     </div>
 
     <!-- ================= 상대의 스킬 ================= -->
     <div class="side right">
       <div class="statcol">
         <div class="powline">
-          <input class="cnt" type="number" id="cntF" value="2" min="1" max="9"
-                 data-tip="코인 갯수&#10;합에서 이 수만큼 코인을 굴린다.">
-          <span class="coinicons" id="coinsF" data-tip="코인 갯수&#10;합·공격에서 던지는 코인 수."></span>
-          <input class="num cp" type="number" id="cpF" value="3"
-                 data-tip="코인 위력&#10;앞면 1개당 위력에 더해지는 값.">
+          <input class="cnt" type="number" id="cntF" value="2" min="1" max="9" data-tip="코인 갯수
+합에서 이 수만큼 코인을 굴린다." style="opacity: 1;">
+          <span class="coinicons" id="coinsF" data-tip="코인 갯수
+합·공격에서 던지는 코인 수."><span class="coin" data-coin="F:0" data-tip="1번째 코인 — 일반
+클릭하면 파괴 불가로 바꾼다.
+코인은 앞에서부터 파괴되므로 몇 번째가 파괴 불가인지가 결과를 바꾼다."></span><span class="coin" data-coin="F:1" data-tip="2번째 코인 — 일반
+클릭하면 파괴 불가로 바꾼다.
+코인은 앞에서부터 파괴되므로 몇 번째가 파괴 불가인지가 결과를 바꾼다."></span></span>
+          <input class="num cp" type="number" id="cpF" value="3" data-tip="코인 위력
+앞면 1개당 위력에 더해지는 값.">
           <span class="op">＋</span>
-          <input class="num base" type="number" id="baseF" value="4"
-                 data-tip="기본 위력&#10;코인이 전부 뒷면일 때의 위력.">
+          <input class="num base" type="number" id="baseF" value="4" data-tip="기본 위력
+코인이 전부 뒷면일 때의 위력.">
         </div>
         <div class="lvline">
-          <input class="num lv def" type="number" id="defF" value="45"
-                 data-tip="수비 레벨&#10;내 공격레벨 − 상대 수비레벨 로 내 피해량이 보정됨.">
+          <input class="num lv def" type="number" id="defF" value="45" data-tip="수비 레벨
+상대가 나를 때릴 때 피해 레벨차 보정의 기준값.
+합 승률에는 영향이 없다.">
           <span class="lvicon" data-tip="수비 레벨">🛡</span>
-          <input class="num lv atk" type="number" id="atkF" value="45"
-                 data-tip="공격 레벨&#10;나보다 높으면 상대가 합 위력 보너스를 받음.">
+          <input class="num lv atk" type="number" id="atkF" value="45" data-tip="공격 레벨
+합 위력 보너스 = ⌊레벨차÷3⌋ (높은 쪽만)
+피해 레벨차 보정에도 쓰인다." style="opacity: 1;">
           <span class="lvtag" data-tip="공격 레벨">Lv</span>
         </div>
       </div>
 
       <div class="hexwrap">
-        <div class="pct locked" id="pctF"
-             data-tip="피해량 증감 (계산값)&#10;내 유형 내성 + 속성 내성 + 레벨차 보정 + 취약 수치로 결정됨.">+0%</div>
-        <div class="hex" id="hexF">
+        <div class="pct locked" id="pctF" data-tip="피해량 증감 (계산값)
+맞는 쪽의 참격 내성 보통 +0
+맞는 쪽의 색욕 내성 보통 +0
+레벨차 보정 0.0%
+맞는 쪽 취약 0 → +0%
+합 1회당 +3%는 별도 가산" style="color: rgb(255, 210, 74);">+0%</div>
+        <div class="hex" id="hexF" data-tip="죄악 속성: 색욕
+상대의 속성 내성 판정 기준." style="background: linear-gradient(160deg, rgb(232, 89, 12) 0%, rgb(128, 49, 7) 60%, rgb(58, 22, 3) 100%);">
           🗡
-          <span class="typebadge" id="typeBadgeF" data-tip="공격 유형"></span>
+          <span class="typebadge" id="typeBadgeF" data-tip="공격 유형">참격</span>
         </div>
         <div class="skillname foe">상대의 스킬</div>
       </div>
 
-      <div class="clashpow locked"
-           data-tip="합 최소 / 최대 위력 (계산값)&#10;최소 = 기본위력 + 합 위력 보너스&#10;최대 = 기본위력 + 코인위력×코인갯수 + 보너스">
-        <span id="minF">0</span>
+      <div class="clashpow locked" data-tip="합 최소 / 최대 위력 (계산값)
+최소 = 기본위력 + 합 위력 보너스
+최대 = 기본위력 + 코인위력×코인갯수 + 보너스">
+        <span id="minF">4</span>
         <span class="bar"></span>
-        <span id="maxF">0</span>
+        <span id="maxF">10</span>
       </div>
     </div>
 
@@ -397,73 +438,246 @@
   <div class="card">
     <h2 class="mine">나의 스킬 — 상세</h2>
     <div class="field">
-      <label data-tip="스킬 종류&#10;합 가능: 공격 스킬 · 강화 가드 · 강화 반격&#10;합 불가: 가드 · 회피 · 일반 반격">스킬 종류</label>
-      <select class="pick" id="skM"></select>
+      <label data-tip="스킬 종류
+합 가능: 공격 스킬 · 강화 가드 · 강화 반격
+합 불가: 가드 · 회피 · 일반 반격">스킬 종류</label>
+      <select class="pick" id="skM"><option value="atk">공격 스킬</option><option value="guard">가드</option><option value="evade">회피</option><option value="ctr">일반 반격</option><option value="eguard">강화 가드</option><option value="ectr">강화 반격</option></select>
     </div>
     <div class="field">
-      <label data-tip="죄악 속성&#10;상대의 속성 내성 판정 기준.">죄악 속성</label>
-      <select class="pick" id="sinM"></select>
+      <label data-tip="죄악 속성
+상대의 속성 내성 판정 기준.">죄악 속성</label>
+      <select class="pick" id="sinM"><option value="분노">분노</option><option value="색욕">색욕</option><option value="나태">나태</option><option value="탐식">탐식</option><option value="우울">우울</option><option value="오만">오만</option><option value="질투">질투</option></select>
     </div>
     <div class="field">
-      <label data-tip="공격 유형&#10;상대의 유형 내성 판정 기준.">공격 유형</label>
-      <select class="pick" id="typeM"></select>
+      <label data-tip="공격 유형
+상대의 유형 내성 판정 기준.">공격 유형</label>
+      <select class="pick" id="typeM"><option value="참격">참격</option><option value="관통">관통</option><option value="타격">타격</option></select>
     </div>
     <div class="field">
-      <label data-tip="정신력 (-45 ~ +45)&#10;코인 앞면 확률 = 50 + 정신력 (5~95%)">정신력</label>
-      <input class="num sm" type="number" id="spM" value="0" min="-45" max="45"
-             data-tip="정신력&#10;앞면 확률 = 50 + 정신력">
+      <label data-tip="정신력 (-45 ~ +45)
+코인 앞면 확률 = 50 + 정신력 (5~95%)">정신력</label>
+      <input class="num sm" type="number" id="spM" value="0" min="-45" max="45" data-tip="정신력
+앞면 확률 = 50 + 정신력">
     </div>
     <div class="field">
-      <label data-tip="코인 종류&#10;더하기 = 앞면에 위력 증가&#10;빼기 = 앞면에 위력 감소&#10;&#10;파괴 불가는 코인 하나하나에 붙는 성질이라&#10;위쪽 코인 그림을 직접 클릭해서 지정한다.">코인 종류</label>
-      <select class="pick" id="ctM"></select>
+      <label data-tip="코인 종류
+더하기 = 앞면에 위력 증가
+빼기 = 앞면에 위력 감소
+
+파괴 불가는 코인 하나하나에 붙는 성질이라
+위쪽 코인 그림을 직접 클릭해서 지정한다.">코인 종류</label>
+      <select class="pick" id="ctM" style="opacity: 1;"><option value="plus">더하기</option><option value="minus">빼기</option></select>
     </div>
-    <div class="divider" data-tip="여기부터는 내가 맞을 때의 내성.&#10;상대의 피해량은 이 값으로 계산된다.">내가 가진 내성</div>
-    <div class="resrow" id="trM"></div>
-    <div class="resrow" id="srM"></div>
+    <div class="divider" data-tip="여기부터는 내가 맞을 때의 내성.
+상대의 피해량은 이 값으로 계산된다.">내가 가진 내성</div>
+    <div class="resrow" id="trM"><span class="resitem">
+      <b style="color:#c8b48a" data-tip="참격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산.">참격</b>
+      <select id="trM0" data-tip="참격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#c8b48a" data-tip="관통 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산.">관통</b>
+      <select id="trM1" data-tip="관통 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#c8b48a" data-tip="타격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산.">타격</b>
+      <select id="trM2" data-tip="타격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span></div>
+    <div class="resrow" id="srM"><span class="resitem">
+      <b style="color:#d32f2f" data-tip="분노 내성
+상대가 분노 속성 스킬로 때릴 때 적용.">분노</b>
+      <select id="srM0" data-tip="분노 내성
+상대가 분노 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#e8590c" data-tip="색욕 내성
+상대가 색욕 속성 스킬로 때릴 때 적용.">색욕</b>
+      <select id="srM1" data-tip="색욕 내성
+상대가 색욕 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#b8860b" data-tip="나태 내성
+상대가 나태 속성 스킬로 때릴 때 적용.">나태</b>
+      <select id="srM2" data-tip="나태 내성
+상대가 나태 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#2f9e44" data-tip="탐식 내성
+상대가 탐식 속성 스킬로 때릴 때 적용.">탐식</b>
+      <select id="srM3" data-tip="탐식 내성
+상대가 탐식 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#1c7ed6" data-tip="우울 내성
+상대가 우울 속성 스킬로 때릴 때 적용.">우울</b>
+      <select id="srM4" data-tip="우울 내성
+상대가 우울 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#364fc7" data-tip="오만 내성
+상대가 오만 속성 스킬로 때릴 때 적용.">오만</b>
+      <select id="srM5" data-tip="오만 내성
+상대가 오만 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#9c36b5" data-tip="질투 내성
+상대가 질투 속성 스킬로 때릴 때 적용.">질투</b>
+      <select id="srM6" data-tip="질투 내성
+상대가 질투 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span></div>
     <div class="field">
-      <label data-tip="내가 걸린 취약 디버프 수치&#10;수치 1당 내가 받는 피해 +10%.">내 취약 수치</label>
-      <input class="num sm" type="number" id="frailM" value="0" min="0"
-             data-tip="취약 디버프&#10;수치 1당 받는 피해 +10%">
+      <label data-tip="내가 걸린 취약 디버프 수치
+수치 1당 내가 받는 피해 +10%.">내 취약 수치</label>
+      <input class="num sm" type="number" id="frailM" value="0" min="0" data-tip="취약 디버프
+수치 1당 받는 피해 +10%">
+    </div>
+    <div class="field">
+      <label data-tip="내가 걸린 마비 수치 (키워드.md)
+마비 1 = 코인 1개의 위력을 0으로 고정.
+코인을 굴릴 때마다 굴린 코인 수만큼 소모된다.
+
+동점 재굴림에도 소모된다 — 4코인이 동점이면 4+4로 8이 빠진다.
+계속 지는 경우에는 4+3+2+1로 10이 빠진다.
+
+합이 끝난 뒤의 공격 코인 굴림에도 적용되고, 일방공격에서도 소모된다.
+코인은 정상적으로 던져지므로 앞면 부가효과는 그대로 발동한다.">내 마비 수치</label>
+      <span class="stepper">
+        <button type="button" class="step" data-step="-1" data-target="parM">−</button>
+        <input class="num sm" type="number" id="parM" value="0" min="0" max="50" data-tip="마비
+코인 위력만 0으로 고정. 코인 토스 자체는 정상.">
+        <button type="button" class="step" data-step="1" data-target="parM">+</button>
+      </span>
     </div>
   </div>
 
   <div class="card">
     <h2 class="foe">상대의 스킬 — 상세</h2>
     <div class="field">
-      <label data-tip="스킬 종류&#10;합 가능: 공격 스킬 · 강화 가드 · 강화 반격&#10;합 불가: 가드 · 회피 · 일반 반격">스킬 종류</label>
-      <select class="pick" id="skF"></select>
+      <label data-tip="스킬 종류
+합 가능: 공격 스킬 · 강화 가드 · 강화 반격
+합 불가: 가드 · 회피 · 일반 반격">스킬 종류</label>
+      <select class="pick" id="skF"><option value="atk">공격 스킬</option><option value="guard">가드</option><option value="evade">회피</option><option value="ctr">일반 반격</option><option value="eguard">강화 가드</option><option value="ectr">강화 반격</option></select>
     </div>
     <div class="field">
       <label data-tip="죄악 속성">죄악 속성</label>
-      <select class="pick" id="sinF"></select>
+      <select class="pick" id="sinF"><option value="분노">분노</option><option value="색욕">색욕</option><option value="나태">나태</option><option value="탐식">탐식</option><option value="우울">우울</option><option value="오만">오만</option><option value="질투">질투</option></select>
     </div>
     <div class="field">
       <label data-tip="공격 유형">공격 유형</label>
-      <select class="pick" id="typeF"></select>
+      <select class="pick" id="typeF"><option value="참격">참격</option><option value="관통">관통</option><option value="타격">타격</option></select>
     </div>
     <div class="field">
-      <label data-tip="정신력&#10;앞면 확률 = 50 + 정신력">정신력</label>
-      <input class="num sm" type="number" id="spF" value="0" min="-45" max="45"
-             data-tip="정신력&#10;앞면 확률 = 50 + 정신력">
+      <label data-tip="정신력
+앞면 확률 = 50 + 정신력">정신력</label>
+      <input class="num sm" type="number" id="spF" value="0" min="-45" max="45" data-tip="정신력
+앞면 확률 = 50 + 정신력">
     </div>
     <div class="field">
       <label data-tip="코인 종류">코인 종류</label>
-      <select class="pick" id="ctF"></select>
+      <select class="pick" id="ctF" style="opacity: 1;"><option value="plus">더하기</option><option value="minus">빼기</option></select>
     </div>
-    <div class="divider" data-tip="상대가 맞을 때의 내성.&#10;내 피해량은 이 값으로 계산된다.">상대가 가진 내성</div>
-    <div class="resrow" id="trF"></div>
-    <div class="resrow" id="srF"></div>
+    <div class="divider" data-tip="상대가 맞을 때의 내성.
+내 피해량은 이 값으로 계산된다.">상대가 가진 내성</div>
+    <div class="resrow" id="trF"><span class="resitem">
+      <b style="color:#c8b48a" data-tip="참격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산.">참격</b>
+      <select id="trF0" data-tip="참격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#c8b48a" data-tip="관통 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산.">관통</b>
+      <select id="trF1" data-tip="관통 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#c8b48a" data-tip="타격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산.">타격</b>
+      <select id="trF2" data-tip="타격 내성
+취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25
+유형 내성과 속성 내성은 합연산."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span></div>
+    <div class="resrow" id="srF"><span class="resitem">
+      <b style="color:#d32f2f" data-tip="분노 내성
+상대가 분노 속성 스킬로 때릴 때 적용.">분노</b>
+      <select id="srF0" data-tip="분노 내성
+상대가 분노 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#e8590c" data-tip="색욕 내성
+상대가 색욕 속성 스킬로 때릴 때 적용.">색욕</b>
+      <select id="srF1" data-tip="색욕 내성
+상대가 색욕 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#b8860b" data-tip="나태 내성
+상대가 나태 속성 스킬로 때릴 때 적용.">나태</b>
+      <select id="srF2" data-tip="나태 내성
+상대가 나태 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#2f9e44" data-tip="탐식 내성
+상대가 탐식 속성 스킬로 때릴 때 적용.">탐식</b>
+      <select id="srF3" data-tip="탐식 내성
+상대가 탐식 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#1c7ed6" data-tip="우울 내성
+상대가 우울 속성 스킬로 때릴 때 적용.">우울</b>
+      <select id="srF4" data-tip="우울 내성
+상대가 우울 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#364fc7" data-tip="오만 내성
+상대가 오만 속성 스킬로 때릴 때 적용.">오만</b>
+      <select id="srF5" data-tip="오만 내성
+상대가 오만 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span><span class="resitem">
+      <b style="color:#9c36b5" data-tip="질투 내성
+상대가 질투 속성 스킬로 때릴 때 적용.">질투</b>
+      <select id="srF6" data-tip="질투 내성
+상대가 질투 속성 스킬로 때릴 때 적용."><option value="1">취약</option><option value="0.5">약점</option><option value="0">보통</option><option value="-0.125">견딤</option><option value="-0.25">내성</option></select>
+    </span></div>
     <div class="field">
-      <label data-tip="상대가 걸린 취약 디버프 수치&#10;수치 1당 상대가 받는 피해 +10%.">상대 취약 수치</label>
-      <input class="num sm" type="number" id="frailF" value="0" min="0"
-             data-tip="취약 디버프&#10;수치 1당 받는 피해 +10%">
+      <label data-tip="상대가 걸린 취약 디버프 수치
+수치 1당 상대가 받는 피해 +10%.">상대 취약 수치</label>
+      <input class="num sm" type="number" id="frailF" value="0" min="0" data-tip="취약 디버프
+수치 1당 받는 피해 +10%">
+    </div>
+    <div class="field">
+      <label data-tip="상대가 걸린 마비 수치 (키워드.md)
+마비 1 = 코인 1개의 위력을 0으로 고정.
+코인을 굴릴 때마다 굴린 코인 수만큼 소모된다.
+
+동점 재굴림에도 소모된다 — 4코인이 동점이면 4+4로 8이 빠진다.
+계속 지는 경우에는 4+3+2+1로 10이 빠진다.
+
+합이 끝난 뒤의 공격 코인 굴림에도 적용되고, 일방공격에서도 소모된다.
+코인은 정상적으로 던져지므로 앞면 부가효과는 그대로 발동한다.">상대 마비 수치</label>
+      <span class="stepper">
+        <button type="button" class="step" data-step="-1" data-target="parF">−</button>
+        <input class="num sm" type="number" id="parF" value="0" min="0" max="50" data-tip="마비
+코인 위력만 0으로 고정. 코인 토스 자체는 정상.">
+        <button type="button" class="step" data-step="1" data-target="parF">+</button>
+      </span>
     </div>
   </div>
 </div>
 
 <div class="result">
   <h2 style="margin:0 0 10px;font-size:13px;color:var(--gold);letter-spacing:.06em">시뮬레이션 결과 <span style="font-size:11px;color:#7d6d50;font-weight:600">— 몬테카를로 30,000회</span></h2>
-  <div class="rgrid" id="rgrid"></div>
+  <div class="rgrid" id="rgrid"><div class="rbox" data-tip="합에서 내 코인이 마지막까지 남을 확률.">
+       <div class="k">나의 합 승리</div><div class="v">50.1%</div>
+     </div><div class="rbox" data-tip="동점이면 코인 파괴 없이 다시 굴리므로 합 횟수가 늘어난다.
+합 1회당 피해 +3%.">
+       <div class="k">평균 합 횟수</div><div class="v">3.62회</div>
+     </div><div class="rbox" data-tip="내가 합을 이긴 경우만 모아 낸 피해의 산술 평균.
+합에서 지면 표본이 없으므로 —.">
+       <div class="k">내 피해량 (합 승리 시)</div><div class="v">12</div>
+     </div><div class="rbox" data-tip="상대가 합을 이긴 경우만 모아 낸 피해의 산술 평균.">
+       <div class="k">상대 피해량 (합 승리 시)</div><div class="v">12</div>
+     </div></div>
   <div class="hint">
     피해 공식 = (스킬 위력) × [ 1 + 유형내성 + 속성내성 + 레벨차보정 + 합횟수×0.03 + 취약×0.1 ] × [ 1 + %증감 ]<br>
     레벨차 보정 = (공격레벨 − 상대 수비레벨) ÷ (|레벨차| + 25) · 합 위력 보너스 = ⌊레벨차÷3⌋ (높은 쪽만)
@@ -548,13 +762,22 @@ const int = id => {
 };
 
 // 고정 시드 난수 — 관계없는 값을 바꿔도 승률이 흔들리지 않게 함
-let _seed = 0;
-function rand(){
-  _seed |= 0; _seed = _seed + 0x6D2B79F5 | 0;
-  let t = Math.imul(_seed ^ _seed >>> 15, 1 | _seed);
-  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
-  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+function makeRand(){
+  let s = 0;
+  const f = () => {
+    s = s + 0x6D2B79F5 | 0;
+    let t = Math.imul(s ^ s >>> 15, 1 | s);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  f.seed = v => { s = v | 0; };
+  return f;
 }
+// 합 굴림과 피해 굴림은 스트림을 분리한다.
+// 같이 쓰면 파괴 불가 코인의 유사 반격이 난수를 더 뽑아 뒤 표본의 합 굴림이 밀리고,
+// 메커니즘상 차이가 없는데도 승률이 흔들린다.
+const rand  = makeRand();   // 피해·회피 등
+const crand = makeRand();   // 합 굴림 전용
 
 function readSide(sfx){
   const cp = int('cp'+sfx);
@@ -577,7 +800,8 @@ function readSide(sfx){
     // 자신이 맞을 때의 내성
     tres  : TYPES.map((t, i) => parseFloat($('tr'+sfx+i).value)),
     sres  : SINS.map((s, i) => parseFloat($('sr'+sfx+i).value)),
-    frail : Math.max(0, Math.min(10, int('frail'+sfx)))   // 취약·보호는 최대 10 (키워드.md)
+    frail : Math.max(0, Math.min(10, int('frail'+sfx))),  // 취약·보호는 최대 10 (키워드.md)
+    par   : Math.max(0, Math.min(50, int('par'+sfx)))     // 마비 (키워드.md)
   };
 }
 
@@ -604,6 +828,48 @@ function heads(n, p){
   for (let i = 0; i < n; i++) if (rand() < p) h++;
   return h;
 }
+// 합 굴림용 (전용 스트림)
+function cheads(n, p){
+  let h = 0;
+  for (let i = 0; i < n; i++) if (crand() < p) h++;
+  return h;
+}
+
+/* ---------- 마비 (키워드.md) ----------
+   마비 1 = 코인 1개의 위력을 0으로 고정. 코인을 굴릴 때마다 굴린 코인 수만큼 빠진다.
+   동점으로 재굴림해도 소모되고 (4코인이 동점이면 4+4로 8), 합이 끝난 뒤의 공격 코인
+   굴림과 일방공격에서도 계속 빠진다.
+   막는 것은 위력 기여 하나뿐이다. 코인 토스 자체는 정상적으로 일어나므로
+   앞면 부가효과는 그대로 발동한다.
+   빼기 코인은 앞면마다 위력이 깎이므로, 마비가 그 감소까지 0으로 만들어 오히려 이득이다. */
+
+// 마비 재고. 굴린 코인 하나당 1씩 빠진다
+const paralysis = n => ({ left: Math.max(0, n || 0) });
+
+// 코인 1개를 굴려 위력 기여를 낸다. 마비 재고가 있으면 앞뒤와 무관하게 0
+function tossCoin(par, p, coinPow){
+  const head = rand() < p;
+  if (par && par.left > 0){ par.left--; return 0; }
+  return head ? coinPow : 0;
+}
+
+// 코인 n개를 굴린 위력 합 (마비 반영)
+function rollPower(base, coinPow, n, p, par){
+  let v = base;
+  for (let i = 0; i < n; i++) v += tossCoin(par, p, coinPow);
+  return v;
+}
+
+// 합 굴림 전용 (crand 스트림)
+function clashPower(side, n, p, bonus, par){
+  let v = side.base + bonus;
+  for (let i = 0; i < n; i++){
+    const head = crand() < p;
+    if (par.left > 0){ par.left--; continue; }
+    if (head) v += side.coin;
+  }
+  return v;
+}
 
 // 레벨차 보정
 function lvCorr(atk, def){
@@ -623,11 +889,13 @@ function attackDamage(side, foe, coinsLeft, clashCount, opt){
   let power = side.base + bonus - (opt.reduce || 0);
   let shield = opt.shield || 0;
   let total = 0, blocked = 0;
+  // 합에서 쓰고 남은 마비는 공격 단계의 코인 굴림에도 그대로 적용된다
+  const par = opt.par || paralysis(0);
   for (let i = 0; i < coinsLeft; i++){
-    if (rand() < p) power += side.coin;
+    power += tossCoin(par, p, side.coin);
     // 회피: 코인 1개마다 위력 비교. 회피 성공이면 그 코인은 무효고 회피는 재사용된다
     if (opt.evade){
-      const ev = opt.evadeBase + opt.evadeCoin * heads(opt.evadeCount, opt.evadeP);
+      const ev = rollPower(opt.evadeBase, opt.evadeCoin, opt.evadeCount, opt.evadeP, opt.evadePar);
       if (ev >= power){ blocked += Math.max(0, power) * Math.max(0, mult); continue; }
     }
     let hit = Math.max(0, power) * Math.max(0, mult);
@@ -692,8 +960,8 @@ function matchup(M, F){
 }
 
 // 수비 스킬의 위력 표본 (가드 보호막·회피 위력·반격 위력에 공통으로 쓰임)
-function defPower(side){
-  return side.base + side.coin * heads(side.count, headProb(side.sp));
+function defPower(side, par){
+  return rollPower(side.base, side.coin, side.count, headProb(side.sp), par);
 }
 
 function simulate(){
@@ -713,7 +981,15 @@ function simulate(){
     if (String(v) !== el.value) el.value = v;
   });
 
-  _seed = 20250719;                       // 매 실행 동일 시드
+  // 마비는 0 ~ 50 (상한은 계산량 보호용)
+  ['parM','parF'].forEach(id => {
+    const el = $(id);
+    if (el.value === '') return;
+    const v = Math.max(0, Math.min(50, parseInt(el.value, 10) || 0));
+    if (String(v) !== el.value) el.value = v;
+  });
+
+  rand.seed(20250719); crand.seed(20250719);   // 매 실행 동일 시드
   const M = readSide('M'), F = readSide('F');
   // 강화 가드는 파괴 불가 코인 1개 고정 (문서 5장)
   // 코인 위력은 스킬이 가진 값을 그대로 쓴다 (실제 인격은 기본위력 3 / 코인위력 +12 수준)
@@ -803,6 +1079,125 @@ const avg = (sum, n) => n ? Math.round(sum / n) : '—';
 const box = (k, v, tip) => ({ k, v, tip });
 
 // ---- 합 ----
+// ---------- 합 승률 정확 계산 ----------
+// 합의 승패는 코인 수만으로 결정되므로 시뮬레이션이 필요 없다.
+// 상태 (내 코인 수, 상대 코인 수) 의 마르코프 연쇄를 직접 풀면 정확값이 나온다.
+// 표본 오차가 사라지므로 대칭 구도는 정확히 50.0% 가 된다.
+
+// 이항분포 확률표. out[k] = P(앞면 k개)
+function binomPMF(n, p){
+  const out = new Array(n + 1);
+  let c = 1;                                  // 이항계수 nCk 를 굴려가며 계산
+  for (let k = 0; k <= n; k++){
+    out[k] = c * Math.pow(p, k) * Math.pow(1 - p, n - k);
+    c = c * (n - k) / (k + 1);
+  }
+  return out;
+}
+
+// 코인 i개 vs j개 로 한 번 굴렸을 때의 승/패 확률 (나머지가 동점)
+// qm, qf = 그 시점에 남아 있는 마비. 마비된 코인은 위력에 기여하지 않으므로
+// 위력 분포는 '마비 안 걸린 코인 수'에 대한 이항분포가 된다
+function rollOutcome(i, j, M, F, bM, bF, pmfM, pmfF, qm, qf){
+  const ri = i - Math.min(qm, i), rj = j - Math.min(qf, j);
+  let win = 0, lose = 0;
+  const a = pmfM[ri], b = pmfF[rj];
+  for (let hM = 0; hM <= ri; hM++){
+    if (a[hM] === 0) continue;
+    const powM = M.base + M.coin * hM + bM;
+    for (let hF = 0; hF <= rj; hF++){
+      const powF = F.base + F.coin * hF + bF;
+      const w = a[hM] * b[hF];
+      if (powM > powF) win += w;
+      else if (powF > powM) lose += w;
+    }
+  }
+  return { win, lose };
+}
+
+// { wr: 합 승률(%), rounds: 기대 합 횟수(동점 재굴림 포함), parLeftM/F: 합이 끝난 뒤 남는 기대 마비 }
+// 상태는 (내 코인, 상대 코인, 내 마비, 상대 마비) 네 칸이다.
+// 마비가 없을 때는 동점이 같은 상태로 돌아오므로 무한 재굴림을 닫힌 식으로 접을 수 있지만,
+// 마비가 남아 있으면 동점이어도 마비가 줄어 상태가 달라지므로 한 굴림씩 펼쳐야 한다.
+// 마비는 굴릴 때마다 반드시 줄어들어 순환이 생기지 않으므로 계산은 여전히 정확하다.
+function clashExact(M, F, bM, bF){
+  const pM = headProb(M.sp), pF = headProb(F.sp);
+  const nM0 = M.coins.length, nF0 = F.coins.length;
+  const qM0 = M.par, qF0 = F.par;
+
+  const pmfM = [], pmfF = [];
+  for (let i = 0; i <= nM0; i++) pmfM[i] = binomPMF(i, pM);
+  for (let j = 0; j <= nF0; j++) pmfF[j] = binomPMF(j, pF);
+
+  // reach[i][j][qm][qf] = 그 상태에 도달할 확률
+  const reach = [];
+  for (let i = 0; i <= nM0; i++){
+    reach[i] = [];
+    for (let j = 0; j <= nF0; j++){
+      reach[i][j] = [];
+      for (let qm = 0; qm <= qM0; qm++) reach[i][j][qm] = new Array(qF0 + 1).fill(0);
+    }
+  }
+  reach[nM0][nF0][qM0][qF0] = 1;
+
+  let dead = 0, rounds = 0;
+
+  // 승부가 나면 코인이 하나 빠지므로 i+j 가 큰 상태부터,
+  // 동점이면 마비만 빠지므로 같은 (i,j) 안에서는 마비가 많은 상태부터 훑는다
+  for (let sum = nM0 + nF0; sum >= 1; sum--){
+    for (let i = Math.max(0, sum - nF0); i <= Math.min(nM0, sum); i++){
+      const j = sum - i;
+      if (i === 0 || j === 0) continue;        // 이미 끝난 상태
+
+      for (let qs = qM0 + qF0; qs >= 0; qs--){
+        for (let qm = Math.max(0, qs - qF0); qm <= Math.min(qM0, qs); qm++){
+          const qf = qs - qm;
+          const w = reach[i][j][qm][qf];
+          if (!w) continue;
+
+          const o = rollOutcome(i, j, M, F, bM, bF, pmfM, pmfF, qm, qf);
+          const live = o.win + o.lose;         // 동점이 아닐 확률
+          // 이번 굴림에서 빠지는 마비 = 굴린 코인 수만큼 (모자라면 남은 만큼만)
+          const qm2 = Math.max(0, qm - i), qf2 = Math.max(0, qf - j);
+
+          if (qm === 0 && qf === 0){
+            // 마비가 없다 — 동점은 완전히 같은 상태로 돌아온다
+            // 양쪽 위력이 항상 같은 구도 (코인 위력 0 등) 는 영원히 동점이라 끝나지 않는다
+            if (live < 1e-12){ dead += w; continue; }
+            rounds += w / live;                // 기대 굴림 수 = 1/live 회
+            reach[i][j - 1][0][0] += w * o.win  / live;
+            reach[i - 1][j][0][0] += w * o.lose / live;
+          } else {
+            // 마비가 남아 있다 — 동점이어도 마비가 줄어 다른 상태가 된다
+            // 위력이 고정돼 동점 확률이 100% 여도 데드락이 아니다. 마비가 빠지면 풀린다
+            rounds += w;
+            reach[i][j - 1][qm2][qf2] += w * o.win;
+            reach[i - 1][j][qm2][qf2] += w * o.lose;
+            reach[i][j][qm2][qf2]     += w * (1 - live);
+          }
+        }
+      }
+    }
+  }
+
+  // 흡수 상태 집계. 합이 끝난 시점에 남은 마비는 공격 단계로 넘어간다
+  let win = 0, leftM = 0, leftF = 0;
+  const sweep = (i, j) => {
+    for (let qm = 0; qm <= qM0; qm++)
+      for (let qf = 0; qf <= qF0; qf++){
+        const w = reach[i][j][qm][qf];
+        if (!w) continue;
+        if (j === 0) win += w;
+        leftM += w * qm; leftF += w * qf;
+      }
+  };
+  for (let i = 1; i <= nM0; i++) sweep(i, 0);
+  for (let j = 1; j <= nF0; j++) sweep(0, j);
+
+  // 끝나지 않는 구도는 승패가 없다. 양쪽이 같은 처지이므로 절반씩 나눈다
+  return { wr: (win + dead * 0.5) * 100, rounds: rounds, parLeftM: leftM, parLeftF: leftF };
+}
+
 function runClash(M, F, bM, bF){
   const pM = headProb(M.sp), pF = headProb(F.sp);
   let win = 0, rounds = 0;
@@ -815,11 +1210,14 @@ function runClash(M, F, bM, bF){
     const poolM = M.coins.slice(), poolF = F.coins.slice();
     // 합에 져서 빠졌지만 파괴되지는 않은 코인 수
     let keptM = 0, keptF = 0, r = 0;
+    // 마비는 굴림마다 굴린 코인 수만큼 빠진다. 동점 재굴림에도 빠지고,
+    // 합이 끝난 뒤 남은 만큼은 공격 단계로 넘어간다
+    const parM = paralysis(M.par), parF = paralysis(F.par);
 
     while (poolM.length > 0 && poolF.length > 0 && r < 100){
       r++;
-      const powM = M.base + M.coin * heads(poolM.length, pM) + bM;
-      const powF = F.base + F.coin * heads(poolF.length, pF) + bF;
+      const powM = clashPower(M, poolM.length, pM, bM, parM);
+      const powF = clashPower(F, poolF.length, pF, bF, parF);
       // 동점이면 코인 파괴 없이 남은 코인을 다시 굴린다 (전투.md)
       // 파괴 불가 코인도 합에서는 똑같이 빠진다. 다만 '파괴'되지 않고 남아
       // 이후 코인 위력 1로 유사 반격을 발동한다 (문서 4장)
@@ -834,32 +1232,41 @@ function runClash(M, F, bM, bF){
       win++;
       if (M.skill === 'eguard'){
         // 강화 가드는 합을 이기면 체력 피해가 아니라 흐트러짐 피해를 준다 (문서 5장)
-        stagM += Math.max(0, M.base + M.coin * heads(nM, pM) + bM); stagMn++;
-      } else { dmgM += attackDamage(M, F, nM, r).dealt; nM_++; }
+        stagM += Math.max(0, rollPower(M.base + bM, M.coin, nM, pM, parM)); stagMn++;
+      } else { dmgM += attackDamage(M, F, nM, r, { par: parM }).dealt; nM_++; }
     } else if (nM <= 0 && nF > 0){
       if (F.skill === 'eguard'){
-        stagF += Math.max(0, F.base + F.coin * heads(nF, pF) + bF); stagFn++;
+        stagF += Math.max(0, rollPower(F.base + bF, F.coin, nF, pF, parF)); stagFn++;
       } else {
         // 강화 가드가 합에 지면 위력만큼 상대 위력을 경감한 뒤 피격한다 (문서 5장)
         // 경감 위력에는 레벨차 보정이 적용되지 않는다
         const cut = (M.skill === 'eguard')
-          ? Math.max(0, M.base + M.coin * heads(M.count, pM)) : 0;
-        dmgF += attackDamage(F, M, nF, r, { reduce: cut }).dealt; nF_++;
+          ? Math.max(0, rollPower(M.base, M.coin, M.count, pM, parM)) : 0;
+        dmgF += attackDamage(F, M, nF, r, { reduce: cut, par: parF }).dealt; nF_++;
       }
     }
 
-    // 합에 졌어도 파괴되지 않고 남은 코인은 유사 반격을 넣는다 (문서 4장).
-    // 강화 가드는 해당 없음 — [합 패배] 시 위력 경감만 있다 (문서 5장)
-    if (keptM > 0 && M.skill !== 'eguard'){ survM += unbreakCounter(M, F, keptM, r); survMn++; }
-    if (keptF > 0 && F.skill !== 'eguard'){ survF += unbreakCounter(F, M, keptF, r); survFn++; }
+    // 파괴 불가 코인의 유사 반격 (인게임 설명문 그대로)
+    //   "합 패배 시 코인이 파괴되지 않음"
+    //   "공격 스킬에 해당 코인이 있으면, 피격 후 해당 코인으로 공격함"
+    //   "합 패배 시 파괴되지 않은 코인은 코인 위력이 1이 됨"
+    // → 발동 조건 두 가지. 합에 졌을 것, 그리고 공격 스킬일 것.
+    //   합을 이긴 쪽은 이미 공격이 나갔으므로 유사 반격이 없다.
+    //   강화 가드는 합 패배 시 위력 경감만, 강화 반격은 그냥 피격 (문서 5장)
+    const iLost = nM <= 0 && nF > 0;
+    if (keptM > 0 && iLost && M.skill === 'atk'){ survM += unbreakCounter(M, F, keptM, r, parM); survMn++; }
+    if (keptF > 0 && iWon  && F.skill === 'atk'){ survF += unbreakCounter(F, M, keptF, r, parF); survFn++; }
   }
 
-  const wr = win / N * 100;
+  // 승률과 합 횟수는 시뮬레이션이 아니라 정확 계산값을 쓴다.
+  // 위 표본은 피해량처럼 정확 계산이 어려운 값에만 쓰인다.
+  const ex = clashExact(M, F, bM, bF);
+  const wr = ex.wr;
   setCenter('합 승률', wr);
 
   const out = [
-    box('나의 합 승리', wr.toFixed(1) + '%', '합에서 내 코인이 마지막까지 남을 확률.'),
-    box('평균 합 횟수', (rounds / N).toFixed(2) + '회',
+    box('나의 합 승리', wr.toFixed(1) + '%', '합에서 내 코인이 마지막까지 남을 확률.\n표본이 아니라 정확 계산값이다.'),
+    box('평균 합 횟수', ex.rounds.toFixed(2) + '회',
         '동점이면 코인 파괴 없이 다시 굴리므로 합 횟수가 늘어난다.\n합 1회당 피해 +3%.')
   ];
 
@@ -878,34 +1285,36 @@ function runClash(M, F, bM, bF){
       '상대가 합을 이긴 경우만 모아 낸 피해의 산술 평균.'));
 
   // 파괴 불가 코인을 쓰면 합에 져도 피해가 나가므로 항목이 늘어난다
-  // 강화 가드는 유사 반격이 없다 (문서 5장 — 합 패배 시 위력 경감만)
-  if (hasUnbreak(M) && M.skill !== 'eguard')
+  // 공격 스킬만 해당 (인게임: "공격 스킬에 해당 코인이 있으면")
+  if (hasUnbreak(M) && M.skill === 'atk')
     out.push(box('내 파불코 피해', avg(survM, survMn),
-      '합에 져서 빠진 파괴 불가 코인이 남아 넣는 피해.\n이때 코인 위력은 1로 떨어진다.\n발생한 경우만 모은 평균.'));
-  if (hasUnbreak(F) && F.skill !== 'eguard')
+      '합에 져서 피격당한 뒤, 파괴되지 않은 코인으로 넣는 피해.\n이때 코인 위력은 1로 떨어진다.\n합에 진 경우만 모은 평균.'));
+  if (hasUnbreak(F) && F.skill === 'atk')
     out.push(box('상대 파불코 피해', avg(survF, survFn),
-      '상대의 파괴 불가 코인이 합에 진 뒤 넣는 피해.\n이때 코인 위력은 1로 떨어진다.\n발생한 경우만 모은 평균.'));
+      '상대가 합에 진 뒤 파괴되지 않은 코인으로 넣는 피해.\n이때 코인 위력은 1로 떨어진다.\n합에 진 경우만 모은 평균.'));
 
   // 파괴 불가는 합에 져도 피해가 나가므로, 승패를 합친 기대값을 따로 보여준다
-  if (hasUnbreak(M) && M.skill !== 'eguard')
+  if (hasUnbreak(M) && M.skill === 'atk')
     out.push(box('내 기대 피해량 (전체)', Math.round((dmgM + survM) / N),
-      '합 승리 시 피해와 유사 반격 피해를 모두 합쳐 전체 시행으로 나눈 값.\n합에 져도 때릴 수 있는 파괴 불가 코인의 실제 기댓값.'));
-  if (hasUnbreak(F) && F.skill !== 'eguard')
+      '합 승리 시 피해와 합 패배 시 유사 반격 피해를 모두 합쳐 전체 시행으로 나눈 값.\n합에 져도 때릴 수 있는 파괴 불가 코인의 실제 기댓값.'));
+  if (hasUnbreak(F) && F.skill === 'atk')
     out.push(box('상대 기대 피해량 (전체)', Math.round((dmgF + survF) / N),
-      '상대의 합 승리 피해 + 유사 반격 피해를 전체 시행으로 나눈 값.'));
+      '상대의 합 승리 피해 + 합 패배 시 유사 반격 피해를 전체 시행으로 나눈 값.'));
 
   return out;
 }
 
 // 파괴 불가 코인의 유사 반격 (문서 4장)
 // 합 굴림에서는 원래 코인 위력을 쓰지만, 지고 남은 코인은 코인 위력이 1로 떨어진다
-function unbreakCounter(side, foe, coins, clashCount){
+function unbreakCounter(side, foe, coins, clashCount, par){
   const mult = damageMult(side, foe) + clashCount * 0.03;
   const p = headProb(side.sp);
-  let power = side.base;
+  // 유사 반격도 같은 스킬의 공격이므로 레벨차 보정 ⌊레벨차÷3⌋을 받는다 (문서 1장)
+  let power = side.base + clashBonus(skillLevel(side), skillLevel(foe));
   let total = 0;
   for (let i = 0; i < coins; i++){
-    if (rand() < p) power += 1;          // 코인 위력 1
+    // 유사 반격은 코인 위력이 1. 마비가 남아 있으면 그 1마저 0으로 고정된다
+    power += tossCoin(par, p, 1);
     total += Math.max(0, power) * Math.max(0, mult);
   }
   return total;
@@ -919,18 +1328,20 @@ function runOneway(M, F, mu){
 
   let dealt = 0, blocked = 0, ctr = 0;
   for (let s = 0; s < N; s++){
-    const opt = {};
-    if (D.skill === 'guard') opt.shield = Math.max(0, defPower(D));
+    // 일방공격에도 마비는 그대로 소모된다 (합이 없어도 코인은 굴리므로)
+    const parA = paralysis(A.par), parD = paralysis(D.par);
+    const opt = { par: parA };
+    if (D.skill === 'guard') opt.shield = Math.max(0, defPower(D, parD));
     if (D.skill === 'evade'){
       opt.evade = true; opt.evadeBase = D.base; opt.evadeCoin = D.coin;
-      opt.evadeCount = D.count; opt.evadeP = headProb(D.sp);
+      opt.evadeCount = D.count; opt.evadeP = headProb(D.sp); opt.evadePar = parD;
     }
     const r = attackDamage(A, D, A.count, 0, opt);
     dealt += r.dealt; blocked += r.blocked;
     // 일반 반격: 상대 공격 후 되받아친다. 반격 공격레벨이 공·방 둘 다 대체
     if (D.skill === 'ctr'){
       const ctrSide = Object.assign({}, D, { atk: D.atk, def: D.atk });
-      ctr += attackDamage(ctrSide, A, D.count, 0).dealt;
+      ctr += attackDamage(ctrSide, A, D.count, 0, { par: parD }).dealt;
     }
   }
 
@@ -1063,6 +1474,16 @@ document.querySelectorAll('input, select').forEach(el => {
   el.addEventListener('change', simulate);
 });
 
+/* ---------- 마비 +/- 버튼 ---------- */
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.step');
+  if (!btn) return;
+  const el = $(btn.dataset.target);
+  const v = Math.max(0, Math.min(50, (parseInt(el.value, 10) || 0) + (+btn.dataset.step)));
+  el.value = v;
+  simulate();
+});
+
 /* ---------- 코인 클릭: 파괴 불가 토글 ---------- */
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-coin]');
@@ -1105,6 +1526,9 @@ document.addEventListener('mouseout', e => {
 window.addEventListener('scroll', hideTip, true);
 
 simulate();
-</script>
-</body>
-</html>
+</script><div id="tip" class="" style="left: 608.078px; top: 107.062px;">합 최소 / 최대 위력 (계산값)
+최소 = 기본위력 + 합 위력 보너스
+최대 = 기본위력 + 코인위력×코인갯수 + 보너스</div>
+
+
+</body></html>
