@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>림버스 컴퍼니 - 합 시뮬레이터 (프로토타입)</title>
+<style>
+  :root{
+    --bg:#0b0906;
+    --panel:#17120c;
+    --line:#3d2f1c;
+    --gold:#e8b33c;
+    --gold-dim:#8a6a24;
+    --red:#c0392b;
+    --red-deep:#7a1f14;
+    --text:#e8dcc4;
+    --text-dim:#9b8a6a;
+    --mine:#d63b2a;
+    --foe:#e07a1f;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse at 50% 30%, #241a10 0%, #0b0906 70%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Pretendard','Malgun Gothic','맑은 고딕',sans-serif;
+    min-height:100vh;
+    padding:24px 16px 60px;
+  }
+  h1{
+    font-size:18px;letter-spacing:.04em;text-align:center;
+    color:var(--gold);margin:0 0 4px;font-weight:800;
+  }
+  .sub{text-align:center;font-size:12px;color:#8a7a5c;margin:0 0 26px}
+
+  /* ---------- 전투 스테이지 ---------- */
+  .stage{
+    position:relative;
+    max-width:1180px;margin:0 auto;
+    background:
+      linear-gradient(180deg, rgba(60,30,10,.55), rgba(10,8,5,.85)),
+      repeating-linear-gradient(115deg, #1a1108 0 18px, #150e07 18px 36px);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:34px 18px 30px;
+    overflow-x:auto;
+  }
+  .stage::before,.stage::after{
+    content:'';position:absolute;top:0;bottom:0;width:38%;pointer-events:none;
+  }
+  .stage::before{left:0;background:linear-gradient(90deg, rgba(160,30,20,.20), transparent)}
+  .stage::after{right:0;background:linear-gradient(270deg, rgba(200,110,20,.18), transparent)}
+
+  .clash{
+    position:relative;z-index:2;
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    align-items:center;
+    gap:10px;
+    min-width:940px;
+  }
+
+  /* ---------- 한 쪽 진영 ---------- */
+  .side{display:flex;align-items:center;gap:14px}
+  .side.right{flex-direction:row-reverse}
+
+  .statcol{display:flex;flex-direction:column;gap:7px;align-items:flex-end}
+  .side.right .statcol{align-items:flex-start}
+
+  /* 1행: 코인갯수 · 코인위력 ＋ 기본위력 · 피해% (안쪽이 기본위력) */
+  .powline{
+    display:flex;align-items:center;gap:5px;
+    padding:2px 6px;border-radius:3px;
+    background:linear-gradient(90deg, rgba(0,0,0,.5), rgba(0,0,0,.15));
+    border:1px solid rgba(140,105,40,.3);
+  }
+  .side.right .powline{flex-direction:row-reverse;background:linear-gradient(270deg, rgba(0,0,0,.5), rgba(0,0,0,.15))}
+
+  /* 2행: 수비레벨 🛡 공격레벨 Lv (안쪽이 공격레벨) */
+  .lvline{display:flex;align-items:center;gap:5px}
+  .side.right .lvline{flex-direction:row-reverse}
+
+  .coinicons{display:flex;gap:1px}
+  .coin{
+    width:15px;height:15px;border-radius:50%;cursor:pointer;
+    transition:transform .08s;
+    background:radial-gradient(circle at 35% 30%, #f0d089, #a97722 60%, #5e3f0f);
+    border:1px solid #2a1c07;
+    box-shadow:0 0 4px rgba(230,180,80,.35);
+  }
+  .coin.minus{background:radial-gradient(circle at 35% 30%, #cfd6e0, #7d8794 60%, #3b424b)}
+  .coin:hover{transform:scale(1.25)}
+  /* 파괴 불가 = 빨강 (문서 4장) */
+  .coin.unbreak{
+    background:radial-gradient(circle at 35% 30%, #ff9a86, #d33a24 60%, #6b1409);
+    box-shadow:0 0 5px rgba(230,70,40,.5);
+  }
+
+  .op{color:#d8c9a4;font-weight:800;font-size:15px}
+
+  .lvicon{font-size:15px;line-height:1;filter:drop-shadow(0 0 2px #000)}
+  .lvtag{font-size:11px;color:#d3bb84;font-weight:800;letter-spacing:.03em}
+
+  /* 코인 갯수 — 게임에는 숫자가 없고 코인 그림으로만 표시되므로 작게 */
+  .cnt{
+    width:30px;background:rgba(0,0,0,.5);
+    border:1px solid rgba(150,115,45,.3);border-radius:3px;
+    color:#b6a179;font-size:12px;font-weight:700;font-family:inherit;
+    text-align:center;padding:1px 2px;-moz-appearance:textfield;
+  }
+  .cnt::-webkit-outer-spin-button,.cnt::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .cnt:focus{outline:none;border-color:var(--gold)}
+
+  /* 입력 필드 */
+  .num{
+    width:56px;background:rgba(0,0,0,.55);
+    border:1px solid rgba(150,115,45,.45);
+    color:var(--gold);
+    font-size:17px;font-weight:800;font-family:inherit;
+    text-align:center;padding:2px 3px;border-radius:3px;
+    -moz-appearance:textfield;
+  }
+  .num.sm{width:44px;font-size:15px}
+  /* 기본위력 = 가장 크고 밝게 (게임에서도 제일 강조됨) */
+  .num.base{width:52px;font-size:21px;color:#fff6de;border-color:rgba(210,170,90,.55)}
+  /* 코인위력 = 한 단계 작게 */
+  .num.cp{width:42px;font-size:16px;color:#f0dcae}
+  /* 레벨 = 붉은 톤 */
+  .num.lv{width:48px;font-size:17px}
+  .num.lv.atk{color:#ffe9c0}
+  .num.lv.def{color:#e0a89a;border-color:rgba(170,90,70,.45)}
+  .num::-webkit-outer-spin-button,.num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .num:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(232,179,60,.2)}
+
+  select.pick{
+    background:rgba(0,0,0,.6);
+    border:1px solid rgba(150,115,45,.45);
+    color:var(--text);font-family:inherit;font-size:12px;font-weight:700;
+    padding:3px 5px;border-radius:3px;
+  }
+  select.pick:focus{outline:none;border-color:var(--gold)}
+
+  /* 육각형 스킬 아이콘 */
+  .hexwrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:0}
+  .hex{
+    width:104px;height:114px;
+    clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    display:flex;align-items:center;justify-content:center;
+    font-size:34px;
+    position:relative;
+    box-shadow:0 0 22px rgba(0,0,0,.75);
+  }
+  .hex::after{
+    content:'';position:absolute;inset:4px;
+    clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    border:2px solid rgba(255,225,160,.35);
+    clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+    pointer-events:none;
+  }
+  .typebadge{
+    position:absolute;bottom:-4px;left:-10px;
+    padding:2px 5px;border-radius:3px;font-size:10px;font-weight:800;
+    background:#241a10;border:1px solid rgba(190,150,70,.5);color:var(--gold);
+  }
+  .skillname{
+    margin-top:10px;
+    padding:4px 22px;
+    font-size:13px;font-weight:800;letter-spacing:.03em;
+    color:#fff3d8;
+    clip-path:polygon(6% 0,100% 0,94% 100%,0 100%);
+    white-space:nowrap;
+  }
+  .skillname.mine{background:linear-gradient(90deg,#8e2318,#d1402c)}
+  .skillname.foe{background:linear-gradient(90deg,#d1762c,#7d4110)}
+
+  /* 합 최소/최대 위력 */
+  .clashpow{
+    display:flex;flex-direction:column;align-items:center;gap:2px;
+    font-size:26px;font-weight:900;line-height:1;
+    color:var(--gold);
+    text-shadow:0 2px 0 #2a1a06, 0 0 12px rgba(232,179,60,.35);
+    min-width:56px;
+  }
+  .clashpow .bar{width:26px;height:2px;background:var(--gold-dim);margin:3px 0}
+
+  /* 피해 증감 % — 스킬 아이콘 위 (계산값) */
+  .pct{
+    font-size:21px;font-weight:900;color:#ffd24a;
+    text-shadow:0 2px 0 #3a2405, 0 0 12px rgba(255,180,40,.5);
+    margin-bottom:2px;align-self:flex-end;padding-right:6px;
+  }
+  .side.right .pct{align-self:flex-start;padding:0 0 0 6px}
+  .pct input:focus{outline:none;border-bottom-color:#ffd24a}
+
+  /* 중앙 승률 */
+  .center{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-width:190px;position:relative;
+  }
+  .spark{
+    position:absolute;width:150px;height:150px;
+    background:radial-gradient(circle, rgba(255,190,60,.55) 0%, rgba(255,110,20,.22) 35%, transparent 68%);
+    filter:blur(1px);pointer-events:none;
+  }
+  .wr{
+    position:relative;
+    font-size:52px;font-weight:900;line-height:1;
+    text-shadow:0 3px 0 #2a1000, 0 0 24px currentColor;
+  }
+  .wrlabel{position:relative;font-size:11px;letter-spacing:.22em;color:#c8a45e;margin-bottom:6px;font-weight:800}
+  .wrsub{position:relative;font-size:11px;color:#a08f6c;margin-top:8px;text-align:center;line-height:1.5}
+
+  /* ---------- 하단 설정 ---------- */
+  .grid{
+    max-width:1180px;margin:22px auto 0;
+    display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  }
+  .card{
+    background:var(--panel);border:1px solid var(--line);border-radius:5px;
+    padding:14px 16px;
+  }
+  .card h2{
+    margin:0 0 12px;font-size:13px;letter-spacing:.06em;
+    color:var(--gold);font-weight:800;
+    border-bottom:1px solid var(--line);padding-bottom:7px;
+  }
+  .card h2.mine{color:#ef6a55}
+  .card h2.foe{color:#f0a24a}
+  .field{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:5px 0;font-size:12px;
+  }
+  .field label{color:#b9a884;font-weight:600}
+  .hint{font-size:11px;color:#7d6d50;margin-top:10px;line-height:1.6}
+
+  /* 내성 — 가로 나열 */
+  .divider{
+    margin:14px 0 8px;padding-top:9px;border-top:1px solid var(--line);
+    font-size:11px;letter-spacing:.08em;color:#9b8a6a;font-weight:800;
+  }
+  .resrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+  .resitem{
+    display:flex;flex-direction:column;gap:3px;align-items:center;
+    padding:4px 5px;border-radius:3px;
+    background:rgba(0,0,0,.3);border:1px solid rgba(120,95,45,.25);
+  }
+  .resitem b{font-size:10.5px;font-weight:800;letter-spacing:-.02em}
+  .resitem select{
+    background:rgba(0,0,0,.5);border:1px solid rgba(150,115,45,.35);
+    color:var(--text);font-family:inherit;font-size:11px;font-weight:700;
+    padding:2px 3px;border-radius:3px;width:56px;text-align:center;
+  }
+  .resitem select:focus{outline:none;border-color:var(--gold)}
+  .resitem select.vuln{color:#ffc94a;border-color:rgba(232,179,60,.55)}
+  .resitem select.resist{color:#e8776a;border-color:rgba(200,80,60,.45)}
+
+  .result{
+    max-width:1180px;margin:16px auto 0;
+    background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:14px 16px;
+  }
+  .rgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:4px}
+  .rbox{background:rgba(0,0,0,.35);border:1px solid rgba(120,95,45,.3);border-radius:4px;padding:9px 11px}
+  .rbox .k{font-size:11px;color:#9b8a6a;margin-bottom:4px}
+  .rbox .v{font-size:19px;font-weight:800;color:var(--gold)}
+  .rbox .v small{font-size:11px;color:#9b8a6a;font-weight:600}
+
+  /* ---------- 툴팁 (input에는 ::after가 안 붙으므로 JS로 띄운다) ---------- */
+  [data-tip]{cursor:help}
+  #tip{
+    position:fixed;z-index:999;
+    background:#f2e4c4;color:#1d1509;
+    font-size:11.5px;font-weight:600;line-height:1.55;
+    padding:8px 11px;border-radius:4px;
+    max-width:280px;white-space:pre-line;text-align:left;
+    box-shadow:0 8px 22px rgba(0,0,0,.6);
+    opacity:0;pointer-events:none;transition:opacity .1s;
+  }
+  #tip.on{opacity:1}
+  #tip::after{
+    content:'';position:absolute;left:50%;top:100%;transform:translateX(-50%);
+    border:6px solid transparent;border-top-color:#f2e4c4;
+  }
+
+  .locked{
+    border-bottom:1px dotted rgba(232,179,60,.4);
+  }
+  @media (max-width:900px){
+    .grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<h1>림버스 컴퍼니 — 합 시뮬레이터</h1>
+<p class="sub">왼쪽 = 나의 스킬 · 값에 마우스를 올리면 설명 · 회색 점선 값은 계산 결과(입력 불가)</p>
+
+<div class="stage">
+  <div class="clash">
+
+    <!-- ================= 나의 스킬 ================= -->
+    <div class="side left">
+      <div class="statcol">
+        <div class="powline">
+          <input class="cnt" type="number" id="cntM" value="2" min="1" max="9"
+                 data-tip="코인 갯수&#10;합에서 이 수만큼 코인을 굴린다. 진 쪽이 1개씩 파괴됨.">
+          <span class="coinicons" id="coinsM" data-tip="코인 갯수&#10;합·공격에서 던지는 코인 수. 많을수록 합에서 유리."></span>
+          <input class="num cp" type="number" id="cpM" value="3"
+                 data-tip="코인 위력&#10;앞면 1개당 위력에 더해지는 값.&#10;빼기 코인이면 음수로 입력.">
+          <span class="op">＋</span>
+          <input class="num base" type="number" id="baseM" value="4"
+                 data-tip="기본 위력&#10;코인이 전부 뒷면일 때의 위력.">
+        </div>
+        <div class="lvline">
+          <input class="num lv def" type="number" id="defM" value="45"
+                 data-tip="수비 레벨&#10;상대 공격레벨 − 내 수비레벨 로 상대 피해량이 보정됨.">
+          <span class="lvicon" data-tip="수비 레벨&#10;상대가 나를 때릴 때 피해 레벨차 보정의 기준값.">🛡</span>
+          <input class="num lv atk" type="number" id="atkM" value="45"
+                 data-tip="공격 레벨&#10;인격 레벨 + 스킬 보정 + 공명 보정.&#10;상대보다 높으면 ⌊레벨차÷3⌋ 만큼 합 위력 보너스.">
+          <span class="lvtag" data-tip="공격 레벨">Lv</span>
+        </div>
+      </div>
+
+      <div class="hexwrap">
+        <div class="pct locked" id="pctM"
+             data-tip="피해량 증감 (계산값)&#10;상대의 유형 내성 + 속성 내성 + 레벨차 보정 + 취약 수치로 결정됨.&#10;직접 입력하는 값이 아님.">+0%</div>
+        <div class="hex" id="hexM">
+          ⚔
+          <span class="typebadge" id="typeBadgeM" data-tip="공격 유형&#10;참격·관통·타격. 상대의 유형 내성 판정에 쓰임."></span>
+        </div>
+        <div class="skillname mine">나의 스킬</div>
+      </div>
+
+      <div class="clashpow locked"
+           data-tip="합 최소 / 최대 위력 (계산값)&#10;최소 = 기본위력 + 합 위력 보너스&#10;최대 = 기본위력 + 코인위력×코인갯수 + 보너스">
+        <span id="minM">0</span>
+        <span class="bar"></span>
+        <span id="maxM">0</span>
+      </div>
+    </div>
+
+    <!-- ================= 중앙 ================= -->
+    <div class="center">
+      <div class="spark"></div>
+      <div class="wrlabel">예상 승률</div>
+      <div class="wr" id="wr">--%</div>
+      <div class="wrsub" id="wrsub"></div>
+    </div>
+
+    <!-- ================= 상대의 스킬 ================= -->
+    <div class="side right">
+      <div class="statcol">
+        <div class="powline">
+          <input class="cnt" type="number" id="cntF" value="2" min="1" max="9"
+                 data-tip="코인 갯수&#10;합에서 이 수만큼 코인을 굴린다.">
+          <span class="coinicons" id="coinsF" data-tip="코인 갯수&#10;합·공격에서 던지는 코인 수."></span>
+          <input class="num cp" type="number" id="cpF" value="3"
+                 data-tip="코인 위력&#10;앞면 1개당 위력에 더해지는 값.">
+          <span class="op">＋</span>
+          <input class="num base" type="number" id="baseF" value="4"
+                 data-tip="기본 위력&#10;코인이 전부 뒷면일 때의 위력.">
+        </div>
+        <div class="lvline">
+          <input class="num lv def" type="number" id="defF" value="45"
+                 data-tip="수비 레벨&#10;내 공격레벨 − 상대 수비레벨 로 내 피해량이 보정됨.">
+          <span class="lvicon" data-tip="수비 레벨">🛡</span>
+          <input class="num lv atk" type="number" id="atkF" value="45"
+                 data-tip="공격 레벨&#10;나보다 높으면 상대가 합 위력 보너스를 받음.">
+          <span class="lvtag" data-tip="공격 레벨">Lv</span>
+        </div>
+      </div>
+
+      <div class="hexwrap">
+        <div class="pct locked" id="pctF"
+             data-tip="피해량 증감 (계산값)&#10;내 유형 내성 + 속성 내성 + 레벨차 보정 + 취약 수치로 결정됨.">+0%</div>
+        <div class="hex" id="hexF">
+          🗡
+          <span class="typebadge" id="typeBadgeF" data-tip="공격 유형"></span>
+        </div>
+        <div class="skillname foe">상대의 스킬</div>
+      </div>
+
+      <div class="clashpow locked"
+           data-tip="합 최소 / 최대 위력 (계산값)&#10;최소 = 기본위력 + 합 위력 보너스&#10;최대 = 기본위력 + 코인위력×코인갯수 + 보너스">
+        <span id="minF">0</span>
+        <span class="bar"></span>
+        <span id="maxF">0</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= 설정 카드 ================= -->
+<div class="grid">
+  <div class="card">
+    <h2 class="mine">나의 스킬 — 상세</h2>
+    <div class="field">
+      <label data-tip="스킬 종류&#10;합 가능: 공격 스킬 · 강화 가드 · 강화 반격&#10;합 불가: 가드 · 회피 · 일반 반격">스킬 종류</label>
+      <select class="pick" id="skM"></select>
+    </div>
+    <div class="field">
+      <label data-tip="죄악 속성&#10;상대의 속성 내성 판정 기준.">죄악 속성</label>
+      <select class="pick" id="sinM"></select>
+    </div>
+    <div class="field">
+      <label data-tip="공격 유형&#10;상대의 유형 내성 판정 기준.">공격 유형</label>
+      <select class="pick" id="typeM"></select>
+    </div>
+    <div class="field">
+      <label data-tip="정신력 (-45 ~ +45)&#10;코인 앞면 확률 = 50 + 정신력 (5~95%)">정신력</label>
+      <input class="num sm" type="number" id="spM" value="0" min="-45" max="45"
+             data-tip="정신력&#10;앞면 확률 = 50 + 정신력">
+    </div>
+    <div class="field">
+      <label data-tip="코인 종류&#10;더하기 = 앞면에 위력 증가&#10;빼기 = 앞면에 위력 감소&#10;&#10;파괴 불가는 코인 하나하나에 붙는 성질이라&#10;위쪽 코인 그림을 직접 클릭해서 지정한다.">코인 종류</label>
+      <select class="pick" id="ctM"></select>
+    </div>
+    <div class="divider" data-tip="여기부터는 내가 맞을 때의 내성.&#10;상대의 피해량은 이 값으로 계산된다.">내가 가진 내성</div>
+    <div class="resrow" id="trM"></div>
+    <div class="resrow" id="srM"></div>
+    <div class="field">
+      <label data-tip="내가 걸린 취약 디버프 수치&#10;수치 1당 내가 받는 피해 +10%.">내 취약 수치</label>
+      <input class="num sm" type="number" id="frailM" value="0" min="0"
+             data-tip="취약 디버프&#10;수치 1당 받는 피해 +10%">
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 class="foe">상대의 스킬 — 상세</h2>
+    <div class="field">
+      <label data-tip="스킬 종류&#10;합 가능: 공격 스킬 · 강화 가드 · 강화 반격&#10;합 불가: 가드 · 회피 · 일반 반격">스킬 종류</label>
+      <select class="pick" id="skF"></select>
+    </div>
+    <div class="field">
+      <label data-tip="죄악 속성">죄악 속성</label>
+      <select class="pick" id="sinF"></select>
+    </div>
+    <div class="field">
+      <label data-tip="공격 유형">공격 유형</label>
+      <select class="pick" id="typeF"></select>
+    </div>
+    <div class="field">
+      <label data-tip="정신력&#10;앞면 확률 = 50 + 정신력">정신력</label>
+      <input class="num sm" type="number" id="spF" value="0" min="-45" max="45"
+             data-tip="정신력&#10;앞면 확률 = 50 + 정신력">
+    </div>
+    <div class="field">
+      <label data-tip="코인 종류">코인 종류</label>
+      <select class="pick" id="ctF"></select>
+    </div>
+    <div class="divider" data-tip="상대가 맞을 때의 내성.&#10;내 피해량은 이 값으로 계산된다.">상대가 가진 내성</div>
+    <div class="resrow" id="trF"></div>
+    <div class="resrow" id="srF"></div>
+    <div class="field">
+      <label data-tip="상대가 걸린 취약 디버프 수치&#10;수치 1당 상대가 받는 피해 +10%.">상대 취약 수치</label>
+      <input class="num sm" type="number" id="frailF" value="0" min="0"
+             data-tip="취약 디버프&#10;수치 1당 받는 피해 +10%">
+    </div>
+  </div>
+</div>
+
+<div class="result">
+  <h2 style="margin:0 0 10px;font-size:13px;color:var(--gold);letter-spacing:.06em">시뮬레이션 결과 <span style="font-size:11px;color:#7d6d50;font-weight:600">— 몬테카를로 30,000회</span></h2>
+  <div class="rgrid" id="rgrid"></div>
+  <div class="hint">
+    피해 공식 = (스킬 위력) × [ 1 + 유형내성 + 속성내성 + 레벨차보정 + 합횟수×0.03 + 취약×0.1 ] × [ 1 + %증감 ]<br>
+    레벨차 보정 = (공격레벨 − 상대 수비레벨) ÷ (|레벨차| + 25) · 합 위력 보너스 = ⌊레벨차÷3⌋ (높은 쪽만)
+  </div>
+</div>
+
+<script>
+'use strict';
+
+const SINS = [
+  ['분노','#d32f2f'],['색욕','#e8590c'],['나태','#b8860b'],['탐식','#2f9e44'],
+  ['우울','#1c7ed6'],['오만','#364fc7'],['질투','#9c36b5']
+];
+const TYPES = ['참격','관통','타격'];
+// 더하기/빼기는 스킬 전체 성질. 파괴 불가는 코인 하나하나에 개별로 붙는다
+const COINTYPES = [['더하기','plus'],['빼기','minus']];
+
+// 코인별 파괴 불가 여부 (코인 아이콘 클릭으로 토글)
+const coinFlags = { M: [], F: [] };
+const hasUnbreak = side => side.coins.some(Boolean);
+
+function syncFlags(sfx, count){
+  const a = coinFlags[sfx];
+  while (a.length < count) a.push(false);
+  a.length = count;
+  return a;
+}
+const RES = [['취약',1],['약점',0.5],['보통',0],['견딤',-0.125],['내성',-0.25]];
+
+// 스킬 종류. clash = 합 가능 (문서 1장: 공격 스킬 · 강화 가드 · 강화 반격)
+const SKILLS = [
+  ['공격 스킬',  'atk',   true ],
+  ['가드',       'guard', false],
+  ['회피',       'evade', false],
+  ['일반 반격',  'ctr',   false],
+  ['강화 가드',  'eguard',true ],
+  ['강화 반격',  'ectr',  true ]
+];
+const canClash = k => SKILLS.find(s => s[1] === k)[2];
+const skName   = k => SKILLS.find(s => s[1] === k)[0];
+
+function fill(id, items){
+  const el = document.getElementById(id);
+  el.innerHTML = items.map((it,i)=>{
+    const [label,val] = Array.isArray(it) ? it : [it,it];
+    return `<option value="${val}">${label}</option>`;
+  }).join('');
+  return el;
+}
+fill('sinM',SINS.map(s=>[s[0],s[0]]));  fill('sinF',SINS.map(s=>[s[0],s[0]]));
+fill('typeM',TYPES);                    fill('typeF',TYPES);
+fill('ctM',COINTYPES);                  fill('ctF',COINTYPES);
+fill('skM',SKILLS.map(s=>[s[0],s[1]])); fill('skF',SKILLS.map(s=>[s[0],s[1]]));
+document.getElementById('sinM').value = '분노';
+document.getElementById('sinF').value = '색욕';
+
+// 내성 칸 — 각 진영이 '자신이 맞을 때'의 내성을 가진다
+const OPT = RES.map(r => `<option value="${r[1]}">${r[0]}</option>`).join('');
+function buildRes(rowId, keys, prefix, sfx, tipMaker){
+  document.getElementById(rowId).innerHTML = keys.map((k, i) => {
+    const label = Array.isArray(k) ? k[0] : k;
+    const color = Array.isArray(k) ? `style="color:${k[1]}"` : 'style="color:#c8b48a"';
+    return `<span class="resitem">
+      <b ${color} data-tip="${tipMaker(label)}">${label}</b>
+      <select id="${prefix}${sfx}${i}" data-tip="${tipMaker(label)}">${OPT}</select>
+    </span>`;
+  }).join('');
+}
+const typeTip = n => `${n} 내성&#10;취약 +1 / 약점 +0.5 / 보통 0 / 견딤 −0.125 / 내성 −0.25&#10;유형 내성과 속성 내성은 합연산.`;
+const sinTip  = n => `${n} 내성&#10;상대가 ${n} 속성 스킬로 때릴 때 적용.`;
+['M','F'].forEach(s => {
+  buildRes('tr'+s, TYPES, 'tr', s, typeTip);
+  buildRes('sr'+s, SINS,  'sr', s, sinTip);
+});
+// 기본값: 전부 보통
+document.querySelectorAll('.resitem select').forEach(el => el.value = '0');
+
+const $ = id => document.getElementById(id);
+const int = id => {
+  const v = parseInt($(id).value, 10);
+  return Number.isFinite(v) ? v : 0;
+};
+
+// 고정 시드 난수 — 관계없는 값을 바꿔도 승률이 흔들리지 않게 함
+let _seed = 0;
+function rand(){
+  _seed |= 0; _seed = _seed + 0x6D2B79F5 | 0;
+  let t = Math.imul(_seed ^ _seed >>> 15, 1 | _seed);
+  t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+  return ((t ^ t >>> 14) >>> 0) / 4294967296;
+}
+
+function readSide(sfx){
+  const cp = int('cp'+sfx);
+  const type = $('ct'+sfx).value;
+  const count = Math.max(1, int('cnt'+sfx));
+  return {
+    count : count,
+    base  : int('base'+sfx),
+    // 코인별 파괴 불가 여부. 앞에서부터 0번, 1번 … 순서
+    coins : syncFlags(sfx, count).slice(),
+    // 빼기 코인은 앞면마다 위력이 깎인다
+    coin  : type === 'minus' ? -Math.abs(cp) : cp,
+    atk   : int('atk'+sfx),
+    def   : int('def'+sfx),
+    sp    : Math.max(-45, Math.min(45, int('sp'+sfx))),
+    coinType : type,
+    skill : $('sk'+sfx).value,
+    sin   : $('sin'+sfx).value,
+    atkType : $('type'+sfx).value,
+    // 자신이 맞을 때의 내성
+    tres  : TYPES.map((t, i) => parseFloat($('tr'+sfx+i).value)),
+    sres  : SINS.map((s, i) => parseFloat($('sr'+sfx+i).value)),
+    frail : Math.max(0, Math.min(10, int('frail'+sfx)))   // 취약·보호는 최대 10 (키워드.md)
+  };
+}
+
+// 스킬이 쓰는 레벨값 (문서 3장)
+//   공격레벨: 공격 스킬 · 일반 반격 · 강화 반격
+//   방어레벨: 가드 · 회피 · 강화 가드(=합 가능 가드)
+const DEF_LEVEL_SKILLS = ['guard', 'evade', 'eguard'];
+function skillLevel(side){
+  return DEF_LEVEL_SKILLS.includes(side.skill) ? side.def : side.atk;
+}
+const foeLevel = skillLevel;   // 이름만 다른 같은 규칙
+
+const headProb = sp => Math.max(5, Math.min(95, 50 + sp)) / 100;
+
+// 합 위력 보너스: 레벨 높은 쪽만 ⌊레벨차÷3⌋
+function clashBonus(myAtk, foeAtk){
+  const d = myAtk - foeAtk;
+  return d > 0 ? Math.floor(d / 3) : 0;
+}
+
+// 이항분포 표본
+function heads(n, p){
+  let h = 0;
+  for (let i = 0; i < n; i++) if (rand() < p) h++;
+  return h;
+}
+
+// 레벨차 보정
+function lvCorr(atk, def){
+  const d = atk - def;
+  return d / (Math.abs(d) + 25);
+}
+
+// 공격 단계: 남은 코인을 1개씩 굴리며 누적 위력으로 타격
+// shield  = 가드 보호막 (피해에서 먼저 깎임)
+// evadePow= 회피 위력 (코인마다 비교해 크거나 같으면 그 코인 무효)
+function attackDamage(side, foe, coinsLeft, clashCount, opt){
+  opt = opt || {};
+  const p = headProb(side.sp);
+  const bonus = clashBonus(skillLevel(side), skillLevel(foe));
+  const mult = damageMult(side, foe) + clashCount * 0.03;
+  // 강화 가드가 합에 지면 그 위력만큼 공격 위력이 경감된 채로 맞는다 (문서 5장)
+  let power = side.base + bonus - (opt.reduce || 0);
+  let shield = opt.shield || 0;
+  let total = 0, blocked = 0;
+  for (let i = 0; i < coinsLeft; i++){
+    if (rand() < p) power += side.coin;
+    // 회피: 코인 1개마다 위력 비교. 회피 성공이면 그 코인은 무효고 회피는 재사용된다
+    if (opt.evade){
+      const ev = opt.evadeBase + opt.evadeCoin * heads(opt.evadeCount, opt.evadeP);
+      if (ev >= power){ blocked += Math.max(0, power) * Math.max(0, mult); continue; }
+    }
+    let hit = Math.max(0, power) * Math.max(0, mult);
+    // 가드: 보호막이 먼저 소모된다
+    if (shield > 0){
+      const absorbed = Math.min(shield, hit);
+      shield -= absorbed; hit -= absorbed; blocked += absorbed;
+    }
+    total += hit;
+  }
+  return { dealt: total, blocked: blocked };
+}
+
+// 내가 때릴 때 적용되는 값은 전부 '맞는 쪽(foe)'의 내성·취약이다
+const foeTres = (side, foe) => foe.tres[TYPES.indexOf(side.atkType)];
+const foeSres = (side, foe) => foe.sres[SINS.findIndex(s => s[0] === side.sin)];
+
+// 피해 배율 — 내성·레벨차·취약으로만 결정된다 (입력값 아님)
+function damageMult(side, foe){
+  return 1 + foeTres(side, foe) + foeSres(side, foe)
+           + lvCorr(side.atk, foe.def) + foe.frail * 0.1;
+}
+
+const N = 30000;
+
+/* ---------- 매치업 판정 (문서 1·5·6장) ----------
+   합       : 양쪽 다 합 가능
+   일방공격 : 한쪽만 공격 계열, 상대는 일반 수비
+   상쇄     : 양쪽 다 공격이 없음 — 소멸 범위는 조합마다 다르다
+   무발동   : 강화 수비끼리 등, 받을 공격이 없어 아무것도 발동하지 않음         */
+function matchup(M, F){
+  const a = M.skill, b = F.skill;
+  if (canClash(a) && canClash(b)) return { kind:'clash' };
+
+  const atkLike = k => k === 'atk';
+  const normalDef = k => k === 'guard' || k === 'evade' || k === 'ctr';
+
+  // 공격 스킬 vs 일반 수비 → 일방공격
+  if (atkLike(a) && normalDef(b)) return { kind:'oneway', attacker:'M' };
+  if (atkLike(b) && normalDef(a)) return { kind:'oneway', attacker:'F' };
+
+  // 강화 수비는 상쇄당하지 않지만, 받을 일방공격이 없으면 발동하지 않는다
+  if (canClash(a) || canClash(b)){
+    return { kind:'none',
+      note:`${canClash(a) ? '내' : '상대'} 강화 수비는 상쇄당하지 않지만, 받을 일방공격이 없어 발동하지 않는다.` };
+  }
+
+  // 여기부터는 양쪽 다 일반 수비 — 상쇄 판정 (문서 6장)
+  const guardish = k => k === 'guard' || k === 'evade';
+  if (guardish(a) && guardish(b))
+    return { kind:'offset', gone:'both', note:'가드/회피끼리는 진짜 상쇄 — 양쪽 다 사라진다.' };
+  if (a === 'ctr' && b === 'ctr')
+    return { kind:'offset', gone:'none',
+      note:'일반 반격끼리는 상쇄 표시만 뜨고 둘 다 남는다. 다만 받을 공격이 없어 발동하지는 않는다.' };
+  if (a === 'ctr' && guardish(b))
+    return { kind:'offset', gone:'F',
+      note:'일반 반격은 상쇄되지 않는다. 상대의 가드/회피만 사라진다.' };
+  if (b === 'ctr' && guardish(a))
+    return { kind:'offset', gone:'M',
+      note:'상대의 일반 반격은 상쇄되지 않는다. 내 가드/회피만 사라진다.' };
+  return { kind:'offset', gone:'both' };
+}
+
+// 수비 스킬의 위력 표본 (가드 보호막·회피 위력·반격 위력에 공통으로 쓰임)
+function defPower(side){
+  return side.base + side.coin * heads(side.count, headProb(side.sp));
+}
+
+function simulate(){
+  // 정신력은 -45 ~ +45 로 강제
+  ['spM','spF'].forEach(id => {
+    const el = $(id);
+    if (el.value === '' || el.value === '-') return;
+    const v = Math.max(-45, Math.min(45, parseInt(el.value, 10) || 0));
+    if (String(v) !== el.value) el.value = v;
+  });
+
+  // 취약은 0 ~ 10 (키워드.md: 취약/보호 최대 10)
+  ['frailM','frailF'].forEach(id => {
+    const el = $(id);
+    if (el.value === '') return;
+    const v = Math.max(0, Math.min(10, parseInt(el.value, 10) || 0));
+    if (String(v) !== el.value) el.value = v;
+  });
+
+  _seed = 20250719;                       // 매 실행 동일 시드
+  const M = readSide('M'), F = readSide('F');
+  // 강화 가드는 파괴 불가 코인 1개 고정 (문서 5장)
+  // 코인 위력은 스킬이 가진 값을 그대로 쓴다 (실제 인격은 기본위력 3 / 코인위력 +12 수준)
+  if (M.skill === 'eguard'){ M.count = 1; M.coins = [true]; }
+  if (F.skill === 'eguard'){ F.count = 1; F.coins = [true]; }
+
+  const bM = clashBonus(skillLevel(M), skillLevel(F));
+  const bF = clashBonus(skillLevel(F), skillLevel(M));
+
+  // 표시용 최소/최대
+  const rng = (s, b) => {
+    const a = s.base + b;
+    const z = s.base + s.coin * s.count + b;
+    return [Math.min(a, z), Math.max(a, z)];
+  };
+  const [minM, maxM] = rng(M, bM), [minF, maxF] = rng(F, bF);
+  $('minM').textContent = minM; $('maxM').textContent = maxM;
+  $('minF').textContent = minF; $('maxF').textContent = maxF;
+
+  const mu = matchup(M, F);
+  const boxes = (mu.kind === 'clash')  ? runClash(M, F, bM, bF)
+              : (mu.kind === 'oneway') ? runOneway(M, F, mu)
+              : (mu.kind === 'offset') ? runOffset(M, F, mu)
+              :                          runNone(M, F, mu);
+  renderResult(boxes);
+  $('wrsub').textContent =
+    `${minM}~${maxM}  vs  ${minF}~${maxF}` +
+    (mu.kind === 'clash'
+      ? (bM ? `\n내 합 보너스 +${bM}` : '') + (bF ? `\n상대 합 보너스 +${bF}` : '')
+      : `\n${skName(M.skill)}  vs  ${skName(F.skill)}`);
+
+  // 구도에 따라 의미 없는 입력칸을 잠근다
+  lockFields('M', M, F); lockFields('F', F, M);
+
+  // 피해 증감 % — 내성·레벨차·취약에서 계산
+  showPct('pctM', M, F); showPct('pctF', F, M);
+
+  // 내성 칸 색: 취약 계열 노랑 / 내성 계열 빨강 (게임 슬롯 색과 동일)
+  document.querySelectorAll('.resitem select').forEach(el => {
+    const v = parseFloat(el.value);
+    el.classList.toggle('vuln', v > 0);
+    el.classList.toggle('resist', v < 0);
+  });
+
+  // 코인 아이콘 · 죄악 속성 색 · 공격 유형 뱃지
+  drawCoins('coinsM', M); drawCoins('coinsF', F);
+  paintHex('hexM', M.sin); paintHex('hexF', F.sin);
+  $('typeBadgeM').textContent = M.atkType;
+  $('typeBadgeF').textContent = F.atkType;
+}
+
+// 죄악 속성 색으로 스킬 아이콘을 칠한다 (요약_전투시스템.html 색상 기준)
+function paintHex(id, sin){
+  const c = (SINS.find(s => s[0] === sin) || SINS[0])[1];
+  const el = $(id);
+  el.style.background = `linear-gradient(160deg, ${c} 0%, ${shade(c,-0.45)} 60%, ${shade(c,-0.75)} 100%)`;
+  el.dataset.tip = `죄악 속성: ${sin}\n상대의 속성 내성 판정 기준.`;
+}
+
+function shade(hex, k){
+  const n = parseInt(hex.slice(1), 16);
+  const f = v => Math.max(0, Math.min(255, Math.round(v * (1 + k))));
+  return '#' + [f(n >> 16 & 255), f(n >> 8 & 255), f(n & 255)]
+    .map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+/* ================= 구도별 시뮬레이션 ================= */
+
+// 중앙 표시. pct 가 null 이면 승률이 존재하지 않는 구도다
+function setCenter(label, pct, sub){
+  const el = $('wr');
+  document.querySelector('.wrlabel').textContent = label;
+  if (pct === null){
+    el.textContent = sub;
+    el.style.fontSize = '30px';
+    el.style.color = '#c8a45e';
+  } else {
+    el.textContent = pct.toFixed(1) + '%';
+    el.style.fontSize = '52px';
+    // 0% = 빨강 → 100% = 노랑
+    el.style.color = `hsl(${(pct / 100 * 52).toFixed(1)}, 92%, ${(48 + pct / 100 * 14).toFixed(0)}%)`;
+  }
+}
+
+// 표본이 하나도 없으면 0이 아니라 '—' (예: 승률 0%일 때의 흐트러짐 피해)
+const avg = (sum, n) => n ? Math.round(sum / n) : '—';
+const box = (k, v, tip) => ({ k, v, tip });
+
+// ---- 합 ----
+function runClash(M, F, bM, bF){
+  const pM = headProb(M.sp), pF = headProb(F.sp);
+  let win = 0, rounds = 0;
+  let dmgM = 0, nM_ = 0, dmgF = 0, nF_ = 0;
+  let stagM = 0, stagMn = 0, stagF = 0, stagFn = 0;   // 강화 가드 흐트러짐 피해
+  let survM = 0, survMn = 0, survF = 0, survFn = 0;   // 파괴 불가 코인의 유사 반격
+
+  for (let s = 0; s < N; s++){
+    // 코인은 앞에서부터 파괴된다 (문서 1장). 어느 자리가 파괴 불가인지가 결과를 바꾼다
+    const poolM = M.coins.slice(), poolF = F.coins.slice();
+    // 합에 져서 빠졌지만 파괴되지는 않은 코인 수
+    let keptM = 0, keptF = 0, r = 0;
+
+    while (poolM.length > 0 && poolF.length > 0 && r < 100){
+      r++;
+      const powM = M.base + M.coin * heads(poolM.length, pM) + bM;
+      const powF = F.base + F.coin * heads(poolF.length, pF) + bF;
+      // 동점이면 코인 파괴 없이 남은 코인을 다시 굴린다 (전투.md)
+      // 파괴 불가 코인도 합에서는 똑같이 빠진다. 다만 '파괴'되지 않고 남아
+      // 이후 코인 위력 1로 유사 반격을 발동한다 (문서 4장)
+      if (powM > powF){ if (poolF.shift()) keptF++; }
+      else if (powF > powM){ if (poolM.shift()) keptM++; }
+    }
+    const nM = poolM.length, nF = poolF.length;
+    rounds += r;
+    const iWon = nF <= 0 && nM > 0;
+
+    if (iWon){
+      win++;
+      if (M.skill === 'eguard'){
+        // 강화 가드는 합을 이기면 체력 피해가 아니라 흐트러짐 피해를 준다 (문서 5장)
+        stagM += Math.max(0, M.base + M.coin * heads(nM, pM) + bM); stagMn++;
+      } else { dmgM += attackDamage(M, F, nM, r).dealt; nM_++; }
+    } else if (nM <= 0 && nF > 0){
+      if (F.skill === 'eguard'){
+        stagF += Math.max(0, F.base + F.coin * heads(nF, pF) + bF); stagFn++;
+      } else {
+        // 강화 가드가 합에 지면 위력만큼 상대 위력을 경감한 뒤 피격한다 (문서 5장)
+        // 경감 위력에는 레벨차 보정이 적용되지 않는다
+        const cut = (M.skill === 'eguard')
+          ? Math.max(0, M.base + M.coin * heads(M.count, pM)) : 0;
+        dmgF += attackDamage(F, M, nF, r, { reduce: cut }).dealt; nF_++;
+      }
+    }
+
+    // 합에 졌어도 파괴되지 않고 남은 코인은 유사 반격을 넣는다 (문서 4장).
+    // 강화 가드는 해당 없음 — [합 패배] 시 위력 경감만 있다 (문서 5장)
+    if (keptM > 0 && M.skill !== 'eguard'){ survM += unbreakCounter(M, F, keptM, r); survMn++; }
+    if (keptF > 0 && F.skill !== 'eguard'){ survF += unbreakCounter(F, M, keptF, r); survFn++; }
+  }
+
+  const wr = win / N * 100;
+  setCenter('합 승률', wr);
+
+  const out = [
+    box('나의 합 승리', wr.toFixed(1) + '%', '합에서 내 코인이 마지막까지 남을 확률.'),
+    box('평균 합 횟수', (rounds / N).toFixed(2) + '회',
+        '동점이면 코인 파괴 없이 다시 굴리므로 합 횟수가 늘어난다.\n합 1회당 피해 +3%.')
+  ];
+
+  if (M.skill === 'eguard')
+    out.push(box('내 흐트러짐 게이지 피해', avg(stagM, stagMn),
+      '강화 가드가 합을 이기면 체력이 아니라 상대의 흐트러짐 게이지를 위력만큼 깎는다.\n체력 피해는 0.'));
+  else
+    out.push(box('내 피해량 (합 승리 시)', avg(dmgM, nM_),
+      '내가 합을 이긴 경우만 모아 낸 피해의 산술 평균.\n합에서 지면 표본이 없으므로 —.'));
+
+  if (F.skill === 'eguard')
+    out.push(box('상대 흐트러짐 게이지 피해', avg(stagF, stagFn),
+      '상대의 강화 가드가 합을 이기면 내 흐트러짐 게이지를 위력만큼 깎는다.\n체력 피해는 0.'));
+  else
+    out.push(box('상대 피해량 (합 승리 시)', avg(dmgF, nF_),
+      '상대가 합을 이긴 경우만 모아 낸 피해의 산술 평균.'));
+
+  // 파괴 불가 코인을 쓰면 합에 져도 피해가 나가므로 항목이 늘어난다
+  // 강화 가드는 유사 반격이 없다 (문서 5장 — 합 패배 시 위력 경감만)
+  if (hasUnbreak(M) && M.skill !== 'eguard')
+    out.push(box('내 파불코 피해', avg(survM, survMn),
+      '합에 져서 빠진 파괴 불가 코인이 남아 넣는 피해.\n이때 코인 위력은 1로 떨어진다.\n발생한 경우만 모은 평균.'));
+  if (hasUnbreak(F) && F.skill !== 'eguard')
+    out.push(box('상대 파불코 피해', avg(survF, survFn),
+      '상대의 파괴 불가 코인이 합에 진 뒤 넣는 피해.\n이때 코인 위력은 1로 떨어진다.\n발생한 경우만 모은 평균.'));
+
+  // 파괴 불가는 합에 져도 피해가 나가므로, 승패를 합친 기대값을 따로 보여준다
+  if (hasUnbreak(M) && M.skill !== 'eguard')
+    out.push(box('내 기대 피해량 (전체)', Math.round((dmgM + survM) / N),
+      '합 승리 시 피해와 유사 반격 피해를 모두 합쳐 전체 시행으로 나눈 값.\n합에 져도 때릴 수 있는 파괴 불가 코인의 실제 기댓값.'));
+  if (hasUnbreak(F) && F.skill !== 'eguard')
+    out.push(box('상대 기대 피해량 (전체)', Math.round((dmgF + survF) / N),
+      '상대의 합 승리 피해 + 유사 반격 피해를 전체 시행으로 나눈 값.'));
+
+  return out;
+}
+
+// 파괴 불가 코인의 유사 반격 (문서 4장)
+// 합 굴림에서는 원래 코인 위력을 쓰지만, 지고 남은 코인은 코인 위력이 1로 떨어진다
+function unbreakCounter(side, foe, coins, clashCount){
+  const mult = damageMult(side, foe) + clashCount * 0.03;
+  const p = headProb(side.sp);
+  let power = side.base;
+  let total = 0;
+  for (let i = 0; i < coins; i++){
+    if (rand() < p) power += 1;          // 코인 위력 1
+    total += Math.max(0, power) * Math.max(0, mult);
+  }
+  return total;
+}
+
+// ---- 일방공격 (공격 vs 가드·회피·일반반격) ----
+function runOneway(M, F, mu){
+  const A  = mu.attacker === 'M' ? M : F;   // 때리는 쪽
+  const D  = mu.attacker === 'M' ? F : M;   // 맞는 쪽
+  const me = mu.attacker === 'M';
+
+  let dealt = 0, blocked = 0, ctr = 0;
+  for (let s = 0; s < N; s++){
+    const opt = {};
+    if (D.skill === 'guard') opt.shield = Math.max(0, defPower(D));
+    if (D.skill === 'evade'){
+      opt.evade = true; opt.evadeBase = D.base; opt.evadeCoin = D.coin;
+      opt.evadeCount = D.count; opt.evadeP = headProb(D.sp);
+    }
+    const r = attackDamage(A, D, A.count, 0, opt);
+    dealt += r.dealt; blocked += r.blocked;
+    // 일반 반격: 상대 공격 후 되받아친다. 반격 공격레벨이 공·방 둘 다 대체
+    if (D.skill === 'ctr'){
+      const ctrSide = Object.assign({}, D, { atk: D.atk, def: D.atk });
+      ctr += attackDamage(ctrSide, A, D.count, 0).dealt;
+    }
+  }
+
+  const total = dealt + blocked;
+  const blockRate = total > 0 ? blocked / total * 100 : 0;
+  setCenter('합 없음', null, '일방공격');
+
+  const who = me ? '내' : '상대';
+  const out = [
+    box('구도', `${skName(M.skill)} vs ${skName(F.skill)}`,
+        '한쪽만 공격 계열이라 합이 성립하지 않는다. 승률이라는 값 자체가 없다.'),
+    box(`${who} 관통 평균 피해량`, avg(dealt, N), '수비를 뚫고 실제로 들어간 피해의 평균.')
+  ];
+  if (D.skill === 'guard' || D.skill === 'evade')
+    out.push(box('피해 차단률', blockRate.toFixed(1) + '%',
+      D.skill === 'guard' ? '보호막이 흡수한 비율.' : '회피가 무효화한 코인의 피해 비율.'));
+  if (D.skill === 'ctr')
+    out.push(box(me ? '내가 받는 반격 피해' : '내 반격 피해', avg(ctr, N),
+      '일반 반격은 공·방 레벨이 모두 반격 공격레벨로 대체된다.'));
+  return out;
+}
+
+// ---- 상쇄 ----
+function runOffset(M, F, mu){
+  const GONE = {
+    both : '양쪽 소멸',
+    M    : '내 스킬만 소멸',
+    F    : '상대 스킬만 소멸',
+    none : '표시만 상쇄'
+  };
+  setCenter('합 없음', null, '상쇄');
+  return [
+    box('구도', `${skName(M.skill)} vs ${skName(F.skill)}`, '양쪽 다 공격이 없어 합이 성립하지 않는다.'),
+    box('소멸 범위', GONE[mu.gone], mu.note || ''),
+    box('내 스킬', mu.gone === 'both' || mu.gone === 'M' ? '소멸' : '남음',
+        '상쇄로 사라지는지 여부.'),
+    box('상대 스킬', mu.gone === 'both' || mu.gone === 'F' ? '소멸' : '남음',
+        '상쇄로 사라지는지 여부.'),
+    box('피해량', '0', '어느 쪽도 공격하지 않으므로 피해가 발생하지 않는다.')
+  ];
+}
+
+// ---- 발동 없음 ----
+function runNone(M, F, mu){
+  setCenter('합 없음', null, '발동 없음');
+  return [
+    box('구도', `${skName(M.skill)} vs ${skName(F.skill)}`, '합도 일방공격도 성립하지 않는다.'),
+    box('결과', '아무 일도 일어나지 않음', mu.note || ''),
+    box('피해량', '0', '공격이 없으므로 피해가 없다.')
+  ];
+}
+
+function renderResult(boxes){
+  $('rgrid').innerHTML = boxes.map(b =>
+    `<div class="rbox"${b.tip ? ` data-tip="${b.tip.replace(/"/g,'&quot;').replace(/\n/g,'&#10;')}"` : ''}>
+       <div class="k">${b.k}</div><div class="v">${b.v}</div>
+     </div>`).join('');
+}
+
+const RESNAME = v => (RES.find(r => r[1] === v) || ['?'])[0];
+
+function showPct(id, side, foe){
+  const t = foeTres(side, foe), s = foeSres(side, foe);
+  const v = (damageMult(side, foe) - 1) * 100;
+  const el = $(id);
+  el.textContent = (v >= 0 ? '+' : '') + v.toFixed(0) + '%';
+  el.style.color = v >= 0 ? '#ffd24a' : '#8fb4d8';
+  el.dataset.tip =
+    `피해량 증감 (계산값)\n` +
+    `맞는 쪽의 ${side.atkType} 내성 ${RESNAME(t)} ${t >= 0 ? '+' : ''}${t}\n` +
+    `맞는 쪽의 ${side.sin} 내성 ${RESNAME(s)} ${s >= 0 ? '+' : ''}${s}\n` +
+    `레벨차 보정 ${(lvCorr(side.atk, foe.def) * 100).toFixed(1)}%\n` +
+    `맞는 쪽 취약 ${foe.frail} → +${foe.frail * 10}%\n` +
+    `합 1회당 +3%는 별도 가산`;
+}
+
+// 구도별로 쓰이지 않는 입력칸을 비활성화하고, 어떤 레벨이 쓰이는지 툴팁에 적는다
+function lockFields(sfx, side, foe){
+  const k = side.skill;
+  const isDef = (k === 'guard' || k === 'evade');
+  const eguard = (k === 'eguard');
+
+  // 가드·회피는 방어레벨이 합 상대값 → 공격레벨을 쓰지 않는다
+  const atkEl = $('atk'+sfx);
+  atkEl.disabled = isDef;
+  atkEl.style.opacity = isDef ? .35 : 1;
+  atkEl.dataset.tip = isDef
+    ? `공격 레벨\n${skName(k)}는 공격 레벨을 쓰지 않는다.\n이 구도의 합 상대값은 수비 레벨이다.`
+    : `공격 레벨\n합 위력 보너스 = ⌊레벨차÷3⌋ (높은 쪽만)\n피해 레벨차 보정에도 쓰인다.`;
+
+  const defEl = $('def'+sfx);
+  defEl.dataset.tip = isDef
+    ? `수비 레벨\n${skName(k)}라서 이 값이 합 상대값이 된다.`
+    : `수비 레벨\n상대가 나를 때릴 때 피해 레벨차 보정의 기준값.\n합 승률에는 영향이 없다.`;
+
+  // 강화 가드는 파괴 불가 코인 1개 고정 (코인 위력은 스킬 값을 그대로 쓰므로 잠그지 않는다)
+  ['cnt'+sfx, 'ct'+sfx].forEach(id => {
+    const el = $(id);
+    el.disabled = eguard;
+    el.style.opacity = eguard ? .35 : 1;
+  });
+  if (eguard){
+    $('cnt'+sfx).value = 1;
+    coinFlags[sfx].length = 1; coinFlags[sfx][0] = true;   // 파괴 불가 1개 고정
+    // 실제 인격의 강화 가드는 기본위력 3 / 코인위력 +12 수준이다
+    if (int('cp'+sfx) <= 1) $('cp'+sfx).value = 12;
+    $('cnt'+sfx).dataset.tip = '강화 가드는 파괴 불가 코인 1개로 고정된다. 예외 없음.';
+    $('cp'+sfx).dataset.tip = '코인 위력\n강화 가드는 코인이 1개뿐이라 코인 위력이 높다 (실제 인격 기준 +12 안팎).';
+  } else {
+    $('cnt'+sfx).dataset.tip = '코인 갯수\n합에서 이 수만큼 코인을 굴린다.';
+  }
+}
+
+function drawCoins(id, side){
+  const n = Math.min(9, side.count);
+  const sfx = id.slice(-1);
+  const locked = side.skill === 'eguard';     // 강화 가드는 파괴 불가 1개 고정
+  $(id).innerHTML = Array.from({length:n}, (_, i) => {
+    const unbreak = side.coins[i];
+    const cls = 'coin' + (unbreak ? ' unbreak' : side.coin < 0 ? ' minus' : '');
+    const tip = `${i + 1}번째 코인 — ${unbreak ? '파괴 불가' : '일반'}\n` +
+      (locked ? '강화 가드는 파괴 불가 1개로 고정된다.'
+              : '클릭하면 파괴 불가로 바꾼다.\n코인은 앞에서부터 파괴되므로 몇 번째가 파괴 불가인지가 결과를 바꾼다.');
+    return `<span class="${cls}" data-coin="${sfx}:${i}" data-tip="${tip.replace(/\n/g,'&#10;')}"></span>`;
+  }).join('');
+}
+
+document.querySelectorAll('input, select').forEach(el => {
+  el.addEventListener('input', simulate);
+  el.addEventListener('change', simulate);
+});
+
+/* ---------- 코인 클릭: 파괴 불가 토글 ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-coin]');
+  if (!el) return;
+  const [sfx, idx] = el.dataset.coin.split(':');
+  if ($('sk'+sfx).value === 'eguard') return;      // 강화 가드는 고정
+  const a = coinFlags[sfx];
+  a[+idx] = !a[+idx];
+  simulate();
+});
+
+/* ---------- 툴팁 ---------- */
+const tip = document.createElement('div');
+tip.id = 'tip';
+document.body.appendChild(tip);
+
+function showTip(target){
+  const text = target.dataset.tip;
+  if (!text) return;
+  tip.textContent = text;
+  tip.classList.add('on');
+  const r = target.getBoundingClientRect();
+  const t = tip.getBoundingClientRect();
+  let left = r.left + r.width / 2 - t.width / 2;
+  left = Math.max(8, Math.min(window.innerWidth - t.width - 8, left));
+  let top = r.top - t.height - 10;
+  if (top < 8) top = r.bottom + 10;          // 위 공간 없으면 아래로
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+}
+const hideTip = () => tip.classList.remove('on');
+
+document.addEventListener('mouseover', e => {
+  const el = e.target.closest('[data-tip]');
+  if (el) showTip(el); else hideTip();
+});
+document.addEventListener('mouseout', e => {
+  if (e.target.closest('[data-tip]')) hideTip();
+});
+window.addEventListener('scroll', hideTip, true);
+
+simulate();
+</script>
+</body>
+</html>
