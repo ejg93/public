@@ -34,10 +34,10 @@
 |---|---|---|
 | Anthropic Claude API | `/ai-battle` — `BattleService.java` | [external-apis.md](backend/external-apis.md) |
 | YouTube Data API v3 | `/youtube` — `YoutubeService.java` | [external-apis.md](backend/external-apis.md) |
-| Yahoo Finance (비공식) | `/stock` — `StockService.java` ※ README에는 Polygon으로 적혀 있으나 실제 코드는 Yahoo | [external-apis.md](backend/external-apis.md) |
+| Yahoo Finance (비공식) | `/stock` — `StockService.java`, 키 없이 호출 | [external-apis.md](backend/external-apis.md) |
 | Kakao Local REST API | 채용정보 주소 → 좌표 변환 — `JobService.java` | [external-apis.md](backend/external-apis.md) |
 | 사람인 오픈 API | `/public-data` 채용정보 — `JobService.java` | [external-apis.md](backend/external-apis.md) |
 
 ## 배포
 
-배포(Vercel/Railway) 상세는 루트 [CLAUDE.md](../CLAUDE.md)의 "배포" 절 참고.
+배포(Vercel/Railway) 상세는 [deployment.md](deployment.md) 참고.
