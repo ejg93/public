@@ -1,14 +1,19 @@
 server.port=8080
-anthropic.api.key=YOUR_API_KEY_HERE
 cors.allowed-origins=http://localhost:3000
 logging.level.com.portfolio=DEBUG
-youtube.api.key=YOUR_YOUTUBE_API_KEY_HERE
-polygon.api.key=${POLYGON_API_KEY}
-kakao.rest.key=${KAKAO_REST_KEY}
-saramin.access.key=${SARAMIN_ACCESS_KEY}
-spring.datasource.url=${SPRING_DATASOURCE_URL}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+
+# --- 필수 ---
+anthropic.api.key=YOUR_ANTHROPIC_API_KEY
+youtube.api.key=YOUR_YOUTUBE_API_KEY
+
+# --- 선택 (미설정 시 해당 기능만 비활성) ---
+kakao.rest.key=
+saramin.access.key=
+
+# --- DB (필수) ---
+spring.datasource.url=jdbc:postgresql://localhost:5432/portfolio
+spring.datasource.username=YOUR_DB_USER
+spring.datasource.password=YOUR_DB_PASSWORD
 spring.datasource.driver-class-name=org.postgresql.Driver
 spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
 spring.jpa.hibernate.ddl-auto=update

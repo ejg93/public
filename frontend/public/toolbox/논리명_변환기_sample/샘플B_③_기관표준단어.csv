@@ -1,0 +1,11 @@
+물리명,논리명
+TB_BOOK_INFO,도서정보
+TB_LOAN_HSTRY,대출이력
+TB_RSVT_MST,예약마스터
+TB_EMP_INFO,직원정보
+BOOK_ID,도서아이디
+LOAN_NO,대출번호
+ARG_AMT,연체료
+CNPL,연락처
+DUE,반납예정
+BRCH,지점

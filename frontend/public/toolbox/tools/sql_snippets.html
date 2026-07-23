@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SQL 스니펫 모음</title>
+<!-- 변경이력·개선메모: 개선사항_메모.md 참고 -->
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root { --bg:#1e1e1e; --surface:#252526; --border:#3c3c3c; --text:#d4d4d4; --muted:#858585; --accent:#0078d4; --green:#16825d; --oracle:#f0a500; --mysql:#00bcd4; --pg:#336791; --ms:#c586c0; --sy:#ce9178; }
+body { font-family:'Consolas','D2Coding',monospace; background:var(--bg); color:var(--text); height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+header { background:var(--surface); border-bottom:1px solid var(--border); padding:10px 16px; display:flex; align-items:center; gap:12px; flex-shrink:0; flex-wrap:wrap; }
+header h1 { font-size:13px; color:#ccc; letter-spacing:2px; }
+.db-tabs { display:flex; gap:6px; }
+.db-tab { padding:5px 16px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:bold; letter-spacing:1px; border:2px solid transparent; }
+.db-tab.oracle { background:rgba(240,165,0,0.15); color:var(--oracle); }
+.db-tab.oracle.active { border-color:var(--oracle); }
+.db-tab.mysql { background:rgba(0,188,212,0.1); color:var(--mysql); }
+.db-tab.mysql.active { border-color:var(--mysql); }
+.db-tab.pg { background:rgba(51,103,145,0.2); color:#5b9bd5; }
+.db-tab.pg.active { border-color:#5b9bd5; }
+.db-tab.mssql { background:rgba(197,134,192,0.12); color:var(--ms); }
+.db-tab.mssql.active { border-color:var(--ms); }
+.db-tab.sybase { background:rgba(206,145,120,0.12); color:var(--sy); }
+.db-tab.sybase.active { border-color:var(--sy); }
+.search-wrap { display:flex; align-items:center; gap:6px; margin-left:auto; }
+.search-wrap input { background:#3c3c3c; border:1px solid #555; border-radius:3px; color:var(--text); font-family:'Consolas',monospace; font-size:12px; padding:5px 10px; outline:none; width:200px; }
+.search-wrap input:focus { border-color:var(--accent); }
+.search-wrap .clear-btn { background:none; border:none; color:var(--muted); cursor:pointer; font-size:14px; padding:0 4px; }
+.main { flex:1; display:flex; overflow:hidden; }
+.sidebar { width:200px; background:var(--surface); border-right:1px solid var(--border); padding:8px 6px; display:flex; flex-direction:column; gap:2px; overflow-y:auto; flex-shrink:0; }
+.sidebar-label { font-size:9px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; padding:8px 8px 4px; }
+.snip-btn { padding:7px 10px; border-radius:4px; cursor:pointer; font-size:12px; color:#ccc; transition:background 0.1s; border:none; background:transparent; text-align:left; width:100%; font-family:'Consolas',monospace; }
+.snip-btn:hover { background:#2a2d2e; }
+.snip-btn.active { background:#094771; color:#fff; }
+.snip-btn.hidden { display:none; }
+.no-results { font-size:11px; color:var(--muted); padding:12px 10px; }
+.content { flex:1; display:flex; flex-direction:column; overflow:hidden; padding:14px; gap:10px; }
+.query-header { display:flex; justify-content:space-between; align-items:flex-start; }
+.query-title { font-size:13px; color:#ccc; font-weight:bold; }
+.query-desc { font-size:11px; color:var(--muted); margin-top:2px; }
+.input-row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.input-row label { font-size:11px; color:var(--muted); white-space:nowrap; }
+input[type=text] { background:#3c3c3c; border:1px solid #555; border-radius:3px; color:var(--text); font-family:'Consolas',monospace; font-size:12px; padding:5px 8px; outline:none; }
+input[type=text]:focus { border-color:var(--accent); }
+textarea { flex:1; background:#111; border:1px solid var(--border); border-radius:4px; color:#9cdcfe; font-family:'Consolas','D2Coding',monospace; font-size:13px; padding:14px; resize:none; outline:none; line-height:1.8; overflow:auto; }
+.q-pre { flex:1; background:#111; border:1px solid var(--border); border-radius:4px; color:#9cdcfe; font-family:'Consolas','D2Coding',monospace; font-size:13px; padding:14px; line-height:1.8; overflow:auto; white-space:pre; margin:0; }
+.q-pre .bind { color:var(--oracle); font-weight:bold; }
+button { font-family:'Consolas',monospace; font-size:12px; border:none; border-radius:4px; cursor:pointer; padding:6px 16px; letter-spacing:1px; }
+.btn-green { background:var(--green); color:#fff; }
+.btn-g { background:#3c3c3c; color:var(--text); }
+.fav-btn { background:none; border:none; cursor:pointer; font-size:14px; padding:2px 6px; color:var(--muted); }
+.fav-btn.active { color:#f0a500; }
+#toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--green); color:#fff; padding:8px 20px; border-radius:20px; font-size:12px; opacity:0; transition:opacity 0.3s; pointer-events:none; z-index:999; }
+/* 커스텀 스크롤바 — 얇고 둥근 다크 (산출물_sql.html과 통일) */
+.sidebar, .content, .q-pre, textarea { scrollbar-width:thin; scrollbar-color:#454545 transparent; }
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#3a3a3a; border-radius:6px; border:2px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-thumb:hover { background:#565656; border:2px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-corner { background:transparent; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SQL SNIPPETS</h1>
+  <div class="db-tabs">
+    <div class="db-tab oracle active" onclick="switchDb('oracle')">Tibero/Oracle</div>
+    <div class="db-tab mysql" onclick="switchDb('mysql')">MySQL/MariaDB</div>
+    <div class="db-tab pg" onclick="switchDb('pg')">PostgreSQL</div>
+    <div class="db-tab mssql" onclick="switchDb('mssql')">SQL Server</div>
+    <div class="db-tab sybase" onclick="switchDb('sybase')">Sybase ASE</div>
+  </div>
+  <div class="search-wrap">
+    <input type="text" id="search_input" placeholder="스니펫 검색..." oninput="filterSnippets()">
+    <button class="clear-btn" onclick="clearSearch()" title="검색 초기화">✕</button>
+  </div>
+</header>
+<div class="main">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="content">
+    <div>
+      <div class="query-header">
+        <div>
+          <div class="query-title" id="q_title">좌측에서 항목을 선택하세요</div>
+          <div class="query-desc" id="q_desc"></div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="fav-btn" id="fav_btn" title="즐겨찾기" onclick="toggleFav()">☆</button>
+          <button class="btn-green" onclick="copyQuery()">복사</button>
+        </div>
+      </div>
+    </div>
+    <div class="input-row" id="param_row" style="display:none"></div>
+    <pre id="q_output" class="q-pre"><span style="color:var(--muted)">항목을 선택하면 쿼리가 표시됩니다</span></pre>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+var currentDb = 'oracle';
+var currentKey = null;
+var currentItem = null;
+var currentQuery = '';
+var favorites = JSON.parse(localStorage.getItem('sql_favs') || '{}');
+
+// ── 스니펫 데이터 ─────────────────────────────────────────────
+var SNIPPETS = {
+  oracle: [
+    {
+      category: '테이블',
+      items: [
+        {
+          key: 'tbl_list', label: '테이블 목록 조회', desc: '이름으로 검색 (LIKE)',
+          params: [{id:'tbl_search', label:'테이블명 (빈칸=전체)', placeholder:'USER%', width:180}],
+          query: function(p) {
+            var s = p.tbl_search || '%';
+            if (s && s.indexOf('%') < 0) s = '%' + s + '%';
+            return "SELECT TABLE_NAME\n     , NUM_ROWS\n     , LAST_ANALYZED\nFROM   ALL_TABLES\nWHERE  OWNER = USER\n  AND  TABLE_NAME LIKE '" + (s||'%') + "'\nORDER BY TABLE_NAME;";
+          }
+        },
+        {
+          key: 'col_list', label: '컬럼 목록 조회', desc: '컬럼 정의 + 코멘트 조인 조회',
+          params: [{id:'col_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.col_tbl || 'TABLE_NAME';
+            return "SELECT A.COLUMN_NAME\n     , A.DATA_TYPE\n     , A.DATA_LENGTH\n     , A.NULLABLE\n     , A.DATA_DEFAULT\n     , B.COMMENTS\nFROM   ALL_TAB_COLUMNS  A\n     , ALL_COL_COMMENTS B\nWHERE  A.OWNER = USER\n  AND  A.TABLE_NAME = '" + t.toUpperCase() + "'\n  AND  B.OWNER(+)       = A.OWNER\n  AND  B.TABLE_NAME(+)  = A.TABLE_NAME\n  AND  B.COLUMN_NAME(+) = A.COLUMN_NAME\nORDER BY A.COLUMN_ID;";
+          }
+        },
+        {
+          key: 'tbl_size', label: '테이블 용량 조회', desc: '용량 많이 차지하는 테이블',
+          params: [],
+          query: function(p) {
+            return "SELECT SEGMENT_NAME AS TABLE_NAME\n     , ROUND(BYTES / 1024 / 1024, 2) AS SIZE_MB\nFROM   USER_SEGMENTS\nWHERE  SEGMENT_TYPE = 'TABLE'\nORDER BY BYTES DESC;";
+          }
+        },
+        {
+          key: 'fk_ref', label: 'FK 참조 관계 조회', desc: '특정 테이블 참조 확인',
+          params: [{id:'fk_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.fk_tbl || 'TABLE_NAME';
+            return "SELECT A.TABLE_NAME      AS 참조하는테이블\n     , A.CONSTRAINT_NAME  AS FK명\n     , B.TABLE_NAME      AS 참조당하는테이블\n     , B.COLUMN_NAME     AS 참조컬럼\nFROM   ALL_CONSTRAINTS  A\n     , ALL_CONS_COLUMNS B\nWHERE  A.R_CONSTRAINT_NAME = B.CONSTRAINT_NAME\n  AND  A.CONSTRAINT_TYPE   = 'R'\n  AND  B.TABLE_NAME = '" + t.toUpperCase() + "'\nORDER BY A.TABLE_NAME;";
+          }
+        },
+        {
+          key: 'tbl_ddl', label: 'DDL 추출 (DBMS_METADATA)', desc: 'CREATE TABLE DDL 원본 추출',
+          params: [{id:'ddl_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.ddl_tbl || 'TABLE_NAME';
+            return "-- DDL 결과에 줄바꿈 적용\nEXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',TRUE);\nEXECUTE DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'PRETTY',TRUE);\n\nSELECT DBMS_METADATA.GET_DDL('TABLE', '" + t.toUpperCase() + "') AS DDL\nFROM   DUAL;";
+          }
+        },
+        {
+          key: 'tbl_comment', label: '테이블/컬럼 주석 조회', desc: '테이블 및 컬럼 comment 확인',
+          params: [{id:'comment_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.comment_tbl || 'TABLE_NAME';
+            return "-- 테이블 주석\nSELECT TABLE_NAME, COMMENTS\nFROM   ALL_TAB_COMMENTS\nWHERE  OWNER = USER\n  AND  TABLE_NAME = '" + t.toUpperCase() + "';\n\n-- 컬럼 주석\nSELECT COLUMN_NAME, COMMENTS\nFROM   ALL_COL_COMMENTS\nWHERE  OWNER = USER\n  AND  TABLE_NAME = '" + t.toUpperCase() + "'\nORDER BY COLUMN_NAME;";
+          }
+        },
+        {
+          key: 'tablespace', label: '테이블스페이스 용량', desc: '사용량 및 여유 공간 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT DF.TABLESPACE_NAME\n     , ROUND(DF.BYTES / 1024 / 1024, 1)           AS TOTAL_MB\n     , ROUND((DF.BYTES - NVL(FS.BYTES,0)) / 1024 / 1024, 1) AS USED_MB\n     , ROUND(NVL(FS.BYTES,0) / 1024 / 1024, 1)   AS FREE_MB\n     , ROUND((1 - NVL(FS.BYTES,0) / DF.BYTES) * 100, 1) AS USED_PCT\nFROM (\n  SELECT TABLESPACE_NAME, SUM(BYTES) BYTES\n  FROM   DBA_DATA_FILES\n  GROUP BY TABLESPACE_NAME\n) DF\nLEFT JOIN (\n  SELECT TABLESPACE_NAME, SUM(BYTES) BYTES\n  FROM   DBA_FREE_SPACE\n  GROUP BY TABLESPACE_NAME\n) FS ON DF.TABLESPACE_NAME = FS.TABLESPACE_NAME\nORDER BY USED_PCT DESC;";
+          }
+        },
+        {
+          key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
+          params: [
+            {id:'grp_tbl', label:'테이블명', placeholder:'USER_INFO', width:160},
+            {id:'grp_col', label:'컬럼명', placeholder:'USE_YN', width:120}
+          ],
+          query: function(p) {
+            var t = (p.grp_tbl || 'TABLE_NAME').toUpperCase();
+            var c = (p.grp_col || 'COLUMN_NAME').toUpperCase();
+            return "SELECT " + c + "\n     , COUNT(*) AS CNT\nFROM   " + t + "\nGROUP BY " + c + "\nORDER BY CNT DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '인덱스',
+      items: [
+        {
+          key: 'idx_list', label: '인덱스 목록 조회', desc: '테이블의 인덱스 및 컬럼',
+          params: [{id:'idx_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.idx_tbl || 'TABLE_NAME';
+            return "SELECT I.INDEX_NAME\n     , C.COLUMN_NAME\n     , C.COLUMN_POSITION\n     , I.UNIQUENESS\n     , I.STATUS\nFROM   ALL_INDEXES    I\n     , ALL_IND_COLUMNS C\nWHERE  I.OWNER      = USER\n  AND  I.TABLE_NAME  = '" + t.toUpperCase() + "'\n  AND  I.INDEX_NAME  = C.INDEX_NAME\nORDER BY I.INDEX_NAME, C.COLUMN_POSITION;";
+          }
+        },
+        {
+          key: 'idx_usage', label: '인덱스 사용 현황', desc: '안 쓰이는 인덱스 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT TABLE_NAME\n     , INDEX_NAME\n     , MONITORING\n     , USED\n     , START_MONITORING\n     , END_MONITORING\nFROM   V$OBJECT_USAGE\nORDER BY TABLE_NAME, INDEX_NAME;";
+          }
+        },
+      ]
+    },
+    {
+      category: '시퀀스',
+      items: [
+        {
+          key: 'seq_list', label: '시퀀스 목록 조회', desc: '전체 시퀀스 및 현재값',
+          params: [],
+          query: function(p) {
+            return "SELECT SEQUENCE_NAME\n     , MIN_VALUE\n     , MAX_VALUE\n     , INCREMENT_BY\n     , LAST_NUMBER\n     , CYCLE_FLAG\nFROM   USER_SEQUENCES\nORDER BY SEQUENCE_NAME;";
+          }
+        },
+        {
+          key: 'seq_curr', label: '시퀀스 현재/다음값', desc: 'CURRVAL / NEXTVAL 조회',
+          params: [{id:'seq_name', label:'시퀀스명', placeholder:'SEQ_USER_ID', width:180}],
+          query: function(p) {
+            var s = p.seq_name || 'SEQ_NAME';
+            return "SELECT " + s + ".CURRVAL FROM DUAL;\n-- 또는 다음 채번\nSELECT " + s + ".NEXTVAL FROM DUAL;";
+          }
+        },
+        {
+          key: 'seq_reset', label: '시퀀스 값 초기화', desc: '현재값을 특정 값으로 리셋',
+          params: [
+            {id:'seq_reset_name', label:'시퀀스명', placeholder:'SEQ_USER_ID', width:160},
+            {id:'seq_reset_val', label:'목표값', placeholder:'1', width:80}
+          ],
+          query: function(p) {
+            var s = p.seq_reset_name || 'SEQ_NAME';
+            var v = p.seq_reset_val || '1';
+            return "-- 현재값 확인 후 INCREMENT 조정으로 리셋\nDECLARE\n  v_curr NUMBER;\nBEGIN\n  SELECT " + s + ".NEXTVAL INTO v_curr FROM DUAL;\n  EXECUTE IMMEDIATE 'ALTER SEQUENCE " + s + " INCREMENT BY ' || (" + v + " - v_curr - 1);\n  SELECT " + s + ".NEXTVAL INTO v_curr FROM DUAL;\n  EXECUTE IMMEDIATE 'ALTER SEQUENCE " + s + " INCREMENT BY 1';\n  DBMS_OUTPUT.PUT_LINE('완료: ' || v_curr);\nEND;\n/";
+          }
+        },
+      ]
+    },
+    {
+      category: '성능/모니터링',
+      items: [
+        {
+          key: 'explain', label: '실행 계획', desc: '쿼리 성능 분석',
+          params: [{id:'exp_sql', label:'쿼리', placeholder:'SELECT * FROM USER_INFO', width:300}],
+          query: function(p) {
+            var sql = p.exp_sql || 'SELECT * FROM TABLE_NAME';
+            return "EXPLAIN PLAN FOR\n" + sql + ";\n\nSELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);";
+          }
+        },
+        {
+          key: 'slow_sql', label: '느린 SQL 찾기', desc: '평균 실행시간 기준 TOP 20',
+          params: [],
+          query: function(p) {
+            return "SELECT SQL_ID\n     , EXECUTIONS\n     , ROUND(ELAPSED_TIME / EXECUTIONS / 1000, 2) AS AVG_MS\n     , ROUND(ELAPSED_TIME / 1000, 2)               AS TOTAL_MS\n     , SQL_TEXT\nFROM (\n  SELECT A.SQL_ID\n       , A.EXECUTIONS\n       , A.ELAPSED_TIME\n       , B.SQL_TEXT\n  FROM   V$SQL     A\n       , V$SQLTEXT B\n  WHERE  A.SQL_ID    = B.SQL_ID\n    AND  A.EXECUTIONS > 0\n    AND  B.PIECE = 0\n)\nORDER BY AVG_MS DESC\nFETCH FIRST 20 ROWS ONLY;";
+          }
+        },
+        {
+          key: 'session', label: '활성 세션 확인', desc: '현재 접속 세션 목록',
+          params: [],
+          query: function(p) {
+            return "SELECT SID\n     , USERNAME\n     , STATUS\n     , MACHINE\n     , PROGRAM\n     , SQL_ID\n     , LAST_CALL_ET AS 경과초\nFROM   V$SESSION\nWHERE  USERNAME IS NOT NULL\nORDER BY LAST_CALL_ET DESC;";
+          }
+        },
+        {
+          key: 'lock', label: '락(Lock) 조회', desc: '락 걸린 세션 및 대상 객체',
+          params: [],
+          query: function(p) {
+            return "SELECT L1.SID           AS HOLDING_SID\n     , S1.USERNAME      AS HOLDING_USER\n     , L2.SID           AS WAITING_SID\n     , S2.USERNAME      AS WAITING_USER\n     , O.OBJECT_NAME    AS LOCKED_OBJECT\nFROM   V$LOCK    L1\n     , V$LOCK    L2\n     , V$SESSION S1\n     , V$SESSION S2\n     , ALL_OBJECTS O\nWHERE  L1.BLOCK = 1\n  AND  L2.REQUEST > 0\n  AND  L1.ID1 = L2.ID1\n  AND  L1.ID2 = L2.ID2\n  AND  L1.SID = S1.SID\n  AND  L2.SID = S2.SID\n  AND  L1.ID1 = O.OBJECT_ID\nORDER BY L1.SID;";
+          }
+        },
+        {
+          key: 'uncommit', label: '미커밋 트랜잭션', desc: '커밋 안 된 오래된 트랜잭션',
+          params: [],
+          query: function(p) {
+            return "SELECT S.SID\n     , S.USERNAME\n     , S.STATUS\n     , T.START_TIME\n     , T.USED_UBLK * 8 / 1024 AS UNDO_MB\nFROM   V$SESSION     S\n     , V$TRANSACTION T\nWHERE  S.TADDR = T.ADDR\nORDER BY T.START_TIME;";
+          }
+        },
+        {
+          key: 'kill_session', label: '세션 종료', desc: '특정 SID 세션 강제 종료',
+          params: [{id:'kill_sid', label:'SID', placeholder:'123', width:80}, {id:'kill_serial', label:'SERIAL#', placeholder:'456', width:80}],
+          query: function(p) {
+            var sid = p.kill_sid || 'SID';
+            var serial = p.kill_serial || 'SERIAL#';
+            return "-- 먼저 세션 확인\nSELECT SID, SERIAL#, USERNAME, STATUS, MACHINE\nFROM   V$SESSION\nWHERE  SID = " + sid + ";\n\n-- 세션 종료 (주의: DBA 권한 필요)\nALTER SYSTEM KILL SESSION '" + sid + "," + serial + "' IMMEDIATE;";
+          }
+        },
+      ]
+    },
+    {
+      category: '오브젝트',
+      items: [
+        {
+          key: 'proc_list', label: '프로시저/함수 목록', desc: '프로시저/함수 정보 및 상태',
+          params: [],
+          query: function(p) {
+            return "SELECT OBJECT_NAME\n     , OBJECT_TYPE\n     , TO_CHAR(CREATED, 'YYYY-MM-DD')      AS CREATED\n     , TO_CHAR(LAST_DDL_TIME, 'YYYY-MM-DD') AS LAST_MODIFIED\n     , STATUS\nFROM   USER_OBJECTS\nWHERE  OBJECT_TYPE IN ('PROCEDURE','FUNCTION','PACKAGE','PACKAGE BODY')\nORDER BY OBJECT_TYPE, OBJECT_NAME;";
+          }
+        },
+        {
+          key: 'view_list', label: '뷰 목록 및 소스', desc: '뷰 정의 소스 확인',
+          params: [{id:'view_name', label:'뷰명 (빈칸=전체)', placeholder:'V_USER', width:160}],
+          query: function(p) {
+            var v = p.view_name;
+            if(v && v.indexOf('%') < 0) v = '%' + v + '%';
+            return "SELECT VIEW_NAME\n     , TEXT_LENGTH\nFROM   ALL_VIEWS\nWHERE  OWNER = USER\n" + (v ? "  AND  VIEW_NAME LIKE '" + v.toUpperCase() + "'\n" : "") + "ORDER BY VIEW_NAME;\n\n-- 특정 뷰 소스 보기\n-- SELECT TEXT FROM ALL_VIEWS WHERE OWNER = USER AND VIEW_NAME = 'VIEW_NAME';";
+          }
+        },
+        {
+          key: 'trigger_list', label: '트리거 목록', desc: '트리거 정보 및 활성화 상태',
+          params: [{id:'trg_tbl', label:'테이블명 (빈칸=전체)', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.trg_tbl;
+            return "SELECT TRIGGER_NAME\n     , TRIGGER_TYPE\n     , TRIGGERING_EVENT\n     , TABLE_NAME\n     , STATUS\n     , TO_CHAR(LAST_CHANGE, 'YYYY-MM-DD') AS LAST_CHANGE\nFROM   ALL_TRIGGERS\nWHERE  OWNER = USER\n" + (t ? "  AND  TABLE_NAME = '" + t.toUpperCase() + "'\n" : "") + "ORDER BY TABLE_NAME, TRIGGER_NAME;";
+          }
+        },
+        {
+          key: 'invalid_obj', label: '무효 오브젝트 조회', desc: 'INVALID 상태 오브젝트 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT OBJECT_NAME\n     , OBJECT_TYPE\n     , STATUS\n     , TO_CHAR(LAST_DDL_TIME, 'YYYY-MM-DD HH24:MI:SS') AS LAST_CHANGED\nFROM   USER_OBJECTS\nWHERE  STATUS = 'INVALID'\nORDER BY OBJECT_TYPE, OBJECT_NAME;\n\n-- 재컴파일\n-- EXEC DBMS_UTILITY.COMPILE_SCHEMA(USER);";
+          }
+        },
+        {
+          key: 'recent_ddl', label: '최근 변경 객체', desc: 'LAST_DDL_TIME 기준 최근 N일',
+          params: [{id:'ddl_days', label:'최근 N일', placeholder:'7', width:80}],
+          query: function(p) {
+            var d = p.ddl_days || '7';
+            return "SELECT OBJECT_NAME\n     , OBJECT_TYPE\n     , STATUS\n     , TO_CHAR(CREATED, 'YYYY-MM-DD HH24:MI:SS')       AS CREATED\n     , TO_CHAR(LAST_DDL_TIME, 'YYYY-MM-DD HH24:MI:SS') AS LAST_DDL_TIME\nFROM   USER_OBJECTS\nWHERE  LAST_DDL_TIME >= SYSDATE - " + d + "\nORDER BY LAST_DDL_TIME DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '사용자/권한',
+      items: [
+        {
+          key: 'user_privs', label: '사용자 시스템 권한', desc: '부여된 시스템 권한 목록',
+          params: [],
+          query: function(p) {
+            return "-- 현재 사용자 시스템 권한\nSELECT PRIVILEGE, ADMIN_OPTION\nFROM   USER_SYS_PRIVS\nORDER BY PRIVILEGE;\n\n-- 롤 통한 권한 포함\nSELECT PRIVILEGE, ADMIN_OPTION\nFROM   SESSION_PRIVS\nORDER BY PRIVILEGE;";
+          }
+        },
+        {
+          key: 'table_privs', label: '테이블 권한 조회', desc: '다른 계정 테이블 접근 권한',
+          params: [],
+          query: function(p) {
+            return "-- 내가 부여받은 테이블 권한\nSELECT GRANTOR\n     , TABLE_NAME\n     , PRIVILEGE\n     , GRANTABLE\nFROM   ALL_TAB_PRIVS\nWHERE  GRANTEE = USER\nORDER BY TABLE_NAME, PRIVILEGE;";
+          }
+        },
+      ]
+    },
+    {
+      category: '통계/유지보수',
+      items: [
+        {
+          key: 'gather_stats', label: '통계정보 수집', desc: 'GATHER_TABLE_STATS 실행',
+          params: [{id:'stats_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.stats_tbl || 'TABLE_NAME';
+            return "-- 단일 테이블 통계 수집\nBEGIN\n  DBMS_STATS.GATHER_TABLE_STATS(\n    OWNNAME     => USER,\n    TABNAME     => '" + t.toUpperCase() + "',\n    ESTIMATE_PERCENT => DBMS_STATS.AUTO_SAMPLE_SIZE,\n    METHOD_OPT   => 'FOR ALL COLUMNS SIZE AUTO',\n    CASCADE      => TRUE\n  );\nEND;\n/\n\n-- 확인\nSELECT NUM_ROWS, LAST_ANALYZED\nFROM   ALL_TABLES\nWHERE  OWNER = USER AND TABLE_NAME = '" + t.toUpperCase() + "';";
+          }
+        },
+      ]
+    },
+    {
+      category: '환경/시간',
+      items: [
+        {
+          key: 'db_time', label: 'DB 현재 시간 확인', desc: '서버 시간·타임존 확인 (WAS-DB 시간 불일치 디버깅)',
+          params: [],
+          query: function(p) {
+            return "SELECT TO_CHAR(SYSDATE, 'YYYY-MM-DD HH24:MI:SS') AS DB_TIME      -- DB 서버 OS 시간\n     , SYSTIMESTAMP                              AS DB_TS        -- 타임존 오프셋 포함\n     , CURRENT_TIMESTAMP                         AS SESSION_TS   -- 세션 타임존 기준\n     , DBTIMEZONE                                AS DB_TZ\n     , SESSIONTIMEZONE                           AS SESSION_TZ\nFROM   DUAL;";
+          }
+        },
+      ]
+    },
+  ],
+
+  mysql: [
+    {
+      category: '테이블',
+      items: [
+        {
+          key: 'tbl_list', label: '테이블 목록 조회', desc: 'INFORMATION_SCHEMA 기반',
+          params: [
+            {id:'db_name', label:'DB명', placeholder:'mydb', width:120},
+            {id:'tbl_search', label:'테이블명 (빈칸=전체)', placeholder:'user%', width:160}
+          ],
+          query: function(p) {
+            var db = p.db_name || 'DATABASE()';
+            var s = p.tbl_search || '%';
+            if (s && s.indexOf('%') < 0) s = '%' + s + '%';
+            var dbCond = p.db_name ? "TABLE_SCHEMA = '" + db + "'" : "TABLE_SCHEMA = DATABASE()";
+            return "SELECT TABLE_NAME\n     , TABLE_ROWS\n     , ROUND(DATA_LENGTH / 1024 / 1024, 2)   AS DATA_MB\n     , ROUND(INDEX_LENGTH / 1024 / 1024, 2)  AS INDEX_MB\n     , TABLE_COMMENT\n     , CREATE_TIME\n     , UPDATE_TIME\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  " + dbCond + "\n  AND  TABLE_NAME LIKE '" + s + "'\nORDER BY TABLE_NAME;";
+          }
+        },
+        {
+          key: 'col_list', label: '컬럼 목록 조회', desc: '테이블 컬럼 전체 조회',
+          params: [
+            {id:'db_name2', label:'DB명', placeholder:'mydb', width:120},
+            {id:'col_tbl', label:'테이블명', placeholder:'user_info', width:160}
+          ],
+          query: function(p) {
+            var db = p.db_name2 ? "'" + p.db_name2 + "'" : "DATABASE()";
+            var t = p.col_tbl || 'table_name';
+            return "SELECT COLUMN_NAME\n     , COLUMN_TYPE\n     , IS_NULLABLE\n     , COLUMN_DEFAULT\n     , COLUMN_KEY\n     , EXTRA\n     , COLUMN_COMMENT\n     , ORDINAL_POSITION\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t.toLowerCase() + "'\nORDER BY ORDINAL_POSITION;";
+          }
+        },
+        {
+          key: 'tbl_size', label: '테이블 용량 조회', desc: '용량 상위 테이블',
+          params: [{id:'db_size', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var dbCond = p.db_size ? "TABLE_SCHEMA = '" + p.db_size + "'" : "TABLE_SCHEMA = DATABASE()";
+            return "SELECT TABLE_NAME\n     , ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS TOTAL_MB\n     , ROUND(DATA_LENGTH  / 1024 / 1024, 2) AS DATA_MB\n     , ROUND(INDEX_LENGTH / 1024 / 1024, 2) AS INDEX_MB\n     , TABLE_ROWS\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  " + dbCond + "\nORDER BY (DATA_LENGTH + INDEX_LENGTH) DESC;";
+          }
+        },
+        {
+          key: 'fk_ref', label: 'FK 참조 관계 조회', desc: '특정 테이블 참조 확인',
+          params: [
+            {id:'db_fk', label:'DB명', placeholder:'mydb', width:120},
+            {id:'fk_tbl', label:'테이블명', placeholder:'user_info', width:160}
+          ],
+          query: function(p) {
+            var db = p.db_fk ? "'" + p.db_fk + "'" : "DATABASE()";
+            var t = p.fk_tbl || 'table_name';
+            return "SELECT CONSTRAINT_NAME\n     , TABLE_NAME      AS 참조하는테이블\n     , COLUMN_NAME     AS FK컬럼\n     , REFERENCED_TABLE_NAME  AS 참조당하는테이블\n     , REFERENCED_COLUMN_NAME AS 참조컬럼\n     , UPDATE_RULE\n     , DELETE_RULE\nFROM   INFORMATION_SCHEMA.KEY_COLUMN_USAGE K\nJOIN   INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R\n       ON K.CONSTRAINT_NAME = R.CONSTRAINT_NAME\n      AND K.TABLE_SCHEMA    = R.CONSTRAINT_SCHEMA\nWHERE  K.TABLE_SCHEMA = " + db + "\n  AND  K.REFERENCED_TABLE_NAME = '" + t.toLowerCase() + "'\nORDER BY K.TABLE_NAME;";
+          }
+        },
+        {
+          key: 'tbl_ddl', label: 'DDL 추출', desc: 'SHOW CREATE TABLE',
+          params: [{id:'ddl_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.ddl_tbl || 'table_name';
+            return "SHOW CREATE TABLE " + t + ";";
+          }
+        },
+        {
+          key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
+          params: [
+            {id:'grp_tbl', label:'테이블명', placeholder:'user_info', width:160},
+            {id:'grp_col', label:'컬럼명', placeholder:'use_yn', width:120}
+          ],
+          query: function(p) {
+            var t = (p.grp_tbl || 'table_name').toLowerCase();
+            var c = (p.grp_col || 'column_name').toLowerCase();
+            return "SELECT " + c + "\n     , COUNT(*) AS cnt\nFROM   " + t + "\nGROUP BY " + c + "\nORDER BY cnt DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '인덱스',
+      items: [
+        {
+          key: 'idx_list', label: '인덱스 목록 조회', desc: '테이블의 인덱스 및 컬럼',
+          params: [
+            {id:'db_idx', label:'DB명', placeholder:'mydb', width:120},
+            {id:'idx_tbl', label:'테이블명', placeholder:'user_info', width:160}
+          ],
+          query: function(p) {
+            var db = p.db_idx ? "'" + p.db_idx + "'" : "DATABASE()";
+            var t = p.idx_tbl || 'table_name';
+            return "SELECT INDEX_NAME\n     , COLUMN_NAME\n     , SEQ_IN_INDEX\n     , NON_UNIQUE\n     , INDEX_TYPE\n     , CARDINALITY\nFROM   INFORMATION_SCHEMA.STATISTICS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t.toLowerCase() + "'\nORDER BY INDEX_NAME, SEQ_IN_INDEX;";
+          }
+        },
+      ]
+    },
+    {
+      category: '성능/모니터링',
+      items: [
+        {
+          key: 'explain', label: '실행 계획', desc: 'EXPLAIN 쿼리 성능 분석',
+          params: [{id:'exp_sql', label:'쿼리', placeholder:'SELECT * FROM user_info', width:300}],
+          query: function(p) {
+            var sql = p.exp_sql || 'SELECT * FROM table_name';
+            return "EXPLAIN " + sql + ";\n\n-- 상세 분석\nEXPLAIN FORMAT=JSON " + sql + ";";
+          }
+        },
+        {
+          key: 'slow_sql', label: '느린 SQL 찾기', desc: 'performance_schema 기반',
+          params: [],
+          query: function(p) {
+            return "SELECT DIGEST_TEXT                              AS query\n     , COUNT_STAR                                AS calls\n     , ROUND(AVG_TIMER_WAIT / 1000000000000, 4)  AS avg_sec\n     , ROUND(SUM_TIMER_WAIT / 1000000000000, 4)  AS total_sec\n     , SUM_ROWS_EXAMINED                         AS total_rows_examined\nFROM   performance_schema.events_statements_summary_by_digest\nWHERE  COUNT_STAR > 0\nORDER BY AVG_TIMER_WAIT DESC\nLIMIT 20;";
+          }
+        },
+        {
+          key: 'session', label: '활성 세션 확인', desc: '현재 접속 프로세스 목록',
+          params: [],
+          query: function(p) {
+            return "SHOW FULL PROCESSLIST;\n\n-- 또는\nSELECT ID, USER, HOST, DB, COMMAND, TIME, STATE, LEFT(INFO,100) AS QUERY\nFROM   INFORMATION_SCHEMA.PROCESSLIST\nWHERE  COMMAND != 'Sleep'\nORDER BY TIME DESC;";
+          }
+        },
+        {
+          key: 'lock', label: '락(Lock) 조회', desc: '락 대기 세션 확인 (5.7 이하 / 8.0+ 병기)',
+          params: [],
+          query: function(p) {
+            return "-- MySQL 5.7 이하 / MariaDB\nSELECT R.trx_id                      AS waiting_trx_id\n     , R.trx_mysql_thread_id          AS waiting_thread\n     , R.trx_query                    AS waiting_query\n     , B.trx_id                      AS blocking_trx_id\n     , B.trx_mysql_thread_id          AS blocking_thread\n     , B.trx_query                    AS blocking_query\nFROM   information_schema.innodb_lock_waits W\n     , information_schema.innodb_trx       R\n     , information_schema.innodb_trx       B\nWHERE  W.requesting_trx_id = R.trx_id\n  AND  W.blocking_trx_id   = B.trx_id;\n\n-- MySQL 8.0+ (innodb_lock_waits가 performance_schema로 이동)\nSELECT R.trx_id                       AS waiting_trx_id\n     , R.trx_mysql_thread_id          AS waiting_thread\n     , R.trx_query                    AS waiting_query\n     , B.trx_id                       AS blocking_trx_id\n     , B.trx_mysql_thread_id          AS blocking_thread\n     , B.trx_query                    AS blocking_query\nFROM   performance_schema.data_lock_waits W\n     , information_schema.innodb_trx      R\n     , information_schema.innodb_trx      B\nWHERE  W.requesting_engine_transaction_id = R.trx_id\n  AND  W.blocking_engine_transaction_id   = B.trx_id;\n\n-- MySQL 8.0+ 간편 조회\nSELECT * FROM sys.innodb_lock_waits;";
+          }
+        },
+        {
+          key: 'table_status', label: '테이블 상태 확인', desc: 'AUTO_INCREMENT, 엔진 등',
+          params: [{id:'ts_tbl', label:'테이블명', placeholder:'user_info', width:160}],
+          query: function(p) {
+            var t = p.ts_tbl || '';
+            return "SHOW TABLE STATUS" + (t ? " LIKE '" + t.toLowerCase() + "'" : "") + ";";
+          }
+        },
+      ]
+    },
+    {
+      category: '오브젝트',
+      items: [
+        {
+          key: 'proc_list', label: '프로시저/함수 목록', desc: 'stored procedure/function 조회',
+          params: [{id:'db_proc', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var db = p.db_proc ? "'" + p.db_proc + "'" : "DATABASE()";
+            return "SELECT ROUTINE_NAME\n     , ROUTINE_TYPE\n     , DATA_TYPE      AS return_type\n     , CREATED\n     , LAST_ALTERED\n     , ROUTINE_COMMENT\nFROM   INFORMATION_SCHEMA.ROUTINES\nWHERE  ROUTINE_SCHEMA = " + db + "\nORDER BY ROUTINE_TYPE, ROUTINE_NAME;";
+          }
+        },
+        {
+          key: 'view_list', label: '뷰 목록', desc: '뷰 목록 및 정의 확인',
+          params: [{id:'db_view', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var db = p.db_view ? "'" + p.db_view + "'" : "DATABASE()";
+            return "SELECT TABLE_NAME AS view_name\n     , VIEW_DEFINITION\nFROM   INFORMATION_SCHEMA.VIEWS\nWHERE  TABLE_SCHEMA = " + db + "\nORDER BY TABLE_NAME;";
+          }
+        },
+      ]
+    },
+    {
+      category: '환경/시간',
+      items: [
+        {
+          key: 'db_time', label: 'DB 현재 시간 확인', desc: '서버 시간·타임존 확인 (WAS-DB 시간 불일치 디버깅)',
+          params: [],
+          query: function(p) {
+            return "SELECT NOW()                  AS db_time      -- 문장 시작 시각\n     , SYSDATE()              AS real_time    -- 호출 시점 시각\n     , UTC_TIMESTAMP()        AS utc_time\n     , @@global.time_zone     AS global_tz    -- SYSTEM이면 OS 타임존 따름\n     , @@session.time_zone    AS session_tz;";
+          }
+        },
+      ]
+    },
+  ],
+
+  pg: [
+    {
+      category: '테이블',
+      items: [
+        {
+          key: 'tbl_list', label: '테이블 목록 조회', desc: 'public 스키마 기준',
+          params: [{id:'tbl_search', label:'테이블명 (빈칸=전체)', placeholder:'user%', width:180}],
+          query: function(p) {
+            var s = p.tbl_search || '%';
+            if (s && s.indexOf('%') < 0) s = '%' + s + '%';
+            return "SELECT table_name\n     , pg_size_pretty(pg_total_relation_size(quote_ident(table_name))) AS total_size\n     , pg_size_pretty(pg_relation_size(quote_ident(table_name)))       AS table_size\nFROM   information_schema.tables\nWHERE  table_schema = 'public'\n  AND  table_name LIKE '" + (s||'%') + "'\nORDER BY pg_total_relation_size(quote_ident(table_name)) DESC;";
+          }
+        },
+        {
+          key: 'col_list', label: '컬럼 목록 조회', desc: '테이블명 입력 시 컬럼 전체 조회',
+          params: [{id:'col_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.col_tbl || 'table_name';
+            return "SELECT column_name\n     , data_type\n     , character_maximum_length\n     , is_nullable\n     , column_default\n     , ordinal_position\nFROM   information_schema.columns\nWHERE  table_schema = 'public'\n  AND  table_name   = '" + t.toLowerCase() + "'\nORDER BY ordinal_position;";
+          }
+        },
+        {
+          key: 'tbl_size', label: '테이블 용량 조회', desc: '용량 상위 테이블',
+          params: [],
+          query: function(p) {
+            return "SELECT relname                                                   AS table_name\n     , pg_size_pretty(pg_total_relation_size(relid))             AS total_size\n     , pg_size_pretty(pg_relation_size(relid))                   AS table_size\n     , pg_size_pretty(pg_indexes_size(relid))                    AS index_size\n     , n_live_tup                                                AS row_count\nFROM   pg_catalog.pg_statio_user_tables\nORDER BY pg_total_relation_size(relid) DESC;";
+          }
+        },
+        {
+          key: 'fk_ref', label: 'FK 참조 관계 조회', desc: '특정 테이블 참조 확인',
+          params: [{id:'fk_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.fk_tbl || 'table_name';
+            return "SELECT tc.table_name        AS 참조하는테이블\n     , kcu.column_name      AS FK컬럼\n     , ccu.table_name       AS 참조당하는테이블\n     , ccu.column_name      AS 참조컬럼\n     , tc.constraint_name   AS FK명\nFROM   information_schema.table_constraints    tc\n     , information_schema.key_column_usage     kcu\n     , information_schema.constraint_column_usage ccu\nWHERE  tc.constraint_type     = 'FOREIGN KEY'\n  AND  tc.constraint_name      = kcu.constraint_name\n  AND  ccu.constraint_name     = tc.constraint_name\n  AND  ccu.table_name          = '" + t.toLowerCase() + "'\nORDER BY tc.table_name;";
+          }
+        },
+        {
+          key: 'tbl_ddl', label: 'DDL 추출', desc: 'pg_dump 명령어 참고',
+          params: [{id:'ddl_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.ddl_tbl || 'table_name';
+            return "-- 터미널에서 실행\n-- pg_dump -U postgres -d mydb -t " + t + " --schema-only\n\n-- 컬럼 정의 확인 (대체)\nSELECT 'CREATE TABLE ' || table_name || ' (' AS ddl\nFROM   information_schema.tables\nWHERE  table_name = '" + t + "'\nUNION ALL\nSELECT '  ' || column_name || ' ' || data_type\n       || CASE WHEN character_maximum_length IS NOT NULL THEN '(' || character_maximum_length || ')' ELSE '' END\n       || CASE WHEN is_nullable = 'NO' THEN ' NOT NULL' ELSE '' END\n       || ','\nFROM   information_schema.columns\nWHERE  table_name = '" + t + "'\nORDER BY 1;";
+          }
+        },
+        {
+          key: 'tbl_comment', label: '테이블/컬럼 주석 조회', desc: 'pg_description 기반',
+          params: [{id:'comment_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.comment_tbl || 'table_name';
+            return "-- 테이블 주석\nSELECT obj_description('" + t + "'::regclass::oid) AS table_comment;\n\n-- 컬럼 주석\nSELECT a.attname   AS column_name\n     , pg_catalog.col_description(a.attrelid, a.attnum) AS comment\nFROM   pg_catalog.pg_attribute a\nWHERE  a.attrelid = '" + t + "'::regclass\n  AND  a.attnum > 0\n  AND  NOT a.attisdropped\nORDER BY a.attnum;";
+          }
+        },
+        {
+          key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
+          params: [
+            {id:'grp_tbl', label:'테이블명', placeholder:'user_info', width:160},
+            {id:'grp_col', label:'컬럼명', placeholder:'use_yn', width:120}
+          ],
+          query: function(p) {
+            var t = (p.grp_tbl || 'table_name').toLowerCase();
+            var c = (p.grp_col || 'column_name').toLowerCase();
+            return "SELECT " + c + "\n     , COUNT(*) AS cnt\nFROM   " + t + "\nGROUP BY " + c + "\nORDER BY cnt DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '인덱스',
+      items: [
+        {
+          key: 'idx_list', label: '인덱스 목록 조회', desc: '테이블의 인덱스 및 컬럼',
+          params: [{id:'idx_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.idx_tbl || 'table_name';
+            return "SELECT indexname   AS index_name\n     , indexdef     AS definition\nFROM   pg_indexes\nWHERE  schemaname = 'public'\n  AND  tablename  = '" + t.toLowerCase() + "'\nORDER BY indexname;";
+          }
+        },
+        {
+          key: 'idx_usage', label: '인덱스 사용 현황', desc: '안 쓰이는 인덱스 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT relname        AS table_name\n     , indexrelname   AS index_name\n     , idx_scan        AS scan_count\n     , idx_tup_read\n     , idx_tup_fetch\nFROM   pg_stat_user_indexes\nORDER BY idx_scan ASC, relname;";
+          }
+        },
+        {
+          key: 'idx_bloat', label: '인덱스 bloat 확인', desc: '인덱스 비효율 공간 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT schemaname\n     , tablename\n     , indexname\n     , pg_size_pretty(pg_relation_size(indexrelid::regclass)) AS index_size\n     , idx_scan\nFROM   pg_stat_user_indexes\nJOIN   pg_index USING (indexrelid)\nWHERE  indisvalid = true\n  AND  idx_scan < 50\n  AND  pg_relation_size(indexrelid::regclass) > 1024 * 1024\nORDER BY pg_relation_size(indexrelid::regclass) DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '시퀀스',
+      items: [
+        {
+          key: 'seq_list', label: '시퀀스 목록 조회', desc: '전체 시퀀스 및 현재값',
+          params: [],
+          query: function(p) {
+            return "SELECT sequence_name\n     , start_value\n     , minimum_value\n     , maximum_value\n     , increment\n     , last_value\nFROM   information_schema.sequences\nWHERE  sequence_schema = 'public'\nORDER BY sequence_name;";
+          }
+        },
+        {
+          key: 'seq_curr', label: '시퀀스 현재/다음값', desc: 'currval / nextval 조회',
+          params: [{id:'seq_name', label:'시퀀스명', placeholder:'seq_user_id', width:180}],
+          query: function(p) {
+            var s = p.seq_name || 'seq_name';
+            return "-- 현재값 (nextval 호출 후 가능)\nSELECT currval('" + s + "');\n\n-- 다음 채번\nSELECT nextval('" + s + "');\n\n-- 현재값 확인 (currval 없이)\nSELECT last_value FROM " + s + ";";
+          }
+        },
+      ]
+    },
+    {
+      category: '성능/모니터링',
+      items: [
+        {
+          key: 'explain', label: '실행 계획', desc: '쿼리 성능 분석 (실제 실행)',
+          params: [{id:'exp_sql', label:'쿼리', placeholder:'SELECT * FROM user_info', width:300}],
+          query: function(p) {
+            var sql = p.exp_sql || 'SELECT * FROM table_name';
+            return "EXPLAIN ANALYZE\n" + sql + ";";
+          }
+        },
+        {
+          key: 'slow_sql', label: '느린 SQL 찾기', desc: 'pg_stat_statements 기반',
+          params: [],
+          query: function(p) {
+            return "SELECT query\n     , calls\n     , ROUND(total_exec_time::numeric, 2)              AS total_ms\n     , ROUND((total_exec_time / calls)::numeric, 2)    AS avg_ms\n     , ROUND(rows / calls::numeric, 2)                 AS avg_rows\nFROM   pg_stat_statements\nWHERE  calls > 0\nORDER BY avg_ms DESC\nLIMIT 20;";
+          }
+        },
+        {
+          key: 'session', label: '활성 세션 확인', desc: '현재 접속 세션 목록',
+          params: [],
+          query: function(p) {
+            return "SELECT pid\n     , usename        AS username\n     , application_name\n     , state\n     , wait_event_type\n     , wait_event\n     , ROUND(EXTRACT(EPOCH FROM (now() - state_change))::numeric, 0) AS elapsed_sec\n     , LEFT(query, 100) AS query_preview\nFROM   pg_stat_activity\nWHERE  usename IS NOT NULL\n  AND  pid <> pg_backend_pid()\nORDER BY elapsed_sec DESC NULLS LAST;";
+          }
+        },
+        {
+          key: 'lock', label: '락(Lock) 조회', desc: '락 걸린 세션 및 대기 세션',
+          params: [],
+          query: function(p) {
+            return "SELECT blocked.pid          AS waiting_pid\n     , blocked.usename      AS waiting_user\n     , blocking.pid         AS blocking_pid\n     , blocking.usename     AS blocking_user\n     , blocked.query        AS waiting_query\n     , blocking.query       AS blocking_query\nFROM   pg_stat_activity blocked\n     , pg_stat_activity blocking\n     , pg_locks          bl\n     , pg_locks          kl\nWHERE  bl.granted = false\n  AND  bl.pid = blocked.pid\n  AND  kl.granted = true\n  AND  kl.pid = blocking.pid\n  AND  bl.relation = kl.relation;";
+          }
+        },
+        {
+          key: 'uncommit', label: '미커밋 트랜잭션', desc: '오래된 미완료 트랜잭션',
+          params: [],
+          query: function(p) {
+            return "SELECT pid\n     , usename        AS username\n     , state\n     , xact_start\n     , ROUND(EXTRACT(EPOCH FROM (now() - xact_start))::numeric, 0) AS elapsed_sec\n     , LEFT(query, 100) AS query\nFROM   pg_stat_activity\nWHERE  xact_start IS NOT NULL\n  AND  state <> 'idle'\nORDER BY xact_start;";
+          }
+        },
+        {
+          key: 'vacuum', label: 'Vacuum 상태 확인', desc: 'autovacuum 현황 및 dead tuple',
+          params: [],
+          query: function(p) {
+            return "-- 테이블별 vacuum 상태\nSELECT relname                           AS table_name\n     , n_live_tup                         AS live_rows\n     , n_dead_tup                         AS dead_rows\n     , ROUND(n_dead_tup * 100.0 / NULLIF(n_live_tup + n_dead_tup, 0), 1) AS dead_pct\n     , last_vacuum\n     , last_autovacuum\n     , last_analyze\n     , last_autoanalyze\nFROM   pg_stat_user_tables\nORDER BY dead_pct DESC NULLS LAST\nLIMIT 20;\n\n-- 현재 실행 중인 autovacuum\nSELECT pid, query, state, wait_event\nFROM   pg_stat_activity\nWHERE  query LIKE '%autovacuum%';";
+          }
+        },
+        {
+          key: 'db_size', label: 'DB 및 스키마 용량', desc: 'DB 전체 용량 확인',
+          params: [],
+          query: function(p) {
+            return "-- 현재 DB 용량\nSELECT pg_size_pretty(pg_database_size(current_database())) AS db_size;\n\n-- 스키마별 용량\nSELECT schemaname\n     , pg_size_pretty(SUM(pg_total_relation_size(schemaname||'.'||tablename))::bigint) AS schema_size\nFROM   pg_tables\nGROUP BY schemaname\nORDER BY SUM(pg_total_relation_size(schemaname||'.'||tablename)) DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '오브젝트',
+      items: [
+        {
+          key: 'func_list', label: '함수/프로시저 목록', desc: '스키마 내 함수 목록',
+          params: [],
+          query: function(p) {
+            return "SELECT routine_name\n     , routine_type\n     , data_type      AS return_type\n     , created\n     , last_altered\nFROM   information_schema.routines\nWHERE  routine_schema = 'public'\nORDER BY routine_name;";
+          }
+        },
+        {
+          key: 'view_list', label: '뷰 목록 조회', desc: 'public 스키마 뷰 목록',
+          params: [],
+          query: function(p) {
+            return "SELECT table_name   AS view_name\n     , view_definition\nFROM   information_schema.views\nWHERE  table_schema = 'public'\nORDER BY table_name;";
+          }
+        },
+        {
+          key: 'trigger_list', label: '트리거 목록', desc: '트리거 및 이벤트 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT trigger_name\n     , event_manipulation   AS event\n     , event_object_table   AS table_name\n     , action_timing\n     , action_statement\nFROM   information_schema.triggers\nWHERE  trigger_schema = 'public'\nORDER BY table_name, trigger_name;";
+          }
+        },
+      ]
+    },
+    {
+      category: '사용자/권한',
+      items: [
+        {
+          key: 'user_list', label: '사용자 목록', desc: '역할 및 권한 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT rolname\n     , rolsuper\n     , rolcreaterole\n     , rolcreatedb\n     , rolcanlogin\n     , rolconnlimit\nFROM   pg_roles\nORDER BY rolname;";
+          }
+        },
+        {
+          key: 'table_privs', label: '테이블 권한 조회', desc: '테이블 접근 권한 확인',
+          params: [{id:'priv_tbl', label:'테이블명 (빈칸=전체)', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.priv_tbl;
+            return "SELECT grantee\n     , table_name\n     , privilege_type\n     , is_grantable\nFROM   information_schema.role_table_grants\nWHERE  table_schema = 'public'\n" + (t ? "  AND  table_name = '" + t.toLowerCase() + "'\n" : "") + "ORDER BY table_name, grantee;";
+          }
+        },
+      ]
+    },
+    {
+      category: '환경/시간',
+      items: [
+        {
+          key: 'db_time', label: 'DB 현재 시간 확인', desc: '서버 시간·타임존 확인 (WAS-DB 시간 불일치 디버깅)',
+          params: [],
+          query: function(p) {
+            return "SELECT NOW()                        AS db_time     -- 트랜잭션 시작 시각 (CURRENT_TIMESTAMP와 동일)\n     , CLOCK_TIMESTAMP()            AS real_time   -- 호출 시점 실제 시각 (장기 트랜잭션에서 구분됨)\n     , NOW() AT TIME ZONE 'UTC'     AS utc_time\n     , CURRENT_SETTING('TIMEZONE')  AS timezone;";
+          }
+        },
+      ]
+    },
+  ],
+
+  mssql: [
+    {
+      category: '테이블',
+      items: [
+        {
+          key: 'tbl_list', label: '테이블 목록 조회', desc: 'sys.tables 기반, 행수·코멘트 포함',
+          params: [{id:'tbl_search', label:'테이블명 (빈칸=전체)', placeholder:'USER%', width:180}],
+          query: function(p) {
+            var s = p.tbl_search || '%';
+            if (s && s.indexOf('%') < 0) s = '%' + s + '%';
+            return "SELECT s.name                              AS schema_name\n     , t.name                              AS table_name\n     , (SELECT SUM(p.rows) FROM sys.partitions p\n        WHERE  p.object_id = t.object_id AND p.index_id IN (0,1)) AS row_cnt\n     , CAST(ep.value AS NVARCHAR(200))     AS table_comment\n     , CONVERT(CHAR(10), t.create_date, 23) AS created\n     , CONVERT(CHAR(10), t.modify_date, 23) AS modified\nFROM   sys.tables t\n       JOIN sys.schemas s ON t.schema_id = s.schema_id\n       LEFT JOIN sys.extended_properties ep ON ep.major_id = t.object_id\n            AND ep.minor_id = 0 AND ep.name = 'MS_Description'\nWHERE  t.name LIKE '" + s + "'\nORDER BY s.name, t.name;";
+          }
+        },
+        {
+          key: 'col_list', label: '컬럼 목록 조회', desc: '컬럼 정의 + 코멘트(extended_properties) + PK',
+          params: [{id:'col_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.col_tbl || 'TABLE_NAME';
+            return "SELECT c.column_id\n     , c.name                              AS column_name\n     , ty.name                             AS data_type\n     , c.max_length\n     , CASE WHEN c.is_nullable = 1 THEN 'Y' ELSE 'N' END AS nullable\n     , CASE WHEN pk.column_id IS NOT NULL THEN 'Y' ELSE 'N' END AS pk_yn\n     , CAST(ep.value AS NVARCHAR(200))     AS column_comment\nFROM   sys.columns c\n       JOIN sys.tables t  ON c.object_id = t.object_id\n       JOIN sys.types ty  ON c.user_type_id = ty.user_type_id\n       LEFT JOIN sys.extended_properties ep ON ep.major_id = c.object_id\n            AND ep.minor_id = c.column_id AND ep.name = 'MS_Description'\n       LEFT JOIN (SELECT ic.object_id, ic.column_id\n                  FROM   sys.index_columns ic\n                         JOIN sys.indexes i ON ic.object_id = i.object_id\n                              AND ic.index_id = i.index_id\n                  WHERE  i.is_primary_key = 1) pk\n              ON pk.object_id = c.object_id AND pk.column_id = c.column_id\nWHERE  t.name = '" + t + "'\nORDER BY c.column_id;";
+          }
+        },
+        {
+          key: 'tbl_size', label: '테이블 용량 조회', desc: '용량 상위 테이블',
+          params: [],
+          query: function(p) {
+            return "SELECT t.name                                            AS table_name\n     , ROUND(SUM(a.total_pages) * 8 / 1024.0, 2)         AS total_mb\n     , ROUND(SUM(a.used_pages)  * 8 / 1024.0, 2)         AS used_mb\n     , SUM(CASE WHEN p.index_id IN (0,1) THEN p.rows ELSE 0 END) AS row_cnt\nFROM   sys.tables t\n       JOIN sys.partitions p       ON t.object_id = p.object_id\n       JOIN sys.allocation_units a ON p.partition_id = a.container_id\nGROUP BY t.name\nORDER BY SUM(a.total_pages) DESC;";
+          }
+        },
+        {
+          key: 'fk_ref', label: 'FK 참조 관계 조회', desc: '특정 테이블 참조 확인',
+          params: [{id:'fk_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.fk_tbl || 'TABLE_NAME';
+            return "SELECT fk.name  AS fk_name\n     , ct.name  AS 참조하는테이블\n     , cc.name  AS FK컬럼\n     , pt.name  AS 참조당하는테이블\n     , pc.name  AS 참조컬럼\nFROM   sys.foreign_key_columns fkc\n       JOIN sys.foreign_keys fk ON fkc.constraint_object_id = fk.object_id\n       JOIN sys.tables pt  ON fkc.referenced_object_id = pt.object_id\n       JOIN sys.columns pc ON pc.object_id = pt.object_id AND pc.column_id = fkc.referenced_column_id\n       JOIN sys.tables ct  ON fkc.parent_object_id = ct.object_id\n       JOIN sys.columns cc ON cc.object_id = ct.object_id AND cc.column_id = fkc.parent_column_id\nWHERE  pt.name = '" + t + "'\nORDER BY ct.name;";
+          }
+        },
+        {
+          key: 'tbl_ddl', label: 'DDL 추출', desc: '정의 요약 조회 (CREATE 원문은 SSMS)',
+          params: [{id:'ddl_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.ddl_tbl || 'TABLE_NAME';
+            return "EXEC sp_help '" + t + "';\n\n-- CREATE TABLE 원문 추출은 SQL만으론 불가\n-- SSMS: 테이블 우클릭 → Script Table as → CREATE To → New Query";
+          }
+        },
+        {
+          key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
+          params: [
+            {id:'grp_tbl', label:'테이블명', placeholder:'USER_INFO', width:160},
+            {id:'grp_col', label:'컬럼명', placeholder:'USE_YN', width:120}
+          ],
+          query: function(p) {
+            var t = p.grp_tbl || 'TABLE_NAME';
+            var c = p.grp_col || 'COLUMN_NAME';
+            return "SELECT " + c + "\n     , COUNT(*) AS cnt\nFROM   " + t + "\nGROUP BY " + c + "\nORDER BY cnt DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '인덱스',
+      items: [
+        {
+          key: 'idx_list', label: '인덱스 목록 조회', desc: '테이블의 인덱스 및 컬럼',
+          params: [{id:'idx_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.idx_tbl || 'TABLE_NAME';
+            return "SELECT i.name          AS index_name\n     , c.name           AS column_name\n     , ic.key_ordinal\n     , i.is_unique\n     , i.type_desc\nFROM   sys.indexes i\n       JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id\n       JOIN sys.columns c        ON ic.object_id = c.object_id AND ic.column_id = c.column_id\nWHERE  i.object_id = OBJECT_ID('" + t + "')\n  AND  i.name IS NOT NULL\nORDER BY i.name, ic.key_ordinal;";
+          }
+        },
+      ]
+    },
+    {
+      category: '성능/모니터링',
+      items: [
+        {
+          key: 'explain', label: '실행 계획', desc: 'SHOWPLAN / SSMS 단축키 안내',
+          params: [{id:'exp_sql', label:'쿼리', placeholder:'SELECT * FROM USER_INFO', width:300}],
+          query: function(p) {
+            var sql = p.exp_sql || 'SELECT * FROM TABLE_NAME';
+            return "-- 예상 실행 계획 (실행 안 함)\nSET SHOWPLAN_ALL ON;\nGO\n" + sql + ";\nGO\nSET SHOWPLAN_ALL OFF;\nGO\n\n-- SSMS: Ctrl+L = 예상 계획, Ctrl+M 켜고 실행 = 실제 계획";
+          }
+        },
+        {
+          key: 'slow_sql', label: '느린 SQL 찾기', desc: 'dm_exec_query_stats 기준 TOP 20',
+          params: [],
+          query: function(p) {
+            return "SELECT TOP 20\n       qs.execution_count                                        AS calls\n     , ROUND(qs.total_elapsed_time / qs.execution_count / 1000.0, 2) AS avg_ms\n     , ROUND(qs.total_elapsed_time / 1000.0, 2)                  AS total_ms\n     , SUBSTRING(st.text, (qs.statement_start_offset / 2) + 1,\n         ((CASE qs.statement_end_offset WHEN -1 THEN DATALENGTH(st.text)\n           ELSE qs.statement_end_offset END - qs.statement_start_offset) / 2) + 1) AS query_text\nFROM   sys.dm_exec_query_stats qs\n       CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st\nORDER BY avg_ms DESC;";
+          }
+        },
+        {
+          key: 'session', label: '활성 세션 확인', desc: '현재 접속 세션 목록',
+          params: [],
+          query: function(p) {
+            return "EXEC sp_who2;\n\n-- 또는 상세\nSELECT s.session_id\n     , s.login_name\n     , s.status\n     , s.host_name\n     , s.program_name\n     , r.command\n     , r.wait_type\n     , r.total_elapsed_time AS elapsed_ms\nFROM   sys.dm_exec_sessions s\n       LEFT JOIN sys.dm_exec_requests r ON s.session_id = r.session_id\nWHERE  s.is_user_process = 1\nORDER BY r.total_elapsed_time DESC;";
+          }
+        },
+        {
+          key: 'lock', label: '락(Lock) 조회', desc: '블로킹 세션 및 대기 세션',
+          params: [],
+          query: function(p) {
+            return "SELECT w.session_id           AS waiting_sid\n     , w.blocking_session_id   AS blocking_sid\n     , w.wait_type\n     , w.wait_duration_ms\n     , t.text                  AS waiting_query\nFROM   sys.dm_os_waiting_tasks w\n       LEFT JOIN sys.dm_exec_requests r ON w.session_id = r.session_id\n       OUTER APPLY sys.dm_exec_sql_text(r.sql_handle) t\nWHERE  w.blocking_session_id IS NOT NULL\nORDER BY w.wait_duration_ms DESC;";
+          }
+        },
+        {
+          key: 'kill_session', label: '세션 종료', desc: '특정 세션 강제 종료',
+          params: [{id:'kill_sid', label:'session_id', placeholder:'123', width:80}],
+          query: function(p) {
+            var sid = p.kill_sid || 'SESSION_ID';
+            return "-- 먼저 세션 확인\nEXEC sp_who2 '" + sid + "';\n\n-- 세션 종료 (주의: 권한 필요)\nKILL " + sid + ";";
+          }
+        },
+      ]
+    },
+    {
+      category: '오브젝트',
+      items: [
+        {
+          key: 'proc_list', label: '프로시저/함수 목록', desc: '생성·수정일 포함',
+          params: [],
+          query: function(p) {
+            return "SELECT name\n     , type_desc\n     , CONVERT(CHAR(10), create_date, 23) AS created\n     , CONVERT(CHAR(10), modify_date, 23) AS modified\nFROM   sys.objects\nWHERE  type IN ('P','FN','IF','TF')\nORDER BY type_desc, name;\n\n-- 소스 보기\n-- SELECT OBJECT_DEFINITION(OBJECT_ID('프로시저명'));\n-- EXEC sp_helptext '프로시저명';";
+          }
+        },
+        {
+          key: 'view_list', label: '뷰 목록', desc: '뷰 목록 및 정의 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT name\n     , CONVERT(CHAR(10), create_date, 23) AS created\n     , CONVERT(CHAR(10), modify_date, 23) AS modified\nFROM   sys.views\nORDER BY name;\n\n-- 정의 보기\n-- SELECT OBJECT_DEFINITION(OBJECT_ID('뷰명'));";
+          }
+        },
+      ]
+    },
+    {
+      category: '환경/시간',
+      items: [
+        {
+          key: 'db_time', label: 'DB 현재 시간 확인', desc: '서버 시간·타임존 확인 (WAS-DB 시간 불일치 디버깅)',
+          params: [],
+          query: function(p) {
+            return "SELECT GETDATE()            AS db_time\n     , SYSDATETIME()        AS db_time_precise   -- datetime2, 더 정밀\n     , GETUTCDATE()         AS utc_time\n     , SYSDATETIMEOFFSET()  AS db_time_tz;       -- 타임존 오프셋 포함";
+          }
+        },
+      ]
+    },
+  ],
+
+  sybase: [
+    {
+      category: '테이블',
+      items: [
+        {
+          key: 'tbl_list', label: '테이블 목록 조회', desc: 'sysobjects 기반 (USE DB명 후 실행)',
+          params: [{id:'tbl_search', label:'테이블명 (빈칸=전체)', placeholder:'USER%', width:180}],
+          query: function(p) {
+            var s = p.tbl_search || '%';
+            if (s && s.indexOf('%') < 0) s = '%' + s + '%';
+            return "SELECT o.name    AS table_name\n     , o.crdate   AS created\n     , st.rowcnt  AS row_cnt\nFROM   sysobjects o\n       LEFT JOIN systabstats st ON o.id = st.id AND st.indid IN (0,1)\nWHERE  o.type = 'U'\n  AND  o.name LIKE '" + s + "'\nORDER BY o.name;\n-- DB별로 USE 데이터베이스명 후 각각 실행";
+          }
+        },
+        {
+          key: 'col_list', label: '컬럼 목록 조회', desc: '컬럼 정의 (코멘트 저장 개념 없음 — 한글명 수기)',
+          params: [{id:'col_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.col_tbl || 'TABLE_NAME';
+            return "SELECT c.colid\n     , c.name    AS column_name\n     , t.name    AS data_type\n     , c.length\n     , CASE WHEN (c.status & 8) = 8 THEN 'Y' ELSE 'N' END AS nullable\nFROM   sysobjects o\n       JOIN syscolumns c ON o.id = c.id\n       JOIN systypes  t ON c.usertype = t.usertype\nWHERE  o.type = 'U'\n  AND  o.name = '" + t + "'\nORDER BY c.colid;\n\n-- 상세 (PK/인덱스 포함)\nsp_help " + t + ";";
+          }
+        },
+        {
+          key: 'tbl_size', label: '테이블 용량 조회', desc: 'sp_spaceused',
+          params: [{id:'sz_tbl', label:'테이블명 (빈칸=DB 전체)', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.sz_tbl;
+            return t ? "sp_spaceused " + t + ";" : "sp_spaceused;   -- 현재 DB 전체 사용량";
+          }
+        },
+        {
+          key: 'fk_ref', label: 'FK 참조 관계 조회', desc: 'sysreferences + sp_helpconstraint',
+          params: [{id:'fk_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.fk_tbl || 'TABLE_NAME';
+            return "-- 테이블 단위 FK 존재 여부\nSELECT object_name(r.reftabid) AS 부모테이블\n     , object_name(r.tableid)  AS 자식테이블\nFROM   sysreferences r\nWHERE  r.reftabid = object_id('" + t + "')\n    OR r.tableid  = object_id('" + t + "');\n\n-- 컬럼 매핑 포함 상세\nsp_helpconstraint " + t + ";";
+          }
+        },
+        {
+          key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
+          params: [
+            {id:'grp_tbl', label:'테이블명', placeholder:'USER_INFO', width:160},
+            {id:'grp_col', label:'컬럼명', placeholder:'USE_YN', width:120}
+          ],
+          query: function(p) {
+            var t = p.grp_tbl || 'TABLE_NAME';
+            var c = p.grp_col || 'COLUMN_NAME';
+            return "SELECT " + c + "\n     , COUNT(*) AS cnt\nFROM   " + t + "\nGROUP BY " + c + "\nORDER BY cnt DESC;";
+          }
+        },
+      ]
+    },
+    {
+      category: '인덱스',
+      items: [
+        {
+          key: 'idx_list', label: '인덱스 목록 조회', desc: 'sp_helpindex',
+          params: [{id:'idx_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.idx_tbl || 'TABLE_NAME';
+            return "sp_helpindex " + t + ";\n\n-- 또는 시스템 테이블 직접 조회\nSELECT i.name AS index_name\n     , i.indid\nFROM   sysindexes i\nWHERE  i.id = object_id('" + t + "')\n  AND  i.indid > 0\nORDER BY i.indid;";
+          }
+        },
+      ]
+    },
+    {
+      category: '성능/모니터링',
+      items: [
+        {
+          key: 'session', label: '활성 세션 확인', desc: 'sp_who / sysprocesses',
+          params: [],
+          query: function(p) {
+            return "sp_who;\n\n-- 또는 상세\nSELECT spid\n     , suser_name(suid) AS login_name\n     , hostname\n     , program_name\n     , cmd\n     , status\n     , blocked          -- 0이 아니면 해당 spid에 블로킹당함\nFROM   master..sysprocesses\nWHERE  suid > 0\nORDER BY spid;";
+          }
+        },
+        {
+          key: 'lock', label: '락(Lock) 조회', desc: 'sp_lock / syslocks',
+          params: [],
+          query: function(p) {
+            return "sp_lock;\n\n-- 블로킹 관계만\nSELECT spid\n     , blocked   AS blocking_spid\n     , cmd\n     , time_blocked\nFROM   master..sysprocesses\nWHERE  blocked > 0;";
+          }
+        },
+        {
+          key: 'kill_session', label: '세션 종료', desc: '특정 spid 강제 종료',
+          params: [{id:'kill_spid', label:'spid', placeholder:'123', width:80}],
+          query: function(p) {
+            var spid = p.kill_spid || 'SPID';
+            return "-- 먼저 세션 확인\nsp_who;\n\n-- 세션 종료 (주의: sa 권한 필요)\nkill " + spid + ";";
+          }
+        },
+      ]
+    },
+    {
+      category: '오브젝트',
+      items: [
+        {
+          key: 'proc_list', label: '프로시저 목록', desc: 'sysobjects type P',
+          params: [],
+          query: function(p) {
+            return "SELECT name\n     , crdate AS created\nFROM   sysobjects\nWHERE  type = 'P'\nORDER BY name;\n\n-- 소스 보기\n-- sp_helptext 프로시저명;";
+          }
+        },
+        {
+          key: 'view_list', label: '뷰 목록', desc: 'sysobjects type V',
+          params: [],
+          query: function(p) {
+            return "SELECT name\n     , crdate AS created\nFROM   sysobjects\nWHERE  type = 'V'\nORDER BY name;\n\n-- 정의 보기\n-- sp_helptext 뷰명;";
+          }
+        },
+      ]
+    },
+    {
+      category: '환경/시간',
+      items: [
+        {
+          key: 'db_time', label: 'DB 현재 시간 확인', desc: '서버 시간·타임존 확인 (WAS-DB 시간 불일치 디버깅)',
+          params: [],
+          query: function(p) {
+            return "SELECT GETDATE()    AS db_time\n     , GETUTCDATE() AS utc_time;";
+          }
+        },
+      ]
+    },
+  ]
+};
+
+// ── 즐겨찾기 ─────────────────────────────────────────────
+function getFavKey(db, key) { return db + ':' + key; }
+function isFav(db, key) { return !!favorites[getFavKey(db, key)]; }
+function toggleFav() {
+  if(!currentItem || !currentKey) return;
+  var fk = getFavKey(currentDb, currentKey);
+  if(favorites[fk]) { delete favorites[fk]; }
+  else { favorites[fk] = {db:currentDb, key:currentKey, label:currentItem.label}; }
+  localStorage.setItem('sql_favs', JSON.stringify(favorites));
+  updateFavBtn();
+  renderSidebar();
+}
+function updateFavBtn() {
+  var btn = document.getElementById('fav_btn');
+  var active = isFav(currentDb, currentKey);
+  btn.textContent = active ? '★' : '☆';
+  btn.classList.toggle('active', active);
+}
+
+// ── 검색 ─────────────────────────────────────────────────
+function filterSnippets() {
+  var q = document.getElementById('search_input').value.toLowerCase().trim();
+  var btns = document.querySelectorAll('.snip-btn');
+  var labels = document.querySelectorAll('.sidebar-label');
+  btns.forEach(function(btn) {
+    var match = !q || btn.textContent.toLowerCase().indexOf(q) >= 0;
+    btn.classList.toggle('hidden', !match);
+  });
+  // 카테고리 레이블: 하위에 보이는 버튼이 없으면 숨김
+  labels.forEach(function(lbl) {
+    var next = lbl.nextElementSibling;
+    var hasVisible = false;
+    while(next && !next.classList.contains('sidebar-label')) {
+      if(next.classList.contains('snip-btn') && !next.classList.contains('hidden')) hasVisible = true;
+      next = next.nextElementSibling;
+    }
+    lbl.style.display = hasVisible ? '' : 'none';
+  });
+  var noRes = document.getElementById('no_results');
+  var anyVisible = document.querySelectorAll('.snip-btn:not(.hidden)').length > 0;
+  if(noRes) noRes.style.display = anyVisible ? 'none' : 'block';
+}
+function clearSearch() {
+  document.getElementById('search_input').value = '';
+  filterSnippets();
+}
+
+// ── 렌더링 ───────────────────────────────────────────────
+function switchDb(db) {
+  currentDb = db;
+  currentKey = null;
+  currentItem = null;
+  document.querySelectorAll('.db-tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelector('.db-tab.' + db).classList.add('active');
+  renderSidebar();
+  clearOutput();
+  localStorage.setItem('sql_lastDb', db);
+}
+
+function renderSidebar() {
+  var sidebar = document.getElementById('sidebar');
+  sidebar.innerHTML = '';
+  var data = SNIPPETS[currentDb];
+
+  // 즐겨찾기 섹션
+  var favItems = [];
+  data.forEach(function(group) {
+    group.items.forEach(function(item) {
+      if(isFav(currentDb, item.key)) favItems.push(item);
+    });
+  });
+  if(favItems.length > 0) {
+    var lbl = document.createElement('div'); lbl.className='sidebar-label'; lbl.textContent='즐겨찾기 ★';
+    sidebar.appendChild(lbl);
+    favItems.forEach(function(item) {
+      sidebar.appendChild(makeBtn(item, true));
+    });
+  }
+
+  data.forEach(function(group) {
+    var lbl = document.createElement('div'); lbl.className='sidebar-label'; lbl.textContent=group.category;
+    sidebar.appendChild(lbl);
+    group.items.forEach(function(item) {
+      sidebar.appendChild(makeBtn(item, false));
+    });
+  });
+
+  var noRes = document.createElement('div'); noRes.id='no_results'; noRes.className='no-results'; noRes.textContent='검색 결과 없음'; noRes.style.display='none';
+  sidebar.appendChild(noRes);
+
+  var q = document.getElementById('search_input').value;
+  if(q) filterSnippets();
+}
+
+function makeBtn(item, isFavSection) {
+  var btn = document.createElement('button');
+  btn.className = 'snip-btn' + (currentKey === item.key && !isFavSection ? ' active' : '');
+  btn.textContent = item.label;
+  btn.dataset.key = item.key;
+  btn.onclick = function(e) { selectItem(item, e.currentTarget); };
+  return btn;
+}
+
+function selectItem(item, btnEl) {
+  currentKey = item.key;
+  currentItem = item;
+  document.querySelectorAll('.snip-btn').forEach(function(b) { b.classList.remove('active'); });
+  if(btnEl) btnEl.classList.add('active');
+  document.getElementById('q_title').textContent = item.label;
+  document.getElementById('q_desc').textContent = item.desc || '';
+  updateFavBtn();
+
+  var paramRow = document.getElementById('param_row');
+  paramRow.innerHTML = '';
+  if (item.params && item.params.length > 0) {
+    paramRow.style.display = 'flex';
+    item.params.forEach(function(param) {
+      var lbl = document.createElement('label'); lbl.textContent = param.label;
+      var inp = document.createElement('input'); inp.type = 'text';
+      inp.id = 'param_' + param.id;
+      inp.placeholder = param.placeholder || '';
+      inp.style.width = (param.width || 150) + 'px';
+      inp.addEventListener('input', function() { updateQuery(item); });
+      paramRow.appendChild(lbl);
+      paramRow.appendChild(inp);
+    });
+  } else {
+    paramRow.style.display = 'none';
+  }
+  updateQuery(item);
+}
+
+function updateQuery(item) {
+  var p = {};
+  if (item.params) {
+    item.params.forEach(function(param) {
+      var el = document.getElementById('param_' + param.id);
+      if (el) p[param.id] = el.value.trim();
+    });
+  }
+  currentQuery = item.query(p);
+  renderQuery(currentQuery);
+}
+
+// 바인드 변수(#{param}, #param#, :param) 하이라이트 렌더링
+function renderQuery(sql) {
+  var esc = sql.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  esc = esc.replace(/#\{[^}]+\}|#[A-Za-z_]\w*#/g, function(m){ return '<span class="bind">'+m+'</span>'; });
+  esc = esc.replace(/(^|[^\w:'])(:[A-Za-z_]\w*)/g, function(_, a, b){ return a+'<span class="bind">'+b+'</span>'; });
+  document.getElementById('q_output').innerHTML = esc;
+}
+
+function clearOutput() {
+  document.getElementById('q_title').textContent = '좌측에서 항목을 선택하세요';
+  document.getElementById('q_desc').textContent = '';
+  currentQuery = '';
+  document.getElementById('q_output').innerHTML = '<span style="color:var(--muted)">항목을 선택하면 쿼리가 표시됩니다</span>';
+  document.getElementById('param_row').innerHTML = '';
+  document.getElementById('param_row').style.display = 'none';
+  document.getElementById('fav_btn').textContent = '☆';
+  document.getElementById('fav_btn').classList.remove('active');
+}
+
+function copyQuery() {
+  if (!currentQuery) return;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(currentQuery).then(function(){ showToast(); }).catch(function(){ copyFallback(currentQuery); });
+  } else {
+    copyFallback(currentQuery);
+  }
+}
+function copyFallback(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text; document.body.appendChild(ta);
+  ta.select(); document.execCommand('copy');
+  document.body.removeChild(ta); showToast();
+}
+function showToast() {
+  var t = document.getElementById('toast');
+  t.textContent = '복사됐습니다'; t.style.opacity = '1';
+  clearTimeout(t._t); t._t = setTimeout(function() { t.style.opacity = '0'; }, 1500);
+}
+
+// ── 키보드 단축키 ─────────────────────────────────────────
+document.addEventListener('keydown', function(e) {
+  if(e.ctrlKey && e.key==='k'){ e.preventDefault(); document.getElementById('search_input').focus(); return; }
+  if(e.ctrlKey && e.key==='1'){ e.preventDefault(); switchDb('oracle'); }
+  if(e.ctrlKey && e.key==='2'){ e.preventDefault(); switchDb('mysql'); }
+  if(e.ctrlKey && e.key==='3'){ e.preventDefault(); switchDb('pg'); }
+  if(e.ctrlKey && e.key==='4'){ e.preventDefault(); switchDb('mssql'); }
+  if(e.ctrlKey && e.key==='5'){ e.preventDefault(); switchDb('sybase'); }
+});
+
+// 초기화
+var lastDb = localStorage.getItem('sql_lastDb') || 'oracle';
+if(!SNIPPETS[lastDb]) lastDb = 'oracle';
+switchDb(lastDb);
+</script>
+</body>
+</html>

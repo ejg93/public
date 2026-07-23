@@ -47,17 +47,22 @@ a.card:hover { border-color: var(--accent); transform: translateY(-2px); }
 <div class="cards" id="cards"></div>
 <p class="foot">새 탭으로 열림 · 이 폴더째 복사하면 어디서든 동작</p>
 <script>
+// 프론트(마크업/UI) → 백엔드(DB/산출물) 순. 연관 가까운 것끼리 인접.
 var TOOLS = [
-	{ file: "tools/dev_tools.html", icon: "🛠", name: "개발자 도구 모음",
-	  desc: "카멜 변환 / JSON / 날짜 / INSERT 생성 / 정규식 / Base64·data URI / SQL 페이징 / URL / JWT" },
-	{ file: "tools/sql_snippets.html", icon: "🗄", name: "SQL 스니펫",
-	  desc: "운영 조회 단골 쿼리 모음 — Tibero·Oracle / MySQL·MariaDB / PostgreSQL / SQL Server / Sybase 방언 전환, 검색, 즐겨찾기" },
-	{ file: "tools/특수문자_모음.html", icon: "①", name: "특수문자 모음",
-	  desc: "공문서·SR용 특수문자 클릭 복사 + 한글 IME 입력법 + 즐겨찾기 + 조합 모드" },
+	{ file: "tools/table_builder.html", icon: "🧩", name: "표 편집기",
+	  desc: "GUI로 표 만들기 — 드래그 선택·셀 병합/해제·th/td·행열 삽입, 기존 HTML 역파싱 수정, 출력 3모드(순수/공통 class/인라인)" },
 	{ file: "tools/jsp_formatter.html", icon: "🧹", name: "JSP/HTML 줄정리",
 	  desc: "들여쓰기 재배치 — 스크립틀릿 { } 인지, 보존 블록 원형 유지" },
+	{ file: "tools/특수문자_모음.html", icon: "①", name: "특수문자 모음",
+	  desc: "공문서·SR용 특수문자 클릭 복사 + 한글 IME 입력법 + 즐겨찾기 + 조합 모드" },
+	{ file: "tools/dev_tools.html", icon: "🛠", name: "개발자 도구 모음",
+	  desc: "카멜 변환 / JSON / 날짜 / INSERT 생성 / 정규식 / Base64·data URI / SQL 페이징 / URL / JWT / 화면 표시기" },
+	{ file: "tools/sql_snippets.html", icon: "🗄", name: "SQL 스니펫",
+	  desc: "운영 조회 단골 쿼리 모음 — Tibero·Oracle / MySQL·MariaDB / PostgreSQL / SQL Server / Sybase 방언 전환, 검색, 즐겨찾기" },
 	{ file: "tools/산출물_sql.html", icon: "📋", name: "산출물 SQL 가이드",
-	  desc: "공공 데이터 산출물 9종 문서별 추출 SQL + 기입 규칙 — 방언 5종(Tibero·MySQL·PG·MSSQL·Sybase) 전환, 스키마 일괄 치환, 편집 모드" }
+	  desc: "공공 데이터 산출물 9종 문서별 추출 SQL + 기입 규칙 — 방언 5종(Tibero·MySQL·PG·MSSQL·Sybase) 전환, 스키마 일괄 치환, 편집 모드" },
+	{ file: "tools/논리명_변환기.html", icon: "🏷", name: "논리명 변환기",
+	  desc: "컬럼·테이블 영문명 → 한글 논리명 조립, 코멘트 DDL(방언 5종) 출력 + 표준단어·표준용어사전 CSV — 표준단어 토큰 매칭, 미등록 약어 랭킹 수기 보완" }
 ];
 var wrap = document.getElementById("cards");
 TOOLS.forEach(function (t) {

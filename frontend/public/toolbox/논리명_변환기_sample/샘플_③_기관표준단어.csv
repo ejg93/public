@@ -1,0 +1,11 @@
+물리명,논리명
+TB_MBR_INFO,회원정보
+TB_ORDR_MST,주문마스터
+TB_ORDR_DTL,주문상세
+TB_CD_GRP,코드그룹
+MBR_ID,회원아이디
+ORDR_NO,주문번호
+DLVY_ADDR,배송주소
+TOT_AMT,총주문금액
+GRP,그룹
+DC,할인
