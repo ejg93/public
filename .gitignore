@@ -27,3 +27,5 @@ Thumbs.db
 
 # 더미 CSV 생성 스크립트 — 도구가 아니라 개발용이고, public/ 아래라 커밋 시 공개 URL로 노출된다.
 /frontend/public/toolbox/논리명_변환기_sample/generate_sample.js
+
+/frontend/public/toolbox/개선사항_메모.md
