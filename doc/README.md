@@ -1,7 +1,7 @@
 # 기술 스택 문서 (doc/)
 
 이 폴더는 포트폴리오 프로젝트에서 실제로 사용 중인 기술(스킬)들을 하나씩 정리한 문서 모음이다.
-루트 `CLAUDE.md`는 프로젝트 구조/배포/라우트 중심이고, 여기는 "각 기술이 뭐고, 어디에 쓰이고, 정식 문서가 어디인지"를 다룬다.
+루트 `CLAUDE.md`는 구역 지도와 배포, 각 구역 `CLAUDE.md`는 그 구역의 구조·라우트·환경변수를 다루고, 여기는 "각 기술이 뭐고, 어디에 쓰이고, 정식 문서가 어디인지"를 다룬다.
 
 기술 문서는 `frontend/`(프론트엔드)와 `backend/`(백엔드) 두 하위 폴더로 나눠 정리한다. 외부 API는 백엔드 `service/` 계층에서 호출하므로 `backend/`에 둔다.
 
@@ -11,7 +11,7 @@
 
 | 스킬 | 버전 | 프로젝트 내 용도 | 문서 |
 |---|---|---|---|
-| Next.js (App Router) | 14.2.5 | 프론트 전체 프레임워크, 라우팅 | [nextjs.md](frontend/nextjs.md) |
+| Next.js (App Router) | 14.2.35 | 프론트 전체 프레임워크, 라우팅 | [nextjs.md](frontend/nextjs.md) |
 | React | 18 | UI 컴포넌트, 상태 관리 (useState/useEffect/useRef) | [react.md](frontend/react.md) |
 | TypeScript | 5 | 프론트 전체 타입 시스템 | [typescript.md](frontend/typescript.md) |
 | Tailwind CSS | 3.4.1 | 유틸리티 CSS (설정만 존재, 페이지 대부분은 인라인 스타일) | [tailwindcss.md](frontend/tailwindcss.md) |

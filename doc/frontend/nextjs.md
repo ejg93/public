@@ -8,7 +8,7 @@ JSP 세계에 비유하면: JSP에서 `/board/list.jsp` 파일을 만들면 그 
 
 ## 이 프로젝트에서
 
-- 버전: **14.2.5** (App Router 방식)
+- 버전: **14.2.35** (App Router 방식) — 14.2.5에서 보안 패치만 올림(2026-07-25), API 변화 없음
 - `frontend/app/` 아래 폴더가 곧 라우트:
   - `app/page.tsx` → `/`
   - `app/board/page.tsx` → `/board`
