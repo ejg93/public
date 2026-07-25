@@ -16,6 +16,9 @@ a{color:#5b9bd5}
 .card h2{font-size:13px;color:#ccc;letter-spacing:1px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--accent)}
 label{display:inline-block;min-width:130px;color:var(--muted)}
 select,input[type=text],input[type=number]{background:#3c3c3c;border:1px solid #555;border-radius:3px;color:var(--text);font-family:'Consolas',monospace;font-size:12px;padding:4px 8px;outline:none}
+/* 테이블 접두 무시토큰 미입력 표시 — 비워두면 TB_ 접두가 전부 미매칭 토큰으로 남는다.
+   :focus 규칙이 뒤에 와서 치는 동안에는 파란 테두리가 이긴다 */
+#skipTok.empty{border-color:#f44747}
 select:focus,input[type=text]:focus{border-color:var(--accent)}
 input[type=file]{font-size:12px;color:var(--text)}
 button{font-family:'Consolas',monospace;padding:6px 14px;border:1px solid var(--accent);background:var(--accent);color:#fff;border-radius:4px;cursor:pointer;font-size:12px;letter-spacing:.5px}
@@ -86,6 +89,24 @@ textarea{width:100%;background:#111;font-family:'Consolas','D2Coding',monospace;
 /* 열 선택 옆 실제 값 미리보기 */
 .samp{margin-left:10px;color:#5b9bd5;font-size:11px}
 .samp b{color:var(--muted);font-weight:normal}
+/* 열 선택 라벨 중요도. 설명은 title 툴팁으로 뺀다 */
+label.lv-key{color:#f48771;font-weight:bold}   /* 필수 · FK 추론 핵심 */
+label.lv-opt{color:#6a8caf}                    /* 있으면 정확도가 오르는 보조 */
+
+/* 변환 과정 그림 — 물리명이 어떻게 한글이 되는지 한눈에 */
+.flow{background:#252526;border:1px solid var(--border);border-radius:4px;padding:12px 14px;margin-bottom:10px}
+.flow-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flow-row + .flow-row{margin-top:6px}
+.chip{display:inline-block;padding:3px 9px;border-radius:3px;font-size:13px;line-height:1.4;white-space:nowrap}
+.chip-phys{background:#3a3d41;color:#9cdcfe;font-weight:bold}          /* 컬럼 물리명 */
+.chip-tok{background:#33383d;color:#d7ba7d;border:1px dashed #5a5f66}  /* 쪼갠 토큰 */
+.chip-kor{background:#1f3a2e;color:#7ee0a8;font-weight:bold}           /* 한글 단어 */
+.chip-out{background:#16825d;color:#fff;font-weight:bold;font-size:14px;padding:4px 12px}
+.flow-op{color:#8f8f8f;font-size:11px;white-space:nowrap}
+.flow-arw{color:#c8c8c8;font-size:15px;line-height:1}
+.flow-dict{color:#6a8caf;font-size:11px;margin-left:2px}
+.flow-note{color:#9a9a9a;font-size:11px;margin-top:8px;border-top:1px dashed var(--border);padding-top:7px}
+.flow-note b{color:#d7ba7d}
 /* DB 방언 탭 — 툴박스 색 이식 */
 .db-tabs{display:flex;gap:6px;margin:10px 0 4px;flex-wrap:wrap}
 .db-tab{padding:5px 16px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:bold;letter-spacing:1px;border:2px solid transparent;user-select:none}
@@ -110,6 +131,12 @@ textarea{width:100%;background:#111;font-family:'Consolas','D2Coding',monospace;
 .dl:disabled{opacity:.45}
 .dl:disabled::before{animation-play-state:paused;background:#555}
 @keyframes dlspin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+/* 관계검증 SQL — 다른 저장 버튼과 성격이 다르다(DB에 직접 돌려 사실을 확인하는 쿼리).
+   링·글자를 주황 계열로 빼서 저장 버튼 줄에서 먼저 눈에 띄게 한다 */
+.dl.verify{color:var(--oracle);font-weight:bold}
+.dl.verify::before{background:conic-gradient(from 0deg,transparent 0 240deg,#8a4b00 285deg,#f0a500 325deg,#ffd88a 352deg,transparent 360deg)}
+.dl.verify::after{background:#3a2c14}
+.dl.verify:hover::after{background:#4a3818}
 /* 커스텀 스크롤바 — 툴박스 통일 */
 *{scrollbar-width:thin;scrollbar-color:#454545 transparent}
 ::-webkit-scrollbar{width:10px;height:10px}
@@ -123,8 +150,7 @@ textarea{width:100%;background:#111;font-family:'Consolas','D2Coding',monospace;
 
 <h1>논리명 변환기</h1>
 <div class="sub">
-컬럼·테이블 영문명 → 한글 논리명 생성, 코멘트 DDL 출력.
-<b>전부 브라우저 안에서 처리한다. 네트워크 전송 없음.</b>
+컬럼·테이블 영문명 → 한글 논리명 생성 및 코멘트 DDL 출력
 </div>
 <div class="db-tabs" id="dbTabs">
   <div class="db-tab oracle active" onclick="switchDb('oracle')" title="Tibero/Oracle — COMMENT ON COLUMN/TABLE 문법">Tibero/Oracle</div>
@@ -141,15 +167,15 @@ textarea{width:100%;background:#111;font-family:'Consolas','D2Coding',monospace;
 <div id="guide" class="hide">
 
 
-<p style="margin:0 0 8px"><b>파일 3개 중 ②만 필수.</b></p>
+<p style="margin:0 0 8px"><b>파일 3개 중 3번만 필수.</b> 번호는 아래 카드 번호와 같다.</p>
 <table style="margin-bottom:14px">
 <tr><th style="width:40px">#</th><th style="width:190px">파일</th><th style="width:70px">필수</th><th>역할</th></tr>
-<tr><td>①</td><td>공통표준단어</td><td>권장</td><td>영문약어 → 한글단어. 토큰 단위 조립에 사용</td></tr>
-<tr><td><b>②</b></td><td><b>컬럼 목록</b></td><td><b>필수</b></td><td>변환 대상. <b>테이블 목록도 여기서 자동 도출</b></td></tr>
-<tr><td>③</td><td>기관표준단어</td><td>선택</td><td>테이블정의서·컬럼정의서가 있으면 그대로 사용 (최우선 채택)</td></tr>
+<tr><td>1</td><td>공통표준단어</td><td>권장</td><td>영문약어 → 한글단어. 토큰 단위 조립에 사용</td></tr>
+<tr><td>2</td><td>기관표준단어</td><td>선택</td><td>테이블정의서·컬럼정의서가 있으면 그대로 사용 (최우선 채택)</td></tr>
+<tr><td><b>3</b></td><td><b>컬럼 목록</b></td><td><b>필수</b></td><td>변환 대상. <b>테이블 목록도 여기서 자동 도출</b></td></tr>
 </table>
 
-<h3 style="font-size:13px;margin:12px 0 6px">① 공통표준단어 — 단어 1건 = 1행</h3>
+<h3 style="font-size:13px;margin:12px 0 6px">1. 공통표준단어 — 단어 1건 = 1행</h3>
 <p style="margin:0 0 6px;color:#a0a0a0">열 이름이 달라도 로드 후 직접 지정할 수 있다. 로드하면 각 열의 실제 값이 옆에 미리보기로 뜬다.</p>
 <table>
 <tr><th>공통표준단어명</th><th>공통표준단어영문약어명</th><th>형식단어여부</th><th>공통표준도메인분류명</th></tr>
@@ -160,14 +186,22 @@ textarea{width:100%;background:#111;font-family:'Consolas','D2Coding',monospace;
 <p style="margin:6px 0 0;color:#a0a0a0">필수는 <b>한글단어·영문약어 2열</b>. <b>형식단어여부·도메인분류명</b> 열이 있으면 자동 감지해
 <b>표준용어사전 CSV의 표준도메인명</b>에 쓴다 (행정안전부 공통표준단어 CSV엔 이미 들어 있음). 없어도 동작 — 도메인만 빈칸.</p>
 
-<h3 style="font-size:13px;margin:14px 0 6px">② 컬럼 목록 — <span style="color:#f48771">컬럼 1건 = 1행 (테이블명이 반복됨)</span></h3>
-<p style="margin:0 0 6px;color:#a0a0a0">아래 SQL 결과를 CSV로 저장해 넣는다.</p>
-<p style="margin:0 0 4px;color:#8f8f8f;font-size:11px">↑ 상단 <b>DB 방언 탭</b>에 따라 아래 조회 SQL이 바뀐다.</p>
-<textarea readonly rows="8" id="colQuerySql" style="background:#111">SELECT c.OWNER, c.TABLE_NAME, c.COLUMN_ID, c.COLUMN_NAME,
-       c.DATA_TYPE, c.DATA_LENGTH, c.NULLABLE
-FROM   ALL_TAB_COLUMNS c
-WHERE  c.OWNER IN ('스키마1','스키마2')
-ORDER  BY c.OWNER, c.TABLE_NAME, c.COLUMN_ID;</textarea>
+<h3 style="font-size:13px;margin:14px 0 6px">2. 기관표준단어 (선택) — 물리명 1건 = 1행</h3>
+<p style="margin:0 0 6px;color:#a0a0a0">
+회사 <b>테이블정의서·컬럼정의서</b>를 넣는 자리. 최우선으로 그대로 채택한다.<br>
+테이블·컬럼을 한 파일에 섞어도 되고, 물리명으로만 매칭한다.</p>
+<table>
+<tr><th>물리명</th><th>논리명</th></tr>
+<tr><td>TBL_ITEM</td><td>항목</td></tr>
+<tr><td>ITEM_ID</td><td>항목아이디</td></tr>
+<tr><td>USE_YN</td><td>사용여부</td></tr>
+</table>
+
+<h3 style="font-size:13px;margin:14px 0 6px">3. 컬럼 목록 — <span style="color:#f48771">컬럼 1건 = 1행 (테이블명이 반복됨)</span></h3>
+<div class="err" style="margin:0 0 8px">
+<b>★ <a href="산출물_sql.html#d03" class="d03link" target="_blank" style="color:#9cdcfe">산출물 SQL → 03 컬럼 정의서</a> 의 쿼리로 뽑는다.</b>
+PK정보(Y/N)·데이터타입·길이가 다 들어 있어 <b>논리명·FK 추론 양쪽에 그대로 쓴다.</b>
+</div>
 <table style="margin-top:8px">
 <tr><th>OWNER</th><th>TABLE_NAME</th><th>COLUMN_NAME</th><th>…기타 열</th></tr>
 <tr><td>스키마1</td><td>TBL_ITEM</td><td>ITEM_ID</td><td rowspan="3" style="color:#8f8f8f">있어도 무관</td></tr>
@@ -190,24 +224,13 @@ COMMENT ON COLUMN TBL_ITEM.ITEM_NM IS '항목명';<br>
 COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
 </table>
 
-<h3 style="font-size:13px;margin:14px 0 6px">③ 기관표준단어 (선택) — 물리명 1건 = 1행</h3>
-<p style="margin:0 0 6px;color:#a0a0a0">
-회사 <b>테이블정의서·컬럼정의서</b>를 넣는 자리. 최우선으로 그대로 채택한다.<br>
-테이블·컬럼을 한 파일에 섞어도 되고, 물리명으로만 매칭한다.</p>
-<table>
-<tr><th>물리명</th><th>논리명</th></tr>
-<tr><td>TBL_ITEM</td><td>항목</td></tr>
-<tr><td>ITEM_ID</td><td>항목아이디</td></tr>
-<tr><td>USE_YN</td><td>사용여부</td></tr>
-</table>
-
 <h3 style="font-size:13px;margin:14px 0 6px">채택 우선순위</h3>
 <table>
 <tr><th style="width:50px">순위</th><th style="width:150px">근거</th><th>설명</th></tr>
-<tr><td>1</td><td><span class="tag t-given">기관표준단어</span></td><td>입력 ③. 그대로 채택</td></tr>
-<tr><td>2</td><td><span class="tag t-user">사용자</span></td><td>4번 랭킹에서 직접 입력한 것</td></tr>
-<tr><td>3</td><td><span class="tag t-multi">혼합</span></td><td>토큰 출처가 둘 이상 섞임 (예: <code>ITEM</code>은 ③, <code>ID</code>는 ①)</td></tr>
-<tr><td>4</td><td><span class="tag t-word">공통표준단어</span></td><td>입력 ① 로 토큰 조립 (<code>ITEM</code>+<code>NM</code> → 항목명)</td></tr>
+<tr><td>1</td><td><span class="tag t-given">기관표준단어</span></td><td>2번 입력. 그대로 채택</td></tr>
+<tr><td>2</td><td><span class="tag t-user">사용자</span></td><td>5번 랭킹에서 직접 입력한 것</td></tr>
+<tr><td>3</td><td><span class="tag t-multi">혼합</span></td><td>토큰 출처가 둘 이상 섞임 (예: <code>ITEM</code>은 2번, <code>ID</code>는 1번)</td></tr>
+<tr><td>4</td><td><span class="tag t-word">공통표준단어</span></td><td>1번 입력으로 토큰 조립 (<code>ITEM</code>+<code>NM</code> → 항목명)</td></tr>
 <tr><td>5</td><td><span class="tag t-mix">부분</span></td><td>일부 토큰만 매칭. <b>못 맞춘 토큰은 영문 그대로</b> (<code>AS_REASON_TXT</code> → <code>AS REASON내용</code>)</td></tr>
 <tr><td>6</td><td><span class="tag t-none">미매칭</span></td><td><b>물리명(영문) 그대로 사용</b> (<code>TB_ABC_XYZ</code> → <code>TB_ABC_XYZ</code>)</td></tr>
 </table>
@@ -221,7 +244,7 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
 <tr><td>코멘트 DDL</td><td>상단 <b>DB 방언</b>에 맞춘 코멘트문. 미매칭·부분매칭 줄은 <code>-- [검토]</code> 주석 처리돼 실행 안 됨</td></tr>
 </table>
 <div class="warn" style="margin-top:8px">
-상단 <b>DB 방언 탭</b>(Tibero/Oracle·MySQL·PostgreSQL·SQL Server·Sybase)이 <b>②의 조회쿼리</b>와 <b>코멘트 DDL 문법</b>을 결정한다.
+상단 <b>DB 방언 탭</b>(Tibero/Oracle·MySQL·PostgreSQL·SQL Server·Sybase)이 <b>코멘트 DDL 문법</b>과 <b>산출물 SQL 링크의 방언</b>을 결정한다.
 같은 논리명이라도 방언마다 문법이 다르다. <b>대상 DB 방언을 고른다.</b>
 </div>
 </div>
@@ -230,9 +253,42 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
 <!-- ============ 1. 사전 ============ -->
 <div class="card">
 <h2>1. 공통표준단어<button class="sec dl" style="float:right;padding:3px 10px" onclick="tpl('word')" title="공통표준단어 입력 양식(CSV)을 내려받는다. 한글단어·영문약어 2열 예시">양식 CSV 받기</button></h2>
-<div style="background:#2d2d30;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px">
-<code>항목,ITEM</code> + <code>아이디,ID</code> → <code>ITEM_ID</code> 를 <b>항목아이디</b> 로 조립<br>
-파일은 <b>1개만</b> 넣는다. 새로 넣으면 이전 것은 버려진다.
+<!-- ▼▼ 설명 작성란 (1. 공통표준단어) ▼▼ -->
+<div style="background:#2d2d30;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px;color:#c8c8c8">
+<b>3번 컬럼 목록의 물리명을 논리명으로 바꿀 때 쓰는 단어 사전.</b><br>
+매칭은 물리명을 <code>_</code> 로 쪼갠 <b>토큰 단위</b>로 한다.<br>
+</div>
+<!-- ▲▲ 설명 작성란 끝 ▲▲ -->
+<div class="flow">
+  <div class="flow-row">
+    <span class="chip chip-tok">ITEM</span><span class="flow-op">,</span><span class="chip chip-kor">상품</span>
+    <span class="flow-op" style="margin:0 6px">·</span>
+    <span class="chip chip-tok">ID</span><span class="flow-op">,</span><span class="chip chip-kor">아이디</span>
+    <span class="flow-dict">← <b>영문약어,한글단어</b> 2열짜리 CSV. 단어 조각이 한 줄씩</span>
+  </div>
+  <div class="flow-row" style="margin-top:10px">
+    <span class="flow-op" style="width:110px;display:inline-block">컬럼 물리명</span>
+    <span class="chip chip-phys">ITEM_ID</span>
+  </div>
+  <div class="flow-row">
+    <span class="flow-op" style="width:110px;display:inline-block">① <span class="flow-op"><code>_</code> 기준</span>으로 쪼갠다</span>
+    <span class="flow-arw">└</span>
+    <span class="chip chip-tok">ITEM</span><span class="flow-op">+</span><span class="chip chip-tok">ID</span>
+
+  </div>
+  <div class="flow-row">
+    <span class="flow-op" style="width:110px;display:inline-block">② 단어를 매칭시킨다</span>
+    <span class="flow-arw">└</span>
+    <span class="chip chip-tok">ITEM</span><span class="flow-arw">→</span><span class="chip chip-kor">상품</span>
+    <span class="flow-op" style="margin:0 6px">·</span>
+    <span class="chip chip-tok">ID</span><span class="flow-arw">→</span><span class="chip chip-kor">아이디</span>
+  </div>
+  <div class="flow-row">
+    <span class="flow-op" style="width:110px;display:inline-block"></span>
+    <span class="flow-arw">└</span>
+    <span class="chip chip-out">상품아이디</span>
+    <span class="flow-op">= 논리명</span>
+  </div>
 </div>
 
 <div style="background:#1f2d26;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px">
@@ -247,21 +303,36 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
   <span id="dictInfo" style="margin-left:10px;color:#9a9a9a"></span>
 </div>
 <div id="dictMap" class="hide">
-  <div class="row"><label>영문약어 열</label><select id="dAbbr"></select><span class="samp" id="dAbbrS"></span></div>
-  <div class="row"><label>한글단어 열</label><select id="dKor"></select><span class="samp" id="dKorS"></span></div>
+  <div class="row"><label class="lv-key">영문약어 열</label><select id="dAbbr"></select><span class="samp" id="dAbbrS"></span></div>
+  <div class="row"><label class="lv-key">한글단어 열</label><select id="dKor"></select><span class="samp" id="dKorS"></span></div>
 </div>
 <div class="warn" style="margin-top:8px">
-파일을 넣으면 <b>자동 반영된다.</b> 열 선택을 고쳤으면 <b>2번의 [변환 실행]</b> 을 다시 누른다.
+파일을 넣으면 <b>자동 반영된다.</b> 열 선택을 고쳤으면 <b>3번의 [변환 실행]</b> 을 다시 누른다.
 </div>
 </div>
 
 <!-- ============ 1-2. 기관표준단어 ============ -->
 <div class="card">
-<h2>1-2. 기관표준단어 (선택)<button class="sec dl" style="float:right;padding:3px 10px" onclick="tpl('over')" title="기관표준단어 입력 양식(CSV)을 내려받는다. 물리명·논리명 통짜 매칭 예시">양식 CSV 받기</button></h2>
-<div style="background:#1f2d26;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px">
-<code>ITEM_ID,항목ID</code> → 조립하지 않고 <b>항목ID</b> 를 그대로 채택. <b>최우선.</b><br>
-회사(기관)가 자체적으로 쓰는 <b>표준단어·표준용어</b> — 공통표준단어의 <b>기관 버전</b><br>
-<b style="color:#f48771">공통표준단어(표준단어 CSV)는 여기 말고 1번에.</b>
+<h2>2. 기관표준단어 (선택)<button class="sec dl" style="float:right;padding:3px 10px" onclick="tpl('over')" title="기관표준단어 입력 양식(CSV)을 내려받는다. 물리명·논리명 통짜 매칭 예시">양식 CSV 받기</button></h2>
+<!-- ▼▼ 설명 작성란 (2. 기관표준단어) ▼▼ -->
+<div style="background:#2d2d30;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px;color:#c8c8c8">
+<b>3번 컬럼 목록의 컬럼명·테이블명을 논리명(한글)으로 바꿀 때 쓰는, 기관이 자체 정의한 사전.</b>
+<b>단어 조각</b>과 <b>통짜</b>를 한 파일에 섞어 넣는다.<br>
+· <b>단어 조각</b> (<code>STAT</code> → <code>통계</code>) — 물리명을 <code>_</code> 로 쪼갠 토큰 조회에 참여한다.
+조회 순서는 아래 «토큰 조회 우선순위»가 정한다.<br>
+· <b>통짜</b> (<code>TB_CUST_MST</code> → <code>고객마스터</code>) — 컬럼명·테이블명 전체와 <b>글자까지 같으면</b>
+쪼개지 않고 그 값이 바로 채택된다. 대소문자만 무관.<br>
+통짜로 적은 값은 다른 매칭 결과보다 앞서므로 <b>강제 지정</b>이 된다 —
+조립 결과가 어색한 컬럼(<code>SVC_TY_CD</code> → <code>봉사TY코드</code>)을 <code>서비스유형코드</code> 로 못박는 식.<br>
+</div>
+<!-- ▲▲ 설명 작성란 끝 ▲▲ -->
+<div class="flow">
+  <div class="flow-note">
+    아래 «토큰 조회 우선순위» 는 <b>같은 약어를 기관표준단어와 공통표준단어가 다르게 정의했을 때</b>
+    어느 쪽 뜻을 쓸지 고른다. <br>겹치는 약어가 없으면 어느 쪽으로 두든 결과가 같다.<br>
+    5번 «미등록 약어 랭킹» 에 직접 친 한글은 어느 쪽으로 두든 두 파일보다 앞선다.
+    <span style="color:#f48771">공통표준단어 CSV 는 여기 말고 1번에 넣는다.</span>
+  </div>
 </div>
 <div class="row drop" id="ovDrop">
   <input type="file" id="ovFile" accept=".csv,.txt">
@@ -269,50 +340,76 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
   <span id="ovInfo" style="margin-left:10px;color:#9a9a9a"></span>
 </div>
 <div id="ovMap" class="hide">
-  <div class="row"><label>물리명(영문) 열</label><select id="oPhys"></select><span class="samp" id="oPhysS"></span></div>
-  <div class="row"><label>논리명(한글) 열</label><select id="oKor"></select><span class="samp" id="oKorS"></span></div>
-  <div class="row" style="margin-top:10px"><label>토큰 조회 우선순위</label>
-    <select id="tokPri" onchange="if(ROWS.length)run(true)">
+  <div class="row"><label class="lv-key">물리명(영문) 열</label><select id="oPhys"></select><span class="samp" id="oPhysS"></span></div>
+  <div class="row"><label class="lv-key">논리명(한글) 열</label><select id="oKor"></select><span class="samp" id="oKorS"></span></div>
+  <div class="row" style="margin-top:10px"><label class="lv-opt" title="컬럼명 통째 매칭은 항상 2번이 우선. 이 설정은 토큰 조회에만 적용">토큰 조회 우선순위</label>
+    <select id="tokPri" onchange="if(ROWS.length)run(true); paintRank()">
       <option value="over">기관표준단어</option>
       <option value="dict">공통표준단어</option>
     </select>
-    <span style="color:#9a9a9a">← 컬럼명 통째 매칭은 항상 1-2번이 우선. 이 설정은 토큰 조회에만 적용</span></div>
+</div>
 </div>
 </div>
 
 <!-- ============ 2. 컬럼목록 ============ -->
 <div class="card">
-<h2>2. 컬럼 목록 (컬럼 1건 = 1행)<button class="sec dl" style="float:right;padding:3px 10px" onclick="tpl('col')" title="컬럼목록 입력 양식(CSV)을 내려받는다. OWNER/TABLE_NAME/COLUMN_NAME 예시">양식 CSV 받기</button></h2>
-<div style="background:#2d2d30;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px">
-상단 방언 탭 조회쿼리(<code>ALL_TAB_COLUMNS</code> 등) 결과, <b>또는 회사 테이블정의서·컬럼정의서</b>를 CSV로 넣는다. <br><b>컬럼 1건 = 1행</b> (테이블명이 반복됨).<br>
-<b>테이블 목록은 따로 넣지 않는다</b> — <code>TABLE_NAME</code> 을 중복 제거해 자동 도출. 자세한 형식은 <b>0번 입력 형식 안내</b> 참고.
+<h2>3. 컬럼 목록 (컬럼 1건 = 1행)<button class="sec dl" style="float:right;padding:3px 10px" onclick="tpl('col')" title="컬럼목록 입력 양식(CSV)을 내려받는다. OWNER/TABLE_NAME/COLUMN_NAME 예시">양식 CSV 받기</button></h2>
+<!-- ▼▼ 설명 작성란 (3. 컬럼 목록) ▼▼ -->
+<div style="background:#2d2d30;padding:8px 10px;border-radius:4px;margin-bottom:10px;font-size:12px;color:#c8c8c8">
+<b>변환 대상. 논리명으로 바꿀 컬럼과 테이블을 여기서 받는다.</b>
+<b>컬럼 1건 = 1행</b> 이라 테이블명이 여러 줄에 걸쳐 반복된다.<br>
+필요한 열은 <b>스키마 · 테이블명 · 컬럼명</b> 셋.
+테이블 목록은 테이블명을 중복 제거해 만드니 따로 넣지 않는다.<br>
+7번 FK 관계 추론까지 할 거면 <b>PK 여부 · 컬럼순서 · 데이터타입 · 길이</b> 를 같이 넣는다. 논리명 변환에는 안 쓰는 열이다.<br>
+넣는 것은 아래 링크의 조회쿼리 결과, <b>또는 회사 테이블정의서·컬럼정의서</b>. 자세한 형식은 <b>0번 입력 형식 안내</b> 참고.
+</div>
+<!-- ▲▲ 설명 작성란 끝 ▲▲ -->
+<div class="err">
+<b>★ <a href="산출물_sql.html#d03" class="d03link" target="_blank" style="color:#9cdcfe">산출물 SQL → 03 컬럼 정의서</a> 의 쿼리로 뽑는다.</b>
+PK정보(Y/N)·데이터타입·길이가 다 들어 있어 <b>논리명·FK 추론 양쪽에 그대로 쓴다.</b>
 </div>
 <div class="row drop" id="colDrop">
   <input type="file" id="colFile" accept=".csv,.txt">
   <span class="dhint">⬇ 파일을 여기로 끌어다 놓아도 된다</span>
 </div>
 <div id="colMap" class="hide">
-  <div class="row"><label>스키마(OWNER)</label>
-    <select id="cOwner" onchange="ownerMode()"></select>
+  <div class="row"><label class="lv-key" title="CSV에 스키마 열이 없으면 (직접 입력) 을 고르고 스키마명을 적는다">스키마(OWNER)</label>
+    <select id="cOwner"></select>
     <input type="text" id="ownerTxt" placeholder="스키마명 직접 입력" style="width:180px;margin-left:6px" class="hide">
-    <span style="color:#9a9a9a">← CSV에 열이 없으면 <b>(직접 입력)</b> 선택</span></div>
-  <div class="row"><label>테이블명 열</label><select id="cTable"></select>
-    <span style="color:#9a9a9a">← 조회쿼리에 TABLE_NAME 포함되니 항상 있다</span></div>
-  <div class="row"><label>컬럼명 열</label><select id="cCol"></select></div>
-  <div class="row"><label>테이블 접두 무시토큰</label>
-    <input type="text" id="skipTok" value="" placeholder="예: TBL, TMP" style="width:220px">
-    <span style="color:#9a9a9a">쉼표 구분 · 테이블 논리명 만들 때 건너뜀</span></div>
-  <button onclick="runBtn()" title="컬럼목록을 논리명으로 변환한다. 사전(1·1-2번)과 열 선택을 반영해 결과표·랭킹을 새로 만든다">변환 실행</button>
+    <span class="samp" id="cOwnerS"></span></div>
+  <div class="row"><label class="lv-key">테이블명 열</label><select id="cTable"></select>
+    <span class="samp" id="cTableS"></span></div>
+  <div class="row"><label class="lv-key">컬럼명 열</label><select id="cCol"></select>
+    <span class="samp" id="cColS"></span></div>
+  <div class="row" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px">
+    <b style="font-size:12px;color:#4ec9b0">↓ 7번 FK 관계 추론용 — 논리명 변환에는 안 쓴다</b>
+  </div>
+  <div class="row"><label class="lv-key" title="Y · 1 · P · PK · TRUE 를 PK 로 읽는다. 없으면 모델전용 PK 가 기존 PK 와 중복돼 erwin 파싱이 깨진다">PK 여부 열</label>
+    <select id="fkPk"></select><span class="samp" id="fkPkS"></span></div>
+  <div class="row"><label class="lv-opt" title="부모 판정의 «첫 컬럼» 가점. (없음)이면 CSV 등장 순서로 대신 본다 — 조회쿼리가 COLUMN_ID 순 정렬이면 결과 동일">컬럼순서 열</label>
+    <select id="fkOrd"></select><span class="samp" id="fkOrdS"></span></div>
+  <div class="row"><label class="lv-opt" title="부모와 타입이 다른 관계를 걸러낸다">데이터타입 열</label>
+    <select id="fkType"></select><span class="samp" id="fkTypeS"></span></div>
+  <div class="row"><label class="lv-opt" title="타입과 같이 봐서 길이가 다른 관계를 걸러낸다">길이 열</label>
+    <select id="fkLen"></select><span class="samp" id="fkLenS"></span></div>
+  <div class="row" style="color:#9a9a9a;margin-top:-2px">
+    <span style="color:#6a8caf">파란 라벨</span> 3개는 <code>(없음)</code> 이어도 동작한다. FK 추론 정확도만 떨어진다
+  </div>
+  <div class="row" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px">
+    <label class="lv-opt" title="쉼표 구분 · 테이블 논리명 만들 때 건너뜀">테이블 접두 무시토큰</label>
+    <input type="text" id="skipTok" value="" placeholder="예: TBL, TMP" style="width:220px"
+           oninput="saveSkipTok()" title="이 브라우저에 저장된다. 다음에 열어도 남는다"></div>
+  <button onclick="runBtn()" title="컬럼목록을 논리명으로 변환한다. 사전(1·2번)과 열 선택을 반영해 결과표·랭킹을 새로 만든다">변환 실행</button>
 </div>
 </div>
 
 <!-- ============ 3. 결과 ============ -->
 <div class="card hide" id="resCard">
-<h2>3. 변환 결과</h2>
+<h2>4. 변환 결과</h2>
 <div class="row" id="stats"></div>
 <div class="warn">
 <b>논리명은 여기서 고치지 않는다.</b> 표준단어로 조립된 결과다.<br>
-바꾸려면 <b>4번 랭킹</b>에 약어별 한글을 넣거나, <b>1-2번 기관표준단어</b>에 물리명을 통째로 등록한다.
+바꾸려면 <b>5번 랭킹</b>에 약어별 한글을 넣거나, <b>2번 기관표준단어</b>에 물리명을 통째로 등록한다.
 그래야 다음 변환에도 남는다.
 </div>
 
@@ -344,7 +441,7 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
   </span>
 </div>
 
-<div class="wrap"><table id="tbl"></table></div>
+<div class="wrap" id="tblWrap"><table id="tbl"></table></div>
 <div class="row" style="margin-top:8px">
   <button class="sec" onclick="page(-1)">◀ 이전</button>
   <input type="number" id="pgNum" min="1" value="1" style="width:64px;margin:0 4px;text-align:right"
@@ -356,11 +453,15 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
 
 <!-- ============ 4. 미등록 약어 ============ -->
 <div class="card hide" id="rankCard">
-<h2>4. 미등록 약어 랭킹 — 빈도순</h2>
-<div class="sub">한글을 입력하면 즉시 재변환한다. <b>입력값은 이 브라우저에 저장되어 다음에 열어도 남는다.</b>
-한 번 넣은 약어는 매칭에 성공해 미매칭이 아니게 되므로 <b>출현 0</b> 으로 목록에 남는다 — 사라진 게 아니다.<br>
-[랭킹 CSV 저장] 은 <code>영문약어,한글입력</code> 순서로 나온다 — <b>1-2번 기관표준단어에 그대로 넣거나 기존 정의서 뒤에 붙여도 된다.</b></div>
-<div class="wrap" style="max-height:300px"><table id="rankTbl" class="rank"></table></div>
+<h2>5. 미등록 약어 랭킹 — 빈도순</h2>
+<div class="sub">한글을 입력하면 즉시 재변환한다. <b>입력값은 이 브라우저에 저장되어 다음에 열어도 남는다.</b><br>
+한 번 넣은 약어는 매칭에 성공해 미매칭이 아니게 되므로 <b>출현 0</b> 으로 목록에 남는다.<br>
+«파일 정의와 충돌» 열은 그 약어를 공통표준단어·기관표준단어도 정의해 놓은 경우에만 채워진다.
+<span style="color:#d7ba7d">가림</span> = 파일 뜻 대신 내 입력이 나간다,
+<span style="color:#f44747">밀림</span> = 내 입력이 안 쓰인다.<br>
+브라우저에 남은 옛 입력이 새로 넣은 파일을 덮는 일을 여기서 잡는다.<br>
+[랭킹 CSV 저장] 은 <code>영문약어,한글입력</code> 순서로 나온다 — <b>2번 기관표준단어에 그대로 넣거나 기존 정의서 뒤에 붙여도 된다.</b></div>
+<div class="wrap" id="rankWrap" style="max-height:300px"><table id="rankTbl" class="rank"></table></div>
 <div class="row" style="margin-top:8px">
   <button class="sec" onclick="rankPage(-1)">◀ 이전</button>
   <input type="number" id="rPgNum" min="1" value="1" style="width:64px;margin:0 4px;text-align:right"
@@ -369,15 +470,15 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
   <button class="sec" onclick="rankPage(1)">다음 ▶</button>
 </div>
 <div class="row" style="margin-top:8px">
-  <button class="sec dl" onclick="expRank()" title="미등록 약어 랭킹을 CSV로 저장. 영문약어·한글입력·출현 순. 1-2번 기관표준단어에 그대로 붙여 재사용 가능">랭킹 CSV 저장</button>
-  <button class="sec" onclick="clearUser()" title="4번 랭킹에 직접 입력한 한글을 전부 삭제(localStorage 초기화). 되돌릴 수 없음">한글 입력 전부 비우기</button>
+  <button class="sec dl" onclick="expRank()" title="미등록 약어 랭킹을 CSV로 저장. 영문약어·한글입력·출현 순. 2번 기관표준단어에 그대로 붙여 재사용 가능">랭킹 CSV 저장</button>
+  <button class="sec" onclick="clearUser()" title="5번 랭킹에 직접 입력한 한글을 전부 삭제(localStorage 초기화). 되돌릴 수 없음">한글 입력 전부 비우기</button>
   <span id="userCnt" style="margin-left:10px;color:#9a9a9a"></span>
 </div>
 </div>
 
 <!-- ============ 5. 출력 ============ -->
 <div class="card hide" id="outCard">
-<h2>5. 출력</h2>
+<h2>6. 출력</h2>
 <div class="row">
   <label><input type="checkbox" id="incTable" checked> 테이블 COMMENT 포함</label>
   <span style="margin-left:14px;color:#4ec9b0">스키마명 <b>항상 포함</b> (<code>OWNER.TABLE</code>)</span>
@@ -395,14 +496,152 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
   <button class="sec" onclick="copyOut()" title="아래 출력 텍스트를 클립보드로 복사">클립보드 복사</button>
 </div>
 <div class="row" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px">
-  <label>DB명 (사전 산출물용)</label>
+  <label class="lv-opt" title="표준용어·표준단어사전 CSV의 DB명 열. 비우면 컬럼목록 OWNER 자동">DB명 (사전 산출물용)</label>
   <input type="text" id="termDb" placeholder="비우면 스키마(OWNER) 자동" style="width:190px" title="표준용어·표준단어사전 CSV의 DB명 열에 들어간다. 비우면 컬럼목록의 OWNER(스키마)를 자동 사용, 여러 스키마면 '/'로 연결">
-  <button class="sec dl" onclick="expTerms()" title="표준용어사전 산출물용 CSV. 테이블(엔티티)+컬럼 용어를 물리명 distinct로 낸다(같은 이름 1줄). 열: 출처(테이블/컬럼)/DB명/표준용어명/영문약어명/용어설명(빈칸=수기)/표준도메인명. 용어설명은 물리명에서 못 뽑아 빈칸">표준용어사전 CSV</button>
+  <button class="sec dl" onclick="expTerms()" title="표준용어사전 산출물용 CSV. 테이블(엔티티)+컬럼 용어를 물리명 distinct로 낸다(같은 이름 1줄). 열: 출처(테이블/컬럼)/DB명/표준용어명/영문약어명/용어설명(빈칸=수기)/표준도메인명/검토필요. 용어설명은 물리명에서 못 뽑아 빈칸">표준용어사전 CSV</button>
+  <label style="margin-left:6px" title="논리명에 영문이 남은 용어(부분매칭·미매칭)를 CSV에서 뺀다. 끄면 «검토필요» 열에 표시만 하고 내보낸다"><input type="checkbox" id="termExcl"> 미매칭·부분매칭 제외</label>
   <button class="sec dl" onclick="expStdWords()" title="표준단어사전 산출물용 CSV. 변환 중 실제 '토큰'으로 매칭된 단어만(공통표준단어 사용Y·기관표준단어·랭킹 한글입력). 테이블/컬럼 전체이름(용어)은 안 들어감. 형식단어여부는 공통표준단어 출처만 실제값(Y/N), 기관·사용자 출처는 N 기본값. 중복 약어는 tokPri로 채택하고 '중복' 열에 표기. 열: DB명/표준단어명/영문약어명/형식단어여부/출처/중복(검토용, 삭제 가능)">표준단어사전 CSV</button>
   <span style="color:#9a9a9a">← 용어사전=테이블+컬럼 distinct(구분열) · 단어사전=3소스 통합(공통Y+기관+랭킹)</span>
 </div>
 <div id="ddlSum"></div>
 <textarea id="out" rows="14" spellcheck="false"></textarea>
+</div>
+
+<!-- ============ 6. FK 관계 추론 ============ -->
+<div class="card hide" id="fkCard">
+<h2>7. FK 관계 추론 — erwin 관계선용
+  <button id="fkGuideBtn" class="glow" style="float:right" onclick="toggleFkGuide()">▼ erwin 적용법 보기</button></h2>
+<div class="sub">
+물리 FK 가 없어도 <b>컬럼명 규칙</b>으로 부모–자식을 추론해 <code>ALTER TABLE … FOREIGN KEY</code> 문을 만든다.
+erwin 이 스크립트를 읽으면서 <b>관계선을 자동으로 그린다.</b><br>
+생성물은 <b>erwin 에 먹일 <code>.sql</code> 끝에만</b> 붙인다 — <b style="color:#f48771">운영 DB 실행 금지.</b> 기존 데이터가 무결성 위반으로 터진다.
+</div>
+
+<div id="fkGuide" class="hide">
+<h3 style="font-size:13px;margin:10px 0 6px">왜 되는가</h3>
+<p style="margin:0 0 8px;color:#a0a0a0">
+erwin 의 <b>관계선은 모델 객체</b>다. DB 에 FK 제약이 있든 없든 무관하다.
+지금 관계선이 0인 이유는 erwin 의 한계가 아니라 <b>먹인 스크립트에 <code>FOREIGN KEY</code> 문이 한 줄도 없어서</b>다.
+RE(Reverse Engineer)는 스크립트에 적힌 것만 그린다.</p>
+
+<h3 style="font-size:13px;margin:12px 0 6px">적용 순서</h3>
+<table>
+<tr><th style="width:34px">#</th><th>작업</th></tr>
+<tr><td>1</td><td>DBeaver 로 스키마 DDL 일괄 추출 → <code>schema.sql</code> (<b>Show permissions 끄기</b>, <code>TABLESPACE·STORAGE·PCTFREE</code> 제거)</td></tr>
+<tr><td>2</td><td>여기서 <b>관계 추론 실행</b> → 표에서 채택 행 체크 → <code>fk_inferred.sql</code> 저장</td></tr>
+<tr><td>3</td><td><code>schema.sql</code> <b>맨 끝</b>에 <code>fk_inferred.sql</code> 내용을 붙인다 (COMMENT DDL 도 같이 붙일 수 있다)</td></tr>
+<tr><td>4</td><td>erwin: <code>File → New → Physical</code>, 타겟 <b>Oracle</b> (Tibero 는 네이티브 미지원)</td></tr>
+<tr><td>5</td><td><code>Actions → Reverse Engineer → From Script</code> 로 합친 <code>.sql</code> 지정</td></tr>
+<tr><td>6</td><td>Subject Area 로 분할 → 레이아웃 정리 → <b>이미지(PNG) export</b></td></tr>
+</table>
+
+<h3 style="font-size:13px;margin:12px 0 6px">erwin 동작 — 알고 있어야 안 터지는 것</h3>
+<table>
+<tr><th style="width:150px">항목</th><th>내용</th></tr>
+<tr><td><b>부모 PK 필수</b></td><td>부모에 PK/UNIQUE 가 없으면 <code>FOREIGN KEY</code> 문이 바인딩되지 않아 <b>관계선이 안 생긴다.</b>
+그래서 아래에서 <b>모델전용 PK</b> 문을 같이 생성한다.<br>
+<b>PK 여부 열을 넣으면</b> 이미 PK 가 있는 테이블은 자동으로 건너뛴다. 안 넣으면 전부 생성되므로 <b>중복분을 손으로 지워야 한다</b> — 중복 PK 는 파싱 오류다</td></tr>
+<tr><td><b>PK 아닌 컬럼 참조</b></td><td>부모에 PK 가 있는데 추론된 부모키가 그 PK 가 아니면 <code>PRIMARY KEY</code> 를 또 못 만든다.
+이때는 <code>ADD CONSTRAINT UK_MDL_… UNIQUE</code> 로 낸다. Oracle 문법상 유효하고, erwin 은 <b>대체키(AK)</b> 로 읽는다.
+erwin 이 관계선을 안 그리면 그 건은 부모를 바꾸거나 수기로 그린다</td></tr>
+<tr><td><b>컬럼 마이그레이션</b></td><td>관계가 생기면 부모 키가 자식으로 내려온다. 자식에 <b>같은 이름 컬럼이 이미 있으면 그 컬럼이 FK 로 흡수</b>된다 (컬럼이 새로 생기지 않음)</td></tr>
+<tr><td><b>rolename</b></td><td><code>SPEC_CUS_ID → CUS(CUS_ID)</code> 처럼 <b>이름이 다르면 erwin 이 rolename 으로 처리</b>한다. 정상 동작이고 관계선도 그려진다</td></tr>
+<tr><td><b>타입 불일치</b></td><td>자식 컬럼 타입이 부모와 다르면 erwin 이 <b>부모 타입으로 덮어쓸 수 있다.</b> 그래서 기본값이 «타입 불일치 제외» 다</td></tr>
+<tr><td><b>관계 표기</b></td><td>전부 <b>Non-Identifying(점선)</b> 으로 나온다. 실제 FK 5건과 시각적으로 구분돼 오히려 낫다</td></tr>
+<tr><td><b>FK 안 뱉게</b></td><td>모델에 관계선만 두고 DDL 에는 FK 를 안 넣으려면 <code>Forward Engineer → Schema Generation</code> 에서 Referential Integrity 체크 해제. 제출물이 PNG 면 신경 안 써도 된다</td></tr>
+</table>
+
+<h3 style="font-size:13px;margin:12px 0 6px">추론 근거와 등급</h3>
+<table>
+<tr><th style="width:60px">등급</th><th>조건</th><th>권장</th></tr>
+<tr><td><b>A</b></td><td>부모 확실(테이블명 어간 일치 + 첫 컬럼 등) + 컬럼명 완전 동일 + 타입 일치</td><td>바로 채택</td></tr>
+<tr><td><b>B</b></td><td>부모는 잡혔으나 근거가 약하거나, <code>SPEC_CUS_ID</code> 같은 접두 변형(rolename)</td><td>검증 후 채택</td></tr>
+<tr><td><b>C</b></td><td>부모 후보 동점 · 타입 불일치 · 같은 자식 컬럼에 부모가 둘 이상</td><td>기본 미체크. 눈으로 판정</td></tr>
+</table>
+<div class="warn" style="margin-top:8px">
+추론은 <b>후보</b>다. 확증이 필요하면 <b>[관계검증 SQL 저장]</b> 으로 실제 데이터의 포함관계를 확인한다.
+<code>고아건 = 0</code> 이면 관계 성립, 소수면 논리관계, 다수면 우연 동명이니 버린다.
+</div>
+</div>
+
+<div class="err" style="margin-bottom:8px">
+<b>★ 3번 컬럼목록에 «PK 여부 열» 을 지정한다.</b>
+<code>DBMS_METADATA.GET_DDL</code> 로 뽑은 <code>schema.sql</code> 에는 <b>기존 PK 가 이미 들어 있다.</b>
+그 테이블에 아래에서 만든 <code>PK_MDL_…</code> 을 또 붙이면 <b>중복 PK 라 erwin 파싱이 깨진다.</b><br>
+PK 여부를 알면 <b>PK 없는 테이블에만</b> 모델전용 PK 를 만들고, 실제 PK 는 부모 판정에 <b>+100</b> 으로 쓴다.<br>
+PK 열이 든 컬럼목록은 <b><a href="산출물_sql.html#d03" class="d03link" target="_blank" style="color:#9cdcfe">산출물 SQL → 03 컬럼 정의서</a></b> 의 한 방 쿼리로 뽑는다
+(PK정보 Y/N 열 포함, 방언 5종 지원).
+</div>
+
+<div class="row" style="border-top:1px dashed var(--border);padding-top:8px">
+  <label class="lv-key" title="이 접미로 끝나는 컬럼만 관계 후보로 본다. 쉼표 구분">키 접미</label>
+  <input type="text" id="fkSuf" value="ID,NO,SEQ,KEY" style="width:200px"
+>
+  <label style="margin-left:14px"><input type="checkbox" id="fkCd"> <code>_CD</code> 포함</label>
+  <span style="color:#f48771;margin-left:6px">← 코드컬럼은 관계가 아니라 도메인이다. 켜면 공통코드 테이블에 선 수백 개가 붙어 그림이 죽는다</span>
+</div>
+<div class="row">
+  <label class="lv-key" title="감사컬럼·순번은 관계가 아니다. 안 빼면 전 테이블이 서로 연결된다">제외 컬럼</label>
+  <input type="text" id="fkExCol" style="width:100%;max-width:620px"
+         value="REG_ID,REG_DT,REGIST_ID,REGIST_DT,FRST_REGIST_ID,FRST_REG_DT,MOD_ID,MOD_DT,MODI_ID,MODI_DT,LAST_UPDUSR_ID,UPD_ID,UPD_DT,UPDT_ID,UPDT_DT,SEQ,SORT_NO,SORT_SEQ,RN,ROW_NO">
+</div>
+<div class="row" style="color:#9a9a9a;margin-top:-2px">
+  백업·임시 테이블(<code>_BAK</code> <code>_TMP</code> <code>_20240101</code> 등)은 여기서 안 뺀다 —
+  <b>3번 컬럼목록을 뽑을 때</b> 이미 제외된 것으로 본다
+  (<a href="산출물_sql.html#d03" class="d03link" target="_blank" style="color:#9cdcfe">산출물 SQL 03번</a> 의 <b>테이블 제외</b> 옵션)
+</div>
+<div class="row">
+  <label class="lv-opt" title="이 수를 넘는 테이블에 등장하면 공통컬럼으로 보고 버린다">공통컬럼 임계</label>
+  <input type="number" id="fkMaxOcc" value="60" style="width:70px" min="2"><span style="color:#9a9a9a">개</span>
+  <label class="lv-opt" style="margin-left:14px" title="못 넘으면 부모 미정으로 버림. 낮출수록 후보↑ 오탐↑">부모 최소점수</label>
+  <input type="number" id="fkMinScore" value="50" style="width:70px">
+</div>
+<div class="row">
+  <label><input type="checkbox" id="fkStrictType" checked> 타입·길이 불일치 제외</label>
+  <label style="margin-left:14px"><input type="checkbox" id="fkSelf" checked> 자기참조 포함</label>
+  <span style="color:#9a9a9a">(<code>TB_ORG.UP_ORG_ID → TB_ORG.ORG_ID</code> 같은 계층 관계)</span>
+  <button onclick="inferFK()" style="margin-left:14px" title="컬럼목록 전체에서 부모-자식 관계 후보를 뽑는다">관계 추론 실행</button>
+</div>
+
+<div id="fkStat" class="row"></div>
+<div class="row hide" id="fkTools">
+  <label>보기</label>
+  <select id="fkGrade" onchange="fkRender()">
+    <option value="all">전체</option>
+    <option value="A">A 등급만</option>
+    <option value="B">B 등급만</option>
+    <option value="C">C 등급만</option>
+    <option value="chk">체크한 것만</option>
+  </select>
+  <input type="text" id="fkText" placeholder="테이블/컬럼 검색" oninput="fkRender()" style="width:180px">
+  <button class="sec" onclick="fkCheck('A')" title="A 등급만 체크. 나머지 해제">A만</button>
+  <button class="sec" onclick="fkCheck('AB')" title="A+B 등급 체크. C 해제">A+B</button>
+  <button class="sec" onclick="fkCheck('none')" title="전부 해제">전부 해제</button>
+</div>
+<div class="wrap hide" id="fkWrap"><table id="fkTbl"></table></div>
+<div class="row hide" id="fkPager" style="margin-top:8px">
+  <button class="sec" onclick="fkPage(-1)">◀ 이전</button>
+  <input type="number" id="fkPgNum" min="1" value="1" style="width:64px;margin:0 4px;text-align:right"
+         onchange="fkGo(this.value)" onkeydown="if(event.key==='Enter')fkGo(this.value)">
+  <span id="fkPgInfo" style="margin-right:6px"></span>
+  <button class="sec" onclick="fkPage(1)">다음 ▶</button>
+</div>
+
+<div class="row hide" id="fkOutRow" style="margin-top:10px;border-top:1px dashed var(--border);padding-top:10px">
+  <label><input type="checkbox" id="fkPkGen" checked> 부모 모델전용 PK 포함</label>
+  <span style="color:#9a9a9a;margin-left:6px">← 없으면 FK 문이 바인딩 안 돼 관계선이 안 생긴다. <b>PK 이미 있는 건은 지울 것</b></span>
+</div>
+<div class="row hide" id="fkBtnRow">
+  <button onclick="genFKSQL()" title="체크된 관계를 erwin 리버스용 FK DDL 로 만든다">체크된 관계로 FK DDL 생성</button>
+  <button class="sec dl" id="fkSqlBtn" onclick="saveFKSQL()" disabled title="생성된 FK DDL 전체를 fk_inferred.sql 로 저장">fk_inferred.sql 저장</button>
+  <button class="sec dl verify" onclick="saveFKVerify()" title="체크된 관계가 실제 데이터에서 성립하는지 확인하는 SQL. 고아건 0이면 관계 성립">관계검증 SQL 저장</button>
+  <button class="sec dl" onclick="expFKCsv()" title="테이블관계정의서 산출물용 CSV. 부모/자식 물리명+논리명, 관계유형, 근거, 등급">테이블관계정의서 CSV</button>
+  <span style="margin-left:10px">검증 표본
+    <input type="number" id="fkSample" value="20000" style="width:84px" min="100"
+           title="검증 SQL이 자식 테이블에서 읽을 최대 행 수. 크면 정확하고 느리다">행</span>
+</div>
+<div id="fkSum"></div>
+<textarea id="fkOut" rows="12" spellcheck="false" class="hide"></textarea>
 </div>
 
 <script>
@@ -412,6 +651,10 @@ COMMENT ON COLUMN TBL_ITEM.USE_YN &nbsp;IS '사용여부';</td></tr>
 // ================= 상태 =================
 let DICT = {};          // 영문약어(대문자) -> 한글
 let WMETA = {};         // 영문약어 -> {fw:형식단어여부, dom:도메인분류명} (공통표준단어에 열 있으면)
+// 한글단어 -> {fw, dom}. 위와 같은 데이터를 한글로도 찾게 뒤집어 둔 것.
+// 기관표준단어·직접입력으로 매칭된 약어(DE→일자)는 WMETA 에 없지만,
+// 그 한글이 표준단어면 도메인·형식단어여부를 여기서 끌어올 수 있다.
+let DOMKOR = {};
 let USER = {};          // 사용자 추가분
 let OVER = {};          // 기존 정의서 (물리명 -> 논리명). 최우선
 let dictRaw = null, colRaw = null, ovRaw = null;
@@ -423,50 +666,38 @@ let dictFileName = '';      // 1번에 올린 원본 파일명 (사용여부 CSV
 
 try { USER = JSON.parse(localStorage.getItem('lnUserDict') || '{}'); } catch(e) { USER = {}; }
 
+// 테이블 접두 무시토큰 — 한 프로젝트 안에서는 안 바뀌는 값이라 브라우저에 남긴다.
+// 파일을 다시 넣을 때마다 TB 를 매번 치는 일을 없앤다.
+function saveSkipTok(){
+  const el = document.getElementById('skipTok');
+  try { localStorage.setItem('lnSkipTok', el.value); } catch(e) {}
+  el.classList.toggle('empty', !el.value.trim());   // 비면 빨간 테두리
+}
+try {
+  const v = localStorage.getItem('lnSkipTok');
+  if(v) document.getElementById('skipTok').value = v;
+} catch(e) {}
+document.getElementById('skipTok').classList.toggle(
+  'empty', !document.getElementById('skipTok').value.trim());
+
 // ================= DB 방언 =================
-// colQuery: 컬럼목록 조회 SELECT(0번 안내). tbl/col: 코멘트 DDL 1줄 생성. note: 헤더 주석.
+// tbl/col: 코멘트 DDL 1줄 생성. note: 헤더 주석.
+// 컬럼목록 조회 SELECT 는 여기서 안 만든다 — 산출물_sql.html#d03 링크로 안내(2026-07-24 제거).
 let DIALECT = 'oracle';
 const DIALECTS = {
   oracle:{ label:'Tibero/Oracle',
-    colQuery:
-`SELECT c.OWNER, c.TABLE_NAME, c.COLUMN_ID, c.COLUMN_NAME,
-       c.DATA_TYPE, c.DATA_LENGTH, c.NULLABLE
-FROM   ALL_TAB_COLUMNS c
-WHERE  c.OWNER IN ('스키마1','스키마2')
-ORDER  BY c.OWNER, c.TABLE_NAME, c.COLUMN_ID;`,
     tbl:(o,t,v)=>`COMMENT ON TABLE  ${o}.${t} IS '${v}';`,
     col:(o,t,c,v)=>`COMMENT ON COLUMN ${o}.${t}.${c} IS '${v}';`,
     note:'-- Tibero/Oracle/PostgreSQL 공통 COMMENT ON 문법' },
   mysql:{ label:'MySQL/MariaDB',
-    colQuery:
-`SELECT c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION, c.COLUMN_NAME,
-       c.COLUMN_TYPE, c.IS_NULLABLE
-FROM   INFORMATION_SCHEMA.COLUMNS c
-WHERE  c.TABLE_SCHEMA IN ('스키마1','스키마2')
-ORDER  BY c.TABLE_SCHEMA, c.TABLE_NAME, c.ORDINAL_POSITION;`,
     tbl:(o,t,v)=>`ALTER TABLE ${o}.${t} COMMENT = '${v}';`,
     col:(o,t,c,v)=>`ALTER TABLE ${o}.${t} MODIFY COLUMN ${c} /* 컬럼타입 명시 필요 */ COMMENT '${v}';`,
     note:"-- MySQL/MariaDB: 컬럼 코멘트는 컬럼 정의(타입)를 다시 써야 반영됨. '/* 컬럼타입 명시 필요 */' 를 실제 타입으로 채울 것" },
   pg:{ label:'PostgreSQL',
-    colQuery:
-`SELECT c.table_schema, c.table_name, c.ordinal_position, c.column_name,
-       c.data_type, c.character_maximum_length, c.is_nullable
-FROM   information_schema.columns c
-WHERE  c.table_schema IN ('스키마1','스키마2')
-ORDER  BY c.table_schema, c.table_name, c.ordinal_position;`,
     tbl:(o,t,v)=>`COMMENT ON TABLE  ${o}.${t} IS '${v}';`,
     col:(o,t,c,v)=>`COMMENT ON COLUMN ${o}.${t}.${c} IS '${v}';`,
     note:'-- PostgreSQL: Oracle/Tibero 와 COMMENT ON 문법 동일' },
   mssql:{ label:'SQL Server',
-    colQuery:
-`SELECT s.name AS OWNER, t.name AS TABLE_NAME, col.column_id, col.name AS COLUMN_NAME,
-       ty.name AS DATA_TYPE, col.max_length AS DATA_LENGTH, col.is_nullable
-FROM   sys.columns col
-JOIN   sys.tables  t  ON t.object_id = col.object_id
-JOIN   sys.schemas s  ON s.schema_id = t.schema_id
-JOIN   sys.types   ty ON ty.user_type_id = col.user_type_id
-WHERE  s.name IN ('스키마1','스키마2')
-ORDER  BY s.name, t.name, col.column_id;`,
     tbl:(o,t,v)=>`EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'${v}', `+
                  `@level0type=N'SCHEMA', @level0name=N'${o}', @level1type=N'TABLE', @level1name=N'${t}';`,
     col:(o,t,c,v)=>`EXEC sys.sp_addextendedproperty @name=N'MS_Description', @value=N'${v}', `+
@@ -474,24 +705,24 @@ ORDER  BY s.name, t.name, col.column_id;`,
                    `@level2type=N'COLUMN', @level2name=N'${c}';`,
     note:"-- SQL Server: 확장속성(MS_Description) 등록. 이미 있으면 sp_addextendedproperty → sp_updateextendedproperty 로 바꿀 것" },
   sybase:{ label:'Sybase ASE',
-    colQuery:
-`SELECT u.name AS OWNER, o.name AS TABLE_NAME, c.colid, c.name AS COLUMN_NAME,
-       t.name AS DATA_TYPE, c.length, (c.status & 8) AS NULLABLE
-FROM   syscolumns c
-JOIN   sysobjects o ON o.id = c.id AND o.type = 'U'
-JOIN   sysusers   u ON u.uid = o.uid
-JOIN   systypes   t ON t.usertype = c.usertype
-ORDER  BY u.name, o.name, c.colid;`,
     tbl:(o,t,v)=>`-- [미지원] Sybase ASE 테이블 코멘트 표준 없음: ${o}.${t} = '${v}'`,
     col:(o,t,c,v)=>`-- [미지원] Sybase ASE 컬럼 코멘트 표준 없음: ${o}.${t}.${c} = '${v}'`,
     note:'-- Sybase ASE: 컬럼/테이블 코멘트 저장을 표준 지원하지 않음. 아래는 참고용 주석. 실제 반영은 별도 방식 필요' }
 };
+// 산출물_sql.html 로 가는 링크에 지금 고른 방언을 실어 보낸다.
+// 그쪽 방언 키가 'oracle' 이 아니라 'tibero' 라 그것만 갈아끼운다. 나머지는 이름이 같다.
+const D03DB={oracle:'tibero', mysql:'mysql', pg:'pg', mssql:'mssql', sybase:'sybase'};
+function syncD03(){
+  const h='산출물_sql.html#d03:'+(D03DB[DIALECT]||'tibero');
+  document.querySelectorAll('.d03link').forEach(a=>a.setAttribute('href',h));
+}
 function switchDb(d){
   if(!DIALECTS[d]) return;
   DIALECT=d;
+  try { localStorage.setItem('lnDialect', d); } catch(e) {}
   document.querySelectorAll('.db-tab').forEach(el=>el.classList.remove('active'));
   const t=document.querySelector('.db-tab.'+d); if(t) t.classList.add('active');
-  const q=document.getElementById('colQuerySql'); if(q) q.value=DIALECTS[d].colQuery;
+  syncD03();
   if(DDL) genDDL();   // 이미 생성돼 있으면 방언 반영해 재생성
 }
 
@@ -502,17 +733,17 @@ function toggleGuide(){
   b.textContent = hid ? '▼ 입력 형식 안내 보기' : '▲ 안내 접기';
 }
 const TPL={
-  word:{ f:'①_공통표준단어_양식.csv',
+  word:{ f:'1_공통표준단어_양식.csv',
     r:[['공통표준단어명','공통표준단어영문약어명'],
        ['항목','ITEM'],['여부','YN'],['일자','DE'],['일시','DT'],
        ['코드','CD'],['명','NM'],['번호','NO'],['건수','CNT'],['내용','DESC']] },
-  col:{ f:'②_컬럼_목록_양식.csv',
+  col:{ f:'3_컬럼_목록_양식.csv',
     r:[['OWNER','TABLE_NAME','COLUMN_ID','COLUMN_NAME','DATA_TYPE','DATA_LENGTH','NULLABLE'],
        ['스키마1','TBL_ITEM','1','ITEM_ID','VARCHAR2','20','N'],
        ['스키마1','TBL_ITEM','2','ITEM_NM','VARCHAR2','100','Y'],
        ['스키마1','TBL_ITEM','3','USE_YN','CHAR','1','N'],
        ['스키마2','TBL_STATE','1','STATE_NO','VARCHAR2','20','N']] },
-  over:{ f:'③_기관표준단어_양식.csv',
+  over:{ f:'2_기관표준단어_양식.csv',
     r:[['물리명','논리명'],
        ['TBL_ITEM','항목'],['ITEM_ID','항목아이디'],['ITEM_NM','항목명'],['USE_YN','사용여부']] }
 };
@@ -612,8 +843,8 @@ function confirmReset(what, tail){
     what+'\n\n'+
     '현재 변환 결과가 지워진다.\n'+
     `· 컬럼 ${ROWS.length}건 / 테이블 ${TROWS.length}건 초기화\n`+
-    '· 표에서 체크해둔 항목, 5번 출력 내용 초기화\n'+
-    '· 4번 랭킹에 입력한 한글은 그대로 유지된다\n'+
+    '· 표에서 체크해둔 항목, 6번 출력 내용 초기화\n'+
+    '· 5번 랭킹에 입력한 한글은 그대로 유지된다\n'+
     (tail ? tail+'\n' : '')+
     '\n계속할까?');
 }
@@ -694,7 +925,9 @@ function showPicked(row, files){
 }
 
 // ================= 사전 로드 =================
-wireFile('dictFile','dictDrop', async files=>{
+// take 본체는 이름을 붙여 둔다 — 샘플 버튼이 같은 경로로 파일을 꽂는다.
+wireFile('dictFile','dictDrop', takeDict);
+async function takeDict(files){
   if(!only1(files)) return false;
   if(!confirmReset('공통표준단어 파일을 새로 넣는다.')) return false;
   const merged=parseCSV(decode(await files[0].arrayBuffer()));
@@ -710,7 +943,7 @@ wireFile('dictFile','dictDrop', async files=>{
   document.getElementById('dictInfo').textContent = `${(merged.length-1).toLocaleString()}행 — 아래 열 선택 확인`;
   if(colRaw) run();
   return true;
-});
+}
 // 사전만 만든다. 결과 갱신은 run() 이 맡는다 (상호 재귀 방지)
 function applyDict(){
   const a=+document.getElementById('dAbbr').value, k=+document.getElementById('dKor').value;
@@ -718,21 +951,22 @@ function applyDict(){
   const H=dictRaw[0], norm=s=>String(s||'').replace(/\s/g,'');
   const fwI =H.findIndex(h=>norm(h).includes('형식단어'));
   const domI=H.findIndex(h=>norm(h).includes('도메인'));
-  DICT={}; WMETA={}; let n=0;
+  DICT={}; WMETA={}; DOMKOR={}; let n=0;
   for(let i=1;i<dictRaw.length;i++){
     const ab=(dictRaw[i][a]||'').trim().toUpperCase(), ko=(dictRaw[i][k]||'').trim();
     if(!ab||!ko) continue;
-    if(!DICT[ab]){
-      DICT[ab]=ko; n++;
-      WMETA[ab]={ fw: fwI >=0 ? (dictRaw[i][fwI] ||'').trim() : '',
-                  dom:domI>=0 ? (dictRaw[i][domI]||'').trim() : '' };
-    }
+    const meta={ fw: fwI >=0 ? (dictRaw[i][fwI] ||'').trim() : '',
+                 dom:domI>=0 ? (dictRaw[i][domI]||'').trim() : '' };
+    if(!DICT[ab]){ DICT[ab]=ko; WMETA[ab]=meta; n++; }
+    // 같은 한글이 여러 줄이면 도메인이 붙은 줄(형식단어)을 우선한다
+    if(!DOMKOR[ko] || (!DOMKOR[ko].dom && meta.dom)) DOMKOR[ko]=meta;
   }
   document.getElementById('dictInfo').textContent = `공통표준단어 ${n.toLocaleString()}건 적용됨`;
 }
 
 // ================= 기관표준단어 로드 =================
-wireFile('ovFile','ovDrop', async files=>{
+wireFile('ovFile','ovDrop', takeOv);
+async function takeOv(files){
   if(!only1(files)) return false;
   if(!confirmReset('기관표준단어 파일을 새로 넣는다.')) return false;
   const merged=parseCSV(decode(await files[0].arrayBuffer()));
@@ -747,7 +981,7 @@ wireFile('ovFile','ovDrop', async files=>{
   document.getElementById('ovInfo').textContent=`${(merged.length-1).toLocaleString()}행 — 아래 열 선택 확인`;
   if(colRaw) run();
   return true;
-});
+}
 // 사전만 만든다. 결과 갱신은 run() 이 맡는다 (상호 재귀 방지)
 function applyOv(){
   const p=+document.getElementById('oPhys').value, k=+document.getElementById('oKor').value;
@@ -769,14 +1003,15 @@ function applyOv(){
 }
 
 // ================= 컬럼목록 로드 =================
-wireFile('colFile','colDrop', async files=>{
+wireFile('colFile','colDrop', takeCol);
+async function takeCol(files){
   if(!only1(files)) return false;
   if(!confirmReset('컬럼 목록 파일을 새로 넣는다.',
      '· 열 선택을 확인한 뒤 [변환 실행] 을 눌러야 새 결과가 나온다')) return false;
   resetResult();
   setCol(parseCSV(decode(await files[0].arrayBuffer())));
   return true;
-});
+}
 // [변환 실행] 버튼 전용 — 재변환 확인을 거친 뒤 run() 으로 넘긴다
 function runBtn(){
   if(!confirmReset('컬럼 목록을 다시 변환한다.')) return;
@@ -789,11 +1024,25 @@ function setCol(rows){
   ownerMode();
   fillSel(document.getElementById('cTable'), h, ['TABLE_NAME','테이블']);   // 테이블명 필수 — (없음) 제거
   fillSel(document.getElementById('cCol'),   h, ['COLUMN_NAME','컬럼']);
+  // 7번 FK 추론 전용 보조 열 — 전부 선택 사항이라 (없음) 허용
+  fillSel(document.getElementById('fkPk'),   h, ['IS_PK','PK여부','PK'], true);
+  fillSel(document.getElementById('fkOrd'),  h, ['COLUMN_ID','ORDINAL_POSITION','컬럼순서','순서'], true);
+  fillSel(document.getElementById('fkType'), h, ['DATA_TYPE','타입','데이터타입'], true);
+  fillSel(document.getElementById('fkLen'),  h, ['DATA_LENGTH','LENGTH','길이'], true);
+  // 열 선택 옆 실제 값 미리보기 — 어느 열을 고른 건지 눈으로 확인
+  ['cOwner','cTable','cCol','fkPk','fkOrd','fkType','fkLen']
+    .forEach(id=>wireSamp(id, ()=>colRaw, id+'S'));
+  // cOwner 는 (직접 입력) 선택 시 텍스트칸을 여닫아야 해서 미리보기와 같이 건다
+  const ow=document.getElementById('cOwner');
+  ow.onchange=()=>{ ownerMode(); showSamp('cOwner', colRaw, 'cOwnerS'); };
   document.getElementById('colMap').classList.remove('hide');
+  // 컬럼목록이 바뀌면 이전 추론 결과는 무효
+  fkReset();
+  document.getElementById('fkCard').classList.remove('hide');
 }
 
 // ================= 매칭 =================
-// 토큰 조회 순서. 통째 매칭은 항상 ③ 최우선이고, 여기만 토글 대상.
+// 토큰 조회 순서. 통째 매칭은 항상 2번 최우선이고, 여기만 토글 대상.
 function lookup(tok){
   const T=tok.toUpperCase();
   const ovFirst = (document.getElementById('tokPri')||{value:'over'}).value === 'over';
@@ -930,19 +1179,32 @@ function render(){
   const view=arr.slice((CUR-1)*PER, CUR*PER);
   // 클릭하면 pool() 전체가 바뀌므로 표시도 pool() 기준이어야 한다 (현재 페이지 기준 아님)
   const allChk = arr.length>0 && arr.every(r=>r.chk);
+
+  const W=colWidths('tbl','tblWrap', view, [
+    {i:1, head:'스키마',      get:r=>[r.owner]},
+    {i:2, head:'테이블',      get:r=>[r.table]},
+    {i:3, head:'컬럼',        get:r=>[r.col||'(테이블)']},
+    {i:4, head:'논리명',      get:r=>[r.name]},
+    {i:5, head:'근거',        get:r=>[TAG[r.src][1]], extra:12},   // tag span 좌우 패딩
+    {i:6, head:'미매칭 토큰', get:r=>[r.missing.join(', ')]}
+  ], {0:28});
+  const th=(i,label)=>`<th style="width:${W[i]}px;${nowrapIf(W[i])}">${label}</th>`;
+
   let h='<tr><th style="width:28px" title="현재 목록 전체 선택/해제">'+
         `<input type="checkbox" id="chkAll" ${allChk?'checked':''} onchange="bulk(this.checked)">`+
-        '</th><th>스키마</th><th>테이블</th><th>컬럼</th><th style="width:180px">논리명</th><th>근거</th><th>미매칭 토큰</th></tr>';
+        '</th>'+th(1,'스키마')+th(2,'테이블')+th(3,'컬럼')+th(4,'논리명')+th(5,'근거')+th(6,'미매칭 토큰')+'</tr>';
   view.forEach(r=>{
     const gi=(r.isTable?TROWS:ROWS).indexOf(r);
     const cls=r.src==='none'?'miss':(r.src==='mix'?'part':'');
     const t=TAG[r.src];
     h+=`<tr class="${cls}">
       <td><input type="checkbox" ${r.chk?'checked':''} onchange="tog(${r.isTable?1:0},${gi},this.checked)"></td>
-      <td>${esc(r.owner)}</td><td>${esc(r.table)}</td><td>${esc(r.col)||'<i style="color:#8f8f8f">(테이블)</i>'}</td>
-      <td>${esc(r.name)}</td>
+      <td style="${nowrapIf(W[1])}">${esc(r.owner)}</td>
+      <td style="${nowrapIf(W[2])}">${esc(r.table)}</td>
+      <td style="${nowrapIf(W[3])}">${esc(r.col)||'<i style="color:#8f8f8f">(테이블)</i>'}</td>
+      <td style="${nowrapIf(W[4])}">${esc(r.name)}</td>
       <td><span class="tag ${t[0]}">${t[1]}</span></td>
-      <td style="color:#f48771">${esc(r.missing.join(', '))}</td></tr>`;
+      <td style="color:#f48771;${nowrapIf(W[6])}">${esc(r.missing.join(', '))}</td></tr>`;
   });
   document.getElementById('tbl').innerHTML=h;
   document.getElementById('pgNum').value=CUR;
@@ -951,6 +1213,93 @@ function render(){
   stats();
 }
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ================= 표 열 너비 자동 맞춤 (4번 결과표 · 7번 관계표 공용) =================
+   지금 페이지에 실제로 그릴 행만 재서 정한다. 페이지·필터가 바뀌면 다시 잰다.
+   전체(수천 건)를 기준으로 잡으면 다른 페이지의 긴 한 줄 때문에 계속 넓어져 못 쓴다. */
+const COLPAD=16;    // td 좌우 패딩(6+6) + 테두리 + 여유
+const COLCAP=420;   // 이보다 길어지면 줄바꿈 허용 (한 줄이 표를 다 먹는 걸 막음)
+const COLFONT='12px Consolas, D2Coding, monospace';
+let _measure;
+function textW(s, bold){
+  s = String(s==null ? '' : s);
+  if(_measure===undefined){
+    try{ _measure=document.createElement('canvas').getContext('2d'); }
+    catch(e){ _measure=null; }
+  }
+  if(_measure){ _measure.font=(bold?'bold ':'')+COLFONT; return _measure.measureText(s).width; }
+  // canvas 없으면 글자 폭 근사 — 한글·전각 12px, 나머지 6.6px (Consolas 12px 기준)
+  let w=0;
+  for(const ch of s) w += /[ᄀ-ᇿ　-鿿가-힯＀-｠]/.test(ch) ? 12 : 6.6;
+  return w;
+}
+// parts: 셀마다 [일반텍스트, 굵은텍스트] 쌍
+function fitW(header, parts, extra){
+  let w=textW(header);
+  parts.forEach(p=>{ w=Math.max(w, textW(p[0]) + (p[1]?textW(p[1],true):0)); });
+  return Math.min(Math.ceil(w)+COLPAD+(extra||0), COLCAP);
+}
+// 사용자가 열 경계를 끌어 고정한 폭. 표별로 따로 기억한다 (헤더 더블클릭으로 해제)
+const PINW={tbl:{}, fkTbl:{}, rankTbl:{}};
+/* spec: [{i:열인덱스, head:헤더, get:행=>[일반,굵은], extra:여유px}]
+   fixed: {열인덱스:px} — 체크박스·등급처럼 내용과 무관하게 고정할 열 */
+function colWidths(tblId, wrapId, view, spec, fixed){
+  const pin=PINW[tblId]||{}, W={};
+  spec.forEach(c=>{ W[c.i] = pin[c.i] || fitW(c.head, view.map(c.get), c.extra); });
+  const fix=Object.keys(fixed).reduce((a,k)=>a+fixed[k],0);
+  const sumOf=()=>fix+spec.reduce((a,c)=>a+W[c.i],0);
+  let sum=sumOf();
+  // 남는 가로 공간은 내용이 있는 열에만 비례 배분한다. 고정폭 열까지 늘리면 보기 나쁘다.
+  const avail=(document.getElementById(wrapId).clientWidth||0)-2;
+  const free=spec.filter(c=>!pin[c.i]);
+  const flex=free.reduce((a,c)=>a+W[c.i],0);
+  if(avail>sum && flex>0){
+    const extra=avail-sum;
+    free.forEach(c=>{ W[c.i]+=Math.floor(extra*W[c.i]/flex); });
+    sum=sumOf();
+  }
+  const t=document.getElementById(tblId);
+  t.style.tableLayout='fixed';   // 지정한 폭이 그대로 먹으려면 fixed. auto 면 브라우저가 재분배한다
+  t.style.width=sum+'px';
+  return W;
+}
+// 상한에 안 걸린 열만 줄바꿈 금지 — 딱 맞게 쟀으니 잘릴 일이 없다
+const nowrapIf=w=>w<COLCAP ? 'white-space:nowrap;' : '';
+/* 열 경계 드래그 — 놓는 순간 그 열은 «고정» 이 되어 자동 맞춤에서 빠진다.
+   헤더를 더블클릭하면 고정이 풀려 다시 자동으로 맞는다.
+   표는 innerHTML 로 매번 다시 그려지므로 리스너는 table 하나에 위임으로 단다. */
+function bindResize(tblId, resizable, redraw){
+  const tbl=document.getElementById(tblId);
+  if(!tbl) return;
+  const pin=PINW[tblId];
+  const thOf=e=>{ let n=e.target; while(n && n!==tbl && n.tagName!=='TH') n=n.parentNode; return (n&&n.tagName==='TH')?n:null; };
+  const nearEdge=(e,th)=>(th.getBoundingClientRect().right - e.clientX) <= 6;
+  let drag=null;
+  tbl.addEventListener('mousemove', e=>{
+    if(drag) return;
+    const th=thOf(e);
+    tbl.style.cursor = (th && resizable[th.cellIndex] && nearEdge(e,th)) ? 'col-resize' : '';
+  });
+  tbl.addEventListener('mousedown', e=>{
+    const th=thOf(e);
+    if(!th || !resizable[th.cellIndex] || !nearEdge(e,th)) return;
+    drag={i:th.cellIndex, x:e.clientX, w:th.getBoundingClientRect().width};
+    e.preventDefault();
+  });
+  window.addEventListener('mousemove', e=>{
+    if(!drag) return;
+    pin[drag.i]=Math.max(60, Math.round(drag.w + (e.clientX-drag.x)));
+    const th=tbl.rows[0] && tbl.rows[0].cells[drag.i];
+    if(th) th.style.width=pin[drag.i]+'px';
+  });
+  window.addEventListener('mouseup', ()=>{ if(drag){ drag=null; redraw(); } });
+  tbl.addEventListener('dblclick', e=>{
+    const th=thOf(e);
+    if(!th || !resizable[th.cellIndex]) return;
+    delete pin[th.cellIndex];
+    redraw();
+  });
+}
 function stats(){
   // 테이블도 COMMENT ON 대상이므로 매칭 통계에 함께 넣는다
   const ALL=[...ROWS,...TROWS];
@@ -989,19 +1338,40 @@ function renderRank(){
   RCUR=1;
   paintRank();
 }
+// 직접 입력과 파일 정의가 같은 약어를 두고 부딪친 경우를 문장으로 만든다.
+// lookup() 의 순서를 그대로 따라간다 — 통짜(convert 1순위)는 토큰과 무관하므로 안 본다.
+// 색은 렌더에서 입힌다 — 열 너비를 재려면 태그 없는 순수 문자열이 필요하다.
+function rankConflict(t){
+  if(!USER[t]) return null;
+  const ovFirst=(document.getElementById('tokPri')||{value:'over'}).value==='over';
+  if(OVER[t] && ovFirst) return {c:'#f44747', s:`기관표준단어 «${OVER[t]}» 에 밀림 — 입력 안 쓰임`};
+  if(OVER[t])            return {c:'#d7ba7d', s:`기관표준단어 «${OVER[t]}» 를 가림`};
+  if(DICT[t])            return {c:'#d7ba7d', s:`공통표준단어 «${DICT[t]}» 를 가림`};
+  return null;
+}
+const rankConflictText=t=>{ const r=rankConflict(t); return r?r.s:''; };
 function paintRank(){
   const tot=Math.max(1,Math.ceil(RANK.length/RPER));
   if(RCUR>tot) RCUR=tot;
   const base=(RCUR-1)*RPER;
   const view=RANK.slice(base, base+RPER);
-  let h='<tr><th style="width:60px">순위</th><th>영문약어</th>'+
-        '<th style="width:220px">한글 입력</th><th style="width:80px">출현</th></tr>';
+  // 4번 결과표·7번 관계표와 같은 자동 맞춤. 순위·출현은 내용과 무관해 고정폭.
+  const W=colWidths('rankTbl','rankWrap', view, [
+    {i:1, head:'영문약어',        get:r=>[r[0]]},
+    {i:2, head:'한글 입력',       get:r=>[USER[r[0]]||''], extra:70},   // 타이핑 여유
+    {i:4, head:'파일 정의와 충돌', get:r=>[rankConflictText(r[0])]}
+  ], {0:60, 3:70});
+  const th=(i,label)=>`<th style="width:${W[i]}px;${nowrapIf(W[i])}">${label}</th>`;
+  let h='<tr><th style="width:60px">순위</th>'+th(1,'영문약어')+th(2,'한글 입력')+
+        '<th style="width:70px">출현</th>'+th(4,'파일 정의와 충돌')+'</tr>';
   view.forEach(([t,c],i)=>{
     const done=USER[t]?' style="background:#1f2d26"':'';
+    const cf=rankConflict(t);
     h+=`<tr${done}><td>${base+i+1}</td><td><b>${esc(t)}</b></td>
       <td><input class="editable" style="border-color:#555" value="${esc(USER[t]||'')}"
           onchange="setUser('${esc(t)}',this.value)" placeholder="한글단어"></td>
-      <td>${c}</td></tr>`;
+      <td>${c}</td>`+
+      `<td style="${cf?'color:'+cf.c+';':''}${nowrapIf(W[4])}">${cf?esc(cf.s):''}</td></tr>`;
   });
   document.getElementById('rankTbl').innerHTML=h;
   document.getElementById('rPgNum').value=RCUR;
@@ -1033,7 +1403,7 @@ function clearUser(){
 }
 function expRank(){
   // 1열=물리명(약어), 2열=논리명(한글) 순서 고정.
-  // 이 파일을 1-2번 기관표준단어에 그대로 넣거나 기존 정의서 뒤에 붙일 수 있다.
+  // 이 파일을 2번 기관표준단어에 그대로 넣거나 기존 정의서 뒤에 붙일 수 있다.
   const L=['영문약어,한글입력,출현'];
   const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
   RANK.forEach(([t,c])=>L.push([t,USER[t]||'',c].map(q).join(',')));
@@ -1097,7 +1467,7 @@ function ddlSummary(incT){
        `<div style="margin-top:6px;font-family:Consolas,monospace;font-size:11px">${ex}`+
        (none+mix>5?`<br>… 외 ${none+mix-5}줄`:'')+`</div>`+
        `<div style="margin-top:6px">검토 후 SQL에서 <code>-- [검토] </code> 를 지우면 실행된다. `+
-       `또는 4번 랭킹에 한글을 넣고 다시 변환한다.</div></div>`;
+       `또는 5번 랭킹에 한글을 넣고 다시 변환한다.</div></div>`;
   }
   document.getElementById('ddlSum').innerHTML=h;
 }
@@ -1147,11 +1517,17 @@ function withSuffix(name, suf){
 }
 // 용어(컬럼)의 표준도메인 = 마지막 토큰이 형식단어면 그 도메인. 아니면 빈칸.
 // 도메인은 형식단어에만 채워져 있으므로 dom 값 존재 = 형식단어로 끝났다는 뜻.
+// 마지막 토큰이 표준약어가 아니어도(DE·TY 같은 기관 약어) 매칭된 한글이 표준단어면
+// DOMKOR 로 도메인을 찾는다. DE→일자→'연월일'.
 function domainOf(phys){
   const toks=String(phys).toUpperCase().split('_').filter(Boolean);
   if(!toks.length) return '';
-  const m=WMETA[toks[toks.length-1]];
-  return (m && m.dom) ? m.dom : '';
+  const last=toks[toks.length-1];
+  const m=WMETA[last];
+  if(m && m.dom) return m.dom;
+  const r=lookup(last);                       // 실제 변환과 같은 우선순위로 한글을 얻는다
+  if(r){ const d=DOMKOR[r.v]; if(d && d.dom) return d.dom; }
+  return '';
 }
 // 표준용어사전 CSV — 컬럼명(물리명) 기준 distinct. 같은 컬럼명은 DB 전체에서 1줄로 합침.
 // 컬럼정의서(테이블,컬럼 쌍마다)와 달리 어휘집이라 중복 제거된다.
@@ -1161,18 +1537,29 @@ function getDbName(){
   if(t) return t;
   return [...new Set(ROWS.map(r=>r.owner).filter(Boolean))].join('/');
 }
+// 검토필요 = 논리명에 영문이 남은 행. 미매칭(전부 영문) / 부분매칭(일부 토큰만 영문).
+// 이 표시가 없으면 'PACKET내용' 같은 값이 검수자에게 그냥 오타로 보인다.
+const termFlag=r=> r.src==='none' ? '미매칭' : ((r.missing && r.missing.length) ? '부분매칭' : '');
 function expTerms(){
   if(!ROWS.length){ alert('먼저 [변환 실행] 을 한다.'); return; }
   const db=getDbName();
+  const excl=document.getElementById('termExcl').checked;
   const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
-  const L=['출처,DB명,표준용어명,영문약어명,용어설명,표준도메인명'];
+  const L=['출처,DB명,표준용어명,영문약어명,용어설명,표준도메인명,검토필요'];
+  let nMix=0, nNone=0, nCut=0;
+  const put=(kind, r, phys)=>{
+    const f=termFlag(r);
+    if(f==='부분매칭') nMix++; else if(f==='미매칭') nNone++;
+    if(f && excl){ nCut++; return; }
+    L.push([kind, db, r.name, phys, '', domainOf(phys), f].map(q).join(','));
+  };
   // 테이블(엔티티) 용어 먼저 — 물리명 distinct
   const seenT=new Set();
   TROWS.forEach(r=>{
     const key=r.table.toUpperCase();
     if(seenT.has(key)) return;
     seenT.add(key);
-    L.push(['테이블', db, r.name, r.table, '', domainOf(r.table)].map(q).join(','));
+    put('테이블', r, r.table);
   });
   // 컬럼 용어 — 물리명 distinct
   const seen=new Set();
@@ -1180,15 +1567,22 @@ function expTerms(){
     const key=r.col.toUpperCase();
     if(seen.has(key)) return;
     seen.add(key);
-    L.push(['컬럼', db, r.name, r.col, '', domainOf(r.col)].map(q).join(','));
+    put('컬럼', r, r.col);
   });
+  // 완성도 점검 — expStdWords 와 같은 방식
+  const warns=[];
+  if(nMix||nNone) warns.push(`· 논리명에 영문이 남은 용어 ${nMix+nNone}건 (부분매칭 ${nMix} · 미매칭 ${nNone})`+
+                             (excl ? ` → ${nCut}건 제외하고 내보낸다` : ` → «검토필요» 열에 표시해 내보낸다`));
+  warns.push(`· 용어설명 ${L.length-1}건 전부 빈칸 — 물리명에서 못 뽑는다. 수기 작성 대상`);
+  if(!db) warns.push('· DB명 미입력 — DB명 열이 전부 빈칸으로 나감');
+  if(!confirm('표준용어사전 완성도 점검\n\n'+warns.join('\n')+'\n\n진행할까?')) return;
   const blob=new Blob(['﻿'+L.join('\r\n')],{type:'text/csv;charset=utf-8'});
   const el=document.createElement('a');
   el.href=URL.createObjectURL(blob); el.download='표준용어사전.csv'; el.click();
   setTimeout(()=>URL.revokeObjectURL(el.href),1000);
 }
 // 표준단어사전 통합 CSV — 3소스 병합, 영문약어 distinct.
-// ① 공통표준단어 중 사용여부 Y  ② 기관표준단어(단어만, 언더바 없는 것)  ③ 랭킹 한글입력(USER)
+// 1번 공통표준단어 중 사용여부 Y  ·  2번 기관표준단어(단어만, 언더바 없는 것)  ·  5번 랭킹 한글입력(USER)
 // 충돌 시 실제 변환 우선순위(tokPri)와 동일하게 채택. 형식단어여부는 공통표준단어 출처만 값 있음.
 function expStdWords(){
   if(!ROWS.length){ alert('먼저 [변환 실행] 을 한다.'); return; }
@@ -1210,8 +1604,10 @@ function expStdWords(){
   const L=['DB명,표준단어명,영문약어명,형식단어여부,출처,중복'];
   abbrs.forEach(a=>{
     const info=USEDTOK[a];
-    // 형식단어여부: 공통표준단어 출처만 원본값(Y/N), 기관·사용자 출처는 기본 N (수기 확인)
-    const fw = info.src==='word' ? ((WMETA[a]&&WMETA[a].fw)||'N') : 'N';
+    // 형식단어여부: 공통표준단어 출처는 원본값. 기관·사용자 출처는 한글로 역조회해
+    // 표준단어에 같은 한글이 있으면 그 값을 따른다(DE→일자→Y). 그래도 못 찾으면 N.
+    let fw = info.src==='word' ? ((WMETA[a]&&WMETA[a].fw)||'') : '';
+    if(!fw){ const d=DOMKOR[info.kor]; fw = (d && d.fw) ? d.fw : 'N'; }
     const srcs=[];
     if(DICT[a]!==undefined) srcs.push('공통표준단어');
     if(OVER[a]!==undefined) srcs.push('기관표준단어');
@@ -1224,6 +1620,487 @@ function expStdWords(){
   el.href=URL.createObjectURL(blob); el.download='표준단어사전.csv'; el.click();
   setTimeout(()=>URL.revokeObjectURL(el.href),1000);
 }
+
+/* ================= 6. FK 관계 추론 (erwin 관계선용) =================
+   물리 FK 가 없는 DB에서 컬럼명 규칙으로 부모-자식 관계를 역추론한다.
+   생성물은 erwin 리버스용 .sql 에 붙이는 텍스트다. 운영 DB 실행 대상이 아니다.
+   1번~6번(논리명)과 독립이다 — 컬럼목록만 로드하면 동작한다. */
+let FKROWS=[], FKCUR=1, FKPER=200, FKSQL='', FKDROP=null, FKHASPK=false;
+
+function toggleFkGuide(){
+  const g=document.getElementById('fkGuide'), b=document.getElementById('fkGuideBtn');
+  const hid=g.classList.toggle('hide');
+  b.textContent = hid ? '▼ erwin 적용법 보기' : '▲ 접기';
+}
+function fkReset(){
+  FKROWS=[]; FKCUR=1; FKSQL=''; FKDROP=null; FKHASPK=false;
+  document.getElementById('fkStat').innerHTML='';
+  document.getElementById('fkSum').innerHTML='';
+  document.getElementById('fkOut').value='';
+  document.getElementById('fkSqlBtn').disabled=true;
+  ['fkTools','fkWrap','fkPager','fkOutRow','fkBtnRow','fkOut']
+    .forEach(id=>document.getElementById(id).classList.add('hide'));
+}
+// 컬럼목록 -> 테이블 인덱스. 스키마·테이블·컬럼 열은 3번 선택을 그대로 쓴다.
+// 백업·임시 테이블 제외는 여기서 안 한다 — 컬럼목록을 뽑는 단계에서 끝난 것으로 본다.
+const FKPKY=new Set(['Y','1','P','PK','TRUE','T','YES','예']);
+function fkBuildTables(){
+  const oi=+document.getElementById('cOwner').value,
+        ti=+document.getElementById('cTable').value,
+        ci=+document.getElementById('cCol').value,
+        di=+document.getElementById('fkOrd').value,
+        yi=+document.getElementById('fkType').value,
+        li=+document.getElementById('fkLen').value,
+        ki=+document.getElementById('fkPk').value;
+  const ownFix=(document.getElementById('ownerTxt').value||'').trim().toUpperCase();
+  const tabs=new Map();
+  for(let i=1;i<colRaw.length;i++){
+    const r=colRaw[i];
+    const ow=(oi>=0?(r[oi]||''):ownFix).trim().toUpperCase();
+    const tb=(r[ti]||'').trim().toUpperCase();
+    const co=(r[ci]||'').trim().replace(/\s+/g,'').toUpperCase();
+    if(!tb||!co) continue;
+    const k=ow+'|'+tb;
+    let t=tabs.get(k);
+    if(!t){ t={owner:ow, table:tb, cols:new Map(), pkCols:new Set()}; tabs.set(k,t); }
+    if(ki>=0 && FKPKY.has(String(r[ki]||'').trim().toUpperCase())) t.pkCols.add(co);
+    // 컬럼순서 열이 없으면 CSV 등장 순서로 대체한다.
+    // 조회쿼리가 COLUMN_ID 순 정렬이면(기본·03번 쿼리 둘 다 그렇다) 결과가 같다.
+    if(!t.cols.has(co)) t.cols.set(co,{
+      ord: di>=0 ? (parseInt(r[di],10)||0) : (t.cols.size+1),
+      type: yi>=0 ? (r[yi]||'').trim().toUpperCase() : '',
+      len:  li>=0 ? String(r[li]||'').trim() : ''
+    });
+  }
+  return {tabs, hasPkCol:(ki>=0)};
+}
+
+// 키 컬럼의 어간. 'CUS_ID' -> 'CUS'. 키 접미로 안 끝나면 '' (관계 후보 아님)
+function fkStem(col, sufs){
+  const t=col.split('_').filter(Boolean);
+  if(t.length>1 && sufs.includes(t[t.length-1])) return t.slice(0,-1).join('_');
+  return '';
+}
+// 부모 점수 — 어느 테이블이 이 키의 '주인'인가
+function fkParentScore(t, key, stem){
+  let s=0; const why=[];
+  // 단일 컬럼 PK 는 다른 어떤 신호보다 강하다. 이게 있으면 추론이 아니라 사실이다.
+  // 150 = 이름 신호 전부(50+30+15+5=100)를 확실히 넘는 값. PK 선언은
+  // '이 테이블이 이 컬럼의 주인'이라는 정의라 이름 휴리스틱이 이기면 안 된다.
+  // 복합 PK 의 한 컬럼은 가점 없음 — 그 컬럼만으로는 행이 유일하지 않아
+  // FOREIGN KEY 참조 대상이 될 수 없다 (Oracle: ORA-02270).
+  if(t.pkCols.size===1 && t.pkCols.has(key)){ s+=150; why.push('단일PK'); }
+  else if(t.pkCols.has(key)) why.push('복합PK일부');
+  const tt=new Set(t.table.split('_').filter(Boolean));
+  const st=stem.split('_').filter(Boolean);
+  if(st.length && st.every(x=>tt.has(x))){ s+=50; why.push('테이블명일치'); }
+  const c=t.cols.get(key);
+  if(c && c.ord===1){ s+=30; why.push('첫컬럼'); }
+  if(/(_MST|_BAS|_INFO|_MNG|_MGMT|_M)$/.test(t.table)){ s+=15; why.push('마스터성'); }
+  if(/^(TB|TBL)_/.test(t.table)) s+=5;
+  // 이력·집계성 테이블은 부모가 아니다. 자식으로만 잡혀야 한다
+  if(/(_HIST|_HST|_LOG|_DTL|_STAT|_STA|_SUM|_TOT|_DAY|_MON|_YY|_D)$/.test(t.table)){ s-=40; why.push('이력성'); }
+  return {s, why};
+}
+// 타입 비교 — 정보가 없으면 통과시킨다 (모르는 것을 근거로 버리지 않는다)
+const FKT={VARCHAR2:'STR',VARCHAR:'STR',NVARCHAR2:'STR',NVARCHAR:'STR',CHAR:'STR',NCHAR:'STR',
+           NUMBER:'NUM',NUMERIC:'NUM',DECIMAL:'NUM',INT:'NUM',INTEGER:'NUM',BIGINT:'NUM',
+           SMALLINT:'NUM',TINYINT:'NUM',FLOAT:'NUM',DOUBLE:'NUM'};
+function fkTypeOk(a,b){
+  if(!a||!b||!a.type||!b.type) return true;
+  if((FKT[a.type]||a.type)!==(FKT[b.type]||b.type)) return false;
+  if(a.len&&b.len&&a.len!==b.len) return false;
+  return true;
+}
+
+function inferFK(){
+  if(!colRaw){ alert('먼저 3번에 컬럼 목록을 넣는다.'); return; }
+  if(+document.getElementById('cTable').value<0){
+    alert('테이블명 열이 (없음) 이다.\n\nFK 추론은 테이블명이 있어야 한다.'); return; }
+  const {tabs, hasPkCol}=fkBuildTables();
+  FKHASPK=hasPkCol;
+  if(!tabs.size){ alert('테이블이 없다.\n\n3번 컬럼목록의 테이블명 열을 확인한다.'); return; }
+
+  const sufs=document.getElementById('fkSuf').value.split(',')
+             .map(s=>s.trim().toUpperCase()).filter(Boolean);
+  if(document.getElementById('fkCd').checked && !sufs.includes('CD')) sufs.push('CD');
+  if(!sufs.length){ alert('키 접미가 비었다. 예: ID,NO,SEQ'); return; }
+  const exCol=new Set(document.getElementById('fkExCol').value.split(',')
+              .map(s=>s.trim().toUpperCase()).filter(Boolean));
+  const maxOcc=+document.getElementById('fkMaxOcc').value||60;
+  const minScore=+document.getElementById('fkMinScore').value;
+  const strict=document.getElementById('fkStrictType').checked;
+  const allowSelf=document.getElementById('fkSelf').checked;
+
+  const TL=[...tabs.values()];
+  const occ=new Map();   // 컬럼명 -> 보유 테이블[]
+  const suf=new Map();   // 진접미 -> [{t,col}]  ('CUS_ID' -> SPEC_CUS_ID 보유 위치)
+  TL.forEach(t=>{
+    t.cols.forEach((meta,c)=>{
+      if(!occ.has(c)) occ.set(c,[]);
+      occ.get(c).push(t);
+      const p=c.split('_').filter(Boolean);
+      for(let i=1;i<p.length;i++){
+        const s=p.slice(i).join('_');
+        if(!suf.has(s)) suf.set(s,[]);
+        suf.get(s).push({t,col:c});
+      }
+    });
+  });
+
+  const out=[]; const drop={common:[], noParent:[], type:0};
+  [...occ.keys()].sort().forEach(key=>{
+    if(exCol.has(key)) return;
+    const stem=fkStem(key,sufs);
+    if(!stem) return;                                   // 키 접미가 아니면 후보 아님
+    const holders=occ.get(key);
+    const variants=(suf.get(key)||[]).filter(x=>!exCol.has(x.col));
+    if(holders.length<2 && !variants.length) return;    // 혼자 있으면 관계 없음
+    if(holders.length>maxOcc){ drop.common.push(key+'('+holders.length+')'); return; }
+
+    const sc=holders.map(t=>{ const r=fkParentScore(t,key,stem); return {t,s:r.s,why:r.why}; })
+                    .sort((a,b)=>b.s-a.s);
+    const best=sc[0];
+    if(!best || best.s<minScore){ drop.noParent.push(key); return; }
+    const tie = sc.length>1 && sc[1].s===best.s;
+    const P=best.t, PM=P.cols.get(key);
+
+    // 부모키가 복합 PK 의 한 컬럼이면 단일 컬럼 FK 로 참조할 수 없다.
+    // 버리지는 않고 C 로 내려 사람이 판정하게 둔다 (부모를 바꾸거나 복합 FK 로 손봐야 함).
+    const pkPart = P.pkCols.size>1 && P.pkCols.has(key);
+    const mk=(C,ccol,kind)=>{
+      if(C===P && ccol===key) return;                   // 자기 자신
+      if(C===P && !allowSelf) return;
+      const ok=fkTypeOk(PM, C.cols.get(ccol));
+      if(!ok && strict){ drop.type++; return; }
+      let g = (kind==='동명' && best.s>=80) ? 'A' : 'B';
+      if(tie || !ok || pkPart) g='C';
+      // 식별관계 = 부모키가 자식 테이블의 PK 를 구성한다. PK 여부 열이 있어야 판정된다.
+      out.push({po:P.owner, pt:P.table, pc:key, co:C.owner, ct:C.table, cc:ccol,
+                ident:C.pkCols.has(ccol),
+                kind, grade:g, pscore:best.s, why:best.why.join('+'),
+                pkReal:(P.pkCols.size===1 && P.pkCols.has(key)), pHasPk:P.pkCols.size>0, pkPart,
+                bad: [ok?'':'타입불일치', pkPart?'복합PK일부':''].filter(Boolean).join(' · '),
+                self:(C===P), dup:'', chk:(g!=='C')});
+    };
+    holders.forEach(t=>{ if(t!==P) mk(t,key,'동명'); });
+    variants.forEach(v=>mk(v.t, v.col, '접두변형'));
+  });
+
+  // 같은 자식 컬럼에 부모가 둘 이상이면 하나만 채택. 나머지는 C 로 내리고 미체크
+  const bykey=new Map();
+  out.forEach(r=>{ const k=r.co+'|'+r.ct+'|'+r.cc;
+                   if(!bykey.has(k)) bykey.set(k,[]); bykey.get(k).push(r); });
+  let nDup=0;
+  bykey.forEach(arr=>{
+    if(arr.length<2) return;
+    nDup++;
+    const rank=r=>({A:0,B:1,C:2})[r.grade]*1000 - r.pscore + (r.kind==='동명'?0:10);
+    arr.sort((a,b)=>rank(a)-rank(b));
+    arr.forEach((r,i)=>{ if(i){ r.chk=false; r.grade='C'; r.dup='부모후보 '+arr.length+'개'; } });
+  });
+
+  out.sort((a,b)=> a.grade.localeCompare(b.grade) || a.pt.localeCompare(b.pt) ||
+                   a.ct.localeCompare(b.ct) || a.cc.localeCompare(b.cc));
+  out.forEach((r,i)=>r.no=i+1);
+  FKROWS=out; FKDROP=drop; FKCUR=1;
+
+  const g=s=>out.filter(r=>r.grade===s).length;
+  const tabCnt=new Set(out.map(r=>r.co+'.'+r.ct)).size + new Set(out.map(r=>r.po+'.'+r.pt)).size;
+  let h=`<div class="ok" style="width:100%"><b>관계 후보 ${out.length.toLocaleString()}건</b> — `+
+        `A ${g('A')} · B ${g('B')} · C ${g('C')} &nbsp;|&nbsp; 대상 테이블 ${tabs.size.toLocaleString()}개</div>`;
+  const notes=[];
+  if(drop.common.length)   notes.push(`공통컬럼으로 버림 <b>${drop.common.length}</b>개 — ${esc(drop.common.slice(0,6).join(', '))}${drop.common.length>6?' …':''}`);
+  if(drop.noParent.length) notes.push(`부모 미정으로 버림 <b>${drop.noParent.length}</b>개 (최소점수 미달)`);
+  if(drop.type)            notes.push(`타입 불일치로 버림 <b>${drop.type}</b>건`);
+  if(nDup)                 notes.push(`부모 후보가 둘 이상인 자식 컬럼 <b>${nDup}</b>건 — 1개만 채택, 나머지 C 등급`);
+  if(notes.length) h+=`<div class="warn" style="width:100%;margin-top:6px">`+notes.map(x=>'· '+x).join('<br>')+`</div>`;
+  if(!out.length) h+=`<div class="err" style="width:100%;margin-top:6px"><b>후보 0건.</b> `+
+    `«부모 최소점수»를 낮추거나 «키 접미»에 이 DB가 쓰는 접미를 넣는다. 제외 테이블 정규식도 확인한다.</div>`;
+  document.getElementById('fkStat').innerHTML=h;
+
+  ['fkTools','fkWrap','fkPager','fkOutRow','fkBtnRow'].forEach(id=>
+    document.getElementById(id).classList.toggle('hide', !out.length));
+  fkRender();
+  toast('관계 추론 완료', `${out.length.toLocaleString()}건 (A ${g('A')} · B ${g('B')} · C ${g('C')})`);
+}
+
+// ---- 표 ----
+function fkPool(){
+  const m=document.getElementById('fkGrade').value;
+  let arr=FKROWS;
+  if(m==='chk') arr=arr.filter(r=>r.chk);
+  else if(m!=='all') arr=arr.filter(r=>r.grade===m);
+  const q=document.getElementById('fkText').value.trim().toUpperCase();
+  if(q) arr=arr.filter(r=>(r.pt+'.'+r.pc+' '+r.ct+'.'+r.cc).includes(q));
+  return arr;
+}
+const FKTAG={A:'t-given',B:'t-word',C:'t-none'};
+const fkNote=r=>[r.bad, r.dup, r.self?'자기참조':''].filter(Boolean).join(' · ');
+
+// 부모·자식·근거·비고만 폭 조절 대상. 체크·등급·유형은 고정폭
+const FKRESIZABLE={2:1, 3:1, 5:1, 6:1};
+
+function fkRender(){
+  const arr=fkPool();
+  const tot=Math.max(1,Math.ceil(arr.length/FKPER));
+  if(FKCUR>tot) FKCUR=tot;
+  const view=arr.slice((FKCUR-1)*FKPER, FKCUR*FKPER);
+  const allChk = arr.length>0 && arr.every(r=>r.chk);
+
+  const W=colWidths('fkTbl','fkWrap', view, [
+    {i:2, head:'부모 (1)', get:r=>[r.pt, '.'+r.pc]},
+    {i:3, head:'자식 (N)', get:r=>[r.ct, '.'+r.cc]},
+    {i:5, head:'근거',     get:r=>[(r.why||'-')+' ('+r.pscore+')']},
+    {i:6, head:'비고',     get:r=>[fkNote(r)]}
+  ], {0:28, 1:46, 4:70});
+  const th=(i,label,extra)=>`<th style="width:${W[i]}px;${nowrapIf(W[i])}"${extra||''}>${label}</th>`;
+
+  let h='<tr><th style="width:28px" title="현재 목록 전체 선택/해제">'+
+        `<input type="checkbox" ${allChk?'checked':''} onclick="fkAll(this.checked)"></th>`+
+        '<th style="width:46px">등급</th>'+
+        th(2,'부모 (1)',' title="열 경계를 끌면 너비 고정, 헤더를 더블클릭하면 자동으로 되돌림"')+
+        th(3,'자식 (N)')+
+        '<th style="width:70px">유형</th>'+
+        th(5,'근거')+th(6,'비고')+'</tr>';
+
+  view.forEach(r=>{
+    const i=FKROWS.indexOf(r);
+    const note=fkNote(r);
+    h+=`<tr><td><input type="checkbox" ${r.chk?'checked':''} onchange="fkTog(${i},this.checked)"></td>`+
+       `<td><span class="tag ${FKTAG[r.grade]}">${r.grade}</span></td>`+
+       `<td style="font-family:Consolas,monospace">${esc(r.pt)}<b style="color:#4ec9b0">.${esc(r.pc)}</b></td>`+
+       `<td style="font-family:Consolas,monospace">${esc(r.ct)}<b style="color:#9cdcfe">.${esc(r.cc)}</b></td>`+
+       `<td>${esc(r.kind)}</td><td style="color:#9a9a9a;${nowrapIf(W[5])}">${esc(r.why||'-')} (${r.pscore})</td>`+
+       `<td style="color:#f48771;${nowrapIf(W[6])}">${esc(note)}</td></tr>`;
+  });
+  document.getElementById('fkTbl').innerHTML=h;
+  document.getElementById('fkPgInfo').textContent=`/ ${tot}  (${arr.length.toLocaleString()}건)`;
+  document.getElementById('fkPgNum').value=FKCUR;
+}
+bindResize('fkTbl', FKRESIZABLE, fkRender);
+bindResize('tbl', {1:1,2:1,3:1,4:1,6:1}, render);   // 4번 결과표도 같은 방식
+bindResize('rankTbl', {1:1,2:1,4:1}, paintRank);    // 5번 랭킹표
+function fkTog(i,v){ if(FKROWS[i]) FKROWS[i].chk=v; }
+function fkAll(v){ fkPool().forEach(r=>r.chk=v); fkRender(); }
+function fkPage(d){ const tot=Math.max(1,Math.ceil(fkPool().length/FKPER));
+  FKCUR=Math.min(tot,Math.max(1,FKCUR+d)); fkRender(); }
+function fkGo(v){ const tot=Math.max(1,Math.ceil(fkPool().length/FKPER));
+  FKCUR=Math.min(tot,Math.max(1,parseInt(v,10)||1)); fkRender(); }
+function fkCheck(mode){
+  FKROWS.forEach(r=>{
+    r.chk = mode==='A' ? r.grade==='A'
+          : mode==='AB'? (r.grade==='A'||r.grade==='B')
+          : false;
+  });
+  fkRender();
+}
+
+// ---- 출력 ----
+// 제약명 30자 제한(Oracle/Tibero). 넘치면 자르고, 충돌하면 순번을 뒤에 붙인다.
+function fkCname(prefix, base, seq, used){
+  let n=(prefix+base).replace(/[^A-Za-z0-9_]/g,'_');
+  if(n.length>30) n=n.slice(0,30);
+  if(used.has(n)){ const tail='_'+seq; n=n.slice(0,30-tail.length)+tail; }
+  used.add(n); return n;
+}
+function genFKSQL(){
+  const picked=FKROWS.filter(r=>r.chk);
+  if(!picked.length){
+    document.getElementById('fkOut').value='체크된 관계가 없다.';
+    document.getElementById('fkOut').classList.remove('hide');
+    document.getElementById('fkSqlBtn').disabled=true;
+    document.getElementById('fkSum').innerHTML=''; FKSQL=''; return;
+  }
+  const pkOn=document.getElementById('fkPkGen').checked;
+  const L=[]; const used=new Set(); let nPkConf=0, nPkSkip=0, nUk=0, nPart=0;
+
+  if(pkOn){
+    // 부모 테이블당 PK 는 1개만 나올 수 있다. 키가 둘 이상이면 많이 쓰인 쪽만 살린다.
+    const byTab=new Map();
+    picked.forEach(r=>{
+      const k=r.po+'.'+r.pt;
+      if(!byTab.has(k)) byTab.set(k,{owner:r.po, table:r.pt, cols:new Map(),
+                                     hasPk:r.pHasPk, real:new Set(), part:new Set()});
+      const e=byTab.get(k);
+      e.cols.set(r.pc,(e.cols.get(r.pc)||0)+1);
+      if(r.pkReal) e.real.add(r.pc);
+      if(r.pkPart) e.part.add(r.pc);
+    });
+    L.push('-- ═══ 부모 키 보강 ═══════════════════════════════════════');
+    L.push('-- 부모에 PK/UNIQUE 가 없으면 아래 FOREIGN KEY 문이 바인딩되지 않아');
+    L.push('-- erwin 에 관계선이 안 생긴다. 없는 것만 여기서 만들어 준다.');
+    L.push(FKHASPK
+      ? '-- PK 여부 열이 있으므로 실제 PK 가 있는 부모는 자동으로 건너뛴다.'
+      : '-- ※ PK 여부 열이 (없음) 이다 → 전부 생성된다. schema.sql 에 이미 PK 가 있는');
+    if(!FKHASPK)
+      L.push('--   테이블 줄은 직접 지울 것. 중복 PK 는 erwin 파싱 오류다.');
+    L.push('-- ★ 유니크성 미검증분은 [관계검증 SQL] 로 고아건 0 을 먼저 확인한다.');
+    L.push('');
+    let seq=0;
+    [...byTab.values()].sort((a,b)=>a.table.localeCompare(b.table)).forEach(t=>{
+      const cols=[...t.cols.entries()].sort((a,b)=>b[1]-a[1]);
+      let emitted=false;
+      cols.forEach(c=>{
+        const col=c[0];
+        if(t.real.has(col)){ nPkSkip++;                      // 이미 진짜 PK — 손댈 것 없음
+          L.push(`-- [실제PK] ${t.owner}.${t.table}(${col}) — schema.sql 에 이미 있음. 생성 안 함`);
+          emitted=true; return; }
+        if(t.part.has(col)){                                  // 복합 PK 의 한 컬럼
+          nPart++;
+          L.push(`-- [복합PK] ${t.owner}.${t.table}(${col}) — 복합 PK 의 한 컬럼이라 단일 컬럼으로 참조 불가.`);
+          L.push(`--          UNIQUE 를 걸면 실데이터에서 중복으로 깨진다. 부모를 바꾸거나 복합 FK 로 손볼 것`);
+          return; }
+        if(t.hasPk){                                          // PK 는 있는데 다른 컬럼이 부모키
+          nUk++;
+          const nm=fkCname('UK_MDL_', t.table, ++seq, used);
+          L.push(`ALTER TABLE ${t.owner}.${t.table} ADD CONSTRAINT ${nm} UNIQUE (${col});`+
+                 `   -- 이 테이블 PK 는 따로 있음 → 대체키(AK)로 참조`);
+          return; }
+        if(emitted){                                          // PK 없는 테이블에 부모키 후보가 여럿
+          nPkConf++;
+          const nm=fkCname('PK_MDL_', t.table, ++seq, used);
+          L.push(`-- [키충돌] ALTER TABLE ${t.owner}.${t.table} ADD CONSTRAINT ${nm} PRIMARY KEY (${col});`+
+                 `   -- 부모키 후보 ${cols.length}개 중 하나만 살릴 것`);
+          return; }
+        const nm=fkCname('PK_MDL_', t.table, ++seq, used);
+        L.push(`ALTER TABLE ${t.owner}.${t.table} ADD CONSTRAINT ${nm} PRIMARY KEY (${col});`);
+        emitted=true;
+      });
+    });
+    L.push('');
+  }
+
+  L.push('-- ═══ 추론 FK ═══════════════════════════════════════════');
+  L.push('-- 컬럼명 규칙으로 역추론한 관계다. 실제 DB 제약이 아니다.');
+  L.push('');
+  let seq=0;
+  picked.forEach(r=>{
+    const nm=fkCname('FK_INF_', String(++seq).padStart(4,'0'), seq, used);
+    L.push(`ALTER TABLE ${r.co}.${r.ct} ADD CONSTRAINT ${nm}`);
+    L.push(`  FOREIGN KEY (${r.cc}) REFERENCES ${r.po}.${r.pt} (${r.pc});`+
+           `   -- ${r.grade} · ${r.kind}${r.why?' · '+r.why:''}${r.self?' · 자기참조':''}`);
+  });
+
+  const g=s=>picked.filter(r=>r.grade===s).length;
+  const head =
+    `-- 생성 ${new Date().toLocaleString('ko-KR')} · FK 추론 ${picked.length}건 `+
+    `(A ${g('A')} / B ${g('B')} / C ${g('C')})\n`+
+    `-- 용도: erwin 스크립트 리버스용. 스키마 DDL(.sql) 맨 끝에 append 한다.\n`+
+    `-- ★ 운영 DB 실행 금지 — 기존 데이터가 무결성 위반으로 터진다.\n`+
+    `-- 적용: erwin → File > New > Physical (타겟 ${DIALECTS[DIALECT].label}) → Actions > Reverse Engineer > From Script\n`+
+    (FKHASPK?'':`-- ※ PK 여부 열 미지정 — 모델전용 PK 가 전부 생성됨. 기존 PK 와 중복되는 줄을 직접 지울 것\n`)+
+    (nPkSkip?`-- ※ [실제PK] ${nPkSkip}건은 이미 schema.sql 에 있어 생성하지 않음\n`:'')+
+    (nPart?`-- ※ [복합PK] ${nPart}건 — 복합 PK 컬럼 참조라 키 생성 불가. 부모 교체 필요
+`:'')+
+    (nUk?`-- ※ UK_MDL_ ${nUk}건 — 부모 PK 가 따로 있어 UNIQUE(대체키)로 참조함\n`:'')+
+    (nPkConf?`-- ※ [키충돌] ${nPkConf}줄은 한 테이블에 부모키 후보가 여러 개라 주석 처리됨. 하나만 골라 살린다\n`:'')+
+    `\n`;
+  FKSQL=head+L.join('\n');
+  document.getElementById('fkSqlBtn').disabled=false;
+  const CAP=800;
+  const ta=document.getElementById('fkOut');
+  ta.classList.remove('hide');
+  ta.value = L.length>CAP
+    ? head + L.slice(0,CAP).join('\n') +
+      `\n\n-- … 이하 ${L.length-CAP}줄 생략 (미리보기 ${CAP}줄)\n-- 전체는 [fk_inferred.sql 저장] 으로 받는다`
+    : FKSQL;
+
+  const nSelf=picked.filter(r=>r.self).length, nRole=picked.filter(r=>r.kind==='접두변형').length;
+  let s=`<div class="ok"><b>${picked.length}개 관계 생성</b> — 부모 ${new Set(picked.map(r=>r.po+'.'+r.pt)).size}개 · 자식 ${new Set(picked.map(r=>r.co+'.'+r.ct)).size}개</div>`;
+  const w=[];
+  if(!FKHASPK) w.push(`<b>PK 여부 열 미지정</b> — 모델전용 PK 가 전부 생성됐다. `+
+                      `<code>schema.sql</code> 에 이미 PK 가 있는 테이블 줄을 지우지 않으면 <b>erwin 파싱이 깨진다</b>`);
+  if(nPkSkip) w.push(`실제 PK 보유 부모 <b>${nPkSkip}</b>건 — 생성 안 함 (충돌 없음)`);
+  if(nPart)   w.push(`복합PK 컬럼 참조 <b>${nPart}</b>건 — 단일 컬럼 FK 로 못 건다. C 등급으로 내려둠`);
+  if(nUk)     w.push(`<code>UK_MDL_</code> <b>${nUk}</b>건 — 부모 PK 가 따로 있어 UNIQUE 로 냈다. erwin 이 대체키로 읽는다`);
+  if(g('C'))  w.push(`C 등급 <b>${g('C')}</b>건 포함 — 오탐 가능. [관계검증 SQL] 로 확인 권장`);
+  if(nRole)   w.push(`접두변형 <b>${nRole}</b>건 — erwin 에서 rolename 으로 처리된다 (정상)`);
+  if(nSelf)   w.push(`자기참조 <b>${nSelf}</b>건 — erwin 에서 재귀 관계선으로 그려진다`);
+  if(nPkConf) w.push(`부모키 충돌 <b>${nPkConf}</b>건 — SQL 안 <code>[키충돌]</code> 줄에서 하나만 골라 살린다`);
+  if(w.length) s+=`<div class="warn">`+w.map(x=>'· '+x).join('<br>')+`</div>`;
+  document.getElementById('fkSum').innerHTML=s;
+}
+function saveFKSQL(){
+  if(!FKSQL){ alert('먼저 [체크된 관계로 FK DDL 생성] 을 한다.'); return; }
+  const blob=new Blob(['﻿'+FKSQL],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='fk_inferred.sql'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+// 추론 관계가 실제 데이터에서 성립하는지 확인. 고아건 0 = 관계 성립.
+// 결과 탭이 수백 개로 쪼개지지 않게 UNION ALL 로 묶는다.
+function saveFKVerify(){
+  const picked=FKROWS.filter(r=>r.chk);
+  if(!picked.length){ alert('체크된 관계가 없다.'); return; }
+  const n=+document.getElementById('fkSample').value||20000;
+  const d=DIALECT;
+  const top  = (d==='mssql'||d==='sybase') ? `TOP ${n} ` : '';
+  const rnum = (d==='oracle') ? ` AND ROWNUM <= ${n}` : '';
+  const lim  = (d==='mysql'||d==='pg') ? ` LIMIT ${n}` : '';
+  const CH=40, L=[];
+  L.push(`-- 생성 ${new Date().toLocaleString('ko-KR')} · 관계 검증 ${picked.length}건 · [${DIALECTS[d].label}]`);
+  L.push(`-- 자식 컬럼 값이 부모에 실재하는지 본다. 표본 ${n.toLocaleString()}행.`);
+  L.push('--   고아건 = 0            → 관계 성립. 채택');
+  L.push('--   고아건 < 검사건의 1%  → 논리관계. 채택하되 ERD에 점선 표기');
+  L.push('--   그 이상               → 우연 동명. 버린다');
+  L.push('-- 읽기 전용 SELECT 다. 데이터를 바꾸지 않는다.');
+  L.push('');
+  for(let i=0;i<picked.length;i+=CH){
+    const part=picked.slice(i,i+CH);
+    L.push(`-- ── ${Math.floor(i/CH)+1}/${Math.ceil(picked.length/CH)} (관계 ${part.length}건) ──`);
+    const q=part.map(r=>{
+      const lbl=sq(`${r.ct}.${r.cc} -> ${r.pt}.${r.pc}`);
+      return `SELECT '${lbl}' AS REL, COUNT(*) AS CHK_CNT, `+
+             `SUM(CASE WHEN p.K IS NULL THEN 1 ELSE 0 END) AS ORPHAN\n`+
+             `  FROM (SELECT ${top}${r.cc} AS C FROM ${r.co}.${r.ct} `+
+             `WHERE ${r.cc} IS NOT NULL${rnum}${lim}) c\n`+
+             `  LEFT JOIN (SELECT DISTINCT ${r.pc} AS K FROM ${r.po}.${r.pt}) p ON c.C = p.K`;
+    });
+    L.push(q.join('\nUNION ALL\n')+';');
+    L.push('');
+  }
+  const blob=new Blob(['﻿'+L.join('\n')],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='관계검증.sql'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+// 테이블관계정의서 CSV — ERD출 산출물.
+// 논리명은 변환 실행을 했으면 채워지고, 안 했으면 빈칸이다.
+function expFKCsv(){
+  const picked=FKROWS.filter(r=>r.chk);
+  if(!picked.length){ alert('체크된 관계가 없다.'); return; }
+  const cn=new Map(), tn=new Map();
+  ROWS.forEach(r=>cn.set((r.owner+'|'+r.table+'|'+r.col).toUpperCase(), r.name||''));
+  TROWS.forEach(r=>tn.set((r.owner+'|'+r.table).toUpperCase(), r.name||''));
+  const T=(o,t)=>tn.get((o+'|'+t).toUpperCase())||'';
+  const C=(o,t,c)=>cn.get((o+'|'+t+'|'+c).toUpperCase())||'';
+  const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
+  const L=['순번,부모스키마,부모테이블,부모테이블논리명,부모컬럼,부모컬럼논리명,'+
+           '자식스키마,자식테이블,자식테이블논리명,자식컬럼,자식컬럼논리명,'+
+           '관계유형,카디널리티,식별여부,추론등급,추론근거,비고'];
+  picked.forEach((r,i)=>{
+    const note=[r.bad, r.dup, r.self?'자기참조':'',
+                FKHASPK?'':'식별여부 판정불가(PK 여부 열 미지정)'].filter(Boolean).join(' / ');
+    L.push([i+1, r.po, r.pt, T(r.po,r.pt), r.pc, C(r.po,r.pt,r.pc),
+            r.co, r.ct, T(r.co,r.ct), r.cc, C(r.co,r.ct,r.cc),
+            'FK 미설정(명명규칙 추론)', '1:N',
+            FKHASPK ? (r.ident?'식별':'비식별') : '',
+            r.grade, `${r.kind}/${r.why||'-'}(${r.pscore})`, note].map(q).join(','));
+  });
+  const blob=new Blob(['﻿'+L.join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='테이블관계정의서.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+}
+
+
+// 마지막에 고른 DB 방언을 복원한다. switchDb 가 탭 활성화·03 링크 갱신까지 한다.
+// 저장값이 깨져 있으면 switchDb 가 early return 하므로 syncD03 을 직접 부른다.
+const savedDb = (()=>{ try { return localStorage.getItem('lnDialect'); } catch(e) { return null; } })();
+if(savedDb && DIALECTS[savedDb]) switchDb(savedDb); else syncD03();
 </script>
 </body>
 </html>

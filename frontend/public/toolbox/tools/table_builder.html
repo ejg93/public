@@ -13,6 +13,16 @@
 2026-07-18 summary 문구 전용 입력칸(d-summary-txt)이 출력에 반영되지 않던 문제 수정 +
              입력 시 즉시 갱신되도록 리스너 추가
 2026-07-18 열 버튼 배치 변경: 추가(좌/우) 윗줄, 삭제(좌/우) 아랫줄
+2026-07-25 색상 설정 추가 — 인라인 style 모드 전용: 테두리/머리글 배경·글자/
+             본문 배경·글자/줄무늬(zebra). 체크한 항목만 출력 반영, 브라우저에 저장
+2026-07-25 레이아웃 3열 개편 — 설정(표설정·출력형식·색상·출력HTML)│편집 그리드│미리보기(전체높이).
+             각 열 독립 스크롤, 전체 높이 채움 (기존: 편집+나머지 세로스택 2열)
+2026-07-25 기능 4종 추가:
+             ① 스플리터 — 편집↔미리보기 경계 드래그로 폭 조절, 위치 localStorage(tblb_edw) 저장
+             ② 엑셀/TSV 붙여넣기 — 편집영역 Ctrl+V로 탭·줄바꿈 파싱해 그리드 자동 채움(부족하면 행·열 확장)
+             ③ 표 자동저장/복원 — 변경 시마다 tblb_data에 저장, 재방문 시 복원(새로고침 대비)
+             ④ 셀/열 정렬 — 헤더 좌·중·우 버튼, text-align을 inline/공통class 출력에 반영
+                (순수 마크업 모드는 style 미출력이라 정렬 버튼 자동 비활성)
 개선메모: 개선사항_메모.md 참고 -->
 <style>
 * { box-sizing:border-box; margin:0; padding:0; }
@@ -24,17 +34,25 @@ header h1 { font-size:13px; color:#ccc; letter-spacing:2px; margin-right:6px; }
 .opt.disabled { opacity:.4; }
 select, input[type=number], input[type=text] { background:#3c3c3c; border:1px solid #555; border-radius:3px; color:var(--text); font-family:'Consolas',monospace; font-size:12px; padding:4px 6px; outline:none; }
 input[type=checkbox] { accent-color:var(--accent); }
+input[type=color] { width:32px; height:22px; padding:0; border:1px solid #555; border-radius:3px; background:#3c3c3c; cursor:pointer; vertical-align:middle; }
 button { font-family:'Consolas','맑은 고딕',monospace; font-size:12px; border:none; border-radius:4px; cursor:pointer; padding:6px 12px; letter-spacing:1px; background:#3c3c3c; color:var(--text); }
 button:hover { opacity:.85; }
+button:disabled { opacity:.35; cursor:not-allowed; }
+button:disabled:hover { opacity:.35; }
 .btn-p { background:var(--accent); color:#fff; font-weight:bold; }
 .btn-green { background:var(--green); color:#fff; }
 .sep { width:1px; height:22px; background:var(--border); margin:0 2px; }
 .grp { display:grid; grid-template-columns:auto auto; gap:4px; }
 .grp button { padding:5px 10px; }
 .btn-del { color:#e5807a; }
-.main { flex:1; display:flex; gap:12px; padding:12px; overflow:hidden; }
-/* ── 편집기 ── */
-.ed-wrap { flex:1.3; display:flex; flex-direction:column; gap:6px; overflow:hidden; }
+.main { flex:1; display:flex; gap:10px; padding:12px; overflow:hidden; }
+/* ── 3열: 설정 / 편집 / 미리보기 ── */
+.col-settings { width:360px; flex-shrink:0; display:flex; flex-direction:column; gap:8px; overflow-y:auto; overflow-x:hidden; padding-right:2px; }
+.col-editor { flex:1.4; display:flex; flex-direction:column; gap:6px; overflow:hidden; min-width:0; }
+.col-preview { flex:1; display:flex; flex-direction:column; gap:6px; overflow:hidden; min-width:0; }
+.splitter { width:6px; flex-shrink:0; align-self:stretch; cursor:col-resize; background:var(--border); border-radius:3px; }
+.splitter:hover, .splitter.drag { background:var(--accent); }
+#edScroll:focus { outline:none; }
 .label { font-size:10px; color:var(--muted); letter-spacing:2px; text-transform:uppercase; display:flex; justify-content:space-between; }
 .ed-scroll { flex:1; overflow:auto; background:#111; border:1px solid var(--border); border-radius:4px; padding:16px; }
 #grid { border-collapse:collapse; user-select:none; }
@@ -48,13 +66,12 @@ button:hover { opacity:.85; }
 #grid .hd:hover { color:var(--accent); }
 #grid .hd input { width:52px; font-size:10px; padding:2px 3px; margin-top:2px; text-align:center; }
 #grid tr.thead-last > td.cell { border-bottom:3px double var(--accent); }
-/* ── 우측 패널 ── */
-.side { flex:1; display:flex; flex-direction:column; gap:8px; overflow:hidden; min-width:380px; }
+/* ── 박스/출력 ── */
 .box { background:var(--surface); border:1px solid var(--border); border-radius:4px; padding:10px 12px; }
 .box .bt { font-size:10px; color:var(--muted); letter-spacing:2px; margin-bottom:8px; }
 .row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:6px; }
 .row:last-child { margin-bottom:0; }
-#out { flex:1; min-height:90px; background:#111; border:1px solid var(--border); border-radius:4px; color:#9cdcfe; font-family:'Consolas','D2Coding',monospace; font-size:12px; padding:10px; resize:none; outline:none; line-height:1.5; white-space:pre; overflow:auto; }
+#out { height:220px; flex-shrink:0; background:#111; border:1px solid var(--border); border-radius:4px; color:#9cdcfe; font-family:'Consolas','D2Coding',monospace; font-size:12px; padding:10px; resize:vertical; outline:none; line-height:1.5; white-space:pre; overflow:auto; }
 #pv { flex:1; min-height:80px; background:#fff; border:1px solid var(--border); border-radius:4px; width:100%; }
 .hint { font-size:10px; color:var(--muted); }
 #stat { color:var(--muted); font-size:11px; }
@@ -78,6 +95,10 @@ button:hover { opacity:.85; }
 	<button onclick="cmdUnmerge()">해제</button>
 	<button onclick="cmdToggle()">th↔td</button>
 	<span class="sep"></span>
+	<button class="alignBtn" data-tip="선택 셀 왼쪽 정렬" onclick="cmdAlign('left')" title="선택 셀 왼쪽 정렬">좌</button>
+	<button class="alignBtn" data-tip="선택 셀 가운데 정렬" onclick="cmdAlign('center')" title="선택 셀 가운데 정렬">중</button>
+	<button class="alignBtn" data-tip="선택 셀 오른쪽 정렬" onclick="cmdAlign('right')" title="선택 셀 오른쪽 정렬">우</button>
+	<span class="sep"></span>
 	<div class="grp">
 		<button onclick="cmdInsRow(0)" title="선택한 행 위에 새 행 (선택 없으면 맨 위)">행추가 (상단)</button>
 		<button class="btn-del" onclick="cmdDelRow(0)" title="선택 범위의 맨 위 행 삭제 (선택 없으면 첫 행)">행삭제 (상단)</button>
@@ -98,11 +119,7 @@ button:hover { opacity:.85; }
 </header>
 
 <div class="main">
-	<div class="ed-wrap">
-		<div class="label"><span>편집 — 드래그: 선택 · Shift+클릭: 확장 · 더블클릭: 내용 편집 · 행/열 번호 클릭: 줄 선택</span><span id="stat"></span></div>
-		<div class="ed-scroll" id="edScroll"></div>
-	</div>
-	<div class="side">
+	<div class="col-settings">
 		<div class="box">
 			<div class="bt">표 설정</div>
 			<div class="row">
@@ -128,8 +145,29 @@ button:hover { opacity:.85; }
 			</div>
 			<div class="row hint" id="clsHint" style="display:none">class명은 붙여넣을 시스템의 공통 CSS class명으로 — 입력값은 이 브라우저에 저장됨. scope·summary·colgroup은 웹접근성/퍼블리싱 관례 속성</div>
 		</div>
+		<div class="box" id="colorBox" style="display:none">
+			<div class="bt">색상 — 인라인 style 모드 전용</div>
+			<div class="row">
+				<span class="opt">테두리 <input type="color" id="c-border" value="#999999"></span>
+				<span class="opt"><input type="checkbox" id="c-thbg-on" checked> 머리글 배경 <input type="color" id="c-thbg" value="#f0f0f0"></span>
+				<span class="opt"><input type="checkbox" id="c-thfg-on"> 머리글 글자 <input type="color" id="c-thfg" value="#000000"></span>
+			</div>
+			<div class="row">
+				<span class="opt"><input type="checkbox" id="c-tdbg-on"> 본문 배경 <input type="color" id="c-tdbg" value="#ffffff"></span>
+				<span class="opt"><input type="checkbox" id="c-tdfg-on"> 본문 글자 <input type="color" id="c-tdfg" value="#000000"></span>
+				<span class="opt"><input type="checkbox" id="c-zebra-on"> 줄무늬 <input type="color" id="c-zebra" value="#f7f7f7"></span>
+			</div>
+			<div class="row hint">체크한 항목만 출력에 반영(테두리는 항상). 줄무늬는 본문 짝수 행에 배경색. 색은 이 브라우저에 저장됨</div>
+		</div>
 		<div class="label" style="margin-top:2px"><span>출력 HTML</span><span><button class="btn-green" style="padding:3px 12px" onclick="copyOut()">복사</button></span></div>
 		<textarea id="out" readonly spellcheck="false"></textarea>
+	</div>
+	<div class="col-editor">
+		<div class="label"><span>편집 — 드래그: 선택 · Shift+클릭: 확장 · 더블클릭: 내용 편집 · 행/열 번호 클릭: 줄 선택 · Ctrl+V: 엑셀 붙여넣기</span><span id="stat"></span></div>
+		<div class="ed-scroll" id="edScroll" tabindex="0"></div>
+	</div>
+	<div class="splitter" id="split-ep" title="드래그로 편집·미리보기 폭 조절"></div>
+	<div class="col-preview">
 		<div class="label"><span>미리보기 (임시 CSS — 실제 모양은 붙여넣는 화면의 CSS를 따름)</span></div>
 		<iframe id="pv"></iframe>
 	</div>
@@ -274,6 +312,16 @@ function cmdToggle() {
 	for (var r2 = sel.r1; r2 <= sel.r2; r2++) for (var c2 = sel.c1; c2 <= sel.c2; c2++) {
 		var s2 = slot(r2, c2);
 		if (!s2.cover) s2.t = to;
+	}
+	render();
+}
+function cmdAlign(a) {
+	if (!sel) return toast('정렬할 셀 선택');
+	snapshot();
+	for (var r = sel.r1; r <= sel.r2; r++) for (var c = sel.c1; c <= sel.c2; c++) {
+		var s = slot(r, c);
+		if (s.cover) continue;
+		if (a === 'left') delete s.align; else s.align = a;   /* 좌측=기본 → 속성 제거로 출력 깔끔 */
 	}
 	render();
 }
@@ -431,7 +479,10 @@ function importHtml(src) {
 			var el = cells[k];
 			var cs = Math.max(1, el.colSpan || 1), rs = Math.max(1, el.rowSpan || 1);
 			rs = Math.min(rs, totalRows - ri);
-			grid[ri][ci] = { t: el.tagName.toLowerCase(), cs:cs, rs:rs, text: el.innerHTML.trim() };
+			var alg = (el.style && el.style.textAlign) || el.getAttribute('align') || '';
+			var cellObj = { t: el.tagName.toLowerCase(), cs:cs, rs:rs, text: el.innerHTML.trim() };
+			if (alg) cellObj.align = alg;
+			grid[ri][ci] = cellObj;
 			for (var a = 0; a < rs; a++) for (var b = 0; b < cs; b++) {
 				if (a === 0 && b === 0) continue;
 				grid[ri + a][ci + b] = { cover:[ri, ci] };
@@ -508,9 +559,29 @@ function genHtml() {
 		});
 		L.push(T + '</colgroup>');
 	}
-	var cellStyleTd = ' style="border:1px solid #999; padding:4px 8px;"';
-	var cellStyleTh = ' style="border:1px solid #999; padding:4px 8px; background:#f0f0f0;"';
-	function rowHtml(r, depth, inThead) {
+	var C = {
+		border: document.getElementById('c-border').value,
+		thBg: document.getElementById('c-thbg-on').checked ? document.getElementById('c-thbg').value : '',
+		thFg: document.getElementById('c-thfg-on').checked ? document.getElementById('c-thfg').value : '',
+		tdBg: document.getElementById('c-tdbg-on').checked ? document.getElementById('c-tdbg').value : '',
+		tdFg: document.getElementById('c-tdfg-on').checked ? document.getElementById('c-tdfg').value : '',
+		zebra: document.getElementById('c-zebra-on').checked,
+		zebraColor: document.getElementById('c-zebra').value
+	};
+	function cellStyle(t, bodyIdx, extra) {
+		var st = 'border:1px solid ' + C.border + '; padding:4px 8px;';
+		var bg = '', fg = '';
+		if (t === 'th') { bg = C.thBg; fg = C.thFg; }
+		else {
+			fg = C.tdFg;
+			bg = (C.zebra && bodyIdx >= 0 && bodyIdx % 2 === 1) ? C.zebraColor : C.tdBg;
+		}
+		if (bg) st += ' background:' + bg + ';';
+		if (fg) st += ' color:' + fg + ';';
+		if (extra) st += ' ' + extra;
+		return ' style="' + st + '"';
+	}
+	function rowHtml(r, depth, inThead, bodyIdx) {
 		var out = [], pad = new Array(depth + 1).join(T);
 		out.push(pad + '<tr>');
 		for (var c = 0; c < G.cols; c++) {
@@ -520,7 +591,9 @@ function genHtml() {
 			if (s.cs > 1) attr += ' colspan="' + s.cs + '"';
 			if (s.rs > 1) attr += ' rowspan="' + s.rs + '"';
 			if (mode === 'cls' && D.scope && s.t === 'th') attr += inThead ? ' scope="col"' : ' scope="row"';
-			if (mode === 'inline') attr += s.t === 'th' ? cellStyleTh : cellStyleTd;
+			var alignStyle = s.align ? 'text-align:' + s.align + ';' : '';
+			if (mode === 'inline') attr += cellStyle(s.t, bodyIdx, alignStyle);
+			else if (mode === 'cls' && alignStyle) attr += ' style="' + alignStyle + '"';
 			var txt = s.text || (useNbsp ? '&nbsp;' : '');
 			out.push(pad + T + '<' + s.t + attr + '>' + txt + '</' + s.t + '>');
 		}
@@ -530,11 +603,11 @@ function genHtml() {
 	var r;
 	if (G.theadRows > 0) {
 		L.push(T + '<thead>');
-		for (r = 0; r < G.theadRows; r++) L.push.apply(L, rowHtml(r, 2, true));
+		for (r = 0; r < G.theadRows; r++) L.push.apply(L, rowHtml(r, 2, true, -1));
 		L.push(T + '</thead>');
 	}
 	L.push(T + '<tbody>');
-	for (r = G.theadRows; r < G.rows; r++) L.push.apply(L, rowHtml(r, 2, false));
+	for (r = G.theadRows; r < G.rows; r++) L.push.apply(L, rowHtml(r, 2, false, r - G.theadRows));
 	L.push(T + '</tbody>');
 	L.push('</table>');
 	return L.join('\n');
@@ -613,6 +686,7 @@ function render() {
 			if (s.cs > 1) td.colSpan = s.cs;
 			if (s.rs > 1) td.rowSpan = s.rs;
 			td.dataset.r = r; td.dataset.c = c2;
+			if (s.align) td.style.textAlign = s.align;
 			td.textContent = s.text;
 			tr.appendChild(td);
 		}
@@ -623,6 +697,7 @@ function render() {
 	paintSel();
 	updateStat();
 	refreshOutput();
+	saveTable();
 }
 function paintSel() {
 	var cells = document.querySelectorAll('#grid td.cell');
@@ -645,7 +720,7 @@ document.addEventListener('mousedown', function (e) {
 	if (editingEl && td !== editingEl) commitEdit();
 	if (!td) {
 		if (e.target.closest && e.target.closest('#grid')) return;
-		if (e.target.closest && (e.target.closest('header') || e.target.closest('.side') || e.target.closest('#modal'))) return;
+		if (e.target.closest && (e.target.closest('header') || e.target.closest('.col-settings') || e.target.closest('.col-preview') || e.target.closest('#modal'))) return;
 		clearSel();
 		return;
 	}
@@ -654,6 +729,8 @@ document.addEventListener('mousedown', function (e) {
 	if (e.shiftKey && dragAnchor) { setSel(dragAnchor, pos); return; }
 	dragAnchor = pos;
 	setSel(pos, pos);
+	var es = document.getElementById('edScroll');
+	if (es) es.focus({ preventScroll: true });               /* 포커스 확보 → Ctrl+V 붙여넣기 인식 */
 	e.preventDefault();
 });
 document.addEventListener('mouseover', function (e) {
@@ -738,7 +815,7 @@ function updateSummaryState() {
 document.getElementById('s-caption').addEventListener('input', function () { G.caption = this.value; updateSummaryState(); refreshOutput(); });
 document.getElementById('s-thead').addEventListener('change', function () { setTheadRows(+this.value || 0); });
 Array.prototype.forEach.call(document.querySelectorAll('input[name=mode]'), function (el) {
-	el.addEventListener('change', function () { toggleClsOpts(); refreshOutput(); });
+	el.addEventListener('change', function () { toggleClsOpts(); toggleColorOpts(); updateAlignBtns(); refreshOutput(); });
 });
 document.getElementById('s-nbsp').addEventListener('change', refreshOutput);
 ['d-cls', 'd-scope', 'd-summary', 'd-colgroup'].forEach(function (id) {
@@ -750,6 +827,43 @@ function toggleClsOpts() {
 	document.getElementById('clsOpts').style.display = on ? 'flex' : 'none';
 	document.getElementById('clsHint').style.display = on ? 'flex' : 'none';
 }
+function toggleColorOpts() {
+	document.getElementById('colorBox').style.display = getMode() === 'inline' ? 'block' : 'none';
+}
+function updateAlignBtns() {
+	/* 순수 마크업은 style 미출력 → 정렬 헛돎, 버튼 비활성 */
+	var off = getMode() === 'pure';
+	Array.prototype.forEach.call(document.querySelectorAll('.alignBtn'), function (b) {
+		b.disabled = off;
+		b.title = off ? '순수 마크업은 정렬이 출력에 안 나감 — 공통 class / 인라인 style 모드에서 사용' : b.dataset.tip;
+	});
+}
+var COLOR_IDS = ['c-border', 'c-thbg-on', 'c-thbg', 'c-thfg-on', 'c-thfg', 'c-tdbg-on', 'c-tdbg', 'c-tdfg-on', 'c-tdfg', 'c-zebra-on', 'c-zebra'];
+function saveColorOpts() {
+	try {
+		var o = {};
+		COLOR_IDS.forEach(function (id) {
+			var el = document.getElementById(id);
+			o[id] = el.type === 'checkbox' ? el.checked : el.value;
+		});
+		localStorage.setItem('tblb_color', JSON.stringify(o));
+	} catch (e) {}
+}
+function loadColorOpts() {
+	try {
+		var s = localStorage.getItem('tblb_color');
+		if (!s) return;
+		var o = JSON.parse(s);
+		COLOR_IDS.forEach(function (id) {
+			if (o[id] == null) return;
+			var el = document.getElementById(id);
+			if (el.type === 'checkbox') el.checked = !!o[id]; else el.value = o[id];
+		});
+	} catch (e) {}
+}
+COLOR_IDS.forEach(function (id) {
+	document.getElementById(id).addEventListener('input', function () { saveColorOpts(); refreshOutput(); });
+});
 function saveClsOpts() {
 	try {
 		localStorage.setItem('tblb_cls', JSON.stringify({
@@ -800,12 +914,105 @@ function toast(msg) {
 	toastTimer = setTimeout(function () { el.classList.remove('on'); }, 1800);
 }
 
+/* ── 표 자동 저장/복원 ── */
+function saveTable() {
+	try {
+		localStorage.setItem('tblb_data', JSON.stringify({
+			rows:G.rows, cols:G.cols, grid:G.grid, theadRows:G.theadRows, caption:G.caption, colWidths:G.colWidths
+		}));
+	} catch (e) {}
+}
+function loadTable() {
+	try {
+		var s = localStorage.getItem('tblb_data');
+		if (!s) return false;
+		var o = JSON.parse(s);
+		if (!o || !o.rows || !o.grid) return false;
+		G.rows = o.rows; G.cols = o.cols; G.grid = o.grid;
+		G.theadRows = o.theadRows || 0; G.caption = o.caption || ''; G.colWidths = o.colWidths || [];
+		while (G.colWidths.length < G.cols) G.colWidths.push('');
+		return true;
+	} catch (e) { return false; }
+}
+
+/* ── 엑셀/TSV 붙여넣기 → 그리드 채우기 ── */
+function pasteGrid(rows) {
+	var startR = sel ? sel.r1 : 0, startC = sel ? sel.c1 : 0;
+	var maxCols = 0;
+	rows.forEach(function (r) { if (r.length > maxCols) maxCols = r.length; });
+	snapshot();
+	while (G.rows < startR + rows.length) insRowAt(G.rows);
+	while (G.cols < startC + maxCols) insColAt(G.cols);
+	for (var i = 0; i < rows.length; i++) {
+		for (var j = 0; j < rows[i].length; j++) {
+			var m = masterOf(startR + i, startC + j);
+			var cell = G.grid[m.r][m.c];
+			if (cell.cover) continue;
+			cell.text = esc(rows[i][j]);                        /* 특수문자 이스케이프 → 출력 안전 */
+		}
+	}
+	sel = null; syncInputs(); render();
+	toast('붙여넣기: ' + rows.length + '행 × ' + maxCols + '열');
+}
+document.addEventListener('paste', function (e) {
+	if (editingEl) return;                                   /* 셀 편집 중이면 기본 붙여넣기 */
+	var t = e.target;
+	if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+	var cd = e.clipboardData || window.clipboardData;
+	if (!cd) return;
+	var text = cd.getData('text');
+	if (!text) return;
+	var rows = text.replace(/\r\n/g, '\n').replace(/\n+$/, '').split('\n').map(function (r) { return r.split('\t'); });
+	if (rows.length === 1 && rows[0].length === 1) return;   /* 단일 값은 무시(셀 더블클릭 편집으로) */
+	e.preventDefault();
+	pasteGrid(rows);
+});
+
+/* ── 스플리터: 편집 ↔ 미리보기 폭 조절 ── */
+function initSplitter() {
+	var sp = document.getElementById('split-ep');
+	var ed = document.querySelector('.col-editor');
+	var main = document.querySelector('.main');
+	if (!sp || !ed || !main) return;
+	function clampW(w) {
+		var m = main.getBoundingClientRect(), edLeft = ed.getBoundingClientRect().left;
+		var maxW = m.right - edLeft - 240;                    /* 미리보기 최소 240px 확보 */
+		return Math.max(240, Math.min(w, maxW));
+	}
+	function applyW(w) { ed.style.flex = '0 0 ' + w + 'px'; }
+	var saved = parseFloat(localStorage.getItem('tblb_edw'));
+	if (saved > 0) applyW(clampW(saved));
+	var dragging = false;
+	sp.addEventListener('mousedown', function (e) {
+		dragging = true; sp.classList.add('drag');
+		document.body.style.userSelect = 'none'; document.body.style.cursor = 'col-resize';
+		e.preventDefault();
+	});
+	document.addEventListener('mousemove', function (e) {
+		if (!dragging) return;
+		applyW(clampW(e.clientX - ed.getBoundingClientRect().left));
+	});
+	document.addEventListener('mouseup', function () {
+		if (!dragging) return;
+		dragging = false; sp.classList.remove('drag');
+		document.body.style.userSelect = ''; document.body.style.cursor = '';
+		try { localStorage.setItem('tblb_edw', ed.getBoundingClientRect().width); } catch (e) {}
+	});
+	window.addEventListener('resize', function () {
+		if (ed.style.flexBasis && ed.style.flexBasis !== 'auto') applyW(clampW(ed.getBoundingClientRect().width));
+	});
+}
+
 /* ── 시작 ── */
 loadClsOpts();
 toggleClsOpts();
-newTable(4, 4);
+loadColorOpts();
+toggleColorOpts();
+updateAlignBtns();
+if (!loadTable()) newTable(4, 4);
 syncInputs();
 render();
+initSplitter();
 </script>
 </body>
 </html>

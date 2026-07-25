@@ -459,7 +459,6 @@ select:focus, input:focus { border-color:var(--accent); }
     <hr class="div">
 
     <div class="field">
-      <div class="label">표시 모드</div>
       <div class="field-row">
         <label class="check-row"><input type="radio" name="td_mode" value="code" id="modeCode" checked> 코드 모드 </label>
         <label class="check-row"><input type="radio" name="td_mode" value="dense" id="modeDense"> 빼곡 모드 </label>
@@ -1640,6 +1639,21 @@ function wrapLine(s, maxWidth) {
 	return segs;
 }
 
+function paginate(nRows, H, topMargin, rowHeight) {
+	var bottomPad = 12;      // 푸터 없을 때 하단 여백(최소)
+	var footerReserve = 28;  // 푸터(H-26)와 마지막 행이 겹치지 않게 확보
+	var usable = H - topMargin - bottomPad;
+	var rpp = Math.max(1, Math.floor(usable / rowHeight));
+	var total = Math.max(1, Math.ceil(nRows / rpp));
+	var hasFooter = total > 1;   // 2쪽 이상일 때만 페이지 번호 표기(캡처 전달 시 순서용)
+	if (hasFooter) {
+		usable = H - topMargin - footerReserve;
+		rpp = Math.max(1, Math.floor(usable / rowHeight));
+		total = Math.max(1, Math.ceil(nRows / rpp));
+	}
+	return { rowsPerPage: rpp, totalPages: total, usableHeight: usable, hasFooter: hasFooter };
+}
+
 function render() {
 	var W = parseInt(els.canvasW.value, 10) || 1920;
 	var H = parseInt(els.canvasH.value, 10) || 1080;
@@ -1666,14 +1680,11 @@ function render() {
 	var mode = getMode();
 	var rawText = els.codeInput.value;
 
-	var topMargin = 20;
-	var bottomFooter = 34;
+	var topMargin = 12;
 	var rowHeight = fontSize * lineHeightMul;
-	var usableHeight = H - topMargin - bottomFooter;
-	var rowsPerPage = Math.max(1, Math.floor(usableHeight / rowHeight));
 	var outerPad = 16;
 
-	var totalPages, pageRows, footerText;
+	var totalPages, pageRows, footerText, rowsPerPage, usableHeight, hasFooter = false, drawRowHeight = rowHeight;
 
 	if (mode === 'dense') {
 		var interval = parseInt(els.markerInterval.value, 10) || 20;
@@ -1691,18 +1702,20 @@ function render() {
 		var maxTextWidth = Math.max(20, W - outerPad * 2);
 		var rows = stream.length ? wrapLine(stream, maxTextWidth) : [''];
 
-		totalPages = Math.max(1, Math.ceil(rows.length / rowsPerPage));
+		var pgD = paginate(rows.length, H, topMargin, rowHeight);
+		rowsPerPage = pgD.rowsPerPage; totalPages = pgD.totalPages; usableHeight = pgD.usableHeight; hasFooter = pgD.hasFooter;
 		if (currentPage >= totalPages) currentPage = totalPages - 1;
 		if (currentPage < 0) currentPage = 0;
 		pageRows = rows.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage);
+		drawRowHeight = (pageRows.length === rowsPerPage && rowsPerPage > 1) ? usableHeight / rowsPerPage : rowHeight;
 
 		ctx.textAlign = 'left';
 		ctx.fillStyle = '#000';
 		for (var ri = 0; ri < pageRows.length; ri++) {
-			ctx.fillText(pageRows[ri], outerPad, topMargin + ri * rowHeight);
+			ctx.fillText(pageRows[ri], outerPad, topMargin + ri * drawRowHeight);
 		}
 
-		footerText = 'p.' + (currentPage + 1) + '/' + totalPages + '  ·  총 값 ' + rawTokens.length + '개  ·  이 페이지 ' + pageRows.length + '행';
+		footerText = 'p.' + (currentPage + 1) + '/' + totalPages;
 	} else {
 		var showLineNum = els.showLineNum.checked;
 		var showCharCount = els.showCharCount.checked;
@@ -1734,14 +1747,16 @@ function render() {
 			}
 		}
 
-		totalPages = Math.max(1, Math.ceil(rows2.length / rowsPerPage));
+		var pgC = paginate(rows2.length, H, topMargin, rowHeight);
+		rowsPerPage = pgC.rowsPerPage; totalPages = pgC.totalPages; usableHeight = pgC.usableHeight; hasFooter = pgC.hasFooter;
 		if (currentPage >= totalPages) currentPage = totalPages - 1;
 		if (currentPage < 0) currentPage = 0;
 		pageRows = rows2.slice(currentPage * rowsPerPage, (currentPage + 1) * rowsPerPage);
+		drawRowHeight = (pageRows.length === rowsPerPage && rowsPerPage > 1) ? usableHeight / rowsPerPage : rowHeight;
 
 		for (var ri2 = 0; ri2 < pageRows.length; ri2++) {
 			var row = pageRows[ri2];
-			var y = topMargin + ri2 * rowHeight;
+			var y = topMargin + ri2 * drawRowHeight;
 
 			if (showLineNum && !row.isCont) {
 				ctx.textAlign = 'right';
@@ -1764,13 +1779,15 @@ function render() {
 			}
 		}
 
-		footerText = 'p.' + (currentPage + 1) + '/' + totalPages + '  ·  총 ' + lines.length + '줄  ·  이 페이지 ' + pageRows.length + '행';
+		footerText = 'p.' + (currentPage + 1) + '/' + totalPages;
 	}
 
-	ctx.textAlign = 'center';
-	ctx.fillStyle = '#333';
-	ctx.font = fontPrefix + Math.round(fontSize * 0.72) + 'px ' + fontStack();
-	ctx.fillText(footerText, W / 2, H - 26);
+	if (hasFooter) {
+		ctx.textAlign = 'center';
+		ctx.fillStyle = '#333';
+		ctx.font = fontPrefix + Math.round(fontSize * 0.72) + 'px ' + fontStack();
+		ctx.fillText(footerText, W / 2, H - 26);
+	}
 
 	els.pageInfo.textContent = 'p.' + (currentPage + 1) + '/' + totalPages;
 	els.btnPrev.disabled = currentPage === 0;
