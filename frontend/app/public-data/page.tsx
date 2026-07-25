@@ -5,7 +5,7 @@ import { SPRING } from '@/lib/api'
 
 declare global {
   interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // Kakao Maps SDK는 타입 선언을 제공하지 않아 any 로 받는다
     kakao: any
   }
 }
