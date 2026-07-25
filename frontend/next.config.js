@@ -3,10 +3,6 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/spring/:path*',
-        destination: 'http://localhost:8080/api/:path*',
-      },
-      {
         source: '/study/architecture-notes',
         destination: '/study/architecture-notes.html',
       },
@@ -29,7 +25,7 @@ const nextConfig = {
       },
       {
         source: '/toolbox',
-        destination: '/toolbox/index.html',
+        destination: '/toolbox/toolbox.html',
       },
       {
         source: '/tools/:path*',

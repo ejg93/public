@@ -18,3 +18,12 @@ Thumbs.db
 
 # caveman 플러그인 설치 스크립트 (포폴과 무관)
 /caveman_install.ps1
+
+/frontend/public/toolbox/논리명_변환기_sample/project_erd.md
+
+# 외부 공식문서 원본 PDF 6.5MB. README.md 에 원문 다운로드 URL 이 다 있어 저장소엔 안 넣는다.
+# README.md 는 색인이므로 커밋한다.
+/doc/design-standards/references/
+
+# 더미 CSV 생성 스크립트 — 도구가 아니라 개발용이고, public/ 아래라 커밋 시 공개 URL로 노출된다.
+/frontend/public/toolbox/논리명_변환기_sample/generate_sample.js
