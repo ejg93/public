@@ -103,7 +103,7 @@ select:focus, input:focus { border-color:var(--accent); }
 <div class="tabs" id="main-tabs">
   <div class="tab active" onclick="switchTab('camel')" title="SNAKE_CASE ↔ camelCase 변환&#10;VO 필드 / ResultMap / SELECT / INSERT / UPDATE / DELETE / MyBatis &lt;if&gt; 생성">&#9655; 카멜 변환기<span class="shortcut">^1</span></div>
   <div class="tab" onclick="switchTab('json')" title="JSON 포매팅 / 압축(Minify) / 키 알파벳 정렬&#10;유효성 오류 메시지 표시">{ } JSON 포매터<span class="shortcut">^2</span></div>
-  <div class="tab" onclick="switchTab('date')" title="D-day 계산 / 두 날짜 사이 일수&#10;날짜 더하기·빼기 / Unix Timestamp ↔ 날짜 변환 (KST)">날짜 계산기<span class="shortcut">^3</span></div>
+  <div class="tab" onclick="switchTab('date')" title="D-day 계산 / 두 날짜 사이 일수&#10;날짜 더하기·빼기 / Unix Timestamp ↔ 날짜 변환 (KST)&#10;초 ↔ 시간 단위 (Cache-Control max-age 등)">날짜 계산기<span class="shortcut">^3</span></div>
   <div class="tab" onclick="switchTab('dummy')" title="CREATE TABLE 문 붙여넣으면 더미 INSERT 자동 생성&#10;Oracle TO_DATE / COMMIT / MERGE INTO 템플릿 옵션">INSERT 생성기<span class="shortcut">^4</span></div>
   <div class="tab" onclick="switchTab('regex')" title="정규식 패턴 테스트 / 치환(replace) / 추출(extract)&#10;이메일·전화·사업자번호·IP 등 자주 쓰는 패턴 프리셋 포함">정규식 테스터<span class="shortcut">^5</span></div>
   <div class="tab" onclick="switchTab('b64')" title="텍스트 ↔ Base64 인코딩·디코딩&#10;URL-safe Base64 (+ → - / → _ 변환) 지원&#10;파일 드래그 → data URI 생성 (이미지 인라인용)">Base64<span class="shortcut">^6</span></div>
@@ -232,6 +232,34 @@ select:focus, input:focus { border-color:var(--accent); }
       <div class="opt-row"><label style="min-width:60px">날짜</label><input type="date" id="date_to_unix"></div>
       <button class="btn-p" onclick="dateToUnix()">→ Timestamp 변환</button>
       <div class="date-result" id="date_unix_result" style="min-height:36px">날짜 선택 후 변환</div>
+    </div>
+    <div class="date-card" style="flex:1;min-width:240px">
+      <div class="label">초 ↔ 시간 단위</div>
+      <div class="opt-row"><label style="min-width:34px">초</label>
+        <input type="number" id="sec_input" placeholder="31536000" style="width:150px" oninput="secToUnits()">
+        <span style="color:var(--muted);font-size:10px">— Cache-Control max-age · 세션 타임아웃 등</span></div>
+      <div class="btn-row">
+        <button class="btn-g" onclick="secPreset(3600)">1시간</button>
+        <button class="btn-g" onclick="secPreset(86400)">1일</button>
+        <button class="btn-g" onclick="secPreset(604800)">1주</button>
+        <button class="btn-g" onclick="secPreset(2592000)">30일</button>
+        <button class="btn-g" onclick="secPreset(31536000)">1년</button>
+      </div>
+      <div class="date-result" id="sec_result" style="min-height:80px">초를 넣으면 일·시·분과 사람이 읽는 형태로 풀어준다</div>
+      <hr class="div">
+      <div class="opt-row"><label style="min-width:56px">단위 → 초</label>
+        <input type="number" id="u2s_val" value="30" style="width:70px" oninput="unitToSec()">
+        <select id="u2s_unit" style="width:82px" onchange="unitToSec()">
+          <option value="1">초</option>
+          <option value="60">분</option>
+          <option value="3600">시간</option>
+          <option value="86400" selected>일</option>
+          <option value="604800">주</option>
+          <option value="2592000">달(30일)</option>
+          <option value="31536000">년(365일)</option>
+        </select>
+      </div>
+      <div class="opt-row"><input type="text" id="u2s_out" readonly style="width:150px"><button class="btn-g" onclick="copyEl('u2s_out')">복사</button></div>
     </div>
   </div>
 </div>
@@ -712,6 +740,55 @@ function dateToUnix(){
     '<div class="sub">초 단위: '+sec+'</div>'+
     '<div class="sub">ms 단위: '+sec*1000+'</div>'+
     '<div class="sub" style="color:var(--muted);font-size:11px">'+v+' 00:00:00 KST 기준 (= UTC '+fmtEpoch(sec*1000,0)+')</div>';
+}
+
+// ── 초 ↔ 시간 단위 ──────────────────────────────────────
+// 달·년은 길이가 일정하지 않아 정확한 변환이 없다. 달=30일, 년=365일로 고정하고
+// 결과에 기준을 같이 찍는다. Cache-Control max-age=31536000 이 실무에서 '1년'으로 통하는 값.
+var SEC_MONTH=2592000, SEC_YEAR=31536000;
+function nf(n){ return n.toLocaleString('en-US'); }
+// 나누어떨어지면 정수로, 아니면 소수 2자리 앞에 ≈ 를 붙여 근사임을 드러낸다
+function unitStr(sec, div, name){
+  var v=sec/div;
+  return (Number.isInteger(v) ? nf(v) : '≈'+nf(Math.round(v*100)/100)) + name;
+}
+// 초를 '1일 2시간 3분 4초' 로 분해. 0인 자리는 건너뛰고, 소수점 초는 살린다
+function humanizeSec(sec){
+  var u=[[86400,'일'],[3600,'시간'],[60,'분']], out=[], r=Math.floor(sec), frac=sec-r;
+  u.forEach(function(x){ var q=Math.floor(r/x[0]); if(q>0){ out.push(nf(q)+x[1]); r-=q*x[0]; } });
+  var s=r+frac;
+  if(s>0 || !out.length) out.push(nf(Math.round(s*1000)/1000)+'초');
+  return out.join(' ');
+}
+function secToUnits(){
+  var el=document.getElementById('sec_result');
+  var raw=String(document.getElementById('sec_input').value).trim();
+  if(raw===''){ el.innerHTML='초를 넣으면 일·시·분과 사람이 읽는 형태로 풀어준다'; return; }
+  var sec=Number(raw);
+  if(!isFinite(sec)){ el.innerHTML='<div class="sub" style="color:var(--red)">숫자로 읽을 수 없다</div>'; return; }
+  var a=Math.abs(sec);
+  // 1 미만으로 떨어지는 단위는 '0.04일' 같은 잡음이라 뺀다. 초는 항상 남긴다.
+  // 부호는 sec 그대로 넘겨서 큰 글씨와 환산 줄의 음수 표기를 맞춘다
+  var parts=[[86400,'일'],[3600,'시간'],[60,'분']].filter(function(x){ return a/x[0]>=1; })
+                                                  .map(function(x){ return unitStr(sec,x[0],x[1]); });
+  parts.push(nf(sec)+'초');
+  var rows=['<div class="big">'+(sec<0?'-':'')+humanizeSec(a)+'</div>',
+            '<div class="sub">'+parts.join(' · ')+'</div>'];
+  // 달·년은 근사라 기준을 같이 적는다. 30일 미만이면 아예 안 보여준다
+  if(a>=SEC_MONTH){
+    var big = a>=SEC_YEAR
+      ? { v:Math.round(a/SEC_YEAR*100)/100, n:'년', base:'1년=365일 기준' }
+      : { v:Math.round(a/SEC_MONTH*100)/100, n:'달', base:'1달=30일 기준' };
+    rows.push('<div class="sub">≈ '+nf(big.v)+big.n+
+              ' <span style="color:#6a6a6a">('+big.base+')</span></div>');
+  }
+  el.innerHTML=rows.join('');
+}
+function secPreset(v){ document.getElementById('sec_input').value=String(v); secToUnits(); }
+function unitToSec(){
+  var v=Number(document.getElementById('u2s_val').value);
+  var mul=Number(document.getElementById('u2s_unit').value);
+  document.getElementById('u2s_out').value = isFinite(v) ? String(v*mul) : '';
 }
 
 // ── INSERT 생성기 ────────────────────────────────────────
@@ -1497,6 +1574,8 @@ window.addEventListener('DOMContentLoaded',function(){
     btn.onclick=function(){ document.getElementById('regex_pattern').value=p.p; testRegex(); };
     wrap.appendChild(btn);
   });
+
+  unitToSec();   // 단위→초 칸은 기본값(30일)이 들어 있으니 결과도 미리 채운다
 
   // localStorage 복원
   var lastTab=lsGet('lastTab','camel');
