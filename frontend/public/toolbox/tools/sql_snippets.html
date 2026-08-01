@@ -64,7 +64,7 @@ button { font-family:'Consolas',monospace; font-size:12px; border:none; border-r
 <header>
   <h1>SQL SNIPPETS</h1>
   <div class="db-tabs">
-    <div class="db-tab oracle active" onclick="switchDb('oracle')">Tibero/Oracle</div>
+    <div class="db-tab oracle active" onclick="switchDb('oracle')">Oracle</div>
     <div class="db-tab mysql" onclick="switchDb('mysql')">MySQL/MariaDB</div>
     <div class="db-tab pg" onclick="switchDb('pg')">PostgreSQL</div>
     <div class="db-tab mssql" onclick="switchDb('mssql')">SQL Server</div>
@@ -729,6 +729,22 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'tbl_comment', label: '테이블/컬럼 주석 조회', desc: '테이블 및 컬럼 comment 확인',
+          params: [{id:'db_cm', label:'DB명', placeholder:'mydb', width:120}, {id:'cm_tbl', label:'테이블명(빈칸=DB 전체)', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var db = p.db_cm ? "'" + p.db_cm + "'" : "DATABASE()";
+            var t = p.cm_tbl;
+            return "SELECT TABLE_NAME, TABLE_COMMENT\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = " + db + (t ? "\n  AND  TABLE_NAME = '" + t.toLowerCase() + "'" : "") + "\nORDER BY TABLE_NAME;\n\nSELECT TABLE_NAME, COLUMN_NAME, COLUMN_COMMENT\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + (t ? "\n  AND  TABLE_NAME = '" + t.toLowerCase() + "'" : "") + "\n  AND  COLUMN_COMMENT != ''\nORDER BY TABLE_NAME, ORDINAL_POSITION;";
+          }
+        },
+        {
+          key: 'tablespace', label: '테이블스페이스 용량', desc: 'InnoDB 데이터 파일 용량 확인 (Oracle 개념과 정확히 일치하지 않음)',
+          params: [],
+          query: function(p) {
+            return "-- MySQL은 기본이 파일당테이블(innodb_file_per_table=ON)이라 Oracle식 '테이블스페이스' 단위가 없음\n-- 실무 대체: 스키마 전체 데이터+인덱스 용량 합계\nSELECT TABLE_SCHEMA\n     , ROUND(SUM(DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024 / 1024, 2) AS TOTAL_GB\n     , ROUND(SUM(DATA_FREE) / 1024 / 1024, 2)                        AS FREE_MB   -- 삭제 후 회수 안 된 공간(단편화)\nFROM   INFORMATION_SCHEMA.TABLES\nGROUP  BY TABLE_SCHEMA\nORDER  BY TOTAL_GB DESC;\n\n-- 공유 시스템 테이블스페이스(ibdata1) 자체를 쓰는 구성이면 파일 목록으로 확인\nSELECT * FROM INFORMATION_SCHEMA.INNODB_TABLESPACES WHERE NAME = 'innodb_system';";
+          }
+        },
+        {
           key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
           params: [
             {id:'grp_tbl', label:'테이블명', placeholder:'user_info', width:160},
@@ -755,6 +771,44 @@ var SNIPPETS = {
             var db = p.db_idx ? "'" + p.db_idx + "'" : "DATABASE()";
             var t = p.idx_tbl || 'table_name';
             return "SELECT INDEX_NAME\n     , COLUMN_NAME\n     , SEQ_IN_INDEX\n     , NON_UNIQUE\n     , INDEX_TYPE\n     , CARDINALITY\nFROM   INFORMATION_SCHEMA.STATISTICS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t.toLowerCase() + "'\nORDER BY INDEX_NAME, SEQ_IN_INDEX;";
+          }
+        },
+        {
+          key: 'idx_usage', label: '인덱스 사용 현황', desc: '안 쓰이는 인덱스 확인 (sys 스키마·performance_schema 필요)',
+          params: [{id:'db_idxu', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var db = p.db_idxu ? "'" + p.db_idxu + "'" : "DATABASE()";
+            return "-- sys 스키마가 없으면: SOURCE $MYSQL_HOME/share/mysql_sys_schema.sql 로 설치 필요\nSELECT * FROM sys.schema_unused_indexes WHERE object_schema = " + db + ";\n\n-- 직접 집계 (sys 스키마 없이)\nSELECT OBJECT_SCHEMA, OBJECT_NAME, INDEX_NAME\n     , COUNT_STAR   AS io_count\n     , COUNT_FETCH, COUNT_INSERT, COUNT_UPDATE, COUNT_DELETE\nFROM   performance_schema.table_io_waits_summary_by_index_usage\nWHERE  OBJECT_SCHEMA = " + db + "\n  AND  INDEX_NAME IS NOT NULL\n  AND  COUNT_STAR = 0\nORDER  BY OBJECT_NAME, INDEX_NAME;\n-- performance_schema가 꺼져있으면 0건만 나옴 — SHOW VARIABLES LIKE 'performance_schema'; 로 확인";
+          }
+        },
+      ]
+    },
+    {
+      category: '시퀀스',
+      items: [
+        {
+          key: 'seq_list', label: '시퀀스 목록 조회', desc: 'MySQL엔 시퀀스 없음(AUTO_INCREMENT) — MariaDB 10.3+만 진짜 시퀀스',
+          params: [{id:'db_seq', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var db = p.db_seq ? "'" + p.db_seq + "'" : "DATABASE()";
+            return "-- MySQL(모든 버전): 시퀀스 객체 없음 — 테이블별 AUTO_INCREMENT 현재값으로 대체\nSELECT TABLE_NAME, AUTO_INCREMENT\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  AUTO_INCREMENT IS NOT NULL\nORDER  BY TABLE_NAME;\n\n-- MariaDB 10.3+ (진짜 CREATE SEQUENCE 지원)\nSELECT TABLE_NAME AS 시퀀스명, TABLE_COMMENT\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = " + db + " AND TABLE_TYPE = 'SEQUENCE';";
+          }
+        },
+        {
+          key: 'seq_curr', label: '시퀀스 현재/다음값', desc: 'MySQL은 AUTO_INCREMENT, MariaDB는 진짜 시퀀스',
+          params: [{id:'seq_name', label:'테이블명(MySQL) / 시퀀스명(MariaDB)', placeholder:'user_info', width:200}],
+          query: function(p) {
+            var n = p.seq_name || 'table_name';
+            return "-- MySQL: 다음 채번 예정값(참고용 — 동시성 환경에서 실제 채번값과 다를 수 있음)\nSELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + n.toLowerCase() + "';\n\n-- MariaDB 10.3+ 시퀀스\nSELECT NEXT VALUE FOR " + n + ";   -- 다음값(증가 발생)\nSELECT PREVIOUS VALUE FOR " + n + ";   -- 세션에서 마지막으로 뽑은 값(증가 없음)\nSHOW CREATE SEQUENCE " + n + ";   -- 현재 정의(현재값 포함) 확인";
+          }
+        },
+        {
+          key: 'seq_reset', label: '시퀀스 값 초기화', desc: 'MySQL은 AUTO_INCREMENT 재설정, MariaDB는 ALTER SEQUENCE',
+          params: [{id:'rs_name', label:'테이블명(MySQL) / 시퀀스명(MariaDB)', placeholder:'user_info', width:200}, {id:'rs_val', label:'설정값', placeholder:'1000', width:100}],
+          query: function(p) {
+            var n = p.rs_name || 'table_name';
+            var v = p.rs_val || '1';
+            return "-- MySQL: 새 값은 기존 최댓값보다 작게 못 넣음(자동으로 올림)\nALTER TABLE " + n + " AUTO_INCREMENT = " + v + ";\n\n-- MariaDB 10.3+ 시퀀스\nALTER SEQUENCE " + n + " RESTART WITH " + v + ";";
           }
         },
       ]
@@ -789,6 +843,21 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "-- MySQL 5.7 이하 / MariaDB\nSELECT R.trx_id                      AS waiting_trx_id\n     , R.trx_mysql_thread_id          AS waiting_thread\n     , R.trx_query                    AS waiting_query\n     , B.trx_id                      AS blocking_trx_id\n     , B.trx_mysql_thread_id          AS blocking_thread\n     , B.trx_query                    AS blocking_query\nFROM   information_schema.innodb_lock_waits W\n     , information_schema.innodb_trx       R\n     , information_schema.innodb_trx       B\nWHERE  W.requesting_trx_id = R.trx_id\n  AND  W.blocking_trx_id   = B.trx_id;\n\n-- MySQL 8.0+ (innodb_lock_waits가 performance_schema로 이동)\nSELECT R.trx_id                       AS waiting_trx_id\n     , R.trx_mysql_thread_id          AS waiting_thread\n     , R.trx_query                    AS waiting_query\n     , B.trx_id                       AS blocking_trx_id\n     , B.trx_mysql_thread_id          AS blocking_thread\n     , B.trx_query                    AS blocking_query\nFROM   performance_schema.data_lock_waits W\n     , information_schema.innodb_trx      R\n     , information_schema.innodb_trx      B\nWHERE  W.requesting_engine_transaction_id = R.trx_id\n  AND  W.blocking_engine_transaction_id   = B.trx_id;\n\n-- MySQL 8.0+ 간편 조회\nSELECT * FROM sys.innodb_lock_waits;";
+          }
+        },
+        {
+          key: 'uncommit', label: '미커밋 트랜잭션', desc: '커밋 안 된 오래된 트랜잭션',
+          params: [],
+          query: function(p) {
+            return "SELECT trx_id, trx_state, trx_started\n     , TIMESTAMPDIFF(SECOND, trx_started, NOW()) AS 경과초\n     , trx_mysql_thread_id AS thread_id\n     , trx_query\nFROM   information_schema.innodb_trx\nWHERE  TIMESTAMPDIFF(SECOND, trx_started, NOW()) > 60   -- 60초 이상 미커밋\nORDER  BY trx_started;";
+          }
+        },
+        {
+          key: 'kill_session', label: '세션 종료', desc: '특정 스레드 강제 종료',
+          params: [{id:'kill_id', label:'스레드ID(Id)', placeholder:'12345', width:120}],
+          query: function(p) {
+            var id = p.kill_id || 'THREAD_ID';
+            return "KILL " + id + ";          -- 커넥션 자체 종료\nKILL QUERY " + id + ";    -- 실행 중인 쿼리만 종료(커넥션은 유지)\n-- 대상 확인: SHOW FULL PROCESSLIST; 로 Id 컬럼 먼저 조회";
           }
         },
         {
@@ -836,6 +905,71 @@ var SNIPPETS = {
           query: function(p) {
             var db = p.db_view ? "'" + p.db_view + "'" : "DATABASE()";
             return "SELECT TABLE_NAME AS view_name\n     , VIEW_DEFINITION\nFROM   INFORMATION_SCHEMA.VIEWS\nWHERE  TABLE_SCHEMA = " + db + "\nORDER BY TABLE_NAME;";
+          }
+        },
+        {
+          key: 'trigger_list', label: '트리거 목록', desc: '트리거 정보 및 활성화 상태',
+          params: [{id:'db_trg', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var db = p.db_trg ? "'" + p.db_trg + "'" : "DATABASE()";
+            return "SELECT TRIGGER_NAME\n     , EVENT_MANIPULATION   AS 이벤트   -- INSERT/UPDATE/DELETE\n     , EVENT_OBJECT_TABLE    AS 대상테이블\n     , ACTION_TIMING         AS 시점     -- BEFORE/AFTER\n     , CREATED\nFROM   INFORMATION_SCHEMA.TRIGGERS\nWHERE  TRIGGER_SCHEMA = " + db + "\nORDER BY EVENT_OBJECT_TABLE, TRIGGER_NAME;";
+          }
+        },
+        {
+          key: 'invalid_obj', label: '무효 오브젝트 조회', desc: 'MySQL엔 Oracle식 INVALID 상태 개념이 없음',
+          params: [],
+          query: function(p) {
+            return "-- MySQL은 오브젝트를 만들 때 즉시 검증함 — 나중에 의존 테이블이 바뀌어도\n-- 프로시저/뷰가 카탈로그에 '무효'로 표시되는 개념 자체가 없음(실행 시점에 에러로 드러남)\n-- 뷰가 깨졌는지 확인하려면 SHOW CREATE VIEW 대신 직접 조회해봐야 함:\nSELECT TABLE_NAME FROM INFORMATION_SCHEMA.VIEWS WHERE TABLE_SCHEMA = DATABASE();\n-- 위 목록을 순회하며 SELECT * FROM <view> LIMIT 0; 실행 → 에러 나는 뷰가 '무효'";
+          }
+        },
+        {
+          key: 'error_detail', label: '컴파일 에러 상세 조회', desc: 'MySQL은 CREATE 시점에 즉시 에러 반환 — Oracle식 에러 카탈로그 없음',
+          params: [],
+          query: function(p) {
+            return "-- Oracle의 USER_ERRORS처럼 컴파일 에러를 저장해두는 카탈로그가 없음\n-- CREATE PROCEDURE/FUNCTION 실행 시 에러가 그 자리에서 바로 반환됨 — 별도 조회 쿼리 불필요\n-- 과거 에러 이력이 필요하면 general_log/error log 확인:\nSHOW VARIABLES LIKE 'log_error';";
+          }
+        },
+        {
+          key: 'recent_ddl', label: '최근 변경 객체', desc: 'CREATE_TIME/UPDATE_TIME·LAST_ALTERED 기준 최근 N일',
+          params: [{id:'ddl_days', label:'최근 N일', placeholder:'7', width:80}, {id:'db_ddl', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var days = p.ddl_days || '7';
+            var db = p.db_ddl ? "'" + p.db_ddl + "'" : "DATABASE()";
+            return "SELECT TABLE_NAME AS 객체명, 'TABLE' AS 유형, CREATE_TIME, UPDATE_TIME\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  (CREATE_TIME >= NOW() - INTERVAL " + days + " DAY OR UPDATE_TIME >= NOW() - INTERVAL " + days + " DAY)\nUNION ALL\nSELECT ROUTINE_NAME, ROUTINE_TYPE, CREATED, LAST_ALTERED\nFROM   INFORMATION_SCHEMA.ROUTINES\nWHERE  ROUTINE_SCHEMA = " + db + "\n  AND  (CREATED >= NOW() - INTERVAL " + days + " DAY OR LAST_ALTERED >= NOW() - INTERVAL " + days + " DAY)\nORDER BY 3 DESC;\n-- UPDATE_TIME은 서버 재시작·공유 테이블스페이스에서 NULL로 리셋될 수 있음(02번과 동일 함정)";
+          }
+        },
+      ]
+    },
+    {
+      category: '사용자/권한',
+      items: [
+        {
+          key: 'user_privs', label: '사용자 시스템 권한', desc: '부여된 시스템 권한 목록',
+          params: [{id:'priv_user', label:'계정(user@host)', placeholder:"'app_user'@'%'", width:180}],
+          query: function(p) {
+            var u = p.priv_user || "'user'@'%'";
+            return "SHOW GRANTS FOR " + u + ";\n\n-- 카탈로그로 직접 조회\nSELECT * FROM INFORMATION_SCHEMA.USER_PRIVILEGES\nWHERE  GRANTEE = \"" + u + "\";";
+          }
+        },
+        {
+          key: 'table_privs', label: '테이블 권한 조회', desc: '다른 계정 테이블 접근 권한',
+          params: [{id:'tp_db', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var db = p.tp_db ? "'" + p.tp_db + "'" : "DATABASE()";
+            return "SELECT GRANTEE, TABLE_SCHEMA, TABLE_NAME, PRIVILEGE_TYPE\nFROM   INFORMATION_SCHEMA.TABLE_PRIVILEGES\nWHERE  TABLE_SCHEMA = " + db + "\nORDER  BY TABLE_NAME, GRANTEE;";
+          }
+        },
+      ]
+    },
+    {
+      category: '통계/유지보수',
+      items: [
+        {
+          key: 'gather_stats', label: '통계정보 수집', desc: 'ANALYZE TABLE 실행',
+          params: [{id:'an_tbl', label:'테이블명', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.an_tbl || 'table_name';
+            return "ANALYZE TABLE " + t + ";\n-- InnoDB는 샘플링 기반 추정 통계 — innodb_stats_persistent(기본 ON)면 결과가 디스크에 저장돼 재시작해도 유지\n-- 전체 스키마 일괄: information_schema.TABLES 조회해서 테이블명별로 반복 실행";
           }
         },
       ]
@@ -907,6 +1041,13 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'tablespace', label: '테이블스페이스 용량', desc: '테이블스페이스별 사용량',
+          params: [],
+          query: function(p) {
+            return "SELECT spcname                                          AS tablespace_name\n     , pg_tablespace_location(oid)                       AS location   -- pg_default/pg_global은 빈 문자열\n     , pg_size_pretty(pg_tablespace_size(spcname))        AS size\nFROM   pg_tablespace\nORDER BY pg_tablespace_size(spcname) DESC;\n-- pg_default(별도 지정 없는 기본), pg_global(공유 카탈로그)은 항상 존재";
+          }
+        },
+        {
           key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
           params: [
             {id:'grp_tbl', label:'테이블명', placeholder:'user_info', width:160},
@@ -965,6 +1106,15 @@ var SNIPPETS = {
             return "-- 현재값 (nextval 호출 후 가능)\nSELECT currval('" + s + "');\n\n-- 다음 채번\nSELECT nextval('" + s + "');\n\n-- 현재값 확인 (currval 없이)\nSELECT last_value FROM " + s + ";";
           }
         },
+        {
+          key: 'seq_reset', label: '시퀀스 값 초기화', desc: '현재값을 특정 값으로 리셋',
+          params: [{id:'rs_seq', label:'시퀀스명', placeholder:'seq_user_id', width:180}, {id:'rs_val', label:'설정값', placeholder:'1000', width:100}],
+          query: function(p) {
+            var s = p.rs_seq || 'seq_name';
+            var v = p.rs_val || '1';
+            return "ALTER SEQUENCE " + s + " RESTART WITH " + v + ";\n\n-- 또는 값만 즉시 지정(다음 nextval부터 반영, RESTART와 결과는 동일)\nSELECT setval('" + s + "', " + v + ", false);   -- false: 다음 nextval이 " + v + " 반환 / true: " + v + "+1 반환";
+          }
+        },
       ]
     },
     {
@@ -1007,6 +1157,14 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'kill_session', label: '세션 종료', desc: '특정 PID 세션 강제 종료',
+          params: [{id:'kill_pid', label:'PID', placeholder:'12345', width:120}],
+          query: function(p) {
+            var pid = p.kill_pid || 'PID';
+            return "SELECT pg_cancel_backend(" + pid + ");    -- 실행 중인 쿼리만 취소(세션은 유지)\nSELECT pg_terminate_backend(" + pid + ");  -- 세션 자체 강제 종료\n-- 대상 확인: SELECT pid, usename, query FROM pg_stat_activity;";
+          }
+        },
+        {
           key: 'vacuum', label: 'Vacuum 상태 확인', desc: 'autovacuum 현황 및 dead tuple',
           params: [],
           query: function(p) {
@@ -1026,14 +1184,14 @@ var SNIPPETS = {
       category: '오브젝트',
       items: [
         {
-          key: 'func_list', label: '함수/프로시저 목록', desc: '스키마 내 함수 목록',
+          key: 'func_list', label: '프로시저/함수 목록', desc: '스키마 내 함수 목록',
           params: [],
           query: function(p) {
             return "SELECT routine_name\n     , routine_type\n     , data_type      AS return_type\n     , created\n     , last_altered\nFROM   information_schema.routines\nWHERE  routine_schema = 'public'\nORDER BY routine_name;";
           }
         },
         {
-          key: 'func_source', label: '함수 소스 조회', desc: '지정한 함수의 전체 정의를 pg_get_functiondef로 조회',
+          key: 'func_source', label: '프로시저/함수 소스 조회', desc: '지정한 함수의 전체 정의를 pg_get_functiondef로 조회',
           params: [{id:'src_name', label:'함수명', placeholder:'fn_get_name', width:200}],
           query: function(p) {
             var n = p.src_name || 'function_name';
@@ -1062,6 +1220,27 @@ var SNIPPETS = {
             return "SELECT trigger_name\n     , event_manipulation   AS event\n     , event_object_table   AS table_name\n     , action_timing\n     , action_statement\nFROM   information_schema.triggers\nWHERE  trigger_schema = 'public'\nORDER BY table_name, trigger_name;";
           }
         },
+        {
+          key: 'invalid_obj', label: '무효 오브젝트 조회', desc: '뷰·함수는 즉시 검증돼 Oracle식 INVALID 상태 자체가 없음',
+          params: [],
+          query: function(p) {
+            return "-- PostgreSQL은 뷰·함수를 만들 때 즉시 파싱/검증함(존재하지 않는 컬럼이면 CREATE 자체가 실패)\n-- 나중에 의존 테이블/컬럼이 바뀌어도 카탈로그에 '무효'로 표시되는 개념이 없음\n-- pg_depend로 의존 관계는 추적 가능하지만 '깨졌는지'는 직접 실행해봐야 확인됨:\nSELECT table_name FROM information_schema.views WHERE table_schema = 'public';\n-- 위 목록을 순회하며 SELECT * FROM <view> LIMIT 0; 실행 → 에러 나는 뷰가 '무효'";
+          }
+        },
+        {
+          key: 'error_detail', label: '컴파일 에러 상세 조회', desc: 'PostgreSQL은 CREATE 시점에 즉시 에러 반환 — Oracle식 에러 카탈로그 없음',
+          params: [],
+          query: function(p) {
+            return "-- Oracle의 USER_ERRORS처럼 컴파일 에러를 저장해두는 카탈로그가 없음\n-- CREATE FUNCTION 실행 시 문법 오류는 그 자리에서 바로 반환됨(단, 함수 본문 내부 타입 오류는 호출 시점에야 드러남 — PL/pgSQL 특성)\n-- 서버 로그에서 과거 에러 확인: SHOW log_directory; SHOW log_filename;";
+          }
+        },
+        {
+          key: 'recent_ddl', label: '최근 변경 객체', desc: 'PG 딕셔너리엔 DDL 변경시각이 없음 — event trigger 직접 구성 필요',
+          params: [],
+          query: function(p) {
+            return "-- PostgreSQL 카탈로그(pg_class 등)엔 생성일·수정일 컬럼 자체가 없음(02번 테이블정의서와 동일 함정)\n-- 방법1) 파일시스템 타임스탬프로 근사(백업/복제 환경에선 부정확)\nSELECT relname, pg_stat_file(pg_relation_filepath(oid))\nFROM   pg_class WHERE relkind = 'r' LIMIT 5;  -- 대량 조회는 비용 큼, 표본 확인용\n-- 방법2) 정확히 추적하려면 사전에 event trigger + DDL 로그 테이블을 직접 만들어둬야 함\n-- (ddl_command_end 이벤트로 pg_event_trigger_ddl_commands() 캡처) — 사후 조회 불가, 사전 구성 필수";
+          }
+        },
       ]
     },
     {
@@ -1080,6 +1259,21 @@ var SNIPPETS = {
           query: function(p) {
             var t = p.priv_tbl;
             return "SELECT grantee\n     , table_name\n     , privilege_type\n     , is_grantable\nFROM   information_schema.role_table_grants\nWHERE  table_schema = 'public'\n" + (t ? "  AND  table_name = '" + t.toLowerCase() + "'\n" : "") + "ORDER BY table_name, grantee;";
+          }
+        },
+      ]
+    },
+    {
+      category: '통계/유지보수',
+      items: [
+        {
+          key: 'gather_stats', label: '통계정보 수집', desc: 'ANALYZE 실행',
+          params: [{id:'an_tbl', label:'테이블명(빈칸=DB 전체)', placeholder:'user_info', width:180}],
+          query: function(p) {
+            var t = p.an_tbl;
+            return t
+              ? "ANALYZE VERBOSE " + t.toLowerCase() + ";"
+              : "ANALYZE VERBOSE;   -- DB 전체 — 대형 DB는 시간 오래 걸림, 업무시간대는 개별 테이블 단위 권장\n-- autovacuum이 기본 ON이면 대부분 자동 수집됨. 수동 수집은 대량 배치 직후 등 즉시 반영 필요할 때만";
           }
         },
       ]
@@ -1143,6 +1337,21 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'tbl_comment', label: '테이블/컬럼 주석 조회', desc: '테이블 및 컬럼 comment(MS_Description) 확인',
+          params: [{id:'cm_tbl', label:'테이블명(빈칸=전체)', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.cm_tbl;
+            return "SELECT s.name AS schema_name, t.name AS table_name, CAST(ep.value AS NVARCHAR(200)) AS table_comment\nFROM   sys.tables t\n       JOIN sys.schemas s ON t.schema_id = s.schema_id\n       LEFT JOIN sys.extended_properties ep ON ep.major_id = t.object_id AND ep.minor_id = 0 AND ep.name = 'MS_Description'\n" + (t ? "WHERE  t.name = '" + t + "'\n" : "") + "ORDER BY t.name;\n\nSELECT t.name AS table_name, c.name AS column_name, CAST(ep.value AS NVARCHAR(200)) AS column_comment\nFROM   sys.columns c\n       JOIN sys.tables t ON c.object_id = t.object_id\n       LEFT JOIN sys.extended_properties ep ON ep.major_id = c.object_id AND ep.minor_id = c.column_id AND ep.name = 'MS_Description'\nWHERE  ep.value IS NOT NULL" + (t ? " AND t.name = '" + t + "'" : "") + "\nORDER BY t.name, c.column_id;";
+          }
+        },
+        {
+          key: 'tablespace', label: '테이블스페이스 용량', desc: '파일그룹 단위 용량 확인 (Oracle 테이블스페이스에 해당)',
+          params: [],
+          query: function(p) {
+            return "SELECT fg.name                                       AS filegroup_name\n     , f.name                                        AS logical_file_name\n     , f.physical_name\n     , ROUND(f.size / 128.0, 1)                       AS size_mb          -- size 단위 = 8KB 페이지\n     , ROUND(FILEPROPERTY(f.name,'SpaceUsed') / 128.0, 1) AS used_mb\nFROM   sys.filegroups fg\n       JOIN sys.database_files f ON fg.data_space_id = f.data_space_id\nORDER  BY fg.name;\n-- DB 전체 요약은 EXEC sp_spaceused; 로도 확인 가능(02번 데이터용량 쿼리와 동일)";
+          }
+        },
+        {
           key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
           params: [
             {id:'grp_tbl', label:'테이블명', placeholder:'USER_INFO', width:160},
@@ -1165,6 +1374,42 @@ var SNIPPETS = {
           query: function(p) {
             var t = p.idx_tbl || 'TABLE_NAME';
             return "SELECT i.name          AS index_name\n     , c.name           AS column_name\n     , ic.key_ordinal\n     , i.is_unique\n     , i.type_desc\nFROM   sys.indexes i\n       JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id\n       JOIN sys.columns c        ON ic.object_id = c.object_id AND ic.column_id = c.column_id\nWHERE  i.object_id = OBJECT_ID('" + t + "')\n  AND  i.name IS NOT NULL\nORDER BY i.name, ic.key_ordinal;";
+          }
+        },
+        {
+          key: 'idx_usage', label: '인덱스 사용 현황', desc: '안 쓰이는 인덱스 확인',
+          params: [],
+          query: function(p) {
+            return "SELECT OBJECT_NAME(s.object_id)  AS table_name\n     , i.name                    AS index_name\n     , s.user_seeks, s.user_scans, s.user_lookups, s.user_updates\n     , s.last_user_seek, s.last_user_scan\nFROM   sys.dm_db_index_usage_stats s\n       JOIN sys.indexes i ON s.object_id = i.object_id AND s.index_id = i.index_id\nWHERE  s.database_id = DB_ID()\n  AND  OBJECTPROPERTY(s.object_id,'IsUserTable') = 1\n  AND  s.user_seeks = 0 AND s.user_scans = 0 AND s.user_lookups = 0\nORDER BY table_name, index_name;\n-- dm_db_index_usage_stats는 서버 재시작 시 초기화됨 — 최근 재시작 시각 고려";
+          }
+        },
+      ]
+    },
+    {
+      category: '시퀀스',
+      items: [
+        {
+          key: 'seq_list', label: '시퀀스 목록 조회', desc: 'SQL Server 2012+ 전용 객체',
+          params: [],
+          query: function(p) {
+            return "SELECT s.name                                AS schema_name\n     , seq.name                              AS sequence_name\n     , seq.current_value\n     , seq.increment\n     , seq.minimum_value, seq.maximum_value\n     , seq.is_cycling\nFROM   sys.sequences seq\n       JOIN sys.schemas s ON seq.schema_id = s.schema_id\nORDER  BY s.name, seq.name;\n-- 2012 미만은 IDENTITY만 있음 — 이 쿼리 대상 아님";
+          }
+        },
+        {
+          key: 'seq_curr', label: '시퀀스 현재/다음값', desc: 'sys.sequences 조회 / NEXT VALUE FOR',
+          params: [{id:'seq_name', label:'시퀀스명', placeholder:'SEQ_USER_ID', width:180}],
+          query: function(p) {
+            var n = p.seq_name || 'SEQ_NAME';
+            return "-- 현재값 (증가 없이 확인)\nSELECT current_value FROM sys.sequences WHERE name = '" + n + "';\n\n-- 다음 채번 (증가 발생)\nSELECT NEXT VALUE FOR " + n + ";";
+          }
+        },
+        {
+          key: 'seq_reset', label: '시퀀스 값 초기화', desc: '현재값을 특정 값으로 리셋',
+          params: [{id:'rs_seq', label:'시퀀스명', placeholder:'SEQ_USER_ID', width:180}, {id:'rs_val', label:'설정값', placeholder:'1000', width:100}],
+          query: function(p) {
+            var n = p.rs_seq || 'SEQ_NAME';
+            var v = p.rs_val || '1';
+            return "ALTER SEQUENCE " + n + " RESTART WITH " + v + ";";
           }
         },
       ]
@@ -1202,6 +1447,13 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'uncommit', label: '미커밋 트랜잭션', desc: '커밋 안 된 오래된 트랜잭션',
+          params: [],
+          query: function(p) {
+            return "SELECT s.session_id\n     , at.transaction_id\n     , at.transaction_begin_time\n     , DATEDIFF(SECOND, at.transaction_begin_time, GETDATE()) AS 경과초\n     , s.login_name\n     , t.text AS last_query\nFROM   sys.dm_tran_active_transactions at\n       JOIN sys.dm_tran_session_transactions st ON at.transaction_id = st.transaction_id\n       JOIN sys.dm_exec_sessions s ON st.session_id = s.session_id\n       LEFT JOIN sys.dm_exec_requests r ON s.session_id = r.session_id\n       OUTER APPLY sys.dm_exec_sql_text(r.sql_handle) t\nWHERE  DATEDIFF(SECOND, at.transaction_begin_time, GETDATE()) > 60\nORDER  BY at.transaction_begin_time;";
+          }
+        },
+        {
           key: 'kill_session', label: '세션 종료', desc: '특정 세션 강제 종료',
           params: [{id:'kill_sid', label:'session_id', placeholder:'123', width:80}],
           query: function(p) {
@@ -1222,6 +1474,14 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'proc_source', label: '프로시저/함수 소스 조회', desc: '지정한 프로시저·함수의 전체 정의를 sys.sql_modules에서 조회',
+          params: [{id:'src_name', label:'객체명', placeholder:'FN_GET_NAME', width:200}],
+          query: function(p) {
+            var n = p.src_name || 'OBJECT_NAME';
+            return "SELECT OBJECT_DEFINITION(OBJECT_ID('" + n + "')) AS source;\n\n-- 또는\nSELECT m.definition\nFROM   sys.sql_modules m\nWHERE  m.object_id = OBJECT_ID('" + n + "');\n\n-- WITH ENCRYPTION으로 만든 오브젝트는 definition이 NULL — 원본 소스 별도 보관 필요";
+          }
+        },
+        {
           key: 'source_grep', label: '소스 전체 검색 (키워드)', desc: '전체 프로시저·함수·뷰 정의에서 특정 테이블명·컬럼명·키워드가 포함된 오브젝트를 sys.sql_modules에서 검색',
           params: [{id:'grep_kw', label:'검색어', placeholder:'mdch_docu_id', width:200}],
           query: function(p) {
@@ -1234,6 +1494,69 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "SELECT name\n     , CONVERT(CHAR(10), create_date, 23) AS created\n     , CONVERT(CHAR(10), modify_date, 23) AS modified\nFROM   sys.views\nORDER BY name;\n\n-- 정의 보기\n-- SELECT OBJECT_DEFINITION(OBJECT_ID('뷰명'));";
+          }
+        },
+        {
+          key: 'trigger_list', label: '트리거 목록', desc: '트리거 정보 및 활성화 상태',
+          params: [],
+          query: function(p) {
+            return "SELECT tr.name                              AS trigger_name\n     , OBJECT_NAME(tr.parent_id)             AS table_name\n     , tr.is_disabled\n     , CONVERT(CHAR(10), tr.create_date, 23)  AS created\n     , CONVERT(CHAR(10), tr.modify_date, 23)  AS modified\nFROM   sys.triggers tr\nORDER BY table_name, tr.name;";
+          }
+        },
+        {
+          key: 'invalid_obj', label: '무효 오브젝트 조회', desc: 'MSSQL은 지연된 이름 확인(Deferred Name Resolution) 방식이라 Oracle식 INVALID 상태가 없음',
+          params: [],
+          query: function(p) {
+            return "-- MSSQL 프로시저는 CREATE 시점에 존재하지 않는 테이블/컬럼을 참조해도 일단 생성됨(지연된 이름 확인)\n-- Oracle처럼 카탈로그에 '무효'로 표시되는 상태 자체가 없음 — 실행 시점에야 에러가 남\n-- sys.sql_expression_dependencies로 깨진 의존성 후보만 찾을 수 있음(완전하진 않음):\nSELECT OBJECT_NAME(referencing_id) AS object_name\n     , referenced_entity_name\nFROM   sys.sql_expression_dependencies\nWHERE  referenced_id IS NULL   -- 참조 대상을 못 찾음(오브젝트명 오타·삭제 등 후보)\nORDER  BY object_name;";
+          }
+        },
+        {
+          key: 'error_detail', label: '컴파일 에러 상세 조회', desc: 'MSSQL은 CREATE 시점엔 문법만 검사(지연된 이름 확인) — Oracle식 에러 카탈로그 없음',
+          params: [],
+          query: function(p) {
+            return "-- 문법 오류는 CREATE 시점에 바로 반환됨. 존재하지 않는 테이블/컬럼 참조 같은 의미 오류는\n-- 지연된 이름 확인(Deferred Name Resolution) 때문에 실행 시점에야 에러로 드러남 — 컴파일 에러를 모아두는 카탈로그가 없음\n-- 과거 에러 이력이 필요하면 SQL Server 오류 로그 확인:\nEXEC sp_readerrorlog;";
+          }
+        },
+        {
+          key: 'recent_ddl', label: '최근 변경 객체', desc: 'sys.objects.modify_date 기준 최근 N일',
+          params: [{id:'ddl_days', label:'최근 N일', placeholder:'7', width:80}],
+          query: function(p) {
+            var days = p.ddl_days || '7';
+            return "SELECT name, type_desc\n     , CONVERT(CHAR(10), create_date, 23) AS created\n     , CONVERT(CHAR(10), modify_date, 23) AS modified\nFROM   sys.objects\nWHERE  is_ms_shipped = 0\n  AND  (create_date >= DATEADD(DAY, -" + days + ", GETDATE())\n        OR modify_date >= DATEADD(DAY, -" + days + ", GETDATE()))\nORDER BY modify_date DESC;\n-- modify_date는 스키마 변경(ALTER) 기준 — 데이터 UPDATE는 반영 안 됨";
+          }
+        },
+      ]
+    },
+    {
+      category: '사용자/권한',
+      items: [
+        {
+          key: 'user_privs', label: '사용자 시스템 권한', desc: '부여된 시스템 권한 목록',
+          params: [{id:'priv_user', label:'계정명', placeholder:'app_user', width:160}],
+          query: function(p) {
+            var u = p.priv_user;
+            return "SELECT pr.name                   AS principal_name\n     , pe.permission_name\n     , pe.state_desc                AS grant_state\nFROM   sys.server_permissions pe\n       JOIN sys.server_principals pr ON pe.grantee_principal_id = pr.principal_id\n" + (u ? "WHERE  pr.name = '" + u + "'\n" : "") + "ORDER BY principal_name, permission_name;";
+          }
+        },
+        {
+          key: 'table_privs', label: '테이블 권한 조회', desc: '다른 계정 테이블 접근 권한',
+          params: [{id:'tp_tbl', label:'테이블명(빈칸=전체)', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.tp_tbl;
+            return "SELECT pr.name              AS grantee\n     , o.name              AS table_name\n     , pe.permission_name\n     , pe.state_desc        AS grant_state\nFROM   sys.database_permissions pe\n       JOIN sys.database_principals pr ON pe.grantee_principal_id = pr.principal_id\n       JOIN sys.objects o ON pe.major_id = o.object_id\nWHERE  o.type = 'U'" + (t ? "\n  AND  o.name = '" + t + "'" : "") + "\nORDER BY table_name, grantee;";
+          }
+        },
+      ]
+    },
+    {
+      category: '통계/유지보수',
+      items: [
+        {
+          key: 'gather_stats', label: '통계정보 수집', desc: 'UPDATE STATISTICS 실행',
+          params: [{id:'us_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.us_tbl || 'TABLE_NAME';
+            return "UPDATE STATISTICS " + t + " WITH FULLSCAN;\n-- 전체 DB 일괄: EXEC sp_updatestats;  (샘플링 기반, 옵션 없이 실행)\n-- 자동 갱신 여부 확인: SELECT is_auto_update_stats_on FROM sys.databases WHERE name = DB_NAME();";
           }
         },
       ]
@@ -1290,6 +1613,28 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'tbl_ddl', label: 'DDL 추출', desc: 'ASE는 CREATE 원문 추출 SQL이 없음 — sp_help로 구조만 확인',
+          params: [{id:'ddl_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.ddl_tbl || 'TABLE_NAME';
+            return "-- Oracle DBMS_METADATA·MSSQL SSMS 스크립트 생성 같은 기능이 ASE엔 없음\nsp_help " + t + ";   -- 컬럼·타입·제약조건은 나오지만 CREATE TABLE 원문 그대로는 아님\n-- CREATE 원문이 꼭 필요하면 Sybase Central/DBArtisan 같은 GUI 툴의 '스크립트 생성' 기능 이용";
+          }
+        },
+        {
+          key: 'tbl_comment', label: '테이블/컬럼 주석 조회', desc: 'ASE는 코멘트 저장 개념 자체가 없음',
+          params: [],
+          query: function(p) {
+            return "-- ASE는 Oracle의 COMMENT ON TABLE/COLUMN 같은 기능이 없음\n-- 한글 테이블명·컬럼설명은 DB 안에 저장할 곳이 없어 산출물 문서(엑셀)에 수기로만 관리\n-- 대안으로 쓰는 경우: 테이블/컬럼명 자체를 한글 발음 그대로 짓거나, 별도 매핑 테이블을 직접 만들어 관리";
+          }
+        },
+        {
+          key: 'tablespace', label: '테이블스페이스 용량', desc: 'segment(디스크 조각 묶음) 단위 — Oracle 테이블스페이스에 해당',
+          params: [],
+          query: function(p) {
+            return "sp_helpsegment;   -- 세그먼트 목록·크기\n\n-- 세그먼트별 사용량 상세\nSELECT name AS segment_name FROM syssegments;\nsp_helpsegment 'segment_name';   -- 세그먼트별 디바이스·용량·여유공간";
+          }
+        },
+        {
           key: 'grp_count', label: '그룹핑 카운트', desc: '코드성 컬럼 값 분포 확인',
           params: [
             {id:'grp_tbl', label:'테이블명', placeholder:'USER_INFO', width:160},
@@ -1314,11 +1659,60 @@ var SNIPPETS = {
             return "sp_helpindex " + t + ";\n\n-- 또는 시스템 테이블 직접 조회\nSELECT i.name AS index_name\n     , i.indid\nFROM   sysindexes i\nWHERE  i.id = object_id('" + t + "')\n  AND  i.indid > 0\nORDER BY i.indid;";
           }
         },
+        {
+          key: 'idx_usage', label: '인덱스 사용 현황', desc: 'ASE는 PG·MSSQL 같은 표준 사용통계 뷰가 없음 — monitoring 테이블 활성화 필요',
+          params: [],
+          query: function(p) {
+            return "-- sp_configure 'enable monitoring'과 관련 옵션이 켜져 있어야 함(기본 OFF인 경우 많음)\nsp_configure 'enable monitoring';\n\n-- 켜져 있으면 monOpenObjectActivity로 인덱스 스캔 카운트 확인 가능(서버 재시작 시 초기화)\nSELECT DBName, ObjectName, IndexID, IndexUsed, Operation, LogicalReads\nFROM   master..monOpenObjectActivity\nWHERE  DBName = db_name()\nORDER  BY ObjectName;\n-- 꺼져 있으면 대안 없음 — 실행계획(showplan)을 오래 모니터링하며 수기 판단";
+          }
+        },
+      ]
+    },
+    {
+      category: '시퀀스',
+      items: [
+        {
+          key: 'seq_list', label: '시퀀스 목록 조회', desc: '★ ASE의 CREATE SEQUENCE는 SQLScript 호환 모드 전용 — 일반 T-SQL ASE엔 없을 수 있음',
+          params: [],
+          query: function(p) {
+            return "-- 공식 문서에 syssequences가 \"(SQLScript only)\"로 명시돼 있음 — 이 서버가 그 모드를 안 쓰면 결과 0건이 정상\nSELECT o.name       AS sequence_name\n     , s.startwith\n     , s.minval\n     , s.maxval\n     , s.increment\n     , s.cache\nFROM   syssequences s\n       JOIN sysobjects o ON s.id = o.id\nWHERE  o.type = 'SQ'\nORDER  BY o.name;\n-- 0건이면: 이 프로젝트는 시퀀스 대신 IDENTITY 컬럼이나 max(id)+1 수동 채번 방식일 가능성 높음 — 설계서로 확인";
+          }
+        },
+        {
+          key: 'seq_curr', label: '시퀀스 현재/다음값', desc: 'syssequences엔 현재값 컬럼이 없음 — Oracle식 NEXTVAL 문법 지원 여부부터 확인',
+          params: [{id:'seq_name', label:'시퀀스명', placeholder:'SEQ_USER_ID', width:180}],
+          query: function(p) {
+            var n = p.seq_name || 'SEQ_NAME';
+            return "-- syssequences 컬럼엔 시작값(startwith)만 있고 '현재값'은 별도 추적 안 됨\n-- Oracle 호환 문법 지원 여부 확인 후 시도:\nSELECT " + n + ".NEXTVAL;\nSELECT " + n + ".CURRVAL;\n-- 에러 나면 이 서버는 시퀀스 기능 자체를 안 쓰는 것 — IDENTITY 컬럼의 @@IDENTITY로 대체 확인";
+          }
+        },
+        {
+          key: 'seq_reset', label: '시퀀스 값 초기화', desc: 'ASE 표준 문법 확인 안 됨 — 설계서·벤더 지원팀 확인 권장',
+          params: [],
+          query: function(p) {
+            return "-- ALTER SEQUENCE ... RESTART WITH 같은 표준 문법이 이 ASE 버전에 있는지 공식문서로 확인 안 됨\n-- (syssequences 자체가 \"SQLScript only\" 기능이라 일반 T-SQL 경로에서 값 변경 방법이 명확하지 않음)\n-- 실무에서 시퀀스를 쓰는 프로젝트가 드묾 — 이 항목은 실제로 만나면 벤더 기술지원으로 확인할 것";
+          }
+        },
       ]
     },
     {
       category: '성능/모니터링',
       items: [
+        {
+          key: 'explain', label: '실행 계획', desc: 'showplan 옵션',
+          params: [{id:'exp_sql', label:'쿼리', placeholder:'SELECT * FROM USER_INFO', width:300}],
+          query: function(p) {
+            var sql = p.exp_sql || 'SELECT * FROM TABLE_NAME';
+            return "set showplan on\ngo\nset noexec on   -- 실제 실행은 안 하고 계획만(대상 테이블에 데이터 많을 때 안전)\ngo\n" + sql + "\ngo\nset noexec off\nset showplan off\ngo";
+          }
+        },
+        {
+          key: 'slow_sql', label: '느린 SQL 찾기', desc: 'monCachedStatement 기반 (monitoring 옵션 활성화 필요)',
+          params: [],
+          query: function(p) {
+            return "-- 사전 조건: sp_configure로 enable monitoring / statement cache size / enable stmt cache monitoring 켜져 있어야 함\nsp_configure 'enable monitoring';\nsp_configure 'statement cache size';\n\nSELECT SSQLID, UseCount, TotalElapsedTime, MaxElapsedTime, TotalLIO, MaxLIO\nFROM   master..monCachedStatement\nORDER  BY TotalElapsedTime DESC;\n-- SQL 텍스트는 show_cached_text(SSQLID) 함수로 별도 조회\n-- 컬럼 구성은 ASE 버전에 따라 다를 수 있음 — 위 옵션 꺼져 있으면 전부 0/빈 값";
+          }
+        },
         {
           key: 'session', label: '활성 세션 확인', desc: 'sp_who / sysprocesses',
           params: [],
@@ -1331,6 +1725,13 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "sp_lock;\n\n-- 블로킹 관계만\nSELECT spid\n     , blocked   AS blocking_spid\n     , cmd\n     , time_blocked\nFROM   master..sysprocesses\nWHERE  blocked > 0;";
+          }
+        },
+        {
+          key: 'uncommit', label: '미커밋 트랜잭션', desc: 'syslogshold 기준 — DB별 가장 오래된 미완료 트랜잭션',
+          params: [],
+          query: function(p) {
+            return "-- master DB에서 실행. dbid는 use db명 후 select db_id() 로 확인\nSELECT dbid\n     , spid\n     , starttime\n     , DATEDIFF(second, starttime, getdate()) AS 경과초\nFROM   master..syslogshold\nWHERE  spid IS NOT NULL\nORDER  BY starttime;\n-- 해당 spid 상세는 sp_who spid; 로 확인";
           }
         },
         {
@@ -1347,10 +1748,18 @@ var SNIPPETS = {
       category: '오브젝트',
       items: [
         {
-          key: 'proc_list', label: '프로시저 목록', desc: 'sysobjects type P',
+          key: 'proc_list', label: '프로시저/함수 목록', desc: "sysobjects type P(프로시저)·SF(함수)",
           params: [],
           query: function(p) {
-            return "SELECT name\n     , crdate AS created\nFROM   sysobjects\nWHERE  type = 'P'\nORDER BY name;\n\n-- 소스 보기\n-- sp_helptext 프로시저명;";
+            return "SELECT name\n     , CASE type WHEN 'P' THEN '프로시저' WHEN 'SF' THEN '함수' END AS type_desc\n     , crdate AS created\nFROM   sysobjects\nWHERE  type IN ('P','SF')\nORDER BY type, name;\n\n-- 소스 보기\n-- sp_helptext 프로시저명;";
+          }
+        },
+        {
+          key: 'proc_source', label: '프로시저/함수 소스 조회', desc: 'syscomments에서 조각(colid) 순으로 재조합',
+          params: [{id:'src_name', label:'객체명', placeholder:'PROC_GET_NAME', width:200}],
+          query: function(p) {
+            var n = p.src_name || 'OBJECT_NAME';
+            return "sp_helptext " + n + ";\n\n-- 또는 직접 조회(긴 소스는 여러 행에 나뉘어 저장됨 — colid 순 재조합 필요)\nSELECT c.colid, c.text\nFROM   syscomments c\nWHERE  c.id = object_id('" + n + "')\nORDER  BY c.colid;";
           }
         },
         {
@@ -1366,6 +1775,68 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "SELECT name\n     , crdate AS created\nFROM   sysobjects\nWHERE  type = 'V'\nORDER BY name;\n\n-- 정의 보기\n-- sp_helptext 뷰명;";
+          }
+        },
+        {
+          key: 'trigger_list', label: '트리거 목록', desc: 'sysobjects type TR',
+          params: [],
+          query: function(p) {
+            return "SELECT tr.name          AS trigger_name\n     , object_name(tr.deltrig) AS parent_hint   -- 트리거-테이블 매핑은 아래 방식이 더 정확\n     , tr.crdate        AS created\nFROM   sysobjects tr\nWHERE  tr.type = 'TR'\nORDER BY tr.name;\n\n-- 테이블 기준으로 걸린 트리거 확인(더 정확)\nSELECT object_name(id) AS table_name, deltrig, instrig, updtrig\nFROM   sysobjects WHERE type = 'U' AND (deltrig <> 0 OR instrig <> 0 OR updtrig <> 0);";
+          }
+        },
+        {
+          key: 'invalid_obj', label: '무효 오브젝트 조회', desc: 'ASE도 Oracle식 INVALID 상태 카탈로그가 없음',
+          params: [],
+          query: function(p) {
+            return "-- ASE는 프로시저 생성 시 존재하지 않는 테이블을 참조해도 지연 이름 확인으로 일단 만들어짐(MSSQL과 유사)\n-- Oracle처럼 카탈로그에 '무효'로 표시되는 상태 자체가 없음 — 실행 시점에야 에러가 드러남\n-- 대안: 프로시저를 재컴파일해보고 에러 나는지 확인\nsp_recompile '프로시저명';";
+          }
+        },
+        {
+          key: 'error_detail', label: '컴파일 에러 상세 조회', desc: 'ASE는 컴파일 에러를 저장하는 카탈로그가 없음',
+          params: [],
+          query: function(p) {
+            return "-- CREATE PROCEDURE 실행 시 문법 오류는 그 자리에서 바로 반환됨\n-- Oracle의 USER_ERRORS 같은 영속 카탈로그가 없어 사후 조회 불가\n-- 과거 에러가 필요하면 ASE 에러 로그 파일 확인(sp_configure 'errorlog' 로 경로 확인 후 OS에서 직접 열람)\nsp_configure 'errorlog';";
+          }
+        },
+        {
+          key: 'recent_ddl', label: '최근 변경 객체', desc: 'sysobjects.crdate 기준 — 생성일만 있고 수정일 추적은 안 됨',
+          params: [{id:'ddl_days', label:'최근 N일', placeholder:'7', width:80}],
+          query: function(p) {
+            var days = p.ddl_days || '7';
+            return "SELECT name, type, crdate AS created\nFROM   sysobjects\nWHERE  crdate >= dateadd(day, -" + days + ", getdate())\nORDER  BY crdate DESC;\n-- ASE sysobjects엔 modify_date 같은 '최종수정일' 컬럼이 없음(02번 테이블정의서와 동일 함정)\n-- ALTER로 컬럼만 추가한 경우는 crdate가 안 바뀌어 이 쿼리로 못 잡음 — 감사(auditing) 미설정 시 복원 불가";
+          }
+        },
+      ]
+    },
+    {
+      category: '사용자/권한',
+      items: [
+        {
+          key: 'user_privs', label: '사용자 시스템 권한', desc: 'sysprotects 기반 (action 코드는 master..spt_values 로 해석)',
+          params: [],
+          query: function(p) {
+            return "SELECT u.name                    AS user_name\n     , v.name                    AS permission_name\n     , CASE pr.protecttype WHEN 0 THEN 'GRANT WITH GRANT' WHEN 1 THEN 'GRANT' WHEN 2 THEN 'REVOKE' END AS grant_type\nFROM   sysprotects pr\n       JOIN sysusers u ON pr.uid = u.uid\n       JOIN master..spt_values v ON pr.action = v.number AND v.type IN ('T','GP')\nWHERE  pr.id = 0   -- 0 = 시스템 권한(create table 등 객체에 안 걸리는 권한)\nORDER  BY user_name, permission_name;";
+          }
+        },
+        {
+          key: 'table_privs', label: '테이블 권한 조회', desc: '다른 계정 테이블 접근 권한',
+          params: [{id:'tp_tbl', label:'테이블명(빈칸=전체)', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.tp_tbl;
+            return "SELECT u.name              AS grantee\n     , o.name              AS table_name\n     , v.name              AS permission_name\nFROM   sysprotects pr\n       JOIN sysusers u ON pr.uid = u.uid\n       JOIN sysobjects o ON pr.id = o.id\n       JOIN master..spt_values v ON pr.action = v.number AND v.type = 'T'\nWHERE  o.type = 'U'" + (t ? "\n  AND  o.name = '" + t + "'" : "") + "\nORDER  BY table_name, grantee;";
+          }
+        },
+      ]
+    },
+    {
+      category: '통계/유지보수',
+      items: [
+        {
+          key: 'gather_stats', label: '통계정보 수집', desc: 'UPDATE STATISTICS 실행',
+          params: [{id:'us_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = p.us_tbl || 'TABLE_NAME';
+            return "UPDATE STATISTICS " + t + ";\n-- 인덱스까지 전부: UPDATE INDEX STATISTICS " + t + ";\n-- 전체 DB 일괄은 내장 SP 없음 — 테이블별로 반복 실행";
           }
         },
       ]

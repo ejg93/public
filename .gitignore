@@ -29,3 +29,6 @@ Thumbs.db
 /frontend/public/toolbox/논리명_변환기_sample/generate_sample.js
 
 /frontend/public/toolbox/개선사항_메모.md
+
+# SR 산출물 양식(xlsx/docx) — 실제 업무 문서. public/ 아래라 커밋 시 공개 URL로 노출된다.
+/frontend/public/toolbox/산출물 양식/
