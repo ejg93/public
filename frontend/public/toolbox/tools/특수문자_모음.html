@@ -132,7 +132,8 @@ html { scrollbar-width: thin; scrollbar-color: #454545 transparent; }
 <p class="desc">클릭하면 복사됨. <b>우클릭 = 즐겨찾기</b> 토글(상단 고정). 카테고리 옆 파란 칩 = <b>한글 IME 입력법</b> (자음 입력 후 <b>한자키</b>, Tab으로 목록 확장). 복사가 안 되는 환경에서 직접 칠 때 참고.</p>
 
 <div class="top">
-	<input id="q" type="text" placeholder="검색: 문자 붙여넣기 또는 카테고리명 (예: 원문자, 화살표, ①)">
+	<input id="q" type="text" list="qlist" placeholder="검색: 문자 붙여넣기 또는 카테고리명 (예: 원문자, 화살표, ①)">
+	<datalist id="qlist"></datalist>
 	<div class="combine-wrap">
 		<label><input type="checkbox" id="combineChk" onchange="onCombineToggle()"> 조합 모드</label>
 		<input id="combineBox" readonly placeholder="①②③...">
@@ -491,8 +492,43 @@ var SEARCH_ALIAS = (function () {
 	var GA = "가나다라마바사아자차카타파하";
 	Array.from("㉮㉯㉰㉱㉲㉳㉴㉵㉶㉷㉸㉹㉺㉻").forEach(function (ch, i) { add(GA[i], [ch]); });
 	Array.from("㉠㉡㉢㉣㉤㉥㉦㉧㉨㉩").forEach(function (ch, i) { add("ㄱㄴㄷㄹㅁㅂㅅㅇㅈㅊ"[i], [ch]); });
+	// 기호를 부르는 한국어 통칭. 유니코드 이름을 몰라도 부르는 말로 찾게 한다
+	var NAME_ALIAS = {
+		"당구장": ["※"], "참고표": ["※"],
+		"동그라미": ["○", "●", "◎", "⊙"],
+		"네모": ["□", "■", "▣"],
+		"세모": ["△", "▲", "▽", "▼"],
+		"별표": ["★", "☆"],
+		"루트": ["√"],
+		"플마": ["±"], "플러스마이너스": ["±"],
+		"무한대": ["∞"],
+		"섭씨": ["℃"], "화씨": ["℉"],
+		"퍼밀": ["‰"],
+		"트레이드마크": ["™"], "상표": ["™", "®"], "저작권": ["©"],
+		"전화": ["☎", "☏", "℡"],
+		"체크": ["☑", "✓", "✔"],
+		"엑스": ["☒", "✕", "✗"],
+		"주식회사": ["㈜"],
+		"번호": ["№"],
+		"단락": ["¶"], "절": ["§"]
+	};
+	Object.keys(NAME_ALIAS).forEach(function (key) { add(key, NAME_ALIAS[key]); });
 	return m;
 })();
+
+// 검색창 자동완성 — 별칭 키워드(당구장, 동그라미...) + 카테고리명(원문자 숫자, 화살표...)
+(function () {
+	var dl = document.getElementById("qlist");
+	var seen = {};
+	Object.keys(SEARCH_ALIAS).concat(CATS.map(function (c) { return c.name; })).forEach(function (t) {
+		if (seen[t]) return;
+		seen[t] = true;
+		var o = document.createElement("option");
+		o.value = t;
+		dl.appendChild(o);
+	});
+})();
+
 function matchChip(q, text) {
 	if (!q) return true;
 	if (text === q || text.indexOf(q) >= 0) return true;

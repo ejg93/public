@@ -123,7 +123,7 @@ var SNIPPETS = {
           params: [{id:'col_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
           query: function(p) {
             var t = p.col_tbl || 'TABLE_NAME';
-            return "SELECT A.COLUMN_NAME\n     , A.DATA_TYPE\n     , A.DATA_LENGTH\n     , A.NULLABLE\n     , A.DATA_DEFAULT\n     , B.COMMENTS\nFROM   ALL_TAB_COLUMNS  A\n     , ALL_COL_COMMENTS B\nWHERE  A.OWNER = USER\n  AND  A.TABLE_NAME = '" + t.toUpperCase() + "'\n  AND  B.OWNER(+)       = A.OWNER\n  AND  B.TABLE_NAME(+)  = A.TABLE_NAME\n  AND  B.COLUMN_NAME(+) = A.COLUMN_NAME\nORDER BY A.COLUMN_ID;";
+            return "SELECT A.OWNER\n     , A.TABLE_NAME\n     , A.COLUMN_ID\n     , A.COLUMN_NAME\n     , A.DATA_TYPE\n     , A.DATA_LENGTH\n     , A.DATA_SCALE\n     , A.NULLABLE\n     , A.DATA_DEFAULT\n     , B.COMMENTS\n     , CASE WHEN pk.POSITION IS NOT NULL THEN 'Y' ELSE 'N' END AS IS_PK\n     , CASE WHEN pk.POSITION IS NOT NULL THEN 'PK'||LPAD(pk.POSITION,2,'0') END AS PK정보\n     , CASE WHEN ak.POSITION IS NOT NULL THEN 'AK_1-'||LPAD(ak.POSITION,2,'0') END AS AK정보\n     , fk.REF AS FK정보\n     , CASE WHEN REGEXP_LIKE(A.COLUMN_NAME, 'NM$|NAME$|BRDT$|ADDR$|TEL$|HP$|PHONE$|RRN$|JMIN$|EMAIL$|MAIL$')\n            THEN 'Y' ELSE 'N' END AS 개인정보여부_추정\nFROM   ALL_TAB_COLUMNS  A\n     , ALL_COL_COMMENTS B\n     LEFT JOIN (SELECT ucc.TABLE_NAME, ucc.COLUMN_NAME, ucc.POSITION\n                FROM   ALL_CONSTRAINTS uc JOIN ALL_CONS_COLUMNS ucc\n                       ON uc.OWNER = ucc.OWNER AND uc.CONSTRAINT_NAME = ucc.CONSTRAINT_NAME\n                WHERE  uc.CONSTRAINT_TYPE = 'P' AND uc.OWNER = USER) pk\n            ON A.TABLE_NAME = pk.TABLE_NAME AND A.COLUMN_NAME = pk.COLUMN_NAME\n     LEFT JOIN (SELECT ucc.TABLE_NAME, ucc.COLUMN_NAME, ucc.POSITION\n                FROM   ALL_CONSTRAINTS uc JOIN ALL_CONS_COLUMNS ucc\n                       ON uc.OWNER = ucc.OWNER AND uc.CONSTRAINT_NAME = ucc.CONSTRAINT_NAME\n                WHERE  uc.CONSTRAINT_TYPE = 'U' AND uc.OWNER = USER) ak\n            ON A.TABLE_NAME = ak.TABLE_NAME AND A.COLUMN_NAME = ak.COLUMN_NAME\n     LEFT JOIN (SELECT ucc.TABLE_NAME, ucc.COLUMN_NAME, rt.TABLE_NAME||'.'||rcc.COLUMN_NAME AS REF\n                FROM   ALL_CONSTRAINTS uc\n                       JOIN ALL_CONS_COLUMNS ucc ON uc.OWNER = ucc.OWNER AND uc.CONSTRAINT_NAME = ucc.CONSTRAINT_NAME\n                       JOIN ALL_CONSTRAINTS ruc ON uc.R_OWNER = ruc.OWNER AND uc.R_CONSTRAINT_NAME = ruc.CONSTRAINT_NAME\n                       JOIN ALL_CONS_COLUMNS rcc ON ruc.OWNER = rcc.OWNER AND ruc.CONSTRAINT_NAME = rcc.CONSTRAINT_NAME\n                            AND ucc.POSITION = rcc.POSITION\n                       JOIN ALL_TABLES rt ON ruc.OWNER = rt.OWNER AND ruc.TABLE_NAME = rt.TABLE_NAME\n                WHERE  uc.CONSTRAINT_TYPE = 'R' AND uc.OWNER = USER) fk\n            ON A.TABLE_NAME = fk.TABLE_NAME AND A.COLUMN_NAME = fk.COLUMN_NAME\nWHERE  A.OWNER = USER\n  AND  A.TABLE_NAME = '" + t.toUpperCase() + "'\n  AND  B.OWNER(+)       = A.OWNER\n  AND  B.TABLE_NAME(+)  = A.TABLE_NAME\n  AND  B.COLUMN_NAME(+) = A.COLUMN_NAME\nORDER BY A.COLUMN_ID;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록»(OWNER/TABLE_NAME/COLUMN_ID/COLUMN_NAME/DATA_TYPE/DATA_LENGTH/IS_PK) 필수+FK추론 요건과\n-- 컬럼정의서(영문테이블명·영문컬럼명·데이터타입·데이터길이·NotNull·PK/AK/FK·개인정보여부) 요건을 동시에 맞춤\n-- IS_PK=Y/N(논리명_변환기용) · PK정보=PK01식 참여순서(별표2 서식용) 둘로 나눠서 양쪽 다 충족";
           }
         },
         {
@@ -245,14 +245,14 @@ var SNIPPETS = {
           key: 'slow_sql', label: '느린 SQL 찾기', desc: '평균 실행시간 기준 TOP 20',
           params: [],
           query: function(p) {
-            return "SELECT SQL_ID\n     , EXECUTIONS\n     , ROUND(ELAPSED_TIME / EXECUTIONS / 1000, 2) AS AVG_MS\n     , ROUND(ELAPSED_TIME / 1000, 2)               AS TOTAL_MS\n     , SQL_TEXT\nFROM (\n  SELECT A.SQL_ID\n       , A.EXECUTIONS\n       , A.ELAPSED_TIME\n       , B.SQL_TEXT\n  FROM   V$SQL     A\n       , V$SQLTEXT B\n  WHERE  A.SQL_ID    = B.SQL_ID\n    AND  A.EXECUTIONS > 0\n    AND  B.PIECE = 0\n)\nORDER BY AVG_MS DESC\nFETCH FIRST 20 ROWS ONLY;";
+            return "-- 범위: 공유 풀에 살아 있는 커서만 나온다\n--       재기동했거나 캐시에서 밀려난 SQL은 여기 없다\n\nSELECT *\nFROM (\n  SELECT SQL_ID\n       , EXECUTIONS\n       , ROUND(ELAPSED_TIME / EXECUTIONS / 1000, 2) AS AVG_MS\n       , ROUND(ELAPSED_TIME / 1000, 2)               AS TOTAL_MS\n       , SQL_TEXT\n  FROM (\n    SELECT A.SQL_ID\n         , A.EXECUTIONS\n         , A.ELAPSED_TIME\n         , B.SQL_TEXT\n    FROM   V$SQL     A\n         , V$SQLTEXT B\n    WHERE  A.SQL_ID    = B.SQL_ID\n      AND  A.EXECUTIONS > 0\n      AND  B.PIECE = 0\n  )\n  ORDER BY AVG_MS DESC\n)\nWHERE ROWNUM <= 20;\n\n-- ROWNUM으로 자른 이유 — FETCH FIRST n ROWS ONLY는 Oracle 12c 이상 문법이다\n-- 11g 이하나 Tibero에 반입하면 구문 오류가 난다";
           }
         },
         {
           key: 'session', label: '활성 세션 확인', desc: '현재 접속 세션 목록',
           params: [],
           query: function(p) {
-            return "SELECT SID\n     , USERNAME\n     , STATUS\n     , MACHINE\n     , PROGRAM\n     , SQL_ID\n     , LAST_CALL_ET AS 경과초\nFROM   V$SESSION\nWHERE  USERNAME IS NOT NULL\nORDER BY LAST_CALL_ET DESC;";
+            return "SELECT SID\n     , USERNAME\n     , STATUS\n     , MACHINE\n     , PROGRAM\n     , SQL_ID\n     , EVENT          AS 대기이벤트\n     , LAST_CALL_ET   AS 경과초\nFROM   V$SESSION\nWHERE  USERNAME IS NOT NULL\nORDER BY LAST_CALL_ET DESC;\n\n-- EVENT가 무엇을 기다리는지 알려준다\n--   db file sequential read   인덱스로 블록을 하나씩 읽는 중\n--   db file scattered read    풀스캔으로 여러 블록을 읽는 중\n--   enq: TX - row lock contention   다른 세션이 잡은 락을 기다리는 중\n--   SQL*Net message from client     노는 중. DB 문제가 아니다\n\n-- Oracle 전용 추가 — 누가 누구를 막고 있는지 본다\n-- 아래 컬럼은 Tibero 참조안내서에 없다. 폐쇄망 반입 전 확인할 것\n-- SELECT SID, USERNAME, EVENT, WAIT_CLASS, SECONDS_IN_WAIT, BLOCKING_SESSION\n-- FROM   V$SESSION\n-- WHERE  USERNAME IS NOT NULL\n--   AND  BLOCKING_SESSION IS NOT NULL;";
           }
         },
         {
@@ -281,6 +281,282 @@ var SNIPPETS = {
       ]
     },
     {
+      category: '쿼리 진단',
+      items: [
+        {
+          key: 'plan_actual', label: '실측 실행계획', desc: '방금 돌린 쿼리의 단계별 실제 행수·읽은 블록·소요시간을 DBMS_XPLAN으로 뽑아 추정치와 대조하는 쿼리',
+          params: [{id:'pa_sql', label:'쿼리', placeholder:'SELECT * FROM USER_INFO WHERE REG_DT >= SYSDATE-30', width:340}],
+          query: function(p) {
+            var sql = p.pa_sql || 'SELECT * FROM TABLE_NAME WHERE 1=1';
+            var hinted = /^\s*SELECT\b/i.test(sql)
+              ? sql.replace(/^(\s*SELECT)\b/i, "$1 /*+ GATHER_PLAN_STATISTICS */")
+              : "SELECT /*+ GATHER_PLAN_STATISTICS */ ... -- 아래 쿼리 앞에 힌트를 직접 넣는다\n" + sql;
+            return "-- 전제: Oracle 10g 이상. DBMS_XPLAN은 Tibero 참조안내서에 없다 — Tibero면 맨 아래 대안 사용\n"
+                 + "-- 권한: V$SQL_PLAN_STATISTICS_ALL 조회 권한 필요. 없으면 ORA-00942\n"
+                 + "-- 주의: 계측 오버헤드가 있다. 진단할 때만 켜고 운영 쿼리에 상시로 두지 않는다\n\n"
+                 + "-- 1. 계측 켜기\nALTER SESSION SET STATISTICS_LEVEL = ALL;\n\n"
+                 + "-- 2. 대상 쿼리 — 3회 이상 돌리고 2회차 이후만 쓴다\n"
+                 + "--    1회차는 하드 파싱과 물리 I/O가 섞여 있어 비교에 못 쓴다\n"
+                 + hinted + ";\n\n"
+                 + "-- 3. 실측 결과 보기\nSELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'));\n\n"
+                 + "-- 4. 원상복구\nALTER SESSION SET STATISTICS_LEVEL = TYPICAL;\n\n"
+                 + "-- 보는 곳\n"
+                 + "--   A-Rows   실제 나온 행수        E-Rows  옵티마이저 예상 행수\n"
+                 + "--   Buffers  읽은 블록 수          Reads   디스크에서 읽은 블록 수\n"
+                 + "--   A-Time   단계별 실제 소요시간\n"
+                 + "-- E-Rows와 A-Rows가 자릿수로 벌어지면 통계가 실제와 어긋난 것이다\n"
+                 + "-- TABLE ACCESS BY INDEX ROWID 줄이 있으면 인덱스로 찾은 뒤 테이블을 또 읽고 있다\n\n"
+                 + "-- Tibero 대안 — DBMS_XPLAN 없이 V$SQL_PLAN_STATISTICS 를 SQL_ID로 직접 조회한다\n"
+                 + "--               컬럼 구성은 Tibero 참조안내서 ch_dynamic_view.html 확인";
+          }
+        },
+        {
+          key: 'sql_find', label: 'SQL 찾기 (텍스트로)', desc: 'SQL 텍스트 조각으로 공유 풀에 남은 커서를 찾아 SQL_ID·실행계획 해시·실행당 시간과 블록수를 뽑는 쿼리',
+          params: [{id:'sf_text', label:'SQL 텍스트 조각', placeholder:'USER_INFO', width:240}],
+          query: function(p) {
+            var t = p.sf_text || 'TABLE_NAME';
+            return "-- 전제: Oracle·Tibero 공통. V$SQL은 양쪽 참조안내서에 모두 있다\n"
+                 + "-- 권한: V$SQL 조회 권한 필요 (SELECT_CATALOG_ROLE 등)\n"
+                 + "-- 범위: 공유 풀에 살아 있는 커서만 나온다\n"
+                 + "--       재기동했거나 캐시에서 밀려났으면 안 나온다. 도구 문제가 아니다\n\n"
+                 + "SELECT SQL_ID\n"
+                 + "     , CHILD_NUMBER\n"
+                 + "     , PLAN_HASH_VALUE\n"
+                 + "     , EXECUTIONS\n"
+                 + "     , ROUND(ELAPSED_TIME / DECODE(EXECUTIONS,0,1,EXECUTIONS) / 1000, 2) AS AVG_MS\n"
+                 + "     , ROUND(BUFFER_GETS  / DECODE(EXECUTIONS,0,1,EXECUTIONS))          AS GETS_PER_EXEC\n"
+                 + "     , ROUND(DISK_READS   / DECODE(EXECUTIONS,0,1,EXECUTIONS))          AS READS_PER_EXEC\n"
+                 + "     , SUBSTR(SQL_TEXT, 1, 120) AS SQL_TEXT\n"
+                 + "FROM   V$SQL\n"
+                 + "WHERE  SQL_TEXT LIKE '%" + t + "%'\n"
+                 + "  AND  SQL_TEXT NOT LIKE '%V$SQL%'\n"
+                 + "ORDER BY ELAPSED_TIME DESC;\n\n"
+                 + "-- 두 쿼리를 비교할 때\n"
+                 + "--   PLAN_HASH_VALUE가 같으면 실행계획이 동일하다\n"
+                 + "--   → 시간 차의 원인은 계획이 아니라 캐시·파싱·클라이언트 fetch 쪽이다\n"
+                 + "--   PLAN_HASH_VALUE가 다르면 계획이 갈린 것이다. 각각의 계획을 꺼내 본다";
+          }
+        },
+        {
+          key: 'plan_by_id', label: 'SQL_ID로 실행계획', desc: '운영에서 이미 돈 커서의 실행계획을 SQL_ID로 캐시에서 꺼내 보는 쿼리',
+          params: [
+            {id:'pb_sqlid', label:'SQL_ID', placeholder:'a1b2c3d4e5f6g', width:160},
+            {id:'pb_child', label:'CHILD_NUMBER', placeholder:'0', width:90}
+          ],
+          query: function(p) {
+            var id = p.pb_sqlid || 'SQL_ID';
+            var ch = p.pb_child === '' || p.pb_child === undefined ? 'NULL' : p.pb_child;
+            return "-- 전제: Oracle 10g 이상. DBMS_XPLAN은 Tibero 참조안내서에 없다\n"
+                 + "-- 용도: 쿼리를 다시 돌리지 않고 실제 계획만 본다. 운영에 부하를 주지 않는다\n"
+                 + "-- 한계: 운영은 보통 STATISTICS_LEVEL이 TYPICAL이라 A-Rows·A-Time 칸이 빈다\n"
+                 + "--       계획 구조와 E-Rows는 그대로 나오므로 계획 비교에는 충분하다\n\n"
+                 + "SELECT * FROM TABLE(\n"
+                 + "  DBMS_XPLAN.DISPLAY_CURSOR('" + id + "', " + ch + ", 'ALLSTATS LAST')\n"
+                 + ");\n\n"
+                 + "-- CHILD_NUMBER에 NULL을 넣으면 그 SQL_ID의 자식 커서를 전부 보여준다\n\n"
+                 + "-- Tibero 대안 — V$SQL_PLAN 을 SQL_ID로 직접 조회한다\n"
+                 + "--               컬럼 구성은 Tibero 참조안내서 ch_dynamic_view.html 확인";
+          }
+        },
+        {
+          key: 'cursor_child', label: '자식 커서 비교', desc: '같은 SQL_ID의 자식 커서를 나열해 커서마다 실행계획 해시가 다른지 확인하는 쿼리',
+          params: [{id:'cc_sqlid', label:'SQL_ID', placeholder:'a1b2c3d4e5f6g', width:160}],
+          query: function(p) {
+            var id = p.cc_sqlid || 'SQL_ID';
+            return "-- 전제: Oracle·Tibero 공통. CHILD_NUMBER·PLAN_HASH_VALUE는 양쪽 문서에 있다\n"
+                 + "-- 판정: PLAN_HASH_VALUE가 자식마다 다르면 같은 SQL이 서로 다른 계획으로 돌고 있다\n\n"
+                 + "SELECT CHILD_NUMBER\n"
+                 + "     , PLAN_HASH_VALUE\n"
+                 + "     , EXECUTIONS\n"
+                 + "     , ROUND(ELAPSED_TIME / DECODE(EXECUTIONS,0,1,EXECUTIONS) / 1000, 2) AS AVG_MS\n"
+                 + "     , ROUND(BUFFER_GETS  / DECODE(EXECUTIONS,0,1,EXECUTIONS))          AS GETS_PER_EXEC\n"
+                 + "FROM   V$SQL\n"
+                 + "WHERE  SQL_ID = '" + id + "'\n"
+                 + "ORDER BY CHILD_NUMBER;\n\n"
+                 + "-- 계획이 갈리는 흔한 이유\n"
+                 + "--   바인드 값에 따라 옵티마이저가 다른 계획을 고름\n"
+                 + "--   세션마다 옵티마이저 설정이 다름\n"
+                 + "--   스키마가 달라 같은 이름의 다른 테이블을 봄\n\n"
+                 + "-- Oracle 전용 추가 — 바인드 값에 따라 계획을 나누는 중인지 본다\n"
+                 + "-- 아래 두 컬럼은 Tibero 참조안내서에 없다. 폐쇄망 반입 전 확인할 것\n"
+                 + "-- SELECT CHILD_NUMBER, PLAN_HASH_VALUE, IS_BIND_SENSITIVE, IS_BIND_AWARE\n"
+                 + "-- FROM   V$SQL\n"
+                 + "-- WHERE  SQL_ID = '" + id + "';\n"
+                 + "--   IS_BIND_SENSITIVE = Y  바인드 값에 따라 성능이 갈릴 수 있다고 표시된 상태\n"
+                 + "--   IS_BIND_AWARE     = Y  실제로 값 범위별로 계획을 나눠 쓰는 중";
+          }
+        },
+        {
+          key: 'stat_fresh', label: '통계 신선도 확인', desc: '테이블의 통계상 행수와 실제 행수를 나란히 뽑아 통계가 언제 수집됐고 얼마나 어긋났는지 보는 쿼리',
+          params: [{id:'sfr_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = (p.sfr_tbl || 'TABLE_NAME').toUpperCase();
+            return "-- 전제: Oracle·Tibero 공통. ALL_TAB_STATISTICS·STALE_STATS는 양쪽 문서에 있다\n"
+                 + "-- 판정: 옵티마이저는 실시간 데이터가 아니라 아래 통계값으로 계획을 고른다\n"
+                 + "--       NUM_ROWS와 실제 건수가 자릿수로 벌어지면 잘못된 규모로 계산하고 있다\n\n"
+                 + "SELECT TABLE_NAME\n"
+                 + "     , NUM_ROWS                                     AS 통계상_행수\n"
+                 + "     , BLOCKS\n"
+                 + "     , AVG_ROW_LEN\n"
+                 + "     , STALE_STATS\n"
+                 + "     , TO_CHAR(LAST_ANALYZED, 'YYYY-MM-DD HH24:MI') AS LAST_ANALYZED\n"
+                 + "FROM   ALL_TAB_STATISTICS\n"
+                 + "WHERE  OWNER = USER\n"
+                 + "  AND  TABLE_NAME = '" + t + "'\n"
+                 + "  AND  PARTITION_NAME IS NULL;\n\n"
+                 + "-- 실제 건수와 대조\nSELECT COUNT(*) AS 실제_행수 FROM " + t + ";\n\n"
+                 + "-- LAST_ANALYZED가 몇 달 전이거나 STALE_STATS가 YES면 통계를 다시 수집한다\n"
+                 + "-- BEGIN DBMS_STATS.GATHER_TABLE_STATS(USER, '" + t + "'); END;\n"
+                 + "-- /";
+          }
+        },
+        {
+          key: 'tbl_shape', label: '테이블 행 구조', desc: '테이블의 행 길이·블록수·컬럼 개수와 LOB 컬럼 수를 뽑아 SELECT * 가 비싼 구조인지 보는 쿼리',
+          params: [{id:'ts_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = (p.ts_tbl || 'TABLE_NAME').toUpperCase();
+            return "-- 전제: Oracle·Tibero 공통 (CHAIN_CNT만 Oracle 전용, 맨 아래 참고)\n"
+                 + "-- 판정: AVG_ROW_LEN이 크거나 LOB 컬럼이 있으면 SELECT * 가 컬럼 명시보다 확실히 비싸다\n"
+                 + "--       반대로 행이 짧고 컬럼이 몇 개뿐이면 둘의 차이는 거의 없다\n\n"
+                 + "-- 행 크기와 규모\n"
+                 + "SELECT NUM_ROWS\n"
+                 + "     , BLOCKS\n"
+                 + "     , AVG_ROW_LEN\n"
+                 + "     , TO_CHAR(LAST_ANALYZED, 'YYYY-MM-DD') AS LAST_ANALYZED\n"
+                 + "FROM   ALL_TABLES\n"
+                 + "WHERE  OWNER = USER AND TABLE_NAME = '" + t + "';\n\n"
+                 + "-- 컬럼 개수와 LOB 컬럼 수\n"
+                 + "SELECT COUNT(*) AS COL_CNT\n"
+                 + "     , SUM(CASE WHEN DATA_TYPE IN ('CLOB','BLOB','NCLOB','LONG','XMLTYPE')\n"
+                 + "                THEN 1 ELSE 0 END) AS LOB_CNT\n"
+                 + "FROM   ALL_TAB_COLUMNS\n"
+                 + "WHERE  OWNER = USER AND TABLE_NAME = '" + t + "';\n\n"
+                 + "-- LOB_CNT가 0보다 크면 SELECT * 가 LOB 로케이터까지 끌고 온다\n\n"
+                 + "-- Oracle 전용 — 행이 블록 여러 개에 걸쳐 저장됐는지 본다\n"
+                 + "-- CHAIN_CNT는 Tibero 참조안내서 딕셔너리 장에 없다. 반입 전 확인할 것\n"
+                 + "-- SELECT CHAIN_CNT FROM ALL_TABLES WHERE OWNER = USER AND TABLE_NAME = '" + t + "';\n"
+                 + "-- 0보다 크면 조각을 따라다니느라 SELECT * 가 더 비싸진다";
+          }
+        },
+        {
+          key: 'idx_cf', label: '인덱스 효율 (CF)', desc: '테이블의 인덱스별 CLUSTERING_FACTOR를 블록수·행수와 대조해 인덱스를 타는 게 이득인지 보는 쿼리',
+          params: [{id:'ic_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = (p.ic_tbl || 'TABLE_NAME').toUpperCase();
+            return "-- 전제: Oracle·Tibero 공통. CLUSTERING_FACTOR·LISTAGG는 양쪽 문서에 있다\n"
+                 + "-- 뜻: 인덱스 정렬 순서와 테이블의 물리 저장 순서가 얼마나 어긋나 있는가\n"
+                 + "--     BLOCKS에 가까우면 좋다 — 인덱스 순서대로 읽으면 같은 블록이 연달아 나온다\n"
+                 + "--     NUM_ROWS에 가까우면 나쁘다 — 건마다 다른 블록이라 랜덤 I/O가 된다\n\n"
+                 + "SELECT I.INDEX_NAME\n"
+                 + "     , I.UNIQUENESS\n"
+                 + "     , I.CLUSTERING_FACTOR\n"
+                 + "     , T.BLOCKS\n"
+                 + "     , T.NUM_ROWS\n"
+                 + "     , ROUND(I.CLUSTERING_FACTOR / DECODE(T.NUM_ROWS,0,1,T.NUM_ROWS) * 100, 1) AS 행수대비_PCT\n"
+                 + "     , LISTAGG(C.COLUMN_NAME, ',') WITHIN GROUP (ORDER BY C.COLUMN_POSITION) AS 인덱스컬럼\n"
+                 + "FROM   ALL_INDEXES     I\n"
+                 + "     , ALL_IND_COLUMNS C\n"
+                 + "     , ALL_TABLES      T\n"
+                 + "WHERE  I.OWNER        = USER\n"
+                 + "  AND  I.TABLE_NAME   = '" + t + "'\n"
+                 + "  AND  C.INDEX_OWNER  = I.OWNER\n"
+                 + "  AND  C.INDEX_NAME   = I.INDEX_NAME\n"
+                 + "  AND  T.OWNER        = I.OWNER\n"
+                 + "  AND  T.TABLE_NAME   = I.TABLE_NAME\n"
+                 + "GROUP BY I.INDEX_NAME, I.UNIQUENESS, I.CLUSTERING_FACTOR, T.BLOCKS, T.NUM_ROWS\n"
+                 + "ORDER BY I.INDEX_NAME;\n\n"
+                 + "-- 행수대비_PCT가 100에 가까우면 대량 조회에서는 풀스캔이 더 빠르다\n"
+                 + "-- 인덱스컬럼에 조회 컬럼이 전부 들어 있으면 테이블을 안 가고 인덱스만 읽는다";
+          }
+        },
+        {
+          key: 'col_skew', label: '컬럼 값 분포', desc: '테이블의 컬럼별 고유값 수·NULL 수·히스토그램 유무를 뽑아 값이 편중된 컬럼을 찾는 쿼리',
+          params: [{id:'cs_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
+          query: function(p) {
+            var t = (p.cs_tbl || 'TABLE_NAME').toUpperCase();
+            return "-- 전제: Oracle·Tibero 공통. ALL_TAB_COL_STATISTICS는 양쪽 문서에 있다\n"
+                 + "-- 판정: 고유값이 두세 개뿐인데 HISTOGRAM이 NONE이면\n"
+                 + "--       옵티마이저가 값 분포를 균등으로 가정한다\n"
+                 + "--       Y가 99%인 컬럼도 50%로 계산해서 엉뚱한 계획을 고른다\n\n"
+                 + "SELECT COLUMN_NAME\n"
+                 + "     , NUM_DISTINCT\n"
+                 + "     , NUM_NULLS\n"
+                 + "     , DENSITY\n"
+                 + "     , HISTOGRAM\n"
+                 + "     , TO_CHAR(LAST_ANALYZED, 'YYYY-MM-DD') AS LAST_ANALYZED\n"
+                 + "FROM   ALL_TAB_COL_STATISTICS\n"
+                 + "WHERE  OWNER = USER\n"
+                 + "  AND  TABLE_NAME = '" + t + "'\n"
+                 + "ORDER BY NUM_DISTINCT;\n\n"
+                 + "-- 히스토그램이 필요하면 METHOD_OPT을 지정해 다시 수집한다\n"
+                 + "-- BEGIN\n"
+                 + "--   DBMS_STATS.GATHER_TABLE_STATS(\n"
+                 + "--     OWNNAME    => USER,\n"
+                 + "--     TABNAME    => '" + t + "',\n"
+                 + "--     METHOD_OPT => 'FOR COLUMNS SIZE 254 편중컬럼명'\n"
+                 + "--   );\n"
+                 + "-- END;\n"
+                 + "-- /";
+          }
+        },
+        {
+          key: 'lit_sql', label: '리터럴 SQL 탐지', desc: '공유 풀에서 값만 다른 같은 모양의 SQL이 몇 개나 쌓였는지 세어 바인드 변수를 안 쓴 자리를 찾는 쿼리',
+          params: [{id:'ls_min', label:'최소 커서 수', placeholder:'10', width:90}],
+          query: function(p) {
+            var m = p.ls_min || '10';
+            return "-- 전제: FORCE_MATCHING_SIGNATURE는 Oracle 전용. Tibero 참조안내서에 없다\n"
+                 + "--       Tibero면 맨 아래 대안 사용\n"
+                 + "-- 용도: MyBatis에서 #{} 대신 ${}를 써서 값이 그대로 박혀 나가는 자리를 찾는다\n"
+                 + "-- 원리: 오라클은 SQL 텍스트가 한 글자만 달라도 다른 SQL로 보고 계획을 새로 만든다\n"
+                 + "--       값만 다른 커서가 수십 개면 그 매퍼가 매번 하드 파싱을 만들고 있다\n\n"
+                 + "SELECT FORCE_MATCHING_SIGNATURE\n"
+                 + "     , COUNT(*)                               AS 커서_개수\n"
+                 + "     , SUM(EXECUTIONS)                        AS 총_실행수\n"
+                 + "     , ROUND(SUM(SHARABLE_MEM)/1024/1024, 1)  AS 공유풀_MB\n"
+                 + "     , MIN(SUBSTR(SQL_TEXT, 1, 100))          AS SQL_SAMPLE\n"
+                 + "FROM   V$SQL\n"
+                 + "WHERE  FORCE_MATCHING_SIGNATURE > 0\n"
+                 + "GROUP BY FORCE_MATCHING_SIGNATURE\n"
+                 + "HAVING COUNT(*) > " + m + "\n"
+                 + "ORDER BY COUNT(*) DESC;\n\n"
+                 + "-- 잡히면 해당 매퍼의 ${} 를 #{} 로 바꾼다\n"
+                 + "-- 소스를 못 고치면 CURSOR_SHARING = FORCE 로 오라클이 리터럴을 치환하게 한다\n"
+                 + "-- 다만 계획 품질이 떨어질 수 있어 기본값은 EXACT다. DBA와 합의하고 건드린다\n\n"
+                 + "-- Tibero 대안 — 텍스트 앞부분으로 묶어 대략만 본다\n"
+                 + "-- SELECT SUBSTR(SQL_TEXT, 1, 60) AS SQL_HEAD, COUNT(*) AS 커서_개수\n"
+                 + "-- FROM   V$SQL\n"
+                 + "-- GROUP BY SUBSTR(SQL_TEXT, 1, 60)\n"
+                 + "-- HAVING COUNT(*) > " + m + "\n"
+                 + "-- ORDER BY COUNT(*) DESC;";
+          }
+        },
+        {
+          key: 'sess_prep', label: '진단 세션 준비', desc: '계측을 켜고 바인드 변수를 선언한 뒤 결과 전체를 받아오게 만드는 SQL*Plus 준비 스크립트',
+          params: [{id:'sp_sql', label:'대상 쿼리', placeholder:'SELECT * FROM USER_INFO WHERE USER_ID = :v_param', width:340}],
+          query: function(p) {
+            var sql = p.sp_sql || 'SELECT * FROM TABLE_NAME WHERE COLUMN_NAME = :v_param';
+            return "-- 전제: VARIABLE·EXEC·SET은 SQL*Plus 클라이언트 명령이다\n"
+                 + "--       Toad·오렌지·SQL Developer는 지원 범위가 다르다. 안 먹으면 그 줄을 빼고 쓴다\n"
+                 + "-- 용도: 운영과 같은 조건(바인드 변수·전체 fetch)을 툴에서 재현해 시간을 잰다\n\n"
+                 + "-- 1. 계측 켜기\nALTER SESSION SET STATISTICS_LEVEL = ALL;\n\n"
+                 + "-- 2. 바인드 변수 선언 — 운영과 같은 SQL 텍스트를 만든다\n"
+                 + "--    값을 직접 박으면 텍스트가 달라져 커서를 재사용하지 못한다\n"
+                 + "VARIABLE v_param VARCHAR2(50)\nEXEC :v_param := '값';\n\n"
+                 + "-- 3. 결과를 화면에 안 뿌리고 전체를 받아온다\n"
+                 + "--    툴 그리드는 첫 50행만 채우고 멈춰서 전체 시간이 안 나온다\n"
+                 + "SET AUTOTRACE TRACEONLY\nSET TIMING ON\n\n"
+                 + "-- 4. 대상 쿼리 — 3회 이상 돌리고 2회차 이후 값만 쓴다\n"
+                 + "--    1회차는 하드 파싱과 물리 I/O가 섞여 있어 비교에 못 쓴다\n"
+                 + sql + ";\n\n"
+                 + "-- 5. 원상복구\nSET AUTOTRACE OFF\nSET TIMING OFF\nALTER SESSION SET STATISTICS_LEVEL = TYPICAL;\n\n"
+                 + "-- 캐시를 비워 조건을 맞추는 방법도 있다\n"
+                 + "-- 다만 ALTER SYSTEM FLUSH BUFFER_CACHE는 인스턴스 전체의 캐시를 날려\n"
+                 + "-- 그 DB에 붙은 모든 세션이 한동안 느려진다. 개발·테스트 인스턴스에서만 쓴다";
+          }
+        },
+      ]
+    },
+    {
       category: '오브젝트',
       items: [
         {
@@ -288,6 +564,22 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "SELECT OBJECT_NAME\n     , OBJECT_TYPE\n     , TO_CHAR(CREATED, 'YYYY-MM-DD')      AS CREATED\n     , TO_CHAR(LAST_DDL_TIME, 'YYYY-MM-DD') AS LAST_MODIFIED\n     , STATUS\nFROM   USER_OBJECTS\nWHERE  OBJECT_TYPE IN ('PROCEDURE','FUNCTION','PACKAGE','PACKAGE BODY')\nORDER BY OBJECT_TYPE, OBJECT_NAME;";
+          }
+        },
+        {
+          key: 'proc_source', label: '프로시저/함수 소스 조회', desc: '지정한 프로시저·함수의 전체 소스코드를 USER_SOURCE에서 줄번호(LINE) 순으로 조회',
+          params: [{id:'src_name', label:'객체명', placeholder:'FC_UCM_CMM_CDVL_NM_INQ', width:220}],
+          query: function(p) {
+            var n = p.src_name ? p.src_name.toUpperCase() : 'OBJECT_NAME';
+            return "SELECT LINE\n     , TEXT\nFROM   USER_SOURCE\nWHERE  NAME = '" + n + "'\n  AND  TYPE IN ('FUNCTION','PROCEDURE','PACKAGE','PACKAGE BODY')\nORDER BY TYPE, LINE;\n\n-- 패키지면 TYPE을 'PACKAGE'(스펙) 또는 'PACKAGE BODY'(본문)로 좁혀서 볼 것";
+          }
+        },
+        {
+          key: 'source_grep', label: '소스 전체 검색 (키워드)', desc: '전체 프로시저·함수·패키지 소스에서 특정 테이블명·컬럼명·키워드가 등장하는 위치를 USER_SOURCE에서 검색',
+          params: [{id:'grep_kw', label:'검색어', placeholder:'MDCH_DOCU_ID', width:220}],
+          query: function(p) {
+            var k = p.grep_kw ? p.grep_kw.toUpperCase() : '키워드';
+            return "SELECT NAME\n     , TYPE\n     , LINE\n     , TEXT\nFROM   USER_SOURCE\nWHERE  UPPER(TEXT) LIKE '%" + k + "%'\nORDER BY NAME, TYPE, LINE;";
           }
         },
         {
@@ -312,6 +604,14 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "SELECT OBJECT_NAME\n     , OBJECT_TYPE\n     , STATUS\n     , TO_CHAR(LAST_DDL_TIME, 'YYYY-MM-DD HH24:MI:SS') AS LAST_CHANGED\nFROM   USER_OBJECTS\nWHERE  STATUS = 'INVALID'\nORDER BY OBJECT_TYPE, OBJECT_NAME;\n\n-- 재컴파일\n-- EXEC DBMS_UTILITY.COMPILE_SCHEMA(USER);";
+          }
+        },
+        {
+          key: 'error_detail', label: '컴파일 에러 상세 조회', desc: '무효(INVALID) 오브젝트의 컴파일 에러 메시지를 USER_ERRORS에서 오브젝트명·순번 순으로 조회',
+          params: [{id:'err_name', label:'객체명 (빈칸=전체)', placeholder:'FC_UCM_CMM_CDVL_NM_INQ', width:220}],
+          query: function(p) {
+            var n = p.err_name ? p.err_name.toUpperCase() : '';
+            return "SELECT NAME\n     , TYPE\n     , SEQUENCE\n     , LINE\n     , POSITION\n     , TEXT AS ERROR_TEXT\nFROM   USER_ERRORS\n" + (n ? "WHERE  NAME = '" + n + "'\n" : "") + "ORDER BY NAME, SEQUENCE;";
           }
         },
         {
@@ -397,7 +697,7 @@ var SNIPPETS = {
           query: function(p) {
             var db = p.db_name2 ? "'" + p.db_name2 + "'" : "DATABASE()";
             var t = p.col_tbl || 'table_name';
-            return "SELECT COLUMN_NAME\n     , COLUMN_TYPE\n     , IS_NULLABLE\n     , COLUMN_DEFAULT\n     , COLUMN_KEY\n     , EXTRA\n     , COLUMN_COMMENT\n     , ORDINAL_POSITION\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t.toLowerCase() + "'\nORDER BY ORDINAL_POSITION;";
+            return "SELECT TABLE_SCHEMA               AS OWNER\n     , TABLE_NAME\n     , ORDINAL_POSITION             AS COLUMN_ID\n     , COLUMN_NAME\n     , DATA_TYPE\n     , CHARACTER_MAXIMUM_LENGTH    AS DATA_LENGTH\n     , NUMERIC_SCALE                AS DATA_SCALE\n     , IS_NULLABLE                  AS NULLABLE\n     , COLUMN_TYPE\n     , COLUMN_DEFAULT\n     , COLUMN_KEY\n     , EXTRA\n     , COLUMN_COMMENT\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t.toLowerCase() + "'\nORDER BY ORDINAL_POSITION;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록» 업로드 양식과 맞춤 — 그대로 붙여넣기 가능";
           }
         },
         {
@@ -513,6 +813,24 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'proc_source', label: '프로시저/함수 소스 조회', desc: '지정한 프로시저·함수의 전체 정의를 INFORMATION_SCHEMA.ROUTINES에서 조회',
+          params: [{id:'src_name', label:'객체명', placeholder:'FN_GET_NAME', width:200}, {id:'db_src', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var n = p.src_name || 'ROUTINE_NAME';
+            var db = p.db_src ? "'" + p.db_src + "'" : "DATABASE()";
+            return "SELECT ROUTINE_NAME\n     , ROUTINE_TYPE\n     , ROUTINE_DEFINITION\nFROM   INFORMATION_SCHEMA.ROUTINES\nWHERE  ROUTINE_SCHEMA = " + db + "\n  AND  ROUTINE_NAME = '" + n + "';\n\n-- ROUTINE_DEFINITION이 NULL이면 (권한·바이너리로그 설정 문제) 아래로 대체\n-- SHOW CREATE PROCEDURE " + n + ";\n-- SHOW CREATE FUNCTION " + n + ";";
+          }
+        },
+        {
+          key: 'source_grep', label: '소스 전체 검색 (키워드)', desc: '전체 저장 프로시저·함수 정의에서 특정 테이블명·컬럼명·키워드가 포함된 오브젝트를 INFORMATION_SCHEMA.ROUTINES에서 검색',
+          params: [{id:'grep_kw', label:'검색어', placeholder:'mdch_docu_id', width:200}, {id:'db_grep', label:'DB명', placeholder:'mydb', width:120}],
+          query: function(p) {
+            var k = p.grep_kw || '키워드';
+            var db = p.db_grep ? "'" + p.db_grep + "'" : "DATABASE()";
+            return "SELECT ROUTINE_NAME\n     , ROUTINE_TYPE\n     , ROUTINE_DEFINITION\nFROM   INFORMATION_SCHEMA.ROUTINES\nWHERE  ROUTINE_SCHEMA = " + db + "\n  AND  ROUTINE_DEFINITION LIKE '%" + k + "%'\nORDER BY ROUTINE_NAME;\n\n-- 줄 단위가 아니라 정의 전체 텍스트 기준 매칭. 몇 번째 줄인지는 결과의 ROUTINE_DEFINITION에서 직접 찾을 것";
+          }
+        },
+        {
           key: 'view_list', label: '뷰 목록', desc: '뷰 목록 및 정의 확인',
           params: [{id:'db_view', label:'DB명', placeholder:'mydb', width:120}],
           query: function(p) {
@@ -554,7 +872,7 @@ var SNIPPETS = {
           params: [{id:'col_tbl', label:'테이블명', placeholder:'user_info', width:180}],
           query: function(p) {
             var t = p.col_tbl || 'table_name';
-            return "SELECT column_name\n     , data_type\n     , character_maximum_length\n     , is_nullable\n     , column_default\n     , ordinal_position\nFROM   information_schema.columns\nWHERE  table_schema = 'public'\n  AND  table_name   = '" + t.toLowerCase() + "'\nORDER BY ordinal_position;";
+            return "SELECT table_schema               AS owner\n     , table_name\n     , ordinal_position             AS column_id\n     , column_name\n     , data_type\n     , character_maximum_length    AS data_length\n     , numeric_scale                AS data_scale\n     , is_nullable                  AS nullable\n     , column_default\nFROM   information_schema.columns\nWHERE  table_schema = 'public'\n  AND  table_name   = '" + t.toLowerCase() + "'\nORDER BY ordinal_position;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록» 업로드 양식과 맞춤 — 그대로 붙여넣기 가능";
           }
         },
         {
@@ -715,6 +1033,22 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'func_source', label: '함수 소스 조회', desc: '지정한 함수의 전체 정의를 pg_get_functiondef로 조회',
+          params: [{id:'src_name', label:'함수명', placeholder:'fn_get_name', width:200}],
+          query: function(p) {
+            var n = p.src_name || 'function_name';
+            return "SELECT p.proname\n     , pg_get_functiondef(p.oid) AS source\nFROM   pg_proc      p\n     , pg_namespace  n\nWHERE  p.pronamespace = n.oid\n  AND  n.nspname = 'public'\n  AND  p.proname = '" + n + "';";
+          }
+        },
+        {
+          key: 'source_grep', label: '소스 전체 검색 (키워드)', desc: '전체 함수 정의에서 특정 테이블명·컬럼명·키워드가 포함된 함수를 pg_proc.prosrc에서 검색',
+          params: [{id:'grep_kw', label:'검색어', placeholder:'mdch_docu_id', width:200}],
+          query: function(p) {
+            var k = p.grep_kw || '키워드';
+            return "SELECT p.proname\n     , p.prosrc\nFROM   pg_proc      p\n     , pg_namespace  n\nWHERE  p.pronamespace = n.oid\n  AND  n.nspname = 'public'\n  AND  p.prosrc ILIKE '%" + k + "%'\nORDER BY p.proname;";
+          }
+        },
+        {
           key: 'view_list', label: '뷰 목록 조회', desc: 'public 스키마 뷰 목록',
           params: [],
           query: function(p) {
@@ -782,7 +1116,7 @@ var SNIPPETS = {
           params: [{id:'col_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
           query: function(p) {
             var t = p.col_tbl || 'TABLE_NAME';
-            return "SELECT c.column_id\n     , c.name                              AS column_name\n     , ty.name                             AS data_type\n     , c.max_length\n     , CASE WHEN c.is_nullable = 1 THEN 'Y' ELSE 'N' END AS nullable\n     , CASE WHEN pk.column_id IS NOT NULL THEN 'Y' ELSE 'N' END AS pk_yn\n     , CAST(ep.value AS NVARCHAR(200))     AS column_comment\nFROM   sys.columns c\n       JOIN sys.tables t  ON c.object_id = t.object_id\n       JOIN sys.types ty  ON c.user_type_id = ty.user_type_id\n       LEFT JOIN sys.extended_properties ep ON ep.major_id = c.object_id\n            AND ep.minor_id = c.column_id AND ep.name = 'MS_Description'\n       LEFT JOIN (SELECT ic.object_id, ic.column_id\n                  FROM   sys.index_columns ic\n                         JOIN sys.indexes i ON ic.object_id = i.object_id\n                              AND ic.index_id = i.index_id\n                  WHERE  i.is_primary_key = 1) pk\n              ON pk.object_id = c.object_id AND pk.column_id = c.column_id\nWHERE  t.name = '" + t + "'\nORDER BY c.column_id;";
+            return "SELECT s.name                          AS OWNER\n     , t.name                              AS TABLE_NAME\n     , c.column_id                         AS COLUMN_ID\n     , c.name                              AS COLUMN_NAME\n     , ty.name                             AS DATA_TYPE\n     , c.max_length                        AS DATA_LENGTH\n     , c.scale                             AS DATA_SCALE\n     , CASE WHEN c.is_nullable = 1 THEN 'Y' ELSE 'N' END AS NULLABLE\n     , CASE WHEN pk.column_id IS NOT NULL THEN 'Y' ELSE 'N' END AS pk_yn\n     , CAST(ep.value AS NVARCHAR(200))     AS column_comment\nFROM   sys.columns c\n       JOIN sys.tables t  ON c.object_id = t.object_id\n       JOIN sys.schemas s ON t.schema_id = s.schema_id\n       JOIN sys.types ty  ON c.user_type_id = ty.user_type_id\n       LEFT JOIN sys.extended_properties ep ON ep.major_id = c.object_id\n            AND ep.minor_id = c.column_id AND ep.name = 'MS_Description'\n       LEFT JOIN (SELECT ic.object_id, ic.column_id\n                  FROM   sys.index_columns ic\n                         JOIN sys.indexes i ON ic.object_id = i.object_id\n                              AND ic.index_id = i.index_id\n                  WHERE  i.is_primary_key = 1) pk\n              ON pk.object_id = c.object_id AND pk.column_id = c.column_id\nWHERE  t.name = '" + t + "'\nORDER BY c.column_id;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록» 업로드 양식과 맞춤 — 그대로 붙여넣기 가능";
           }
         },
         {
@@ -888,6 +1222,14 @@ var SNIPPETS = {
           }
         },
         {
+          key: 'source_grep', label: '소스 전체 검색 (키워드)', desc: '전체 프로시저·함수·뷰 정의에서 특정 테이블명·컬럼명·키워드가 포함된 오브젝트를 sys.sql_modules에서 검색',
+          params: [{id:'grep_kw', label:'검색어', placeholder:'mdch_docu_id', width:200}],
+          query: function(p) {
+            var k = p.grep_kw || '키워드';
+            return "SELECT o.name\n     , o.type_desc\n     , m.definition\nFROM   sys.sql_modules m\n     , sys.objects     o\nWHERE  m.object_id = o.object_id\n  AND  m.definition LIKE '%" + k + "%'\nORDER BY o.name;";
+          }
+        },
+        {
           key: 'view_list', label: '뷰 목록', desc: '뷰 목록 및 정의 확인',
           params: [],
           query: function(p) {
@@ -928,7 +1270,7 @@ var SNIPPETS = {
           params: [{id:'col_tbl', label:'테이블명', placeholder:'USER_INFO', width:180}],
           query: function(p) {
             var t = p.col_tbl || 'TABLE_NAME';
-            return "SELECT c.colid\n     , c.name    AS column_name\n     , t.name    AS data_type\n     , c.length\n     , CASE WHEN (c.status & 8) = 8 THEN 'Y' ELSE 'N' END AS nullable\nFROM   sysobjects o\n       JOIN syscolumns c ON o.id = c.id\n       JOIN systypes  t ON c.usertype = t.usertype\nWHERE  o.type = 'U'\n  AND  o.name = '" + t + "'\nORDER BY c.colid;\n\n-- 상세 (PK/인덱스 포함)\nsp_help " + t + ";";
+            return "SELECT db_name()  AS OWNER\n     , o.name    AS TABLE_NAME\n     , c.colid   AS COLUMN_ID\n     , c.name    AS COLUMN_NAME\n     , t.name    AS DATA_TYPE\n     , c.length  AS DATA_LENGTH\n     , c.scale   AS DATA_SCALE\n     , CASE WHEN (c.status & 8) = 8 THEN 'Y' ELSE 'N' END AS NULLABLE\nFROM   sysobjects o\n       JOIN syscolumns c ON o.id = c.id\n       JOIN systypes  t ON c.usertype = t.usertype\nWHERE  o.type = 'U'\n  AND  o.name = '" + t + "'\nORDER BY c.colid;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록» 업로드 양식과 맞춤 — 그대로 붙여넣기 가능\n\n-- 상세 (PK/인덱스 포함)\nsp_help " + t + ";";
           }
         },
         {
@@ -1009,6 +1351,14 @@ var SNIPPETS = {
           params: [],
           query: function(p) {
             return "SELECT name\n     , crdate AS created\nFROM   sysobjects\nWHERE  type = 'P'\nORDER BY name;\n\n-- 소스 보기\n-- sp_helptext 프로시저명;";
+          }
+        },
+        {
+          key: 'source_grep', label: '소스 전체 검색 (키워드)', desc: '전체 프로시저 정의에서 특정 테이블명·컬럼명·키워드가 등장하는 위치를 syscomments에서 조각(colid) 순으로 검색',
+          params: [{id:'grep_kw', label:'검색어', placeholder:'mdch_docu_id', width:200}],
+          query: function(p) {
+            var k = p.grep_kw || '키워드';
+            return "SELECT OBJECT_NAME(c.id) AS name\n     , c.colid\n     , c.text\nFROM   syscomments c\nWHERE  c.text LIKE '%" + k + "%'\nORDER BY name, c.colid;";
           }
         },
         {
@@ -1218,6 +1568,39 @@ function showToast() {
   clearTimeout(t._t); t._t = setTimeout(function() { t.style.opacity = '0'; }, 1500);
 }
 
+// ── URL 해시로 특정 스니펫을 바로 열 수 있다. 다른 툴에서 딥링크로 부를 때 쓴다 ──
+//   #tbl_ddl        → DDL 추출 스니펫 (현재 방언 유지)
+//   #tbl_ddl:oracle → DDL 추출 스니펫 + Oracle 방언까지 전환
+// 해시가 없거나 모르는 키/방언이면 이전 동작(마지막 방언 복원) 그대로.
+function hashParts() {
+  var raw = (location.hash || '').replace('#', '').trim().split(':');
+  return { key: raw[0] || '', db: raw[1] || '' };
+}
+function findItemByKey(db, key) {
+  var data = SNIPPETS[db];
+  if (!data) return null;
+  for (var i = 0; i < data.length; i++) {
+    var items = data[i].items;
+    for (var j = 0; j < items.length; j++) {
+      if (items[j].key === key) return items[j];
+    }
+  }
+  return null;
+}
+function applyHash() {
+  var h = hashParts();
+  if (!h.key) return false;
+  var db = (h.db && SNIPPETS[h.db]) ? h.db : currentDb;
+  var item = findItemByKey(db, h.key);
+  if (!item) return false;
+  if (db !== currentDb) switchDb(db);   // 사이드바를 그 방언으로 다시 그림
+  var btns = document.querySelectorAll('.snip-btn'), btn = null;
+  for (var k = 0; k < btns.length; k++) { if (btns[k].dataset.key === h.key) { btn = btns[k]; break; } }
+  selectItem(item, btn);
+  return true;
+}
+window.addEventListener('hashchange', function() { applyHash(); });
+
 // ── 키보드 단축키 ─────────────────────────────────────────
 document.addEventListener('keydown', function(e) {
   if(e.ctrlKey && e.key==='k'){ e.preventDefault(); document.getElementById('search_input').focus(); return; }
@@ -1232,6 +1615,7 @@ document.addEventListener('keydown', function(e) {
 var lastDb = localStorage.getItem('sql_lastDb') || 'oracle';
 if(!SNIPPETS[lastDb]) lastDb = 'oracle';
 switchDb(lastDb);
+applyHash();   // 해시로 특정 스니펫이 지정돼 있으면 그걸로 덮어씀
 </script>
 </body>
 </html>

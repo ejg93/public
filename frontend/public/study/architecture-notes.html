@@ -20,8 +20,7 @@
     --accent-3:#7BA9FF;
     --danger:#FF8A80;
     --radius:10px;
-    --fs-base:15px;
-    font-size:var(--fs-base);
+    font-size:15px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -48,32 +47,26 @@
     border-bottom:1px solid var(--line);
   }
   .app-bar-row{
-    display:flex; align-items:center; gap:10px;
-    padding:10px 12px;
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:6px;
+    padding:7px 10px;
     max-width:760px; margin:0 auto;
   }
   .icon-btn{
     background:var(--panel); border:1px solid var(--line); color:var(--ink);
-    width:38px; height:38px; border-radius:8px;
+    width:30px; height:30px; border-radius:7px;
     display:flex; align-items:center; justify-content:center;
-    font-size:18px; cursor:pointer; flex-shrink:0;
+    font-size:15px; cursor:pointer; flex-shrink:0;
     -webkit-tap-highlight-color:transparent;
   }
   .icon-btn:active{background:var(--panel-2);}
-  .app-title{
-    flex:1; min-width:0;
-  }
-  .app-title .eyebrow{
+  .eyebrow{
     font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;
-  }
-  .app-title h1{
-    font-size:15px; margin:1px 0 0; font-weight:700; color:var(--ink);
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    flex:1; min-width:0;
   }
   .progress-pill{
     font-size:11px; color:var(--ink-dim);
     background:var(--panel); border:1px solid var(--line);
-    border-radius:20px; padding:5px 10px; flex-shrink:0;
+    border-radius:20px; padding:4px 9px; flex-shrink:0;
     display:flex; align-items:center; gap:5px;
   }
   .progress-pill b{color:var(--accent); font-weight:700;}
@@ -84,14 +77,11 @@
     height:100%; width:0%; background:linear-gradient(90deg,var(--accent-3),var(--accent-2));
     transition:width .1s linear;
   }
-  .toolbar-row{
-    display:flex; gap:6px; padding:0 12px 10px; max-width:760px; margin:0 auto;
-    overflow-x:auto;
-  }
   .chip-btn{
-    font-size:11.5px; color:var(--ink-dim); background:var(--panel);
-    border:1px solid var(--line); border-radius:20px; padding:6px 11px;
+    font-size:11px; color:var(--ink-dim); background:var(--panel);
+    border:1px solid var(--line); border-radius:20px; padding:5px 9px;
     white-space:nowrap; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    flex-shrink:0;
   }
   .chip-btn:active{background:var(--panel-2); color:var(--ink);}
 
@@ -235,20 +225,12 @@
 <header class="app-bar">
   <div class="app-bar-row">
     <button class="icon-btn" id="drawerOpenBtn" aria-label="목차">☰</button>
-    <div class="app-title">
-      <div class="eyebrow">STUDY NOTES</div>
-      <h1>아키텍처 학습노트</h1>
-    </div>
+    <div class="eyebrow">STUDY NOTES</div>
+    <button class="chip-btn" id="expandToggleBtn">전체 펼치기</button>
+    <button class="chip-btn" id="resetProgressBtn">진행률 초기화</button>
     <div class="progress-pill"><b id="doneCount">0</b>/<span id="totalCount">0</span> 완료</div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="scrollFill"></div></div>
-  <div class="toolbar-row">
-    <button class="chip-btn" id="expandAllBtn">전체 펼치기</button>
-    <button class="chip-btn" id="collapseAllBtn">전체 접기</button>
-    <button class="chip-btn" id="fontMinusBtn">가− </button>
-    <button class="chip-btn" id="fontPlusBtn">가+</button>
-    <button class="chip-btn" id="resetProgressBtn">진행률 초기화</button>
-  </div>
 </header>
 
 <div class="scrim" id="scrim"></div>
@@ -1806,13 +1788,563 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
    - Command(쓰기)와 Query(읽기)의 책임을 분리하는 패턴
 3. 캐시 전략 Write-Back vs Write-Through 의 차이는?
    - 쓰기 성능 vs 데이터 일관성
+
+---
+
+## 부록 — 오라클 SQL 처리 구조와 성능 측정
+> 영상 정리가 아니라 실무 질문에서 출발해 정리한 내용
+
+시작은 이 말이었다 — **"`SELECT *` 가 컬럼을 다 적은 쿼리보다 빨랐다"**.  
+DB가 구식이라 그렇다는 설명이 돌았고, PM은 옵티마이저 문제로 추정했다.
+
+어느 쪽이 맞는지 가리려면 SQL 한 문장이 오라클 안에서  
+어디를 어떤 순서로 지나가는지부터 봐야 한다.
+
+<svg viewBox="0 0 640 322" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="SQL 한 문장이 지나가는 경로">
+<defs><marker id="ahA" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#5E7FA0"/></marker></defs>
+<rect x="20" y="20" width="170" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="105" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">① SQL 텍스트 도착</text>
+<line x1="192" y1="40" x2="216" y2="40" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="220" y="20" width="180" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="310" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">② 구문·의미 검사</text>
+<line x1="402" y1="40" x2="426" y2="40" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="430" y="20" width="190" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="525" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">③ 라이브러리 캐시 조회</text>
+<path d="M525,60 L525,78 L155,78" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<path d="M525,78 L475,78" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<line x1="155" y1="78" x2="155" y2="92" stroke="#68E3C4" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="475" y1="78" x2="475" y2="92" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="20" y="96" width="270" height="62" rx="7" fill="#152B47" stroke="#68E3C4"/>
+<text x="155" y="120" text-anchor="middle" font-size="12.5" fill="#68E3C4">같은 텍스트 있음 · 소프트 파싱</text>
+<text x="155" y="140" text-anchor="middle" font-size="11.5" fill="#8FAAC7">저장된 실행계획을 그대로 재사용</text>
+<rect x="330" y="96" width="290" height="62" rx="7" fill="#152B47" stroke="#FFC24B"/>
+<text x="475" y="120" text-anchor="middle" font-size="12.5" fill="#FFC24B">같은 텍스트 없음 · 하드 파싱</text>
+<text x="475" y="140" text-anchor="middle" font-size="11.5" fill="#8FAAC7">옵티마이저가 통계 읽고 플랜 계산</text>
+<path d="M155,158 L155,176 L320,176" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<path d="M475,158 L475,176 L320,176" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<line x1="320" y1="176" x2="320" y2="192" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="175" y="196" width="290" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="320" y="221" text-anchor="middle" font-size="12.5" fill="#E8F1FA">④ 플랜대로 실행 · 블록 읽기</text>
+<path d="M320,236 L320,252 L165,252" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<path d="M320,252 L475,252" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<line x1="165" y1="252" x2="165" y2="266" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="475" y1="252" x2="475" y2="266" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="20" y="270" width="290" height="44" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+<text x="165" y="297" text-anchor="middle" font-size="12" fill="#8FAAC7">버퍼 캐시에 있으면 메모리에서</text>
+<rect x="330" y="270" width="290" height="44" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+<text x="475" y="297" text-anchor="middle" font-size="12" fill="#8FAAC7">없으면 데이터 파일에서 읽어 올림</text>
+</svg>
+
+③에서 갈리는 두 갈래와 ④의 캐시 적중 여부가  
+체감 속도 차의 대부분을 만든다.
+
+### A1. `SELECT *` 가 더 빨라 보이는 이유
+
+같은 테이블을 두 방식으로 조회했을 때 생기는 시간 차를  
+원인일 가능성이 높은 순서로 나열한다.
+
+**① 측정 순서** — 먼저 돌린 쿼리가 하드 파싱과 물리 I/O를 다 뒤집어쓴다.  
+두 번째 쿼리는 데워진 캐시를 그대로 쓴다.  
+`SELECT *` 를 나중에 돌렸으면 무조건 빠르게 나온다.
+
+> 순서를 바꿔 다시 재면 결과가 뒤집힌다. 이것부터 걸러낸다.
+
+**② 클라이언트가 결과를 다 안 받는다** — 툴은 그리드에 첫 50행만 채우고 멈춘다.  
+화면의 "완료" 는 전체 처리 시간이 아니라 첫 50행을 만든 시간이다.  
+`ORDER BY`·`GROUP BY`·`DISTINCT` 가 붙은 쪽은 결과를 전부 모아야  
+첫 행이 나오므로 같은 조건의 비교가 아니게 된다.
+
+**③ 컬럼을 적으면서 `WHERE` 절도 같이 바뀜** — 인덱스를 죽이는 건  
+`SELECT` 절이 아니라 `WHERE` 절에 씌운 함수다.
+
+| 쓴 위치 | 예 | 인덱스 |
+|---|---|---|
+| `WHERE` | `TO_CHAR(REG_DT,'YYYYMMDD') = '20260726'` | 못 탐 |
+| `WHERE` | `REG_DT >= TO_DATE('20260726','YYYYMMDD')` | 탐 |
+| `SELECT` | `SELECT TO_CHAR(REG_DT,'YYYYMMDD')` | 영향 없음. 행마다 CPU만 더 씀 |
+
+이 표는 내장 SQL 함수(`TO_CHAR` 등) 기준이다.<br>직접 만든 PL/SQL 함수를 `SELECT` 절에서 부르면 얘기가 커진다 — A6.
+
+**④ 컬럼을 줄여서 플랜이 바뀜** — 조회 컬럼이 전부 인덱스 안에 들어 있으면  
+옵티마이저가 인덱스만 읽는 경로로 갈아탄다.  
+그 인덱스가 테이블만큼 크면 풀스캔보다 느려질 수 있다.
+
+**컬럼을 적었을 때 정직하게 빠른 경우**
+
+조회 컬럼이 인덱스에 다 있으면 테이블을 아예 안 간다.
+
+```sql
+SELECT USER_ID FROM USER_INFO WHERE USER_ID LIKE 'A%';
+--  INDEX RANGE SCAN 만. 테이블 접근 없음
+
+SELECT * FROM USER_INFO WHERE USER_ID LIKE 'A%';
+--  INDEX RANGE SCAN + TABLE ACCESS BY INDEX ROWID
+--  건마다 테이블 블록을 랜덤으로 한 번씩 더 읽음
+```
+
+실행계획에 `TABLE ACCESS BY INDEX ROWID` 줄이 있느냐로 갈린다.  
+건수가 많을수록 차이가 벌어진다.
+
+> 성능과 별개로 컬럼을 적는 이유가 하나 더 있다.  
+> 테이블에 컬럼이 추가되면 `SELECT *` 는 결과 컬럼 순서가 밀려  
+> `ResultSet` 인덱스 접근과 `resultMap` 매핑이 조용히 깨진다.
+
+### A2. 파싱과 커서 공유
+
+오라클은 SQL 텍스트를 받으면 공유 풀의 라이브러리 캐시에서  
+같은 텍스트를 찾고, 있으면 저장된 실행계획을 그대로 쓴다.  
+이 재사용 판정을 **커서 공유(cursor sharing)** 라 한다.
+
+| 이름 | 무슨 일이 일어나나 | 비용 |
+|---|---|---|
+| 소프트 파싱 | 캐시에서 실행계획을 찾아 재사용 | 쌈 |
+| 하드 파싱 | 옵티마이저가 통계를 읽고 플랜을 새로 계산 | 비쌈 |
+
+하드 파싱은 조인 순서와 접근 방법 조합을 전부 따져 비용을 매긴다.  
+CPU를 많이 쓰고 라이브러리 캐시에 래치를 잡아 다른 세션과 경합한다.
+
+**같은 SQL 판정은 텍스트가 바이트 단위로 같아야 한다.**  
+대소문자·공백·주석이 하나만 달라도 다른 SQL로 친다.
+
+```sql
+SELECT * FROM USER_INFO WHERE USER_ID = '1234'   -- 값마다 새 SQL, 매번 하드 파싱
+SELECT * FROM USER_INFO WHERE USER_ID = :1       -- 최초 1회만 하드 파싱
+```
+
+**MyBatis에서 갈리는 지점**
+
+| 작성 | 오라클이 보는 텍스트 | 커서 |
+|---|---|---|
+| `#{userId}` | `... WHERE USER_ID = :1` 하나 | 1개를 계속 재사용 |
+| `${userId}` | 값마다 다른 텍스트 | 값 종류만큼 생성 |
+
+로그에 `USER_ID = 1` 로 찍히는 건 MyBatis가 읽기 좋으라고  
+파라미터를 끼워 보여주는 것이다. `V$SQL.SQL_TEXT` 에는 `:1` 로 들어 있다.
+
+> 리터럴 SQL을 남발하면 1회용 커서가 공유 풀을 채워  
+> 재사용될 커서를 밀어낸다. 이걸 라이브러리 캐시 오염이라 한다.
+
+`CURSOR_SHARING` 파라미터를 `FORCE` 로 두면 오라클이 리터럴을  
+바인드 변수로 자동 치환한다. 소스를 못 고치는 레거시에 쓰는 응급처치고,  
+플랜 품질이 떨어질 수 있어 기본값은 `EXACT` 다.
+
+### A3. SGA와 PGA — SQL이 쓰는 메모리
+
+<svg viewBox="0 0 640 296" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="SGA와 PGA 구조">
+<defs><marker id="ahB" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#FF8A80"/></marker></defs>
+<rect x="14" y="14" width="392" height="268" rx="9" fill="#0B1930" stroke="#7BA9FF"/>
+<text x="28" y="38" font-size="12" fill="#7BA9FF">SGA — 전 세션 공유</text>
+<rect x="30" y="50" width="360" height="46" rx="6" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="210" y="70" text-anchor="middle" font-size="12.5" fill="#E8F1FA">버퍼 캐시</text>
+<text x="210" y="87" text-anchor="middle" font-size="11" fill="#8FAAC7">데이터 파일 블록 사본</text>
+<rect x="30" y="106" width="360" height="112" rx="6" fill="#152B47" stroke="#2A4A6E"/>
+<text x="44" y="126" font-size="12" fill="#68E3C4">공유 풀</text>
+<rect x="42" y="136" width="172" height="70" rx="5" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="128" y="158" text-anchor="middle" font-size="12" fill="#E8F1FA">라이브러리 캐시</text>
+<text x="128" y="176" text-anchor="middle" font-size="10.5" fill="#8FAAC7">파싱된 SQL</text>
+<text x="128" y="193" text-anchor="middle" font-size="10.5" fill="#8FAAC7">실행계획</text>
+<rect x="224" y="136" width="154" height="70" rx="5" fill="#1B3958" stroke="#2A4A6E"/>
+<text x="301" y="158" text-anchor="middle" font-size="12" fill="#E8F1FA">딕셔너리 캐시</text>
+<text x="301" y="176" text-anchor="middle" font-size="10.5" fill="#8FAAC7">테이블·컬럼</text>
+<text x="301" y="193" text-anchor="middle" font-size="10.5" fill="#8FAAC7">권한 정의</text>
+<rect x="30" y="228" width="360" height="34" rx="6" fill="#152B47" stroke="#2A4A6E"/>
+<text x="210" y="250" text-anchor="middle" font-size="11.5" fill="#8FAAC7">REDO 로그 버퍼</text>
+<rect x="422" y="14" width="204" height="152" rx="9" fill="#0B1930" stroke="#FFC24B"/>
+<text x="434" y="38" font-size="12" fill="#FFC24B">PGA — 세션 전용</text>
+<text x="434" y="66" font-size="11.5" fill="#8FAAC7">정렬 작업공간</text>
+<text x="434" y="88" font-size="11.5" fill="#8FAAC7">해시 조인 테이블</text>
+<text x="434" y="110" font-size="11.5" fill="#8FAAC7">바인드 값</text>
+<text x="434" y="132" font-size="11.5" fill="#8FAAC7">커서 실행 상태</text>
+<line x1="524" y1="166" x2="524" y2="208" stroke="#FF8A80" stroke-width="1.4" marker-end="url(#ahB)"/>
+<text x="534" y="192" font-size="11" fill="#FF8A80">넘치면</text>
+<rect x="422" y="212" width="204" height="60" rx="9" fill="#152B47" stroke="#FF8A80"/>
+<text x="524" y="236" text-anchor="middle" font-size="11.5" fill="#E8F1FA">TEMP 테이블스페이스</text>
+<text x="524" y="256" text-anchor="middle" font-size="10.5" fill="#8FAAC7">디스크. 여기 떨어지면 느려짐</text>
+</svg>
+
+| 영역 | 담는 것 | 성격 |
+|---|---|---|
+| 버퍼 캐시 | 데이터 파일 블록 사본 | 전 세션 공유 |
+| 라이브러리 캐시 | 파싱된 SQL과 실행계획 | 전 세션 공유 |
+| 딕셔너리 캐시 | 테이블·컬럼·권한 정의 | 전 세션 공유 |
+| PGA | 정렬·해시 작업공간, 바인드 값 | 세션 전용 |
+
+딕셔너리 캐시가 따로 있는 이유는 파싱 2단계 때문이다.  
+"이 테이블 있나, 이 컬럼 있나, 권한 있나" 를 검사할 때  
+매번 디스크를 읽으면 감당이 안 된다.
+
+**PGA가 모자라면 TEMP 테이블스페이스로 넘어간다.**  
+메모리에서 끝나던 정렬이 디스크로 떨어지면 몇십 배 느려진다.  
+실행계획의 `SORT ORDER BY` 옆 `1Mem / 1Pass` 표시에서  
+`Pass` 가 1 이상이면 넘어간 것이다.
+
+**결과 집합 자체는 어디에도 안 쌓인다.**  
+커서를 열어두고 클라이언트가 요청할 때마다 그때그때 만들어 보낸다.  
+100만 건을 조회해도 서버가 100만 건을 들고 있지 않다.
+
+### A4. `V$` 뷰 · 딕셔너리 뷰 · 내 테이블
+
+셋 다 예외 없이 라이브러리 캐시에 커서로 올라간다.  
+갈리는 건 데이터를 어디서 퍼오느냐고, 거기서 재기동 후 남는지가 정해진다.
+
+| 조회 대상 | 실체 | 데이터 출처 | 재기동하면 |
+|---|---|---|---|
+| 내가 만든 테이블·뷰 | 세그먼트 | 버퍼 캐시 → 데이터 파일 | 남음 |
+| `ALL_TABLES` 등 | SYS 소유 실제 테이블 | 버퍼 캐시 + 딕셔너리 캐시 | 남음 |
+| `V$SESSION` 등 | SGA 메모리 구조체 | SGA 직접 읽기 | 사라짐 |
+
+`V$` 는 **동적 성능 뷰**다. 밑에 `X$` 고정 테이블이 있고,  
+그건 SGA 안의 구조체를 테이블처럼 보이게 씌운 껍데기다.  
+파일이 없으니 버퍼 캐시를 안 타고, 대신 읽는 동안 래치를 잡는다.
+
+> `V$SQL` 같은 무거운 뷰를 운영에서 짧은 주기로 반복 조회하면  
+> 그 조회 자체가 라이브러리 캐시 래치 경합을 만든다.  
+> 진단할 때 한 번씩 보는 용도다.
+
+딕셔너리 뷰는 `SYS.TAB$`·`SYS.OBJ$` 같은 진짜 테이블 위의 뷰다.  
+SYSTEM 테이블스페이스에 파일로 있고, `CREATE TABLE` 하면 행이 늘어난다.
+
+| 접두사 | 범위 | 권한 |
+|---|---|---|
+| `USER_` | 내가 소유한 것만 | 필요 없음 |
+| `ALL_` | 내가 접근 권한을 가진 것 전부 | 필요 없음 |
+| `DBA_` | 데이터베이스 전체 | DBA 권한 필요 |
+
+**Windows에 빗대면** 내 테이블은 내 문서 파일,  
+딕셔너리 뷰는 파일시스템 MFT나 레지스트리, `V$` 는 작업 관리자다.  
+MFT는 파일을 만들면 항목이 자동으로 늘고 직접 편집하면 시스템이 깨진다.  
+작업 관리자는 지금 메모리 상태만 보여주고 재부팅하면 초기화된다.
+
+### A5. 옵티마이저 — 학습이 아니라 통계 계산
+
+기본 동작은 학습이 아니라 매번 계산이다.
+
+```
+1. 통계정보를 읽는다       → 이 조건이면 몇 건 나오겠다 (카디널리티 추정)
+2. 후보 경로마다 비용 계산  → 인덱스로 가면 블록 몇 개, 풀스캔이면 몇 개
+3. 제일 싼 경로를 고른다
+```
+
+**전부 1번에 달렸다.** 여기가 틀리면 2·3은 자동으로 틀린다.  
+통계는 `DBMS_STATS` 가 수집해 딕셔너리에 저장한 값이고,  
+실시간 값이 아니라 수집 시점에 찍은 사진이다.
+
+| 통계 | 어디에 | 무엇 |
+|---|---|---|
+| `NUM_ROWS`·`BLOCKS` | `ALL_TABLES` | 테이블 규모 |
+| 고유값 수·히스토그램 | `ALL_TAB_COL_STATISTICS` | 컬럼 값 분포 |
+| `CLUSTERING_FACTOR` | `ALL_INDEXES` | 인덱스 효율 |
+
+**인덱스가 오히려 느린 경우**
+
+인덱스는 건마다 랜덤 액세스, 풀스캔은 한 번에 여러 블록을 순차로 읽는다.  
+결과가 전체의 대략 5~15%를 넘어가면 풀스캔이 이긴다.
+
+`CLUSTERING_FACTOR` 는 인덱스 정렬 순서와 테이블의 물리 저장 순서가  
+얼마나 어긋나 있는지를 나타낸다.
+
+| 값 | 의미 |
+|---|---|
+| `BLOCKS` 에 가까움 | 좋음. 인덱스 순서대로 읽으면 같은 블록이 연달아 나옴 |
+| `NUM_ROWS` 에 가까움 | 나쁨. 건마다 다른 블록이라 랜덤 I/O가 됨 |
+
+**통계가 어긋나는 흔한 이유**
+
+- 오래됨 — 배치로 100만 건 넣었는데 통계는 1만 건 시절 값
+- 편중 분포인데 히스토그램이 없음 — `Y` 99% / `N` 1% 를 균등으로 가정
+- 조건 간 상관관계 무시 —  
+  `시도='서울' AND 구='강남구'` 를 독립으로 보고 확률을 곱해 실제보다 적게 추정
+
+> 현장에서 "옵티마이저 문제" 라는 말은 대개  
+> "통계가 실제와 어긋났다" 를 가리킨다.
+
+**예외적으로 보정이 도는 기능들**
+
+| 기능 | 도입 | 하는 일 |
+|---|---|---|
+| 바인드 피킹 | 9i | 하드 파싱 때 첫 바인드 값을 엿보고 그 값 기준으로 플랜을 짬 |
+| 적응형 커서 공유 | 11g | 값 범위별로 자식 커서를 나눠 각각 다른 플랜을 씀 |
+| 통계 피드백 | 11.2 | 예상과 실제 행수가 크게 벌어지면 다음 실행 때 보정 |
+| SQL 계획 관리 | 11g | 검증 안 된 새 플랜을 못 쓰게 막음 |
+
+트리거는 실행 횟수가 아니라 **예상과 실제가 어긋난 정도**다.  
+실행 횟수는 캐시에서 안 밀려나는 우선순위에만 영향을 준다.
+
+**바인드 피킹이 만드는 증상**
+
+`STATUS` 가 `Y` 99만 건 / `N` 100건인 테이블에서
+
+```
+1회차  STATUS='N' 실행  → 100건 예상, 인덱스 플랜 생성. 빠름
+2회차  STATUS='Y' 실행  → 같은 플랜 재사용. 99만 건을 인덱스로 → 느림
+```
+
+"어제는 빨랐는데 오늘 느리다", "재기동하니 반대가 됐다" 의 정체다.  
+같은 SQL의 자식 커서가 여러 개 생겼는지로 확인한다.
+
+```sql
+SELECT SQL_ID, CHILD_NUMBER, PLAN_HASH_VALUE, EXECUTIONS
+     , IS_BIND_SENSITIVE, IS_BIND_AWARE
+FROM   V$SQL
+WHERE  SQL_TEXT LIKE '%USER_INFO%'
+  AND  SQL_TEXT NOT LIKE '%V$SQL%'
+ORDER BY SQL_ID, CHILD_NUMBER;
+```
+
+`CHILD_NUMBER` 가 여러 개인데 `PLAN_HASH_VALUE` 가 서로 다르면  
+같은 SQL인데 플랜이 갈렸다는 뜻이다.
+
+### A6. PL/SQL 함수 호출 비용 — SQL과 PL/SQL 사이 컨텍스트 스위칭
+
+함수 안에 자기 `SELECT` 문이 있으면 A1의 표로는 설명이 안 된다.<br>
+오라클은 SQL 엔진에서 PL/SQL 엔진으로 넘어갔다가, 그 안에서<br>
+다시 SQL 엔진을 불러 값을 받고, PL/SQL로 돌아와 결과를 만들어<br>
+SQL 엔진에 되돌려준다. 이 왕복을 **컨텍스트 스위칭**이라 한다.
+
+<svg viewBox="0 0 640 140" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="PL/SQL 함수 호출의 컨텍스트 스위칭 경로">
+<defs>
+<marker id="ahC" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#FFC24B"/></marker>
+<marker id="ahD" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7BA9FF"/></marker>
+</defs>
+<rect x="10" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#68E3C4"/>
+<text x="79" y="46" text-anchor="middle" font-size="12.5" fill="#68E3C4">SQL 엔진</text>
+<text x="79" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">행 하나 fetch</text>
+<line x1="148" y1="50" x2="156" y2="50" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahC)"/>
+<rect x="158" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#FFC24B"/>
+<text x="227" y="46" text-anchor="middle" font-size="12.5" fill="#FFC24B">PL/SQL 엔진</text>
+<text x="227" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">함수 진입</text>
+<line x1="296" y1="50" x2="304" y2="50" stroke="#7BA9FF" stroke-width="1.4" marker-end="url(#ahD)"/>
+<rect x="306" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#7BA9FF"/>
+<text x="375" y="46" text-anchor="middle" font-size="12" fill="#7BA9FF">SQL 엔진 재진입</text>
+<text x="375" y="64" text-anchor="middle" font-size="10" fill="#8FAAC7">내부 SELECT 실행</text>
+<line x1="444" y1="50" x2="452" y2="50" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahC)"/>
+<rect x="454" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#FFC24B"/>
+<text x="523" y="46" text-anchor="middle" font-size="12.5" fill="#FFC24B">PL/SQL 엔진</text>
+<text x="523" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">결과 조립·반환</text>
+<path d="M10,96 L10,102 M10,99 L592,99 M592,96 L592,102" stroke="#5E7FA0" stroke-width="1.2" fill="none"/>
+<text x="301" y="120" text-anchor="middle" font-size="11" fill="#8FAAC7">행 1건 · 함수 1회 호출 기준 — 컬럼마다, 행마다 다시 지나간다</text>
+</svg>
+
+한 번의 전환은 마이크로초 단위라 눈에 안 띈다. 문제는 곱셈이다.
+
+```
+1만 행 × SELECT절 함수 6번 = 컨텍스트 스위칭 6만 회
+```
+
+`SELECT *` 로 바꿔서 빨라졌다면 인덱스도 캐시도 아니라<br>
+이 함수 호출 자체가 빠진 것부터 의심한다.
+
+**확인 순서**
+
+1. 의심 가는 함수 소스에 `SELECT` 문이 있는지 본다 —<br>
+   `toolbox/tools/sql_snippets.html` 의 `프로시저/함수 소스 조회`(`USER_SOURCE`)로 바로 확인된다
+2. 그 컬럼만 빼고 같은 조건으로 다시 돌려 시간 차를 잰다 —<br>
+   차이가 크면 함수가 원인으로 확정된다
+3. `V$SQL` 로 실제 `ELAPSED_TIME` 을 봐서 체감이 아니라 수치로 남긴다
+
+**고치는 법 — 두 갈래**
+
+| 방법 | 하는 일 | 언제 |
+|---|---|---|
+| `RESULT_CACHE` | 같은 인자로 다시 부르면 함수를 안 태우고 캐시값을 바로 돌려줌 | 인자 조합이 적고 자주 겹칠 때 (공통코드 → 명칭 변환 등) |
+| `JOIN` 으로 대체 | 함수가 하던 조회를 쿼리 안에 직접 붙여 컨텍스트 전환 자체를 없앰 | 함수 내부가 단순 조회 하나뿐일 때. 여러 곳을 고쳐야 해서 손은 더 감 |
+
+```sql
+CREATE OR REPLACE FUNCTION FC_UCM_CMM_CDVL_NM_INQ(
+  p_grp_cd IN VARCHAR2, p_cd IN VARCHAR2
+) RETURN VARCHAR2
+RESULT_CACHE
+IS
+  v_nm VARCHAR2(200);
+BEGIN
+  SELECT CDVL_NM INTO v_nm FROM CMM_CDVL WHERE GRP_CD = p_grp_cd AND CD = p_cd;
+  RETURN v_nm;
+END;
+```
+
+`RESULT_CACHE` 는 세션이 아니라 **인스턴스 전역**에 캐시한다.<br>
+값이 자주 안 바뀌는 공통코드·룩업성 함수에 맞는다.<br>
+원본 테이블이 바뀌면 관련 캐시는 자동으로 무효화된다.
+
+> 원인이 함수 호출이면 `EXPLAIN PLAN` 은 처음부터 못 잡는다 — A7.<br>
+> 플랜엔 테이블 접근 스텝만 나오고, SELECT절을 계산하며<br>
+> PL/SQL을 몇 번 들락거리는지는 플랜에 남지 않는다.
+
+### A7. 무엇으로 재나 — EXPLAIN PLAN의 한계
+
+`EXPLAIN PLAN` 은 쿼리를 실행하지 않는다.  
+옵티마이저에게 "이걸 돌린다면 어떻게 할 건가" 를 묻고 답만 받아 적는다.
+
+**잘하는 것**
+
+- 인덱스를 타는지 — `TABLE ACCESS FULL` 이 보이면 거기서 끝난다
+- 조인 방식과 순서
+- 쿼리를 고치기 전후의 구조 비교
+- 실행을 안 하니 10시간짜리 쿼리도 즉시 답이 나온다
+
+**못 하는 것**
+
+| 한계 | 내용 |
+|---|---|
+| 추정치뿐 | `E-Rows` 는 통계 기반 예측. 실제 몇 건 나왔는지 모름 |
+| 플랜 보장 없음 | 바인드 변수를 미지수로 취급.<br>실제 실행은 바인드 피킹으로 다른 플랜을 고를 수 있음 |
+| 시간·블록 없음 | 어느 단계에서 시간을 태웠는지 안 나옴 |
+| 적응형 플랜 | 12c 이후 실행 중에 바뀌는 플랜은 바뀌기 전 모습만 보여줌 |
+
+`DBMS_XPLAN.DISPLAY_CURSOR` 는 반대로 실제 돌린 커서를 캐시에서 꺼내 본다.  
+`A-Rows`(실제 행수), `Buffers`(읽은 블록), `A-Time`(실제 시간)이 찍힌다.  
+`E-Rows` 와 `A-Rows` 가 크게 벌어지면 통계가 어긋났다는 신호다.
+
+**측정 수단이 각각 덮는 구간**
+
+<svg viewBox="0 0 640 206" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="측정 수단별 대상 구간">
+<rect x="14" y="20" width="96" height="44" rx="6" fill="#152B47" stroke="#2A4A6E"/>
+<text x="62" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">커넥션 대기</text>
+<rect x="110" y="20" width="86" height="44" fill="#152B47" stroke="#2A4A6E"/>
+<text x="153" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">네트워크</text>
+<rect x="196" y="20" width="222" height="44" fill="#1B3958" stroke="#68E3C4"/>
+<text x="307" y="47" text-anchor="middle" font-size="12.5" fill="#68E3C4">DB 실행</text>
+<rect x="418" y="20" width="104" height="44" fill="#152B47" stroke="#2A4A6E"/>
+<text x="470" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">결과 전송</text>
+<rect x="522" y="20" width="104" height="44" rx="6" fill="#152B47" stroke="#2A4A6E"/>
+<text x="574" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">JDBC 매핑</text>
+<path d="M14,84 L14,92 M14,88 L626,88 M626,84 L626,92" stroke="#5E7FA0" stroke-width="1.4" fill="none"/>
+<text x="320" y="108" text-anchor="middle" font-size="11.5" fill="#8FAAC7">MyBatis 로그 시간</text>
+<path d="M196,126 L196,134 M196,130 L418,130 M418,126 L418,134" stroke="#68E3C4" stroke-width="1.4" fill="none"/>
+<text x="307" y="150" text-anchor="middle" font-size="11.5" fill="#68E3C4">V$SQL ELAPSED_TIME</text>
+<path d="M196,168 L196,176 M196,172 L418,172 M418,168 L418,176" stroke="#7BA9FF" stroke-width="1.4" fill="none"/>
+<text x="307" y="192" text-anchor="middle" font-size="11.5" fill="#7BA9FF">DISPLAY_CURSOR · 이 구간을 단계별로 쪼갬</text>
+</svg>
+
+MyBatis 로그의 시간은 WAS 기준 왕복 전체다.  
+커넥션 풀 대기·네트워크·매핑이 다 섞여 있어  
+DB가 느린지 앱이 느린지를 구분하지 못한다.  
+로그 시간이 `V$SQL` 시간보다 훨씬 크면 범인은 DB 밖에 있다.
+
+**운영에서는 테스트하지 말고 결과만 회수한다**
+
+`SELECT` 라도 운영에서 함부로 돌리면 이런 일이 생긴다.
+
+- 큰 풀스캔 한 번이 버퍼 캐시를 밀어내 이후 모든 화면이 느려진다
+- 정렬이 크면 TEMP를 잠식해 다른 세션이 `ORA-01652` 로 죽는다
+- 툴에서 리터럴로 친 SQL이 공유 풀에 쌓여 운영 커서를 밀어낸다
+
+실행은 운영 화면이 이미 하고 있으니 흔적만 꺼내 보면 된다.
+
+```sql
+-- 운영에서 실제로 돈 커서 찾기
+SELECT SQL_ID, CHILD_NUMBER, PLAN_HASH_VALUE, EXECUTIONS
+     , ROUND(ELAPSED_TIME/EXECUTIONS/1000, 2) AS AVG_MS
+     , ROUND(BUFFER_GETS/EXECUTIONS)          AS GETS_PER_EXEC
+     , ROUND(DISK_READS /EXECUTIONS)          AS READS_PER_EXEC
+FROM   V$SQL
+WHERE  SQL_TEXT LIKE '%USER_INFO%'
+  AND  SQL_TEXT NOT LIKE '%V$SQL%'
+ORDER BY LAST_ACTIVE_TIME DESC;
+
+-- 그 커서가 실제로 쓴 플랜
+SELECT * FROM TABLE(
+  DBMS_XPLAN.DISPLAY_CURSOR('찾은SQL_ID', 자식번호, 'ALLSTATS LAST')
+);
+```
+
+운영은 보통 `STATISTICS_LEVEL` 이 `TYPICAL` 이라 `A-Rows`·`A-Time` 칸이 빈다.  
+플랜 구조와 `E-Rows`, `V$SQL` 의 블록 수치는 그대로 나오므로  
+플랜이 갈렸는지 비교하는 데는 충분하다.
+
+**툴에서 조건을 맞추는 법**
+
+```sql
+VARIABLE v_user_id VARCHAR2(20)
+EXEC :v_user_id := 'USER001';
+
+SET AUTOTRACE TRACEONLY   -- 결과는 안 뿌리고 전체 fetch + 통계만
+SET TIMING ON
+
+SELECT /*+ GATHER_PLAN_STATISTICS */ *
+FROM   USER_INFO
+WHERE  USER_ID = :v_user_id;
+
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'));
+```
+
+바인드 변수를 실제로 써서 운영과 같은 SQL 텍스트를 만들고,  
+3회 이상 돌려 2회차 이후 값만 쓴다. 1회차는 파싱과 물리 I/O가 섞여 있다.
+
+> `ALTER SYSTEM FLUSH BUFFER_CACHE` 로 조건을 맞추는 방법도 있지만  
+> 인스턴스 전체의 캐시를 날려 모든 세션이 느려진다.  
+> 개발·테스트 인스턴스 한정이고 운영에서는 쓰지 않는다.
+
+**보는 순서**
+
+1. `EXPLAIN PLAN` 으로 구조 확인 — 대부분 여기서 끝난다
+2. `V$SQL` 로 실제 실행 횟수·시간·플랜 해시 확인
+3. `DISPLAY_CURSOR` 로 단계별 실측
+4. 그래도 모르면 SQL Monitor — 라이선스 확인 필요
+
+### A8. 옵티마이저 힌트
+
+`/*+ ... */` 를 **옵티마이저 힌트**라 한다. 문법 조건이 까다롭다.
+
+- `/* */` 는 일반 주석이고 `+` 가 붙은 `/*+ */` 만 힌트로 읽는다
+- `+` 는 여는 `/*` 에 붙어야 한다. `/* + INDEX...` 는 그냥 주석이 된다
+- `SELECT`·`INSERT`·`UPDATE`·`DELETE` 키워드 바로 뒤에만 유효하다
+- **틀린 힌트는 에러 없이 조용히 무시된다.** 인덱스명에 오타가 나도 아무 말 없이 풀스캔으로 돈다
+
+**경로를 바꾸는 힌트**
+
+| 힌트 | 하는 일 |
+|---|---|
+| `INDEX(A IDX_01)` | 지정한 인덱스를 쓰게 함 |
+| `FULL(A)` | 풀스캔을 쓰게 함 |
+| `LEADING(A B)` | 조인 순서를 지정 |
+| `USE_NL(B)` | 중첩 루프 조인을 쓰게 함 |
+| `FIRST_ROWS(10)` | 첫 10행이 빨리 나오도록 최적화 |
+| `PARALLEL(A, 4)` | 병렬로 처리 |
+
+**계측만 켜는 힌트**
+
+`GATHER_PLAN_STATISTICS` 는 경로를 바꾸지 않는다.  
+이번 실행의 단계별 실제 행수와 시간을 재서 남기라는 스위치다.  
+세션에 `STATISTICS_LEVEL = ALL` 을 거는 것과 같은 일을 쿼리 하나에만 적용한다.  
+붙이지 않으면 `DISPLAY_CURSOR` 의 `A-Rows` 칸이 빈다.
+
+계측 오버헤드가 있어 진단할 때만 붙이고 운영 쿼리에 상시로 두지 않는다.
+
+> 힌트로 인덱스를 박아두면 나중에 그 인덱스가 지워졌을 때  
+> 조용히 풀스캔으로 떨어진다. 통계 갱신과 쿼리 수정이 먼저고  
+> 힌트는 마지막 수단이다.
+
+### A9. 손에 든 도구로 어디까지 되나
+
+`toolbox/tools/sql_snippets.html` 의 오라클 항목을 이 기준으로 나누면 이렇다.
+
+| 계열 | 스니펫 |
+|---|---|
+| `V$` — 메모리, 재기동 시 소멸 | 느린 SQL 찾기, 활성 세션, 락 조회, 미커밋 트랜잭션, 인덱스 사용 현황 |
+| 딕셔너리 — 디스크, 영구 | 테이블 목록, 컬럼 목록, 인덱스 목록, FK 참조, 주석, 무효 오브젝트, 최근 변경 객체, 권한, 프로시저/함수 소스, 소스 전체 검색, 컴파일 에러 상세 |
+| `DBA_` — 권한 필요 | 테이블스페이스 용량 |
+
+여기서 바로 걸리는 것 두 가지.
+
+- 어제 느렸던 쿼리를 `느린 SQL 찾기` 로 못 찾으면<br>
+  버그가 아니라 재기동됐거나 캐시에서 밀려난 것이다
+- DBA 권한이 없는 계정은 `테이블스페이스 용량` 만 `ORA-00942` 로 죽고<br>
+  나머지는 정상 동작한다
+
+**빠져 있는 것** — 실측 실행계획(`DISPLAY_CURSOR`), 플랜 해시 비교,<br>
+`CLUSTERING_FACTOR`, 테이블 행 구조(`AVG_ROW_LEN`·`CHAIN_CNT`).<br>
+지금 도구로는 "느리다" 까지만 알고 "왜" 로 넘어가지 못한다.
+
+> 프로시저/함수 소스 조회가 추가된 뒤로 "A6에서 의심한 함수 안에<br>
+> SELECT 있나" 정도는 이제 툴 안에서 바로 확인된다.
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
 <script>
 (function(){
   var STORAGE_KEY = 'arch-notes-progress-v1';
-  var FONT_KEY = 'arch-notes-fontsize-v1';
+  var VIEW_KEY = 'arch-notes-view-v1';
   var progress = {};
   var totalTopics = 0;
 
@@ -1847,11 +2379,66 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
     safeSet(STORAGE_KEY, JSON.stringify(progress));
   }
 
-  function loadFontSize(){
-    safeGet(FONT_KEY).then(function(res){
-      if(res && res.value){
-        document.documentElement.style.setProperty('--fs-base', res.value);
+  // ---------- Last view (open sections + scroll) ----------
+  if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
+
+  var viewSaveTimer = null;
+
+  function collectView(){
+    var openStages = [];
+    document.querySelectorAll('.stage.open').forEach(function(s){ openStages.push(s.id); });
+    var openTopics = [];
+    document.querySelectorAll('details.topic[open]').forEach(function(d){ openTopics.push(d.id); });
+    return {
+      stages: openStages,
+      topics: openTopics,
+      scrollY: window.pageYOffset || document.documentElement.scrollTop || 0
+    };
+  }
+
+  function saveView(){
+    if(viewSaveTimer){ clearTimeout(viewSaveTimer); viewSaveTimer = null; }
+    safeSet(VIEW_KEY, JSON.stringify(collectView()));
+  }
+
+  function saveViewSoon(){
+    if(viewSaveTimer) return;
+    viewSaveTimer = setTimeout(function(){ viewSaveTimer = null; saveView(); }, 400);
+  }
+
+  function restoreView(){
+    safeGet(VIEW_KEY).then(function(res){
+      if(!res || !res.value) return;
+      var v;
+      try{ v = JSON.parse(res.value); }catch(e){ return; }
+      if(!v) return;
+
+      if(Array.isArray(v.stages)){
+        document.querySelectorAll('.stage').forEach(function(s){
+          s.classList.toggle('open', v.stages.indexOf(s.id) !== -1);
+        });
       }
+      if(Array.isArray(v.topics)){
+        document.querySelectorAll('details.topic').forEach(function(d){
+          d.open = v.topics.indexOf(d.id) !== -1;
+        });
+      }
+
+      var y = typeof v.scrollY === 'number' ? v.scrollY : 0;
+      if(y <= 0) return;
+
+      // font size and code blocks settle over a few frames, so re-apply until then.
+      // any real input from the user wins immediately.
+      var moved = false;
+      ['wheel','touchstart','keydown'].forEach(function(ev){
+        window.addEventListener(ev, function(){ moved = true; }, { passive:true, once:true });
+      });
+      var tries = 0;
+      (function settle(){
+        if(moved) return;
+        window.scrollTo(0, y);
+        if(++tries < 6) requestAnimationFrame(settle);
+      })();
     }).catch(function(){});
   }
 
@@ -1926,6 +2513,7 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
       '<span class="stage-chevron">▶</span>';
     toggle.addEventListener('click', function(){
       stageEl.classList.toggle('open');
+      saveViewSoon();
     });
 
     var body = document.createElement('div');
@@ -1966,6 +2554,7 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
       det.appendChild(contentDiv);
 
       body.appendChild(det);
+      det.addEventListener('toggle', saveViewSoon);
 
       // checkbox behavior
       var chk = summary.querySelector('input[type="checkbox"]');
@@ -1987,6 +2576,7 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
         stageEl.classList.add('open');
         det.open = true;
         closeDrawer();
+        saveViewSoon();
         setTimeout(function(){
           det.scrollIntoView({behavior:'smooth', block:'start'});
         }, 180);
@@ -2009,7 +2599,7 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
 
   updateProgressBadge();
   loadProgress();
-  loadFontSize();
+  restoreView();
 
   // ---------- Drawer open/close ----------
   var drawer = document.getElementById('drawer');
@@ -2020,30 +2610,15 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
   document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
   scrim.addEventListener('click', closeDrawer);
 
-  // ---------- Expand / collapse all ----------
-  document.getElementById('expandAllBtn').addEventListener('click', function(){
-    document.querySelectorAll('.stage').forEach(function(s){ s.classList.add('open'); });
-    document.querySelectorAll('details.topic').forEach(function(d){ d.open = true; });
-  });
-  document.getElementById('collapseAllBtn').addEventListener('click', function(){
-    document.querySelectorAll('.stage').forEach(function(s){ s.classList.remove('open'); });
-    document.querySelectorAll('details.topic').forEach(function(d){ d.open = false; });
-  });
-
-  // ---------- Font size ----------
-  function currentFontPx(){
-    var v = getComputedStyle(document.documentElement).getPropertyValue('--fs-base').trim();
-    return parseInt(v, 10) || 15;
-  }
-  document.getElementById('fontPlusBtn').addEventListener('click', function(){
-    var next = Math.min(currentFontPx() + 1, 19);
-    document.documentElement.style.setProperty('--fs-base', next + 'px');
-    safeSet(FONT_KEY, next + 'px');
-  });
-  document.getElementById('fontMinusBtn').addEventListener('click', function(){
-    var next = Math.max(currentFontPx() - 1, 12);
-    document.documentElement.style.setProperty('--fs-base', next + 'px');
-    safeSet(FONT_KEY, next + 'px');
+  // ---------- Expand / collapse all (toggle) ----------
+  var expandToggleBtn = document.getElementById('expandToggleBtn');
+  var allExpanded = false;
+  expandToggleBtn.addEventListener('click', function(){
+    allExpanded = !allExpanded;
+    document.querySelectorAll('.stage').forEach(function(s){ s.classList.toggle('open', allExpanded); });
+    document.querySelectorAll('details.topic').forEach(function(d){ d.open = allExpanded; });
+    expandToggleBtn.textContent = allExpanded ? '전체 접기' : '전체 펼치기';
+    saveViewSoon();
   });
 
   // ---------- Reset progress ----------
@@ -2062,7 +2637,14 @@ L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕
     var scrollHeight = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
     var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
     document.getElementById('scrollFill').style.width = pct + '%';
+    saveViewSoon();
   }, { passive: true });
+
+  // ---------- Flush view state on leave ----------
+  window.addEventListener('pagehide', saveView);
+  document.addEventListener('visibilitychange', function(){
+    if(document.visibilityState === 'hidden') saveView();
+  });
 })();
 </script>
 </body>

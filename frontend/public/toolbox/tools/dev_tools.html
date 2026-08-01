@@ -89,6 +89,9 @@ select:focus, input:focus { border-color:var(--accent); }
 #page-textdisplay .btn-row { display:flex; gap:6px; flex-wrap:wrap; }
 #page-textdisplay hr.div { border:none; border-top:1px solid var(--border); margin:2px 0; }
 #page-textdisplay .legend { font-size:12px; color:var(--muted); line-height:1.7; background:#0002; border:1px solid var(--border); border-radius:4px; padding:8px; }
+#page-textdisplay .legend.cap-ok { color:var(--teal); font-weight:bold; }
+#page-textdisplay .legend.cap-warn { color:var(--yellow); font-weight:bold; }
+#page-textdisplay .legend.cap-bad { color:var(--red); font-weight:bold; }
 #page-textdisplay .hint { font-size:12px; color:var(--red); line-height:1.6; }
 #page-textdisplay .main { flex:1; display:flex; flex-direction:column; overflow:hidden; position:relative; }
 #page-textdisplay .loadingOverlay { position:absolute; inset:0; top:41px; background:rgba(0,0,0,0.55); color:#fff; display:none; align-items:center; justify-content:center; font-size:13px; letter-spacing:2px; z-index:5; }
@@ -97,6 +100,13 @@ select:focus, input:focus { border-color:var(--accent); }
 #page-textdisplay .canvasWrap { flex:1; overflow:auto; display:flex; align-items:center; justify-content:center; background:#333; padding:20px; }
 #page-textdisplay canvas#view { box-shadow:0 0 0 1px #000, 0 4px 20px rgba(0,0,0,0.4); max-width:100%; max-height:100%; width:auto; height:auto; object-fit:contain; }
 #page-textdisplay canvas#view:fullscreen { max-width:none; max-height:none; width:100vw; height:100vh; object-fit:contain; background:#fff; }
+/* 커스텀 스크롤바 — 얇고 둥근 다크 (sql_snippets.html과 통일) */
+.sidebar, textarea, .regex-result-box, .jwt-box, #page-textdisplay .canvasWrap, #url_parse_area, #url_parse_result, #jwt_result { scrollbar-width:thin; scrollbar-color:#454545 transparent; }
+::-webkit-scrollbar { width:10px; height:10px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#3a3a3a; border-radius:6px; border:2px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-thumb:hover { background:#565656; border:2px solid transparent; background-clip:content-box; }
+::-webkit-scrollbar-corner { background:transparent; }
 </style>
 </head>
 <body>
@@ -482,6 +492,7 @@ select:focus, input:focus { border-color:var(--accent); }
     </div>
     <div class="btn-row">
       <button class="btn-g" id="td_btnClear">지우기</button>
+      <span id="td_charCount" style="color:var(--muted);font-size:12px;">0자</span>
     </div>
 
     <hr class="div">
@@ -500,18 +511,18 @@ select:focus, input:focus { border-color:var(--accent); }
     </div>
 
     <div class="field">
-      <div class="label">배경 밝기 </div>
-      <div class="field-row"><input type="range" id="bgLevel" min="220" max="255" step="1" value="248"><span class="val" id="bgLevelVal">248</span></div>
+      <div class="label">배경 밝기</div>
+      <div class="field-row"><input type="range" id="bgLevel" min="190" max="255" step="1" value="248"><span class="val" id="bgLevelVal">248</span></div>
     </div>
 
     <div class="field">
-      <div class="label">글자 크기 (px) — 최적 18 ±3</div>
-      <div class="field-row"><input type="range" id="fontSize" min="15" max="21" step="1" value="18"><span class="val" id="fontSizeVal">18</span></div>
+      <div class="label">글자 크기 (px)</div>
+      <div class="field-row"><input type="range" id="fontSize" min="12" max="24" step="0.1" value="18"><span class="val" id="fontSizeVal">18</span></div>
     </div>
 
     <div class="field">
-      <div class="label">줄 간격 (배) — 최적 1.25 ±0.15</div>
-      <div class="field-row"><input type="range" id="lineHeight" min="1.15" max="1.40" step="0.05" value="1.25"><span class="val" id="lineHeightVal">1.25</span></div>
+      <div class="label">줄 간격 (배)</div>
+      <div class="field-row"><input type="range" id="lineHeight" min="1.10" max="1.40" step="0.05" value="1.25"><span class="val" id="lineHeightVal">1.25</span></div>
     </div>
 
     <div class="field">
@@ -523,6 +534,8 @@ select:focus, input:focus { border-color:var(--accent); }
         <input type="number" id="canvasW" min="480" max="3840" step="10" value="1920">
         <span style="color:var(--muted);font-size:11px;">×</span>
         <input type="number" id="canvasH" min="360" max="2160" step="10" value="1080">
+        <input type="number" id="screenInches" min="5" max="100" step="0.1" placeholder="Inch" style="width:70px">
+        <span id="td_ppiReadout" style="color:var(--muted);font-size:11px;">-</span>
       </div>
     </div>
 
@@ -536,6 +549,21 @@ select:focus, input:focus { border-color:var(--accent); }
     <div id="denseControls" style="display:none;">
       <label class="check-row"><input type="checkbox" id="showMarker" checked> <span id="markerLabel">20</span>개 값마다 번호 삽입</label>
       <div class="field-row"><input type="range" id="markerInterval" min="5" max="100" step="5" value="20" style="flex:1"></div>
+    </div>
+
+    <hr class="div">
+
+    <div class="field">
+      <div class="label">한 화면 용량</div>
+      <div class="legend" id="td_capacity">-</div>
+    </div>
+
+    <div class="field">
+      <div class="label">가독성</div>
+      <div class="legend field-row" style="justify-content:space-between;">
+        <span id="td_korFit">-</span>
+        <span id="td_engFit">-</span>
+      </div>
     </div>
 
     <hr class="div">
@@ -928,7 +956,9 @@ function rRecentDateTime(years){
 function dateLit(db, s, isTs){
   if(db==='oracle') return (isTs?'TO_TIMESTAMP(':'TO_DATE(')+"'"+s+"','YYYY-MM-DD HH24:MI:SS')";
   if(db==='mssql')  return "CONVERT(DATETIME, '"+s+"', 120)";
-  if(db==='sybase') return "CONVERT(DATETIME, '"+s+"', 120)";
+  // 스타일 120(ODBC canonical)은 SQL Server가 Sybase/MS 코드베이스 분기 이후 추가한 확장 코드라
+  // 구버전 ASE엔 없을 수 있음 — db_docs에 CONVERT 스타일표가 없어(수집분은 시스템테이블 전용) 미확인
+  if(db==='sybase') return "CONVERT(DATETIME, '"+s+"', 120) /* ⚠ 스타일 120 ASE 지원 버전 확인 요망 */";
   return "'"+s+"'";   // MySQL / PostgreSQL — 표준 문자열 리터럴로 암시 변환
 }
 function genVal(col,idx,db,years){
@@ -1022,6 +1052,7 @@ function buildUpsert(db, parsed){
 function genFromCreate(){
   var sql=document.getElementById('create_input').value.trim(), count=parseInt(document.getElementById('dummy_count').value)||5;
   var db=document.getElementById('dummy_db').value;
+  lsSet('dummy_db', db);
   var years=parseInt(document.getElementById('dummy_years').value)||3;
   var commit=document.getElementById('chk_commit').checked;
   var merge=document.getElementById('chk_merge').checked;
@@ -1582,6 +1613,8 @@ window.addEventListener('DOMContentLoaded',function(){
   if(TAB_NAMES.indexOf(lastTab)>=0) switchTab(lastTab);
   var savedSqlDb=lsGet('sql_db','oracle');
   if(SQL_DB_META[savedSqlDb]) setSqlDb(savedSqlDb);
+  var savedDummyDb=lsGet('dummy_db','oracle');
+  if(['oracle','mysql','pg','mssql','sybase'].indexOf(savedDummyDb)>=0) document.getElementById('dummy_db').value=savedDummyDb;
   var savedInput=lsGet('camel_input','');
   if(savedInput) document.getElementById('c_input').value=savedInput;
 
@@ -1614,12 +1647,16 @@ var els = {
 	markerLabel: document.getElementById('markerLabel'),
 	codeControls: document.getElementById('codeControls'),
 	denseControls: document.getElementById('denseControls'),
-	legendCode: document.getElementById('legendCode'),
-	legendDense: document.getElementById('legendDense'),
 	pageInfo: document.getElementById('td_pageInfo'),
 	loadingOverlay: document.getElementById('td_loadingOverlay'),
 	btnPrev: document.getElementById('td_btnPrev'),
 	btnNext: document.getElementById('td_btnNext'),
+	capacity: document.getElementById('td_capacity'),
+	charCount: document.getElementById('td_charCount'),
+	screenInches: document.getElementById('screenInches'),
+	ppiReadout: document.getElementById('td_ppiReadout'),
+	engFit: document.getElementById('td_engFit'),
+	korFit: document.getElementById('td_korFit'),
 	fitWarn: document.getElementById('fitWarn')
 };
 
@@ -1641,8 +1678,6 @@ function updateModeUI() {
 	var dense = getMode() === 'dense';
 	els.codeControls.style.display = dense ? 'none' : 'block';
 	els.denseControls.style.display = dense ? 'block' : 'none';
-	els.legendCode.style.display = dense ? 'none' : 'block';
-	els.legendDense.style.display = dense ? 'block' : 'none';
 }
 
 function fontStack() {
@@ -1663,15 +1698,16 @@ function loadSettings() {
 		if (!raw) return;
 		var s = JSON.parse(raw);
 		if (s.boldText != null) els.boldText.checked = s.boldText;
-		if (s.bgLevel != null) els.bgLevel.value = Math.min(255, Math.max(220, parseInt(s.bgLevel, 10) || 248));
-		if (s.fontSize != null) els.fontSize.value = Math.min(21, Math.max(15, parseInt(s.fontSize, 10) || 18));
-		if (s.lineHeight != null) els.lineHeight.value = Math.min(1.40, Math.max(1.15, parseFloat(s.lineHeight) || 1.25));
+		if (s.bgLevel != null) els.bgLevel.value = Math.min(255, Math.max(190, parseInt(s.bgLevel, 10) || 248));
+		if (s.fontSize != null) els.fontSize.value = Math.min(24, Math.max(12, parseFloat(s.fontSize) || 18));
+		if (s.lineHeight != null) els.lineHeight.value = Math.min(1.40, Math.max(1.10, parseFloat(s.lineHeight) || 1.25));
 		if (s.canvasW != null) els.canvasW.value = s.canvasW;
 		if (s.canvasH != null) els.canvasH.value = s.canvasH;
 		if (s.showLineNum != null) els.showLineNum.checked = s.showLineNum;
 		if (s.showCharCount != null) els.showCharCount.checked = s.showCharCount;
 		if (s.showMarker != null) els.showMarker.checked = s.showMarker;
 		if (s.markerInterval != null) els.markerInterval.value = s.markerInterval;
+		if (s.screenInches != null) els.screenInches.value = s.screenInches;
 		if (s.mode != null) setMode(s.mode);
 	} catch (e) {}
 	updateModeUI();
@@ -1689,6 +1725,7 @@ function saveSettings() {
 		showCharCount: els.showCharCount.checked,
 		showMarker: els.showMarker.checked,
 		markerInterval: els.markerInterval.value,
+		screenInches: els.screenInches.value,
 		mode: getMode()
 	};
 	localStorage.setItem(STORE_KEY, JSON.stringify(s));
@@ -1724,7 +1761,7 @@ function paginate(nRows, H, topMargin, rowHeight) {
 	var usable = H - topMargin - bottomPad;
 	var rpp = Math.max(1, Math.floor(usable / rowHeight));
 	var total = Math.max(1, Math.ceil(nRows / rpp));
-	var hasFooter = total > 1;   // 2쪽 이상일 때만 페이지 번호 표기(캡처 전달 시 순서용)
+	var hasFooter = total > 1;   // 2쪽 이상일 때만 페이지 번호 표기(쪽 순서 확인용)
 	if (hasFooter) {
 		usable = H - topMargin - footerReserve;
 		rpp = Math.max(1, Math.floor(usable / rowHeight));
@@ -1736,16 +1773,31 @@ function paginate(nRows, H, topMargin, rowHeight) {
 function render() {
 	var W = parseInt(els.canvasW.value, 10) || 1920;
 	var H = parseInt(els.canvasH.value, 10) || 1080;
-	canvas.width = W;
-	canvas.height = H;
+	// screen.width는 OS 배율 적용 후의 논리 해상도라 실제 물리 픽셀보다 작다(예: 1920 패널 125% → 1536).
+	// 레이아웃 크기(W×H, 컬럼 계산에 쓰는 값)는 그대로 두고 내부 그리기 버퍼만 물리 해상도로 키운다 —
+	// 그래야 브라우저가 저해상도 버퍼를 물리 화면에 늘려 그리며 생기는 흐림이 없어진다.
+	// canvas.width 대입은 매번 변환행렬을 초기화하므로 scale은 이 대입 직후 다시 걸어야 한다.
+	var dpr = window.devicePixelRatio || 1;
+	canvas.width = Math.round(W * dpr);
+	canvas.height = Math.round(H * dpr);
+	if (document.fullscreenElement === canvas) {
+		// 전체화면은 스타일시트의 :fullscreen 규칙(100vw/100vh)이 크기를 맡는다.
+		// 인라인 style을 남겨두면 그보다 우선순위가 높아 전체화면 크기가 깨진다.
+		canvas.style.width = '';
+		canvas.style.height = '';
+	} else {
+		canvas.style.width = W + 'px';
+		canvas.style.height = H + 'px';
+	}
+	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-	var fontSize = parseInt(els.fontSize.value, 10);
+	var fontSize = parseFloat(els.fontSize.value);
 	var lineHeightMul = parseFloat(els.lineHeight.value);
 
-	els.fontSizeVal.textContent = fontSize;
+	els.fontSizeVal.textContent = (fontSize % 1 ? fontSize.toFixed(1) : fontSize);
 	els.lineHeightVal.textContent = lineHeightMul.toFixed(2);
 
-	var bgLevel = Math.max(220, Math.min(255, parseInt(els.bgLevel.value, 10) || 248));
+	var bgLevel = Math.max(190, Math.min(255, parseInt(els.bgLevel.value, 10) || 248));
 	els.bgLevelVal.textContent = bgLevel;
 	var bold = els.boldText.checked;
 	var fontPrefix = bold ? 'bold ' : '';
@@ -1755,6 +1807,7 @@ function render() {
 
 	ctx.font = fontPrefix + fontSize + 'px ' + fontStack();
 	ctx.textBaseline = 'top';
+	var charW = ctx.measureText('M').width;   // 폰트 폴백에 따라 달라지므로 실측한다
 
 	var mode = getMode();
 	var rawText = els.codeInput.value;
@@ -1764,6 +1817,7 @@ function render() {
 	var outerPad = 16;
 
 	var totalPages, pageRows, footerText, rowsPerPage, usableHeight, hasFooter = false, drawRowHeight = rowHeight;
+	var textWidthPx = W - outerPad * 2;   // 줄바꿈에 실제로 쓰이는 가로 폭. 모드마다 다르다
 
 	if (mode === 'dense') {
 		var interval = parseInt(els.markerInterval.value, 10) || 20;
@@ -1779,6 +1833,7 @@ function render() {
 		var stream = parts.join(' ');
 
 		var maxTextWidth = Math.max(20, W - outerPad * 2);
+		textWidthPx = maxTextWidth;
 		var rows = stream.length ? wrapLine(stream, maxTextWidth) : [''];
 
 		var pgD = paginate(rows.length, H, topMargin, rowHeight);
@@ -1809,6 +1864,7 @@ function render() {
 		var x0 = outerPad + gutterWidth + 10;
 		var x1 = W - outerPad - rightGutterWidth;
 		var maxTextWidth2 = Math.max(20, x1 - x0);
+		textWidthPx = maxTextWidth2;
 
 		var rows2 = [];
 		for (var li = 0; li < lines.length; li++) {
@@ -1872,6 +1928,55 @@ function render() {
 	els.btnPrev.disabled = currentPage === 0;
 	els.btnNext.disabled = currentPage >= totalPages - 1;
 
+	// 밀도 판정 기준은 글자 px가 아니라 줄당 컬럼 수다. 컬럼이 늘수록 글자 하나가
+	// 차지하는 픽셀이 줄어 축소 표시에서 먼저 뭉갠다. 캔버스 해상도가 달라도
+	// 컬럼 수끼리는 그대로 비교된다. 210 이하 = 한글까지, 230 이하 = 영문·숫자만 (실측치)
+	var cols = Math.max(1, Math.floor(textWidthPx / charW));
+	var cells = cols * rowsPerPage;
+	els.capacity.className = 'legend ' + (cols <= 210 ? 'cap-ok' : (cols <= 230 ? 'cap-warn' : 'cap-bad'));
+	els.capacity.innerHTML = '입력 가능한 글자수 ' + cells.toLocaleString() + '자<br>최대 컬럼 ' + cols + '컬럼';
+
+	// PPI = 대각선 물리 픽셀 수 / 대각선 인치. 인치를 모르면(빈칸) 계산을 건너뛴다 — 기본값을 억지로 넣지 않는다.
+	var inches = parseFloat(els.screenInches.value);
+	var physW = Math.round(W * dpr), physH = Math.round(H * dpr);
+	var ppi = null, mmPerChar = null;
+	if (inches > 0) {
+		ppi = Math.sqrt(physW * physW + physH * physH) / inches;
+		mmPerChar = (physW / cols) / ppi * 25.4;
+		els.ppiReadout.textContent = Math.round(ppi) + 'PPI';
+	} else {
+		els.ppiReadout.textContent = '-';
+	}
+
+	// 핸드폰 3배줌으로 찍어 판독하는 조건 전용. 실측 앵커(mm)는 이 노트북(140PPI)에서 나온 값을
+	// 물리 크기로 환산한 것이라, 다른 PC는 그 PC의 실제 PPI로 다시 환산해야 같은 기준으로 비교된다.
+	// 컬럼 수만으로 대체 계산하면 "이 노트북이랑 밀도가 같다"고 몰래 가정하는 셈이라 —
+	// 인치를 모르는 컴퓨터에서는 숫자를 보여주는 대신 입력을 요구한다. 억지로 추정치를 내지 않는다.
+	var teal = [78, 201, 176], yellow = [215, 186, 125], red = [244, 71, 71];
+	var lerp3 = function (a, b, t) { return [0, 1, 2].map(function (i) { return Math.round(a[i] + (b[i] - a[i]) * t); }); };
+	// 초록 앵커보다 더 큰 쪽(t<0, 100% 초과)은 막지 않는다 — 더 커지는 방향은 더 나빠질 이유가 없어서다.
+	// 빨강 앵커보다 더 작은 쪽(t>1, 0% 미만)은 진짜 미검증 구간이라 0%에서 막는다.
+	var fitT = function (mmGreen, mmRed) { return Math.min(1, (mmGreen - mmPerChar) / (mmGreen - mmRed)); };
+	// 인치 없으면 왼쪽(korFit) 한 자리에만 "인치 입력 필요"를 띄운다 — 양쪽에 같은 문구 두 번 안 띄운다.
+	var showFit = function (el, isLeft, t) {
+		if (mmPerChar == null) { el.style.color = 'var(--muted)'; el.style.fontWeight = 'normal'; el.textContent = isLeft ? '인치 입력 필요' : ''; return; }
+		// 색은 0~1로 고정 — 100% 넘는 구간은 앵커색(초록)보다 더 짙게 못 가니 그대로 초록 유지.
+		var tColor = Math.max(0, Math.min(1, t));
+		var rgb = tColor <= 0.5 ? lerp3(teal, yellow, tColor * 2) : lerp3(yellow, red, (tColor - 0.5) * 2);
+		el.style.color = 'rgb(' + rgb.join(',') + ')';
+		el.style.fontWeight = 'bold';
+		el.textContent = Math.round((1 - t) * 100) + '%';
+	};
+
+	// 한글은 자획이 더 촘촘해 영문보다 앵커가 낮다. 실측(2026-07-28, 140PPI): 202컬럼 = 긴 문장 판독 무리(빨강 끝),
+	// 1536×864·15.7in·19.2px(≈142컬럼) = 긴 한글 문장까지 포함해 100% 판독 확인(초록 끝, 사용자 실측).
+	showFit(els.korFit, true, mmPerChar != null ? fitT(2.448, 1.72) : 0);
+
+	// 실측(2026-07-28, 140PPI): 202컬럼 = 영문 완전 판독(초록 끝), 210~230컬럼대 = 세부 판독 무리(빨강 끝).
+	showFit(els.engFit, false, mmPerChar != null ? fitT(1.74, 1.51) : 0);
+
+	els.charCount.textContent = rawText.length.toLocaleString() + '자';
+
 	if (!document.fullscreenElement && (window.innerWidth < W + 40 || window.innerHeight < H + 40)) {
 		els.fitWarn.style.display = 'block';
 		els.fitWarn.textContent = '현재 창 크기가 캔버스보다 작음 — 스크롤 없이 보려면 "전체화면 보기" 사용';
@@ -1892,7 +1997,7 @@ function renderDeferred() {
 	}, 30);
 }
 
-['codeInput', 'boldText', 'bgLevel', 'fontSize', 'lineHeight', 'canvasW', 'canvasH', 'showLineNum', 'showCharCount', 'showMarker', 'markerInterval'].forEach(function (id) {
+['codeInput', 'boldText', 'bgLevel', 'fontSize', 'lineHeight', 'canvasW', 'canvasH', 'showLineNum', 'showCharCount', 'showMarker', 'markerInterval', 'screenInches'].forEach(function (id) {
 	els[id].addEventListener('input', renderDeferred);
 });
 
