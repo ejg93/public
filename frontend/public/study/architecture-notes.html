@@ -14,7 +14,7 @@
     --line-soft:#1F3958;
     --ink:#E8F1FA;
     --ink-dim:#8FAAC7;
-    --ink-faint:#5E7FA0;
+    --ink-faint:#7E9CBC;
     --accent:#FFC24B;
     --accent-2:#68E3C4;
     --accent-3:#7BA9FF;
@@ -86,11 +86,7 @@
   .chip-btn:active{background:var(--panel-2); color:var(--ink);}
 
   /* ---------- Drawer ---------- */
-  .scrim{
-    position:fixed; inset:0; background:rgba(4,10,20,0.6);
-    z-index:49; opacity:0; pointer-events:none; transition:opacity .18s ease;
-  }
-  .scrim.open{opacity:1; pointer-events:auto;}
+  /* 스크림을 걷어냈다. 목차가 열려 있어도 본문 스크롤·클릭이 그대로 산다 */
   .drawer{
     position:fixed; top:0; left:0; bottom:0; width:82vw; max-width:320px;
     background:var(--bg-2); border-right:1px solid var(--line);
@@ -132,54 +128,11 @@
   }
   .intro blockquote{margin:0; padding-left:12px; border-left:2px solid var(--accent-2); color:var(--ink-dim); font-size:13px;}
 
-  /* ---------- Stage ---------- */
-  .stage{
-    border:1px solid var(--line); border-radius:var(--radius);
-    margin-bottom:14px; overflow:hidden; background:rgba(21,43,71,0.35);
-  }
-  .stage-toggle{
-    width:100%; display:flex; align-items:center; gap:10px;
-    background:var(--panel); border:none; color:var(--ink);
-    padding:13px 14px; cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent;
-  }
-  .stage-badge{
-    font-family:"SFMono-Regular",Consolas,monospace;
-    font-size:11px; font-weight:700; color:var(--bg);
-    background:var(--accent); border-radius:6px; padding:3px 7px; flex-shrink:0;
-  }
-  .stage-toggle h2{font-size:14.5px; margin:0; flex:1; font-weight:700;}
-  .stage-chevron{color:var(--ink-faint); transition:transform .18s ease; font-size:12px;}
-  .stage.open .stage-chevron{transform:rotate(90deg); color:var(--accent-2);}
-  .stage-body{display:none; padding:6px 14px 14px;}
-  .stage.open .stage-body{display:block;}
+  /* ---------- Topic ---------- */
+  /* 아코디언(.stage · details.topic · .chk-wrap)은 걷어냈다.
+     한 항목이 한 화면이라 접을 것이 없다. 아래 「한 항목만 보이게」 절이 그 자리다. */
   .stage-flow{font-size:13.5px; color:var(--ink-dim); margin-bottom:8px;}
-
-  /* ---------- Topic (details) ---------- */
-  details.topic{
-    border:1px solid var(--line-soft); border-radius:8px; margin:8px 0;
-    background:rgba(11,25,48,0.5);
-  }
-  details.topic > summary{
-    list-style:none; cursor:pointer; padding:10px 12px;
-    display:flex; align-items:center; gap:10px; -webkit-tap-highlight-color:transparent;
-  }
-  details.topic > summary::-webkit-details-marker{display:none;}
-  .chk-wrap{flex-shrink:0; display:flex; align-items:center;}
-  .chk-wrap input{
-    appearance:none; -webkit-appearance:none; width:19px; height:19px;
-    border:1.5px solid var(--ink-faint); border-radius:5px; background:transparent;
-    cursor:pointer; position:relative; flex-shrink:0;
-  }
-  .chk-wrap input:checked{background:var(--accent-2); border-color:var(--accent-2);}
-  .chk-wrap input:checked::after{
-    content:""; position:absolute; left:5px; top:1px; width:5px; height:10px;
-    border:solid var(--bg-2); border-width:0 2px 2px 0; transform:rotate(45deg);
-  }
-  .topic-title{flex:1; font-size:13.5px; font-weight:600; color:var(--ink);}
-  details.topic[open] .topic-title{color:var(--accent-3);}
-  .topic-chevron{color:var(--ink-faint); font-size:11px; transition:transform .18s ease;}
-  details.topic[open] .topic-chevron{transform:rotate(90deg);}
-  .topic-content{padding:2px 14px 14px 41px; font-size:13.5px;}
+  .topic-content{padding:2px 0 14px; font-size:13.5px;}
 
   /* ---------- Markdown element styling ---------- */
   .topic-content h4, .stage-flow h4{font-size:13px; color:var(--accent-2); margin:14px 0 6px;}
@@ -218,22 +171,179 @@
     color:var(--ink-faint); font-size:11px; border-top:1px dashed var(--line);
   }
   ::selection{background:var(--accent); color:#0B1930;}
+
+  /* ═══════════ 한 항목만 보이게 (스크림 없음 · 본문이 안 멈춘다) ═══════════ */
+  :root{ --nav-w:288px; --bar-h:46px; }
+
+  .app-bar-row{max-width:none; padding:7px 12px;}
+  .bar-here{
+    font-size:12px; color:var(--accent-2); font-weight:600;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;
+  }
+  .bar-crumb{font-size:11.5px; color:var(--ink-faint); white-space:nowrap; flex-shrink:0;}
+
+  /* 드로어를 도킹 사이드바로 */
+  .drawer{
+    top:var(--bar-h); bottom:0; width:var(--nav-w); max-width:var(--nav-w);
+    z-index:30; overflow-y:auto; overscroll-behavior:contain;
+  }
+  .drawer-head{position:sticky; top:0; background:var(--bg-2); z-index:2;}
+
+  .drawer-stage{
+    display:flex; align-items:center; gap:8px; width:100%; text-align:left;
+    background:none; border:none; border-left:2px solid transparent;
+    font:inherit; font-size:11px; letter-spacing:.06em; color:var(--ink-faint);
+    padding:14px 16px 5px; cursor:pointer; text-transform:none;
+  }
+  .drawer-stage:hover{color:var(--accent-2);}
+  .drawer-stage[aria-current="true"]{color:var(--accent); border-left-color:var(--accent);}
+
+  .drawer-link{border-left:2px solid transparent; transition:background-color .12s,color .12s,border-color .12s;}
+  .drawer-link:hover{background:var(--panel); color:var(--ink);}
+  .drawer-link[aria-current="true"]{
+    background:var(--panel); color:var(--ink); font-weight:600; border-left-color:var(--accent-2);
+  }
+  .drawer-link[aria-current="true"] .dot{background:var(--accent-2);}
+
+  /* 본문 — 넓은 화면에서만 밀린다 */
+  main{transition:margin-left .2s ease; max-width:none; padding:18px 16px 48px;}
+  main:focus{outline:none;}
+  .page-inner{max-width:820px; margin:0 auto;}
+  @media (min-width:1080px){ main.shifted{margin-left:var(--nav-w);} }
+
+  /* 한 항목 = 한 화면 */
+  .page{display:none;}
+  .page.on{display:block; animation:pgin .18s ease;}
+  @keyframes pgin{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
+  .page-kicker{
+    font-size:10px; letter-spacing:.14em; color:var(--accent-2);
+    font-weight:700; text-transform:uppercase;
+  }
+  .page h1{font-size:20px; margin:5px 0 4px; letter-spacing:-.015em; color:var(--ink);}
+  .page-tools{
+    display:flex; align-items:center; gap:10px; margin:12px 0 20px;
+    padding-bottom:12px; border-bottom:1px dashed var(--line);
+  }
+  .done-btn{
+    display:flex; align-items:center; gap:8px; background:var(--panel);
+    border:1px solid var(--line); border-radius:20px; color:var(--ink-dim);
+    font:inherit; font-size:11.5px; padding:5px 12px 5px 8px; cursor:pointer;
+  }
+  .done-btn:hover{border-color:var(--accent-2); color:var(--ink);}
+  .done-btn .box{
+    width:15px; height:15px; border:1.5px solid var(--ink-faint); border-radius:4px;
+    display:inline-block; position:relative; flex-shrink:0;
+  }
+  .done-btn[aria-pressed="true"]{border-color:var(--accent-2); color:var(--accent-2);}
+  .done-btn[aria-pressed="true"] .box{background:var(--accent-2); border-color:var(--accent-2);}
+  .done-btn[aria-pressed="true"] .box::after{
+    content:""; position:absolute; left:4px; top:0; width:4px; height:9px;
+    border:solid var(--bg-2); border-width:0 2px 2px 0; transform:rotate(45deg);
+  }
+
+  /* 단계 개요 페이지 */
+  .stage-intro{font-size:13.5px;}
+  .topic-jump{display:grid; gap:8px; margin-top:18px;}
+  .topic-jump button{
+    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+    background:rgba(21,43,71,0.45); border:1px solid var(--line-soft); border-radius:8px;
+    color:var(--ink); font:inherit; font-size:13px; padding:11px 13px; cursor:pointer;
+  }
+  .topic-jump button:hover{border-color:var(--accent-2); background:var(--panel);}
+  .topic-jump .n{
+    font-family:"SFMono-Regular",Consolas,monospace; font-size:11px; color:var(--accent);
+    background:var(--panel-2); border-radius:5px; padding:2px 6px; flex-shrink:0;
+  }
+  .topic-jump .tick{margin-left:auto; color:var(--accent-2); font-size:12px;}
+
+  /* 이전 / 다음 */
+  .pager{display:flex; gap:10px; margin-top:34px; padding-top:14px; border-top:1px dashed var(--line);}
+  .pager button{
+    flex:1; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    color:var(--ink-dim); font:inherit; font-size:12px; padding:10px 12px;
+    cursor:pointer; text-align:left; min-width:0;
+  }
+  .pager button:hover:not(:disabled){background:var(--panel-2); color:var(--ink); border-color:var(--accent-2);}
+  .pager button:disabled{opacity:.35; cursor:default;}
+  .pager button span{display:block; font-size:10px; letter-spacing:.1em; color:var(--ink-faint);}
+  .pager button em{font-style:normal; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pager .next{text-align:right;}
+
+  /* 본문 안의 마크다운은 topic-content 스타일을 그대로 쓴다 */
+  .page-body{padding:0; font-size:13.5px;}
+
+  /* 반복 영역 건너뛰기 — 목차 항목이 52개라 키보드가 그걸 다 지나야 본문에 닿는다.
+     display:none 으로 숨기면 초점 자체가 안 가서 있으나 마나다. */
+  .skip{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+  .skip:focus{
+    position:fixed; top:8px; left:8px; z-index:60; width:auto; height:auto;
+    margin:0; padding:8px 14px; clip:auto; overflow:visible;
+    background:var(--accent); color:#0B1930; font-size:12.5px; font-weight:700;
+    border-radius:8px; text-decoration:none;
+  }
+  /* 닫힌 목차는 화면 밖에 있으므로 초점도 안 가야 한다 */
+  .drawer{visibility:hidden; transition:transform .2s ease, visibility .2s ease;}
+  .drawer.open{visibility:visible;}
+  /* 절을 바꿀 때 제목으로 초점을 옮긴다. 프로그램이 옮긴 초점이라 테두리는 안 그린다 */
+  .page h1:focus{outline:none;}
+
+  /* ---------- 스크롤바 ---------- */
+  /* color-scheme 한 줄로 브라우저 기본 스크롤바·폼 컨트롤이 어두워진다.
+     ::-webkit-scrollbar 를 안 쓰는 브라우저의 바탕이 되는 줄이라 먼저 둔다. */
+  :root{ color-scheme:dark; }
+
+  /* 표준 속성 (Firefox) */
+  html{ scrollbar-width:thin; scrollbar-color:#4573A6 var(--bg-2); }
+  .drawer,.table-wrap,pre{ scrollbar-width:thin; scrollbar-color:#4573A6 transparent; }
+
+  /* 고정된 머리 아래로 목표가 숨지 않게 — 건너뛰기 링크가 이걸 쓴다 */
+  html{ scroll-padding-top:calc(var(--bar-h) + 10px); }
+
+  /* WebKit · Chromium */
+  ::-webkit-scrollbar{ width:11px; height:11px; }
+  ::-webkit-scrollbar-track{ background:var(--bg-2); }
+  ::-webkit-scrollbar-thumb{
+    background:#4573A6; border-radius:99px;
+    border:3px solid var(--bg-2);   /* 트랙과 사이를 띄워 얇아 보이게 한다 */
+  }
+  ::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; }
+  ::-webkit-scrollbar-corner{ background:var(--bg-2); }
+
+  /* 안쪽 스크롤(목차·표·코드)은 더 얇고 트랙을 안 그린다 */
+  .drawer::-webkit-scrollbar,
+  .table-wrap::-webkit-scrollbar,
+  pre::-webkit-scrollbar{ width:8px; height:8px; }
+  .drawer::-webkit-scrollbar-track,
+  .table-wrap::-webkit-scrollbar-track,
+  pre::-webkit-scrollbar-track{ background:transparent; }
+  .drawer::-webkit-scrollbar-thumb,
+  .table-wrap::-webkit-scrollbar-thumb,
+  pre::-webkit-scrollbar-thumb{
+    background:#4573A6; border:2px solid transparent; background-clip:padding-box;
+  }
+  .drawer::-webkit-scrollbar-thumb:hover,
+  .table-wrap::-webkit-scrollbar-thumb:hover,
+  pre::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; background-clip:padding-box; }
 </style>
 </head>
 <body>
 
+<a class="skip" href="#mainContent">본문 바로가기</a>
+
 <header class="app-bar">
   <div class="app-bar-row">
-    <button class="icon-btn" id="drawerOpenBtn" aria-label="목차">☰</button>
-    <div class="eyebrow">STUDY NOTES</div>
-    <button class="chip-btn" id="expandToggleBtn">전체 펼치기</button>
+    <button class="icon-btn" id="drawerOpenBtn" aria-label="목차 열기" aria-expanded="false">☰</button>
+    <div class="bar-crumb" id="barCrumb">STUDY</div>
+    <div class="bar-here" id="barHere">—</div>
     <button class="chip-btn" id="resetProgressBtn">진행률 초기화</button>
     <div class="progress-pill"><b id="doneCount">0</b>/<span id="totalCount">0</span> 완료</div>
   </div>
   <div class="progress-track"><div class="progress-fill" id="scrollFill"></div></div>
 </header>
 
-<div class="scrim" id="scrim"></div>
 <nav class="drawer" id="drawer">
   <div class="drawer-head">
     <div>
@@ -245,9 +355,12 @@
   <div class="drawer-list" id="drawerList"></div>
 </nav>
 
-<main id="mainContent">
-  <div class="intro" id="introBlock"></div>
-  <div id="stagesRoot"></div>
+<main id="mainContent" tabindex="-1">
+  <div class="page-inner">
+    <div class="page" id="page-intro"><div class="intro" id="introBlock"></div></div>
+    <div id="pagesRoot"></div>
+    <div class="pager" id="pager"></div>
+  </div>
 </main>
 
 <footer class="credit">코딩하는기술사 (@codingpe) 영상 정리 · 학습용 개인 노트</footer>
@@ -1801,17 +1914,17 @@ DB가 구식이라 그렇다는 설명이 돌았고, PM은 옵티마이저 문�
 어디를 어떤 순서로 지나가는지부터 봐야 한다.
 
 <svg viewBox="0 0 640 322" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="SQL 한 문장이 지나가는 경로">
-<defs><marker id="ahA" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#5E7FA0"/></marker></defs>
+<defs><marker id="ahA" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7E9CBC"/></marker></defs>
 <rect x="20" y="20" width="170" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
 <text x="105" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">① SQL 텍스트 도착</text>
-<line x1="192" y1="40" x2="216" y2="40" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="192" y1="40" x2="216" y2="40" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
 <rect x="220" y="20" width="180" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
 <text x="310" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">② 구문·의미 검사</text>
-<line x1="402" y1="40" x2="426" y2="40" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="402" y1="40" x2="426" y2="40" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
 <rect x="430" y="20" width="190" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
 <text x="525" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">③ 라이브러리 캐시 조회</text>
-<path d="M525,60 L525,78 L155,78" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
-<path d="M525,78 L475,78" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
+<path d="M525,60 L525,78 L155,78" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
+<path d="M525,78 L475,78" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
 <line x1="155" y1="78" x2="155" y2="92" stroke="#68E3C4" stroke-width="1.4" marker-end="url(#ahA)"/>
 <line x1="475" y1="78" x2="475" y2="92" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahA)"/>
 <rect x="20" y="96" width="270" height="62" rx="7" fill="#152B47" stroke="#68E3C4"/>
@@ -1820,15 +1933,15 @@ DB가 구식이라 그렇다는 설명이 돌았고, PM은 옵티마이저 문�
 <rect x="330" y="96" width="290" height="62" rx="7" fill="#152B47" stroke="#FFC24B"/>
 <text x="475" y="120" text-anchor="middle" font-size="12.5" fill="#FFC24B">같은 텍스트 없음 · 하드 파싱</text>
 <text x="475" y="140" text-anchor="middle" font-size="11.5" fill="#8FAAC7">옵티마이저가 통계 읽고 플랜 계산</text>
-<path d="M155,158 L155,176 L320,176" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
-<path d="M475,158 L475,176 L320,176" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
-<line x1="320" y1="176" x2="320" y2="192" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<path d="M155,158 L155,176 L320,176" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
+<path d="M475,158 L475,176 L320,176" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
+<line x1="320" y1="176" x2="320" y2="192" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
 <rect x="175" y="196" width="290" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
 <text x="320" y="221" text-anchor="middle" font-size="12.5" fill="#E8F1FA">④ 플랜대로 실행 · 블록 읽기</text>
-<path d="M320,236 L320,252 L165,252" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
-<path d="M320,252 L475,252" fill="none" stroke="#5E7FA0" stroke-width="1.4"/>
-<line x1="165" y1="252" x2="165" y2="266" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
-<line x1="475" y1="252" x2="475" y2="266" stroke="#5E7FA0" stroke-width="1.4" marker-end="url(#ahA)"/>
+<path d="M320,236 L320,252 L165,252" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
+<path d="M320,252 L475,252" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
+<line x1="165" y1="252" x2="165" y2="266" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="475" y1="252" x2="475" y2="266" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
 <rect x="20" y="270" width="290" height="44" rx="7" fill="#152B47" stroke="#2A4A6E"/>
 <text x="165" y="297" text-anchor="middle" font-size="12" fill="#8FAAC7">버퍼 캐시에 있으면 메모리에서</text>
 <rect x="330" y="270" width="290" height="44" rx="7" fill="#152B47" stroke="#2A4A6E"/>
@@ -2121,7 +2234,7 @@ SQL 엔진에 되돌려준다. 이 왕복을 **컨텍스트 스위칭**이라 �
 <rect x="454" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#FFC24B"/>
 <text x="523" y="46" text-anchor="middle" font-size="12.5" fill="#FFC24B">PL/SQL 엔진</text>
 <text x="523" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">결과 조립·반환</text>
-<path d="M10,96 L10,102 M10,99 L592,99 M592,96 L592,102" stroke="#5E7FA0" stroke-width="1.2" fill="none"/>
+<path d="M10,96 L10,102 M10,99 L592,99 M592,96 L592,102" stroke="#7E9CBC" stroke-width="1.2" fill="none"/>
 <text x="301" y="120" text-anchor="middle" font-size="11" fill="#8FAAC7">행 1건 · 함수 1회 호출 기준 — 컬럼마다, 행마다 다시 지나간다</text>
 </svg>
 
@@ -2208,7 +2321,7 @@ END;
 <text x="470" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">결과 전송</text>
 <rect x="522" y="20" width="104" height="44" rx="6" fill="#152B47" stroke="#2A4A6E"/>
 <text x="574" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">JDBC 매핑</text>
-<path d="M14,84 L14,92 M14,88 L626,88 M626,84 L626,92" stroke="#5E7FA0" stroke-width="1.4" fill="none"/>
+<path d="M14,84 L14,92 M14,88 L626,88 M626,84 L626,92" stroke="#7E9CBC" stroke-width="1.4" fill="none"/>
 <text x="320" y="108" text-anchor="middle" font-size="11.5" fill="#8FAAC7">MyBatis 로그 시간</text>
 <path d="M196,126 L196,134 M196,130 L418,130 M418,126 L418,134" stroke="#68E3C4" stroke-width="1.4" fill="none"/>
 <text x="307" y="150" text-anchor="middle" font-size="11.5" fill="#68E3C4">V$SQL ELAPSED_TIME</text>
@@ -2344,307 +2457,277 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'));
 <script>
 (function(){
   var STORAGE_KEY = 'arch-notes-progress-v1';
-  var VIEW_KEY = 'arch-notes-view-v1';
+  var LAST_KEY    = 'arch-notes-last-v2';
+  var NAV_KEY     = 'arch-notes-nav-v2';
   var progress = {};
   var totalTopics = 0;
 
-  function safeGet(key){
-    try{
-      var v = localStorage.getItem(key);
-      return Promise.resolve(v === null ? null : { value: v });
-    }catch(e){
-      return Promise.resolve(null);
-    }
-  }
-  function safeSet(key, value){
-    try{
-      localStorage.setItem(key, value);
-    }catch(e){
-      console.error('storage set failed', e);
-    }
-    return Promise.resolve(null);
-  }
+  function get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 
-  function loadProgress(){
-    safeGet(STORAGE_KEY).then(function(res){
-      if(res && res.value){
-        try{ progress = JSON.parse(res.value); }catch(e){ progress = {}; }
-        applyProgressToDom();
-        updateProgressBadge();
-      }
-    }).catch(function(){ progress = {}; });
-  }
-
-  function saveProgress(){
-    safeSet(STORAGE_KEY, JSON.stringify(progress));
-  }
-
-  // ---------- Last view (open sections + scroll) ----------
   if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
 
-  var viewSaveTimer = null;
+  try{ progress = JSON.parse(get(STORAGE_KEY) || '{}') || {}; }catch(e){ progress = {}; }
 
-  function collectView(){
-    var openStages = [];
-    document.querySelectorAll('.stage.open').forEach(function(s){ openStages.push(s.id); });
-    var openTopics = [];
-    document.querySelectorAll('details.topic[open]').forEach(function(d){ openTopics.push(d.id); });
-    return {
-      stages: openStages,
-      topics: openTopics,
-      scrollY: window.pageYOffset || document.documentElement.scrollTop || 0
-    };
-  }
-
-  function saveView(){
-    if(viewSaveTimer){ clearTimeout(viewSaveTimer); viewSaveTimer = null; }
-    safeSet(VIEW_KEY, JSON.stringify(collectView()));
-  }
-
-  function saveViewSoon(){
-    if(viewSaveTimer) return;
-    viewSaveTimer = setTimeout(function(){ viewSaveTimer = null; saveView(); }, 400);
-  }
-
-  function restoreView(){
-    safeGet(VIEW_KEY).then(function(res){
-      if(!res || !res.value) return;
-      var v;
-      try{ v = JSON.parse(res.value); }catch(e){ return; }
-      if(!v) return;
-
-      if(Array.isArray(v.stages)){
-        document.querySelectorAll('.stage').forEach(function(s){
-          s.classList.toggle('open', v.stages.indexOf(s.id) !== -1);
-        });
-      }
-      if(Array.isArray(v.topics)){
-        document.querySelectorAll('details.topic').forEach(function(d){
-          d.open = v.topics.indexOf(d.id) !== -1;
-        });
-      }
-
-      var y = typeof v.scrollY === 'number' ? v.scrollY : 0;
-      if(y <= 0) return;
-
-      // font size and code blocks settle over a few frames, so re-apply until then.
-      // any real input from the user wins immediately.
-      var moved = false;
-      ['wheel','touchstart','keydown'].forEach(function(ev){
-        window.addEventListener(ev, function(){ moved = true; }, { passive:true, once:true });
-      });
-      var tries = 0;
-      (function settle(){
-        if(moved) return;
-        window.scrollTo(0, y);
-        if(++tries < 6) requestAnimationFrame(settle);
-      })();
-    }).catch(function(){});
-  }
-
-  function applyProgressToDom(){
-    Object.keys(progress).forEach(function(id){
-      if(!progress[id]) return;
-      var chk = document.getElementById('chk-'+id);
-      if(chk) chk.checked = true;
-      var link = document.querySelector('.drawer-link[data-id="'+id+'"]');
-      if(link) link.classList.add('done');
-    });
-  }
-
-  function updateProgressBadge(){
-    var done = Object.keys(progress).filter(function(k){ return progress[k]; }).length;
-    document.getElementById('doneCount').textContent = done;
-    document.getElementById('totalCount').textContent = totalTopics;
-  }
-
-  // ---------- Parse markdown ----------
+  /* ─────────────── 마크다운 파싱 : H2 = 단계, H3 = 항목 ─────────────── */
   var rawMd = document.getElementById('source-md').textContent;
   marked.setOptions({ gfm:true, breaks:false });
-  var html = marked.parse(rawMd);
   var temp = document.createElement('div');
-  temp.innerHTML = html;
+  temp.innerHTML = marked.parse(rawMd);
   var nodes = Array.prototype.slice.call(temp.childNodes);
 
   var introFrag = document.createDocumentFragment();
   var stages = [];
-  var current = null;
-  var currentTopic = null;
-  var phase = 'intro';
+  var curStage = null, curTopic = null, phase = 'intro';
 
   nodes.forEach(function(node){
     if(node.nodeType === 1 && node.tagName === 'H2'){
-      current = { headingEl: node, contentNodes: [], topics: [] };
-      stages.push(current);
-      currentTopic = null;
-      phase = 'stage';
-      return;
+      curStage = { title:node.textContent.trim(), intro:[], topics:[] };
+      stages.push(curStage); curTopic = null; phase = 'stage'; return;
     }
-    if(node.nodeType === 1 && node.tagName === 'H3' && current){
-      currentTopic = { headingEl: node, contentNodes: [] };
-      current.topics.push(currentTopic);
-      return;
+    if(node.nodeType === 1 && node.tagName === 'H3' && curStage){
+      curTopic = { title:node.textContent.trim(), nodes:[] };
+      curStage.topics.push(curTopic); return;
     }
     if(phase === 'intro'){ introFrag.appendChild(node); return; }
-    if(currentTopic) currentTopic.contentNodes.push(node);
-    else if(current) current.contentNodes.push(node);
+    if(curTopic) curTopic.nodes.push(node);
+    else if(curStage) curStage.intro.push(node);
   });
 
   document.getElementById('introBlock').appendChild(introFrag);
 
-  var stagesRoot = document.getElementById('stagesRoot');
+  /* ─────────────── 페이지와 목차를 만든다 ─────────────── */
+  var pagesRoot  = document.getElementById('pagesRoot');
   var drawerList = document.getElementById('drawerList');
-  var globalTopicIdx = 0;
+  var barHere    = document.getElementById('barHere');
+  var barCrumb   = document.getElementById('barCrumb');
+  var pager      = document.getElementById('pager');
+
+  var ORDER = [];              // [{id, title, crumb}] — 이전/다음 순서
+  var navFor = {};             // id → 목차 버튼
+  var doneBtnFor = {};         // topicId → 완료 버튼
+
+  ORDER.push({ id:'page-intro', title:'노트 소개', crumb:'STUDY' });
+
+  function wrapTables(root){
+    root.querySelectorAll('table').forEach(function(t){
+      if(t.parentNode && t.parentNode.className === 'table-wrap') return;
+      var w = document.createElement('div');
+      w.className = 'table-wrap';
+      t.parentNode.insertBefore(w, t);
+      w.appendChild(t);
+    });
+  }
+
+  function makePage(id, kicker, title){
+    var p = document.createElement('div');
+    p.className = 'page';
+    p.id = id;
+    var k = document.createElement('p'); k.className = 'page-kicker'; k.textContent = kicker;
+    var h = document.createElement('h1'); h.textContent = title;
+    p.appendChild(k); p.appendChild(h);
+    return p;
+  }
 
   stages.forEach(function(stage, sIdx){
-    var stageText = stage.headingEl.textContent.trim();
-    var badgeMatch = stageText.match(/^(\d+)\s*단계/);
-    var badgeLabel = badgeMatch ? ('S' + badgeMatch[1]) : (stageText.indexOf('부록') === 0 ? 'EX' : ('S' + (sIdx+1)));
+    var m = stage.title.match(/^(\d+)\s*단계/);
+    var badge = m ? ('S' + m[1]) : (stage.title.indexOf('부록') === 0 ? 'EX' : ('S' + (sIdx + 1)));
+    var stageId = 'stage-' + sIdx;
 
-    var stageEl = document.createElement('section');
-    stageEl.className = 'stage' + (sIdx === 0 ? ' open' : '');
-    stageEl.id = 'stage-' + sIdx;
+    /* ── 단계 개요 페이지 ── */
+    var sPage = makePage(stageId, badge + ' · 단계 개요', stage.title);
+    var sBody = document.createElement('div');
+    sBody.className = 'topic-content stage-intro';
+    sBody.style.padding = '0';
+    stage.intro.forEach(function(n){ sBody.appendChild(n); });
+    wrapTables(sBody);
+    sPage.appendChild(sBody);
 
-    var toggle = document.createElement('button');
-    toggle.className = 'stage-toggle';
-    toggle.innerHTML =
-      '<span class="stage-badge mono">'+badgeLabel+'</span>' +
-      '<h2>'+stageText+'</h2>' +
-      '<span class="stage-chevron">▶</span>';
-    toggle.addEventListener('click', function(){
-      stageEl.classList.toggle('open');
-      saveViewSoon();
-    });
+    var jump = document.createElement('div');
+    jump.className = 'topic-jump';
+    sPage.appendChild(jump);
+    pagesRoot.appendChild(sPage);
 
-    var body = document.createElement('div');
-    body.className = 'stage-body';
+    ORDER.push({ id:stageId, title:stage.title, crumb:badge });
 
-    if(stage.contentNodes.length){
-      var flow = document.createElement('div');
-      flow.className = 'stage-flow';
-      stage.contentNodes.forEach(function(n){ flow.appendChild(n); });
-      body.appendChild(flow);
-    }
+    /* ── 목차 : 단계 라벨도 누를 수 있다 ── */
+    var sLink = document.createElement('button');
+    sLink.type = 'button';
+    sLink.className = 'drawer-stage';
+    sLink.textContent = badge + ' · ' + stage.title;
+    sLink.addEventListener('click', function(){ go(stageId, true); });
+    drawerList.appendChild(sLink);
+    navFor[stageId] = sLink;
 
-    // drawer stage group label
-    var drawerStageLabel = document.createElement('div');
-    drawerStageLabel.className = 'drawer-stage';
-    drawerStageLabel.textContent = badgeLabel + ' · ' + stageText;
-    drawerList.appendChild(drawerStageLabel);
-
+    /* ── 항목 페이지 ── */
     stage.topics.forEach(function(topic, tIdx){
-      var id = sIdx + '-' + tIdx;
+      var tid = sIdx + '-' + tIdx;
+      var pageId = 'topic-' + tid;
       totalTopics++;
-      var topicText = topic.headingEl.textContent.trim();
 
-      var det = document.createElement('details');
-      det.className = 'topic';
-      det.id = 'topic-' + id;
+      var tPage = makePage(pageId, badge + ' · ' + stage.title, topic.title);
 
-      var summary = document.createElement('summary');
-      summary.innerHTML =
-        '<span class="chk-wrap"><input type="checkbox" id="chk-'+id+'" aria-label="학습 완료"></span>' +
-        '<span class="topic-title">'+topicText+'</span>' +
-        '<span class="topic-chevron">▶</span>';
-      det.appendChild(summary);
-
-      var contentDiv = document.createElement('div');
-      contentDiv.className = 'topic-content';
-      topic.contentNodes.forEach(function(n){ contentDiv.appendChild(n); });
-      det.appendChild(contentDiv);
-
-      body.appendChild(det);
-      det.addEventListener('toggle', saveViewSoon);
-
-      // checkbox behavior
-      var chk = summary.querySelector('input[type="checkbox"]');
-      chk.addEventListener('click', function(e){ e.stopPropagation(); });
-      chk.addEventListener('change', function(){
-        progress[id] = chk.checked;
-        saveProgress();
-        updateProgressBadge();
-        var link = document.querySelector('.drawer-link[data-id="'+id+'"]');
-        if(link) link.classList.toggle('done', chk.checked);
+      var tools = document.createElement('div');
+      tools.className = 'page-tools';
+      var done = document.createElement('button');
+      done.type = 'button';
+      done.className = 'done-btn';
+      done.setAttribute('aria-pressed', progress[tid] ? 'true' : 'false');
+      done.innerHTML = '<span class="box"></span>학습 완료';
+      done.addEventListener('click', function(){
+        var now = done.getAttribute('aria-pressed') !== 'true';
+        progress[tid] = now;
+        done.setAttribute('aria-pressed', now ? 'true' : 'false');
+        set(STORAGE_KEY, JSON.stringify(progress));
+        if(navFor[pageId]) navFor[pageId].classList.toggle('done', now);
+        var tick = document.getElementById('tick-' + tid);
+        if(tick) tick.textContent = now ? '✓' : '';
+        badgeCount();
       });
+      doneBtnFor[tid] = done;
+      tools.appendChild(done);
+      tPage.appendChild(tools);
 
-      // drawer link
+      var body = document.createElement('div');
+      body.className = 'topic-content page-body';
+      body.style.padding = '0';
+      topic.nodes.forEach(function(n){ body.appendChild(n); });
+      wrapTables(body);
+      tPage.appendChild(body);
+      pagesRoot.appendChild(tPage);
+
+      ORDER.push({ id:pageId, title:topic.title, crumb:badge + ' · ' + stage.title });
+
+      /* 목차 링크 */
       var link = document.createElement('button');
-      link.className = 'drawer-link';
-      link.setAttribute('data-id', id);
-      link.innerHTML = '<span class="dot"></span><span>'+topicText+'</span>';
-      link.addEventListener('click', function(){
-        stageEl.classList.add('open');
-        det.open = true;
-        closeDrawer();
-        saveViewSoon();
-        setTimeout(function(){
-          det.scrollIntoView({behavior:'smooth', block:'start'});
-        }, 180);
-      });
+      link.type = 'button';
+      link.className = 'drawer-link' + (progress[tid] ? ' done' : '');
+      link.setAttribute('data-id', tid);
+      link.innerHTML = '<span class="dot"></span><span></span>';
+      link.lastChild.textContent = topic.title;
+      link.addEventListener('click', function(){ go(pageId, true); });
       drawerList.appendChild(link);
-    });
+      navFor[pageId] = link;
 
-    // wrap tables for horizontal scroll
-    body.querySelectorAll('table').forEach(function(t){
-      var wrap = document.createElement('div');
-      wrap.className = 'table-wrap';
-      t.parentNode.insertBefore(wrap, t);
-      wrap.appendChild(t);
+      /* 단계 개요의 항목 목록 */
+      var jb = document.createElement('button');
+      jb.type = 'button';
+      jb.innerHTML = '<span class="n">' + (tIdx + 1) + '</span><span></span>' +
+                     '<span class="tick" id="tick-' + tid + '">' + (progress[tid] ? '✓' : '') + '</span>';
+      jb.childNodes[1].textContent = topic.title;
+      jb.addEventListener('click', function(){ go(pageId, true); });
+      jump.appendChild(jb);
     });
-
-    stageEl.appendChild(toggle);
-    stageEl.appendChild(body);
-    stagesRoot.appendChild(stageEl);
   });
 
-  updateProgressBadge();
-  loadProgress();
-  restoreView();
+  /* ─────────────── 진행률 ─────────────── */
+  function badgeCount(){
+    var d = Object.keys(progress).filter(function(k){ return progress[k]; }).length;
+    document.getElementById('doneCount').textContent = d;
+    document.getElementById('totalCount').textContent = totalTopics;
+  }
+  badgeCount();
 
-  // ---------- Drawer open/close ----------
-  var drawer = document.getElementById('drawer');
-  var scrim = document.getElementById('scrim');
-  function openDrawer(){ drawer.classList.add('open'); scrim.classList.add('open'); }
-  function closeDrawer(){ drawer.classList.remove('open'); scrim.classList.remove('open'); }
-  document.getElementById('drawerOpenBtn').addEventListener('click', openDrawer);
-  document.getElementById('drawerCloseBtn').addEventListener('click', closeDrawer);
-  scrim.addEventListener('click', closeDrawer);
-
-  // ---------- Expand / collapse all (toggle) ----------
-  var expandToggleBtn = document.getElementById('expandToggleBtn');
-  var allExpanded = false;
-  expandToggleBtn.addEventListener('click', function(){
-    allExpanded = !allExpanded;
-    document.querySelectorAll('.stage').forEach(function(s){ s.classList.toggle('open', allExpanded); });
-    document.querySelectorAll('details.topic').forEach(function(d){ d.open = allExpanded; });
-    expandToggleBtn.textContent = allExpanded ? '전체 접기' : '전체 펼치기';
-    saveViewSoon();
-  });
-
-  // ---------- Reset progress ----------
   document.getElementById('resetProgressBtn').addEventListener('click', function(){
     progress = {};
-    saveProgress();
-    document.querySelectorAll('input[type="checkbox"]').forEach(function(c){ c.checked = false; });
+    set(STORAGE_KEY, '{}');
+    Object.keys(doneBtnFor).forEach(function(tid){
+      doneBtnFor[tid].setAttribute('aria-pressed', 'false');
+      var tick = document.getElementById('tick-' + tid);
+      if(tick) tick.textContent = '';
+    });
     document.querySelectorAll('.drawer-link').forEach(function(l){ l.classList.remove('done'); });
-    updateProgressBadge();
+    badgeCount();
   });
 
-  // ---------- Scroll progress bar ----------
+  /* ─────────────── 한 항목만 보여준다 ─────────────── */
+  function go(id, fromClick){
+    var hit = ORDER.filter(function(o){ return o.id === id; })[0];
+    if(!hit) return;
+
+    ORDER.forEach(function(o){
+      var el = document.getElementById(o.id);
+      if(el) el.classList.toggle('on', o.id === id);
+      if(navFor[o.id]) navFor[o.id].setAttribute('aria-current', o.id === id ? 'true' : 'false');
+    });
+
+    barHere.textContent  = hit.title;
+    barCrumb.textContent = hit.crumb;
+    buildPager(id);
+    set(LAST_KEY, id);
+    if(location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    window.scrollTo({ top:0, behavior: fromClick ? 'smooth' : 'auto' });
+
+    /* 본문이 통째로 바뀌었는데 초점이 목차에 남아 있으면
+       화면낭독기에는 아무 일도 안 일어난 것과 같다. 제목으로 옮긴다. */
+    if(fromClick){
+      var h = document.querySelector('#' + id + ' h1');
+      if(h){ h.setAttribute('tabindex', '-1'); h.focus({ preventScroll:true }); }
+    }
+
+    /* 좁은 화면에서는 고른 뒤 접는다. 넓으면 열어 둔다 */
+    if(fromClick && window.innerWidth < 1080) setNav(false);
+  }
+
+  function buildPager(id){
+    var i = -1;
+    ORDER.forEach(function(o, idx){ if(o.id === id) i = idx; });
+    pager.innerHTML = '';
+
+    function btn(target, label, cls){
+      var b = document.createElement('button');
+      b.type = 'button';
+      if(cls) b.className = cls;
+      b.innerHTML = '<span>' + label + '</span><em></em>';
+      b.lastChild.textContent = target ? target.title : '—';
+      b.disabled = !target;
+      if(target) b.addEventListener('click', function(){ go(target.id, true); });
+      return b;
+    }
+    pager.appendChild(btn(i > 0 ? ORDER[i-1] : null, '이전'));
+    pager.appendChild(btn(i >= 0 && i < ORDER.length - 1 ? ORDER[i+1] : null, '다음', 'next'));
+  }
+
+  /* ─────────────── 사이드바 : 스크림이 없다 ─────────────── */
+  var drawer = document.getElementById('drawer');
+  var main   = document.getElementById('mainContent');
+  var openBtn = document.getElementById('drawerOpenBtn');
+
+  function setNav(open){
+    drawer.classList.toggle('open', open);
+    main.classList.toggle('shifted', open);
+    openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    openBtn.setAttribute('aria-label', open ? '목차 닫기' : '목차 열기');
+    set(NAV_KEY, open ? '1' : '0');
+  }
+  openBtn.addEventListener('click', function(){ setNav(!drawer.classList.contains('open')); });
+  document.getElementById('drawerCloseBtn').addEventListener('click', function(){ setNav(false); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && drawer.classList.contains('open')) setNav(false);
+  });
+
+  var savedNav = get(NAV_KEY);
+  setNav(savedNav !== null ? savedNav === '1' : window.innerWidth >= 1080);
+
+  /* ─────────────── 첫 진입 ─────────────── */
+  function known(id){ return ORDER.some(function(o){ return o.id === id; }); }
+
+  var want = location.hash.slice(1);
+  if(!known(want)) want = get(LAST_KEY);
+  go(known(want) ? want : 'page-intro', false);
+
+  window.addEventListener('hashchange', function(){
+    var h = location.hash.slice(1);
+    if(known(h)) go(h, false);
+  });
+
+  /* ─────────────── 스크롤 표시 ─────────────── */
   window.addEventListener('scroll', function(){
     var h = document.documentElement;
-    var scrollTop = h.scrollTop || document.body.scrollTop;
-    var scrollHeight = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
-    var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
-    document.getElementById('scrollFill').style.width = pct + '%';
-    saveViewSoon();
-  }, { passive: true });
-
-  // ---------- Flush view state on leave ----------
-  window.addEventListener('pagehide', saveView);
-  document.addEventListener('visibilitychange', function(){
-    if(document.visibilityState === 'hidden') saveView();
-  });
+    var top = h.scrollTop || document.body.scrollTop;
+    var span = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
+    document.getElementById('scrollFill').style.width = (span > 0 ? (top / span) * 100 : 0) + '%';
+  }, { passive:true });
 })();
 </script>
 </body>

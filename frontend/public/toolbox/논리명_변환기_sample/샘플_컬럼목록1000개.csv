@@ -1,1002 +1,997 @@
-﻿"순번","DB명","테이블명","컬럼명_영문","컬럼명_한글","연관엔터티명","연관속성명","NOT_NULL","데이터타입","데이터길이","소수점길이","PK정보","컬럼설명","컬럼순서"
-"1","SHOP","TB_ABC_MST","CUST_ID","고객아이디","TB_CUST_MST","고객아이디","Y","VARCHAR2","20","","Y","고객 고유 식별자","1"
-"2","SHOP","TB_CUST_MST","CUST_NM","고객명","TB_CUST_MST","고객명","Y","VARCHAR2","100","","N","고객명","2"
-"3","SHOP","TB_CUST_MST","SEX_CD","","","","N","CHAR","1","","N","","3"
-"4","SHOP","TB_CUST_MST","BRTH_DE","","","","N","VARCHAR2","8","","N","","4"
-"5","SHOP","TB_CUST_MST","MBL_TELNO","","","","N","VARCHAR2","20","","N","","5"
-"6","SHOP","TB_CUST_MST","HOME_TELNO","","","","N","VARCHAR2","20","","N","","6"
-"7","SHOP","TB_CUST_MST","ZIP","","","","N","VARCHAR2","6","","N","","7"
-"8","SHOP","TB_CUST_MST","ADDR","","","","N","VARCHAR2","300","","N","","8"
-"9","SHOP","TB_CUST_MST","DADDR","","","","N","VARCHAR2","300","","N","","9"
-"10","SHOP","TB_CUST_MST","INST_ID","","","","Y","VARCHAR2","20","","N","","10"
-"11","SHOP","TB_CUST_MST","ORG_ID","","","","N","VARCHAR2","10","","N","","11"
-"12","SHOP","TB_CUST_MST","SVC_TY_CD","","","","N","CHAR","3","","N","","12"
-"13","SHOP","TB_CUST_MST","GRD_CD","","","","N","CHAR","2","","N","","13"
-"14","SHOP","TB_CUST_MST","ED_YN","종결여부","TB_CUST_MST","종결여부","N","CHAR","1","","N","종결여부","14"
-"15","SHOP","TB_CUST_MST","ED_DE","","","","N","DATE","","","N","","15"
-"16","SHOP","TB_CUST_MST","ED_RESN","","","","N","VARCHAR2","500","","N","","16"
-"17","SHOP","TB_CUST_MST","LNGTM_ABSNC_YN","","","","N","CHAR","1","","N","","17"
-"18","SHOP","TB_CUST_MST","AGE","","","","N","NUMBER","3","","N","","18"
-"19","SHOP","TB_CUST_MST","FMLY_CNT","","","","N","NUMBER","3","","N","","19"
-"20","SHOP","TB_CUST_MST","USE_YN","","","","Y","CHAR","1","","N","","20"
-"21","SHOP","TB_CUST_MST","DEL_YN","","","","N","CHAR","1","","N","","21"
-"22","SHOP","TB_CUST_MST","REG_ID","","","","N","VARCHAR2","20","","N","","22"
-"23","SHOP","TB_CUST_MST","REG_DT","","","","N","DATE","","","N","","23"
-"24","SHOP","TB_CUST_MST","MOD_ID","","","","N","VARCHAR2","20","","N","","24"
-"25","SHOP","TB_CUST_MST","MOD_DT","","","","N","DATE","","","N","","25"
-"26","SHOP","TB_INST_MST","INST_ID","기관아이디","TB_INST_MST","기관아이디","Y","VARCHAR2","20","","Y","기관아이디","1"
-"27","SHOP","TB_INST_MST","INST_NM","기관명","TB_INST_MST","기관명","Y","VARCHAR2","200","","N","기관명","2"
-"28","SHOP","TB_INST_MST","INST_TY_CD","","","","N","CHAR","3","","N","","3"
-"29","SHOP","TB_INST_MST","BIZRNO","","","","N","VARCHAR2","10","","N","","4"
-"30","SHOP","TB_INST_MST","RPRSNTV_NM","","","","N","VARCHAR2","60","","N","","5"
-"31","SHOP","TB_INST_MST","TELNO","","","","N","VARCHAR2","20","","N","","6"
-"32","SHOP","TB_INST_MST","FXNO","","","","N","VARCHAR2","20","","N","","7"
-"33","SHOP","TB_INST_MST","ZIP","","","","N","VARCHAR2","6","","N","","8"
-"34","SHOP","TB_INST_MST","ADDR","","","","N","VARCHAR2","300","","N","","9"
-"35","SHOP","TB_INST_MST","SIDO_CD","","","","N","VARCHAR2","2","","N","","10"
-"36","SHOP","TB_INST_MST","SGG_CD","","","","N","VARCHAR2","5","","N","","11"
-"37","SHOP","TB_INST_MST","ORG_ID","","","","N","VARCHAR2","10","","N","","12"
-"38","SHOP","TB_INST_MST","EMP_CNT","","","","N","NUMBER","5","","N","","13"
-"39","SHOP","TB_INST_MST","USE_YN","","","","Y","CHAR","1","","N","","14"
-"40","SHOP","TB_INST_MST","OPN_DE","","","","N","DATE","","","N","","15"
-"41","SHOP","TB_INST_MST","CLOS_DE","","","","N","DATE","","","N","","16"
-"42","SHOP","TB_INST_MST","REG_ID","","","","N","VARCHAR2","20","","N","","17"
-"43","SHOP","TB_INST_MST","REG_DT","","","","N","DATE","","","N","","18"
-"44","SHOP","TB_INST_MST","MOD_ID","","","","N","VARCHAR2","20","","N","","19"
-"45","SHOP","TB_INST_MST","MOD_DT","","","","N","DATE","","","N","","20"
-"46","SHOP","TB_ORG","ORG_ID","조직아이디","TB_ORG","조직아이디","Y","VARCHAR2","10","","Y","조직아이디","1"
-"47","SHOP","TB_ORG","ORG_NM","조직명","TB_ORG","조직명","Y","VARCHAR2","100","","N","조직명","2"
-"48","SHOP","TB_ORG","UPPER_ORG_ID","","","","N","VARCHAR2","10","","N","상위 조직. 자기참조","3"
-"49","SHOP","TB_ORG","ORG_LVL","","","","N","NUMBER","2","","N","","4"
-"50","SHOP","TB_ORG","SORT_NO","","","","N","NUMBER","5","","N","","5"
-"51","SHOP","TB_ORG","ORG_TY_CD","","","","N","CHAR","3","","N","","6"
-"52","SHOP","TB_ORG","ORG_DESC","","","","N","VARCHAR2","500","","N","","7"
-"53","SHOP","TB_ORG","USE_YN","","","","Y","CHAR","1","","N","","8"
-"54","SHOP","TB_ORG","REG_ID","","","","N","VARCHAR2","20","","N","","9"
-"55","SHOP","TB_ORG","REG_DT","","","","N","DATE","","","N","","10"
-"56","SHOP","TB_ORG","MOD_ID","","","","N","VARCHAR2","20","","N","","11"
-"57","SHOP","TB_ORG","MOD_DT","","","","N","DATE","","","N","","12"
-"58","SHOP","TB_USER_MST","USER_ID","사용자아이디","TB_USER_MST","사용자아이디","Y","VARCHAR2","20","","Y","사용자아이디","1"
-"59","SHOP","TB_USER_MST","USER_NM","사용자명","TB_USER_MST","사용자명","Y","VARCHAR2","60","","N","사용자명","2"
-"60","SHOP","TB_USER_MST","PASSWD","","","","Y","VARCHAR2","200","","N","","3"
-"61","SHOP","TB_USER_MST","EML","","","","N","VARCHAR2","100","","N","","4"
-"62","SHOP","TB_USER_MST","MBL_TELNO","","","","N","VARCHAR2","20","","N","","5"
-"63","SHOP","TB_USER_MST","INST_ID","","","","N","VARCHAR2","20","","N","","6"
-"64","SHOP","TB_USER_MST","ORG_ID","","","","N","VARCHAR2","10","","N","","7"
-"65","SHOP","TB_USER_MST","AUTHOR_CD","","","","Y","CHAR","3","","N","","8"
-"66","SHOP","TB_USER_MST","POSITN_CD","","","","N","CHAR","3","","N","","9"
-"67","SHOP","TB_USER_MST","LAST_LOGIN_DT","","","","N","DATE","","","N","","10"
-"68","SHOP","TB_USER_MST","LOGIN_FAIL_CNT","","","","N","NUMBER","2","","N","","11"
-"69","SHOP","TB_USER_MST","LOCK_YN","","","","N","CHAR","1","","N","","12"
-"70","SHOP","TB_USER_MST","USE_YN","","","","Y","CHAR","1","","N","","13"
-"71","SHOP","TB_USER_MST","REG_ID","","","","N","VARCHAR2","20","","N","","14"
-"72","SHOP","TB_USER_MST","REG_DT","","","","N","DATE","","","N","","15"
-"73","SHOP","TB_USER_MST","MOD_ID","","","","N","VARCHAR2","20","","N","","16"
-"74","SHOP","TB_USER_MST","MOD_DT","","","","N","DATE","","","N","","17"
-"75","SHOP","TB_DVC_MST","DVC_NO","장비번호","TB_DVC_MST","장비번호","Y","VARCHAR2","20","","Y","장비번호","1"
-"76","SHOP","TB_DVC_MST","DVC_NM","","","","N","VARCHAR2","100","","N","","2"
-"77","SHOP","TB_DVC_MST","DVC_TY_CD","","","","Y","CHAR","3","","N","","3"
-"78","SHOP","TB_DVC_MST","MDL_NM","","","","N","VARCHAR2","100","","N","","4"
-"79","SHOP","TB_DVC_MST","MAKR_NM","","","","N","VARCHAR2","100","","N","","5"
-"80","SHOP","TB_DVC_MST","SRLNO","","","","N","VARCHAR2","50","","N","","6"
-"81","SHOP","TB_DVC_MST","CUST_ID","","","","N","VARCHAR2","20","","N","","7"
-"82","SHOP","TB_DVC_MST","INST_ID","","","","N","VARCHAR2","20","","N","","8"
-"83","SHOP","TB_DVC_MST","INSTL_DE","","","","N","DATE","","","N","","9"
-"84","SHOP","TB_DVC_MST","RMVL_DE","","","","N","DATE","","","N","","10"
-"85","SHOP","TB_DVC_MST","DVC_STTS_CD","","","","N","CHAR","2","","N","","11"
-"86","SHOP","TB_DVC_MST","USE_YN","","","","Y","CHAR","1","","N","","12"
-"87","SHOP","TB_DVC_MST","BTRY_LVL","","","","N","NUMBER","3","","N","","13"
-"88","SHOP","TB_DVC_MST","LAST_CMNC_DT","","","","N","DATE","","","N","","14"
-"89","SHOP","TB_DVC_MST","REG_ID","","","","N","VARCHAR2","20","","N","","15"
-"90","SHOP","TB_DVC_MST","REG_DT","","","","N","DATE","","","N","","16"
-"91","SHOP","TB_DVC_MST","MOD_ID","","","","N","VARCHAR2","20","","N","","17"
-"92","SHOP","TB_DVC_MST","MOD_DT","","","","N","DATE","","","N","","18"
-"93","SHOP","TB_EMRG_MST","EMRG_NO","응급번호","TB_EMRG_MST","응급번호","Y","VARCHAR2","20","","Y","응급번호","1"
-"94","SHOP","TB_EMRG_MST","CUST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"95","SHOP","TB_EMRG_MST","DVC_NO","","","","N","VARCHAR2","20","","N","","3"
-"96","SHOP","TB_EMRG_MST","EMRG_TY_CD","","","","Y","CHAR","3","","N","","4"
-"97","SHOP","TB_EMRG_MST","OCRN_DT","","","","Y","DATE","","","N","","5"
-"98","SHOP","TB_EMRG_MST","RCPT_DT","","","","N","DATE","","","N","","6"
-"99","SHOP","TB_EMRG_MST","CMPTN_DT","","","","N","DATE","","","N","","7"
-"100","SHOP","TB_EMRG_MST","RCPT_USER_ID","","","","N","VARCHAR2","20","","N","접수자. USER_ID rolename","8"
-"101","SHOP","TB_EMRG_MST","PRCS_USER_ID","","","","N","VARCHAR2","20","","N","처리자. USER_ID rolename","9"
-"102","SHOP","TB_EMRG_MST","PRCS_STTS_CD","","","","N","CHAR","2","","N","","10"
-"103","SHOP","TB_EMRG_MST","PRCS_CN","","","","N","VARCHAR2","2000","","N","","11"
-"104","SHOP","TB_EMRG_MST","U119_LNKG_NO","","","","N","VARCHAR2","30","","N","","12"
-"105","SHOP","TB_EMRG_MST","U119_LNKG_YN","","","","N","CHAR","1","","N","","13"
-"106","SHOP","TB_EMRG_MST","RSPNS_MIN","","","","N","NUMBER","5","","N","","14"
-"107","SHOP","TB_EMRG_MST","REG_ID","","","","N","VARCHAR2","20","","N","","15"
-"108","SHOP","TB_EMRG_MST","REG_DT","","","","N","DATE","","","N","","16"
-"109","SHOP","TB_EMRG_MST","MOD_ID","","","","N","VARCHAR2","20","","N","","17"
-"110","SHOP","TB_EMRG_MST","MOD_DT","","","","N","DATE","","","N","","18"
-"111","SHOP","TB_SVC_APLY_MST","APLY_NO","신청번호","TB_SVC_APLY_MST","신청번호","Y","VARCHAR2","20","","Y","신청번호","1"
-"112","SHOP","TB_SVC_APLY_MST","CUST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"113","SHOP","TB_SVC_APLY_MST","INST_ID","","","","Y","VARCHAR2","20","","N","","3"
-"114","SHOP","TB_SVC_APLY_MST","APLY_DE","","","","Y","DATE","","","N","","4"
-"115","SHOP","TB_SVC_APLY_MST","APLY_TY_CD","","","","N","CHAR","3","","N","","5"
-"116","SHOP","TB_SVC_APLY_MST","APRV_STTS_CD","","","","N","CHAR","2","","N","","6"
-"117","SHOP","TB_SVC_APLY_MST","APRV_DE","","","","N","DATE","","","N","","7"
-"118","SHOP","TB_SVC_APLY_MST","APRV_USER_ID","","","","N","VARCHAR2","20","","N","","8"
-"119","SHOP","TB_SVC_APLY_MST","REFUSE_REASON","반려사유","TB_SVC_APLY_MST","반려사유","N","VARCHAR2","1000","","N","반려사유","9"
-"120","SHOP","TB_SVC_APLY_MST","ED_YN","","","","N","CHAR","1","","N","","10"
-"121","SHOP","TB_SVC_APLY_MST","ED_DE","","","","N","DATE","","","N","","11"
-"122","SHOP","TB_SVC_APLY_MST","ATCH_FILE_ID","","","","N","VARCHAR2","30","","N","","12"
-"123","SHOP","TB_SVC_APLY_MST","REG_ID","","","","N","VARCHAR2","20","","N","","13"
-"124","SHOP","TB_SVC_APLY_MST","REG_DT","","","","N","DATE","","","N","","14"
-"125","SHOP","TB_SVC_APLY_MST","MOD_ID","","","","N","VARCHAR2","20","","N","","15"
-"126","SHOP","TB_SVC_APLY_MST","MOD_DT","","","","N","DATE","","","N","","16"
-"127","SHOP","TB_ITEM_BAS","ITEM_CD","품목코드","TB_ITEM_BAS","품목코드","Y","VARCHAR2","10","","Y","품목코드","1"
-"128","SHOP","TB_ITEM_BAS","ITEM_NO","","","","Y","VARCHAR2","12","","N","","2"
-"129","SHOP","TB_ITEM_BAS","ITEM_NM","","","","N","VARCHAR2","200","","N","","3"
-"130","SHOP","TB_ITEM_BAS","ITEM_TY_CD","","","","N","CHAR","3","","N","","4"
-"131","SHOP","TB_ITEM_BAS","UNTPC","","","","N","NUMBER","12","2","N","","5"
-"132","SHOP","TB_ITEM_BAS","UNIT_NM","","","","N","VARCHAR2","20","","N","","6"
-"133","SHOP","TB_ITEM_BAS","USE_YN","","","","N","CHAR","1","","N","","7"
-"134","SHOP","TB_ITEM_BAS","REG_ID","","","","N","VARCHAR2","20","","N","","8"
-"135","SHOP","TB_ITEM_BAS","REG_DT","","","","N","DATE","","","N","","9"
-"136","SHOP","TB_ITEM_BAS","MOD_ID","","","","N","VARCHAR2","20","","N","","10"
-"137","SHOP","TB_ITEM_BAS","MOD_DT","","","","N","DATE","","","N","","11"
-"138","SHOP","TB_ITEM_STOK","STOK_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"139","SHOP","TB_ITEM_STOK","ITEM_NO","","","","Y","VARCHAR2","12","","N","","2"
-"140","SHOP","TB_ITEM_STOK","INST_ID","","","","N","VARCHAR2","20","","N","","3"
-"141","SHOP","TB_ITEM_STOK","STOK_QTY","","","","N","NUMBER","10","","N","","4"
-"142","SHOP","TB_ITEM_STOK","SAFE_QTY","","","","N","NUMBER","10","","N","","5"
-"143","SHOP","TB_ITEM_STOK","INVNTRY_DE","","","","N","DATE","","","N","","6"
-"144","SHOP","TB_ITEM_STOK","REG_ID","","","","N","VARCHAR2","20","","N","","7"
-"145","SHOP","TB_ITEM_STOK","REG_DT","","","","N","DATE","","","N","","8"
-"146","SHOP","TB_ITEM_STOK","MOD_ID","","","","N","VARCHAR2","20","","N","","9"
-"147","SHOP","TB_ITEM_STOK","MOD_DT","","","","N","DATE","","","N","","10"
-"148","SHOP","TB_CUST_DTL","DTL_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"149","SHOP","TB_CUST_DTL","CUST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"150","SHOP","TB_CUST_DTL","DSES_CD","","","","N","CHAR","5","","N","","3"
-"151","SHOP","TB_CUST_DTL","DSES_NM","","","","N","VARCHAR2","200","","N","","4"
-"152","SHOP","TB_CUST_DTL","MDCN_CN","","","","N","VARCHAR2","1000","","N","","5"
-"153","SHOP","TB_CUST_DTL","HOSP_NM","","","","N","VARCHAR2","200","","N","","6"
-"154","SHOP","TB_CUST_DTL","CHRGR_NM","","","","N","VARCHAR2","60","","N","","7"
-"155","SHOP","TB_CUST_DTL","REG_ID","","","","N","VARCHAR2","20","","N","","8"
-"156","SHOP","TB_CUST_DTL","REG_DT","","","","N","DATE","","","N","","9"
-"157","SHOP","TB_CUST_DTL","MOD_ID","","","","N","VARCHAR2","20","","N","","10"
-"158","SHOP","TB_CUST_DTL","MOD_DT","","","","N","DATE","","","N","","11"
-"159","SHOP","TB_EMRG_DTL","DTL_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"160","SHOP","TB_EMRG_DTL","EMRG_NO","","","","Y","VARCHAR2","20","","N","","2"
-"161","SHOP","TB_EMRG_DTL","STEP_NO","","","","N","NUMBER","3","","N","","3"
-"162","SHOP","TB_EMRG_DTL","STEP_CD","","","","N","CHAR","3","","N","","4"
-"163","SHOP","TB_EMRG_DTL","STEP_DT","","","","N","DATE","","","N","","5"
-"164","SHOP","TB_EMRG_DTL","STEP_CN","","","","N","VARCHAR2","1000","","N","","6"
-"165","SHOP","TB_EMRG_DTL","USER_ID","","","","N","VARCHAR2","20","","N","","7"
-"166","SHOP","TB_EMRG_DTL","REG_ID","","","","N","VARCHAR2","20","","N","","8"
-"167","SHOP","TB_EMRG_DTL","REG_DT","","","","N","DATE","","","N","","9"
-"168","SHOP","TB_EMRG_DTL","MOD_ID","","","","N","VARCHAR2","20","","N","","10"
-"169","SHOP","TB_EMRG_DTL","MOD_DT","","","","N","DATE","","","N","","11"
-"170","SHOP","TB_DVC_AS","AS_NO","","","","Y","VARCHAR2","20","","Y","","1"
-"171","SHOP","TB_DVC_AS","DVC_NO","","","","Y","VARCHAR2","20","","N","","2"
-"172","SHOP","TB_DVC_AS","AS_RQST_DE","","","","N","DATE","","","N","","3"
-"173","SHOP","TB_DVC_AS","AS_CMPTN_DE","","","","N","DATE","","","N","","4"
-"174","SHOP","TB_DVC_AS","AS_REASON_TXT","","","","N","VARCHAR2","2000","","N","","5"
-"175","SHOP","TB_DVC_AS","AS_STTS_CD","","","","N","CHAR","2","","N","","6"
-"176","SHOP","TB_DVC_AS","AS_CHRGR_NM","","","","N","VARCHAR2","60","","N","","7"
-"177","SHOP","TB_DVC_AS","AS_COST","","","","N","NUMBER","12","","N","","8"
-"178","SHOP","TB_DVC_AS","REG_ID","","","","N","VARCHAR2","20","","N","","9"
-"179","SHOP","TB_DVC_AS","REG_DT","","","","N","DATE","","","N","","10"
-"180","SHOP","TB_DVC_AS","MOD_ID","","","","N","VARCHAR2","20","","N","","11"
-"181","SHOP","TB_DVC_AS","MOD_DT","","","","N","DATE","","","N","","12"
-"182","SHOP","TB_SVC_APLY_DTL","DTL_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"183","SHOP","TB_SVC_APLY_DTL","APLY_NO","","","","Y","VARCHAR2","20","","N","","2"
-"184","SHOP","TB_SVC_APLY_DTL","SVC_ITEM_CD","","","","N","CHAR","5","","N","","3"
-"185","SHOP","TB_SVC_APLY_DTL","SVC_CNT","","","","N","NUMBER","5","","N","","4"
-"186","SHOP","TB_SVC_APLY_DTL","SVC_CN","","","","N","VARCHAR2","1000","","N","","5"
-"187","SHOP","TB_SVC_APLY_DTL","REG_ID","","","","N","VARCHAR2","20","","N","","6"
-"188","SHOP","TB_SVC_APLY_DTL","REG_DT","","","","N","DATE","","","N","","7"
-"189","SHOP","TB_SVC_APLY_DTL","MOD_ID","","","","N","VARCHAR2","20","","N","","8"
-"190","SHOP","TB_SVC_APLY_DTL","MOD_DT","","","","N","DATE","","","N","","9"
-"191","SHOP","TB_VISIT_RSLT","VISIT_NO","","","","Y","VARCHAR2","20","","Y","","1"
-"192","SHOP","TB_VISIT_RSLT","CUST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"193","SHOP","TB_VISIT_RSLT","USER_ID","","","","N","VARCHAR2","20","","N","","3"
-"194","SHOP","TB_VISIT_RSLT","VISIT_DE","","","","Y","DATE","","","N","","4"
-"195","SHOP","TB_VISIT_RSLT","VISIT_TY_CD","","","","N","CHAR","3","","N","","5"
-"196","SHOP","TB_VISIT_RSLT","VISIT_RSLT_CN","","","","N","VARCHAR2","2000","","N","","6"
-"197","SHOP","TB_VISIT_RSLT","ABSNC_YN","","","","N","CHAR","1","","N","","7"
-"198","SHOP","TB_VISIT_RSLT","VISIT_MIN","","","","N","NUMBER","5","","N","","8"
-"199","SHOP","TB_VISIT_RSLT","REG_ID","","","","N","VARCHAR2","20","","N","","9"
-"200","SHOP","TB_VISIT_RSLT","REG_DT","","","","N","DATE","","","N","","10"
-"201","SHOP","TB_VISIT_RSLT","MOD_ID","","","","N","VARCHAR2","20","","N","","11"
-"202","SHOP","TB_VISIT_RSLT","MOD_DT","","","","N","DATE","","","N","","12"
-"203","SHOP","TB_SPEC_CUST","SPEC_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"204","SHOP","TB_SPEC_CUST","SPEC_CUST_ID","","","","N","VARCHAR2","20","","N","특별관리 고객. CUST_ID rolename","2"
-"205","SHOP","TB_SPEC_CUST","SPEC_TY_CD","","","","N","CHAR","3","","N","","3"
-"206","SHOP","TB_SPEC_CUST","SPEC_REASON","","","","N","VARCHAR2","1000","","N","","4"
-"207","SHOP","TB_SPEC_CUST","SPEC_BGNDE","","","","N","DATE","","","N","","5"
-"208","SHOP","TB_SPEC_CUST","SPEC_ENDDE","","","","N","DATE","","","N","","6"
-"209","SHOP","TB_SPEC_CUST","REG_ID","","","","N","VARCHAR2","20","","N","","7"
-"210","SHOP","TB_SPEC_CUST","REG_DT","","","","N","DATE","","","N","","8"
-"211","SHOP","TB_SPEC_CUST","MOD_ID","","","","N","VARCHAR2","20","","N","","9"
-"212","SHOP","TB_SPEC_CUST","MOD_DT","","","","N","DATE","","","N","","10"
-"213","SHOP","TB_USER_MAP","MAP_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"214","SHOP","TB_USER_MAP","SEND_USER_ID","","","","N","VARCHAR2","20","","N","USER_ID rolename 1","2"
-"215","SHOP","TB_USER_MAP","RCV_USER_ID","","","","N","VARCHAR2","20","","N","USER_ID rolename 2","3"
-"216","SHOP","TB_USER_MAP","MAP_INST_ID","","","","N","VARCHAR2","20","","N","INST_ID rolename — 단 INST_ID 는 공통컬럼 임계로 폐기 대상","4"
-"217","SHOP","TB_USER_MAP","MAP_TY_CD","","","","N","CHAR","3","","N","","5"
-"218","SHOP","TB_USER_MAP","MAP_DE","","","","N","DATE","","","N","","6"
-"219","SHOP","TB_USER_MAP","REG_ID","","","","N","VARCHAR2","20","","N","","7"
-"220","SHOP","TB_USER_MAP","REG_DT","","","","N","DATE","","","N","","8"
-"221","SHOP","TB_USER_MAP","MOD_ID","","","","N","VARCHAR2","20","","N","","9"
-"222","SHOP","TB_USER_MAP","MOD_DT","","","","N","DATE","","","N","","10"
-"223","SHOP","TB_CUST_HIST","CUST_ID","","","","Y","VARCHAR2","20","","N","","1"
-"224","SHOP","TB_CUST_HIST","CHNG_DT","","","","Y","DATE","","","N","","2"
-"225","SHOP","TB_CUST_HIST","CHNG_USER_ID","","","","N","VARCHAR2","20","","N","","3"
-"226","SHOP","TB_CUST_HIST","CHNG_TY_CD","","","","N","CHAR","3","","N","","4"
-"227","SHOP","TB_CUST_HIST","BFCHNG_CN","","","","N","VARCHAR2","2000","","N","","5"
-"228","SHOP","TB_CUST_HIST","AFCHNG_CN","","","","N","VARCHAR2","2000","","N","","6"
-"229","SHOP","TB_EMRG_HIST","EMRG_NO","","","","Y","VARCHAR2","20","","N","","1"
-"230","SHOP","TB_EMRG_HIST","CHNG_DT","","","","N","DATE","","","N","","2"
-"231","SHOP","TB_EMRG_HIST","CHNG_USER_ID","","","","N","VARCHAR2","20","","N","","3"
-"232","SHOP","TB_EMRG_HIST","BFCHNG_STTS_CD","","","","N","CHAR","2","","N","","4"
-"233","SHOP","TB_EMRG_HIST","AFCHNG_STTS_CD","","","","N","CHAR","2","","N","","5"
-"234","SHOP","TB_CARECALL_LOG","LOG_SEQ","","","","N","NUMBER","12","","N","","1"
-"235","SHOP","TB_CARECALL_LOG","CUST_ID","","","","N","VARCHAR2","20","","N","","2"
-"236","SHOP","TB_CARECALL_LOG","CALL_DT","","","","N","DATE","","","N","","3"
-"237","SHOP","TB_CARECALL_LOG","CALL_RSLT_CD","","","","N","CHAR","2","","N","","4"
-"238","SHOP","TB_CARECALL_LOG","CALL_SCND","","","","N","NUMBER","5","","N","","5"
-"239","SHOP","TB_CARECALL_LOG","CALL_CN","","","","N","VARCHAR2","2000","","N","","6"
-"240","SHOP","TB_CARECALL_LOG","AI_CALL_YN","","","","N","CHAR","1","","N","","7"
-"241","SHOP","TB_LOGIN_LOG","LOG_SEQ","","","","N","NUMBER","12","","N","","1"
-"242","SHOP","TB_LOGIN_LOG","USER_ID","","","","N","VARCHAR2","20","","N","","2"
-"243","SHOP","TB_LOGIN_LOG","LOGIN_DT","","","","N","DATE","","","N","","3"
-"244","SHOP","TB_LOGIN_LOG","CONECT_IP","","","","N","VARCHAR2","40","","N","","4"
-"245","SHOP","TB_LOGIN_LOG","SCSS_YN","","","","N","CHAR","1","","N","","5"
-"246","SHOP","TB_LOGIN_LOG","BRWSR_NM","","","","N","VARCHAR2","100","","N","","6"
-"247","SHOPGW","TB_GW_RCV_LOG","LOG_SEQ","","","","N","NUMBER","12","","N","","1"
-"248","SHOPGW","TB_GW_RCV_LOG","DVC_NO","","","","N","VARCHAR2","20","","N","","2"
-"249","SHOPGW","TB_GW_RCV_LOG","RCV_DT","","","","N","DATE","","","N","","3"
-"250","SHOPGW","TB_GW_RCV_LOG","PACKET_CN","","","","N","VARCHAR2","4000","","N","","4"
-"251","SHOPGW","TB_GW_RCV_LOG","PRCS_YN","","","","N","CHAR","1","","N","","5"
-"252","SHOPGW","TB_GW_RCV_LOG","ERR_CN","","","","N","VARCHAR2","1000","","N","","6"
-"253","SHOP","TB_CMMN_CD","CD_GRP_CD","","","","Y","VARCHAR2","10","","Y","","1"
-"254","SHOP","TB_CMMN_CD","CD","","","","Y","VARCHAR2","10","","Y","","2"
-"255","SHOP","TB_CMMN_CD","CD_NM","","","","Y","VARCHAR2","200","","N","","3"
-"256","SHOP","TB_CMMN_CD","CD_DC","","","","N","VARCHAR2","1000","","N","","4"
-"257","SHOP","TB_CMMN_CD","SORT_NO","","","","N","NUMBER","5","","N","","5"
-"258","SHOP","TB_CMMN_CD","USE_YN","","","","N","CHAR","1","","N","","6"
-"259","SHOP","TB_CMMN_CD","REG_ID","","","","N","VARCHAR2","20","","N","","7"
-"260","SHOP","TB_CMMN_CD","REG_DT","","","","N","DATE","","","N","","8"
-"261","SHOP","TB_CMMN_CD","MOD_ID","","","","N","VARCHAR2","20","","N","","9"
-"262","SHOP","TB_CMMN_CD","MOD_DT","","","","N","DATE","","","N","","10"
-"263","SHOP","TB_CMMN_CD_DTL","CD_GRP_CD","","","","Y","VARCHAR2","10","","N","","1"
-"264","SHOP","TB_CMMN_CD_DTL","CD","","","","Y","VARCHAR2","10","","N","","2"
-"265","SHOP","TB_CMMN_CD_DTL","REF1","","","","N","VARCHAR2","200","","N","","3"
-"266","SHOP","TB_CMMN_CD_DTL","REF2","","","","N","VARCHAR2","200","","N","","4"
-"267","SHOP","TB_CMMN_CD_DTL","REF3","","","","N","VARCHAR2","200","","N","","5"
-"268","SHOP","TB_ATHR_MAP","ATHR_ID","","","","Y","VARCHAR2","20","","Y","","1"
-"269","SHOP","TB_ATHR_MAP","MENU_ID","","","","Y","VARCHAR2","20","","Y","","2"
-"270","SHOP","TB_ATHR_MAP","READ_YN","","","","N","CHAR","1","","N","","3"
-"271","SHOP","TB_ATHR_MAP","WRITE_YN","","","","N","CHAR","1","","N","","4"
-"272","SHOP","TB_ATHR_MAP","DEL_YN","","","","N","CHAR","1","","N","","5"
-"273","SHOP","TB_ATHR_MAP","REG_ID","","","","N","VARCHAR2","20","","N","","6"
-"274","SHOP","TB_ATHR_MAP","REG_DT","","","","N","DATE","","","N","","7"
-"275","SHOP","TB_ATHR_MAP","MOD_ID","","","","N","VARCHAR2","20","","N","","8"
-"276","SHOP","TB_ATHR_MAP","MOD_DT","","","","N","DATE","","","N","","9"
-"277","SHOP","TB_ATHR_USER","MAP_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"278","SHOP","TB_ATHR_USER","ATHR_ID","","","","Y","VARCHAR2","20","","N","","2"
-"279","SHOP","TB_ATHR_USER","USER_ID","","","","Y","VARCHAR2","20","","N","","3"
-"280","SHOP","TB_ATHR_USER","GRANT_DE","","","","N","DATE","","","N","","4"
-"281","SHOP","TB_TYPE_MISMATCH_A","MISM_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"282","SHOP","TB_TYPE_MISMATCH_A","CUST_ID","","","","N","NUMBER","12","","N","타입 불일치 — 부모는 VARCHAR2(20)","2"
-"283","SHOP","TB_TYPE_MISMATCH_A","CN","","","","N","VARCHAR2","500","","N","","3"
-"284","SHOP","TB_TYPE_MISMATCH_A","REG_ID","","","","N","VARCHAR2","20","","N","","4"
-"285","SHOP","TB_TYPE_MISMATCH_A","REG_DT","","","","N","DATE","","","N","","5"
-"286","SHOP","TB_TYPE_MISMATCH_A","MOD_ID","","","","N","VARCHAR2","20","","N","","6"
-"287","SHOP","TB_TYPE_MISMATCH_A","MOD_DT","","","","N","DATE","","","N","","7"
-"288","SHOP","TB_LEN_MISMATCH_B","MISM_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"289","SHOP","TB_LEN_MISMATCH_B","CUST_ID","","","","N","VARCHAR2","10","","N","길이 불일치 — 부모는 20","2"
-"290","SHOP","TB_LEN_MISMATCH_B","CN","","","","N","VARCHAR2","500","","N","","3"
-"291","SHOP","TB_LEN_MISMATCH_B","REG_ID","","","","N","VARCHAR2","20","","N","","4"
-"292","SHOP","TB_LEN_MISMATCH_B","REG_DT","","","","N","DATE","","","N","","5"
-"293","SHOP","TB_LEN_MISMATCH_B","MOD_ID","","","","N","VARCHAR2","20","","N","","6"
-"294","SHOP","TB_LEN_MISMATCH_B","MOD_DT","","","","N","DATE","","","N","","7"
-"295","SHOP","TB_RPRT_MST","RPRT_NO","","","","Y","VARCHAR2","20","","N","","1"
-"296","SHOP","TB_RPRT_MST","RPRT_NM","","","","N","VARCHAR2","200","","N","","2"
-"297","SHOP","TB_RPRT_MST","RPRT_DE","","","","N","DATE","","","N","","3"
-"298","SHOP","TB_RPRT_MST","INST_ID","","","","N","VARCHAR2","20","","N","","4"
-"299","SHOP","TB_RPRT_MST","CN","","","","N","VARCHAR2","4000","","N","","5"
-"300","SHOP","TB_RPRT_MST","SBMSN_YN","","","","N","CHAR","1","","N","","6"
-"301","SHOP","TB_RPRT_SBMSN","SBMSN_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"302","SHOP","TB_RPRT_SBMSN","RPRT_NO","","","","Y","VARCHAR2","20","","N","","2"
-"303","SHOP","TB_RPRT_SBMSN","INST_ID","","","","N","VARCHAR2","20","","N","","3"
-"304","SHOP","TB_RPRT_SBMSN","SBMSN_DE","","","","N","DATE","","","N","","4"
-"305","SHOP","TB_RPRT_SBMSN","SBMSN_YN","","","","N","CHAR","1","","N","","5"
-"306","SHOP","TB_PLAN_REG","PLAN_NO","","","","Y","VARCHAR2","20","","N","","1"
-"307","SHOP","TB_PLAN_REG","PLAN_NM","","","","N","VARCHAR2","200","","N","","2"
-"308","SHOP","TB_PLAN_REG","PLAN_DE","","","","N","DATE","","","N","","3"
-"309","SHOP","TB_PLAN_REG","CUST_ID","","","","N","VARCHAR2","20","","N","","4"
-"310","SHOP","TB_PLAN_EXEC","PLAN_NO","","","","Y","VARCHAR2","20","","N","","1"
-"311","SHOP","TB_PLAN_EXEC","EXEC_DE","","","","N","DATE","","","N","","2"
-"312","SHOP","TB_PLAN_EXEC","EXEC_YN","","","","N","CHAR","1","","N","","3"
-"313","SHOP","TB_PLAN_EXEC","EXEC_CN","","","","N","VARCHAR2","1000","","N","","4"
-"314","SHOP","TB_XZQ_WRK","XZQ_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"315","SHOP","TB_XZQ_WRK","QWRT_ZZ_VAL","","","","N","VARCHAR2","100","","N","","2"
-"316","SHOP","TB_XZQ_WRK","PLMN_NO","","","","N","VARCHAR2","20","","N","","3"
-"317","SHOP","TB_XZQ_WRK","ZZTOP_CN","","","","N","VARCHAR2","500","","N","","4"
-"318","SHOP","TB_XZQ_WRK","REG_ID","","","","N","VARCHAR2","20","","N","","5"
-"319","SHOP","TB_XZQ_WRK","REG_DT","","","","N","DATE","","","N","","6"
-"320","SHOP","TB_XZQ_WRK","MOD_ID","","","","N","VARCHAR2","20","","N","","7"
-"321","SHOP","TB_XZQ_WRK","MOD_DT","","","","N","DATE","","","N","","8"
-"322","SHOP","TB_CSV_EDGE","EDGE_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"323","SHOP","TB_CSV_EDGE","CMM_CN","","","","N","VARCHAR2","500","","N","설명에 쉼표, 가 들어간다, 두 개나","2"
-"324","SHOP","TB_CSV_EDGE","QUOT_CN","","","","N","VARCHAR2","500","","N","설명에 ""따옴표"" 가 들어간다","3"
-"325","SHOP","TB_CSV_EDGE","NEWLINE_CN","","","","N","VARCHAR2","500","","N","설명에 줄바꿈이
-들어간다","4"
-"326","SHOP","TB_CSV_EDGE","CUST_ID","","","","N","VARCHAR2","20","","N","","5"
-"327","SHOP","TB_CSV_EDGE","REG_ID","","","","N","VARCHAR2","20","","N","","6"
-"328","SHOP","TB_CSV_EDGE","REG_DT","","","","N","DATE","","","N","","7"
-"329","SHOP","TB_CSV_EDGE","MOD_ID","","","","N","VARCHAR2","20","","N","","8"
-"330","SHOP","TB_CSV_EDGE","MOD_DT","","","","N","DATE","","","N","","9"
-"331","SHOP","TB_CUST_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"332","SHOP","TB_CUST_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"333","SHOP","TB_CUST_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"334","SHOP","TB_CUST_STAT_DAY","TGT_CNT","건수","TB_CUST_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"335","SHOP","TB_CUST_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"336","SHOP","TB_CUST_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"337","SHOP","TB_EMRG_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"338","SHOP","TB_EMRG_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"339","SHOP","TB_EMRG_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"340","SHOP","TB_EMRG_STAT_DAY","TGT_CNT","건수","TB_EMRG_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"341","SHOP","TB_EMRG_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"342","SHOP","TB_EMRG_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"343","SHOP","TB_EMRG_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"344","SHOP","TB_DVC_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"345","SHOP","TB_DVC_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"346","SHOP","TB_DVC_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"347","SHOP","TB_DVC_STAT_DAY","TGT_CNT","건수","TB_DVC_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"348","SHOP","TB_DVC_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"349","SHOP","TB_DVC_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"350","SHOP","TB_DVC_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"351","SHOP","TB_DVC_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"352","SHOP","TB_VISIT_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"353","SHOP","TB_VISIT_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"354","SHOP","TB_VISIT_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"355","SHOP","TB_VISIT_STAT_DAY","TGT_CNT","건수","TB_VISIT_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"356","SHOP","TB_VISIT_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"357","SHOP","TB_VISIT_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"358","SHOP","TB_VISIT_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"359","SHOP","TB_VISIT_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"360","SHOP","TB_VISIT_STAT_DAY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"361","SHOP","TB_CARECALL_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"362","SHOP","TB_CARECALL_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"363","SHOP","TB_CARECALL_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"364","SHOP","TB_CARECALL_STAT_DAY","TGT_CNT","건수","TB_CARECALL_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"365","SHOP","TB_CARECALL_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"366","SHOP","TB_CARECALL_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"367","SHOP","TB_APLY_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"368","SHOP","TB_APLY_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"369","SHOP","TB_APLY_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"370","SHOP","TB_APLY_STAT_DAY","TGT_CNT","건수","TB_APLY_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"371","SHOP","TB_APLY_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"372","SHOP","TB_APLY_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"373","SHOP","TB_APLY_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"374","SHOP","TB_AS_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"375","SHOP","TB_AS_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"376","SHOP","TB_AS_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"377","SHOP","TB_AS_STAT_DAY","TGT_CNT","건수","TB_AS_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"378","SHOP","TB_AS_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"379","SHOP","TB_AS_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"380","SHOP","TB_AS_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"381","SHOP","TB_AS_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"382","SHOP","TB_LOGIN_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"383","SHOP","TB_LOGIN_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"384","SHOP","TB_LOGIN_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"385","SHOP","TB_LOGIN_STAT_DAY","TGT_CNT","건수","TB_LOGIN_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"386","SHOP","TB_LOGIN_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"387","SHOP","TB_LOGIN_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"388","SHOP","TB_LOGIN_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"389","SHOP","TB_LOGIN_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"390","SHOP","TB_LOGIN_STAT_DAY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"391","SHOP","TB_SVC_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"392","SHOP","TB_SVC_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"393","SHOP","TB_SVC_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"394","SHOP","TB_SVC_STAT_DAY","TGT_CNT","건수","TB_SVC_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"395","SHOP","TB_SVC_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"396","SHOP","TB_SVC_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"397","SHOP","TB_RPRT_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"398","SHOP","TB_RPRT_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"399","SHOP","TB_RPRT_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"400","SHOP","TB_RPRT_STAT_DAY","TGT_CNT","건수","TB_RPRT_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"401","SHOP","TB_RPRT_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"402","SHOP","TB_RPRT_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"403","SHOP","TB_RPRT_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"404","SHOP","TB_ORG_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"405","SHOP","TB_ORG_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"406","SHOP","TB_ORG_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"407","SHOP","TB_ORG_STAT_DAY","TGT_CNT","건수","TB_ORG_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"408","SHOP","TB_ORG_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"409","SHOP","TB_ORG_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"410","SHOP","TB_ORG_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"411","SHOP","TB_ORG_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"412","SHOP","TB_USER_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"413","SHOP","TB_USER_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"414","SHOP","TB_USER_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"415","SHOP","TB_USER_STAT_DAY","TGT_CNT","건수","TB_USER_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"416","SHOP","TB_USER_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"417","SHOP","TB_USER_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"418","SHOP","TB_USER_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"419","SHOP","TB_USER_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"420","SHOP","TB_USER_STAT_DAY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"421","SHOP","TB_ITEM_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"422","SHOP","TB_ITEM_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"423","SHOP","TB_ITEM_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"424","SHOP","TB_ITEM_STAT_DAY","TGT_CNT","건수","TB_ITEM_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"425","SHOP","TB_ITEM_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"426","SHOP","TB_ITEM_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"427","SHOP","TB_STOK_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"428","SHOP","TB_STOK_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"429","SHOP","TB_STOK_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"430","SHOP","TB_STOK_STAT_DAY","TGT_CNT","건수","TB_STOK_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"431","SHOP","TB_STOK_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"432","SHOP","TB_STOK_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"433","SHOP","TB_STOK_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"434","SHOP","TB_GW_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"435","SHOP","TB_GW_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"436","SHOP","TB_GW_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"437","SHOP","TB_GW_STAT_DAY","TGT_CNT","건수","TB_GW_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"438","SHOP","TB_GW_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"439","SHOP","TB_GW_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"440","SHOP","TB_GW_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"441","SHOP","TB_GW_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"442","SHOP","TB_CALL_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"443","SHOP","TB_CALL_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"444","SHOP","TB_CALL_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"445","SHOP","TB_CALL_STAT_DAY","TGT_CNT","건수","TB_CALL_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"446","SHOP","TB_CALL_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"447","SHOP","TB_CALL_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"448","SHOP","TB_CALL_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"449","SHOP","TB_CALL_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"450","SHOP","TB_CALL_STAT_DAY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"451","SHOP","TB_MSG_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"452","SHOP","TB_MSG_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"453","SHOP","TB_MSG_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"454","SHOP","TB_MSG_STAT_DAY","TGT_CNT","건수","TB_MSG_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"455","SHOP","TB_MSG_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"456","SHOP","TB_MSG_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"457","SHOP","TB_ALARM_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"458","SHOP","TB_ALARM_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"459","SHOP","TB_ALARM_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"460","SHOP","TB_ALARM_STAT_DAY","TGT_CNT","건수","TB_ALARM_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"461","SHOP","TB_ALARM_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"462","SHOP","TB_ALARM_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"463","SHOP","TB_ALARM_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"464","SHOP","TB_SENSR_STAT_DAY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"465","SHOP","TB_SENSR_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"466","SHOP","TB_SENSR_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"467","SHOP","TB_SENSR_STAT_DAY","TGT_CNT","건수","TB_SENSR_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"468","SHOP","TB_SENSR_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"469","SHOP","TB_SENSR_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"470","SHOP","TB_SENSR_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"471","SHOP","TB_SENSR_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"472","SHOP","TB_BTRY_STAT_DAY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"473","SHOP","TB_BTRY_STAT_DAY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"474","SHOP","TB_BTRY_STAT_DAY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"475","SHOP","TB_BTRY_STAT_DAY","TGT_CNT","건수","TB_BTRY_STAT_DAY","건수","N","NUMBER","10","","N","건수","4"
-"476","SHOP","TB_BTRY_STAT_DAY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"477","SHOP","TB_BTRY_STAT_DAY","REG_DT","","","","N","DATE","","","N","","6"
-"478","SHOP","TB_BTRY_STAT_DAY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"479","SHOP","TB_BTRY_STAT_DAY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"480","SHOP","TB_BTRY_STAT_DAY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"481","SHOP","TB_CUST_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"482","SHOP","TB_CUST_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"483","SHOP","TB_CUST_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"484","SHOP","TB_CUST_STAT_MON","TGT_CNT","건수","TB_CUST_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"485","SHOP","TB_CUST_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"486","SHOP","TB_CUST_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"487","SHOP","TB_EMRG_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"488","SHOP","TB_EMRG_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"489","SHOP","TB_EMRG_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"490","SHOP","TB_EMRG_STAT_MON","TGT_CNT","건수","TB_EMRG_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"491","SHOP","TB_EMRG_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"492","SHOP","TB_EMRG_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"493","SHOP","TB_EMRG_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"494","SHOP","TB_DVC_STAT_MON","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"495","SHOP","TB_DVC_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"496","SHOP","TB_DVC_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"497","SHOP","TB_DVC_STAT_MON","TGT_CNT","건수","TB_DVC_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"498","SHOP","TB_DVC_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"499","SHOP","TB_DVC_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"500","SHOP","TB_DVC_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"501","SHOP","TB_DVC_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"502","SHOP","TB_VISIT_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"503","SHOP","TB_VISIT_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"504","SHOP","TB_VISIT_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"505","SHOP","TB_VISIT_STAT_MON","TGT_CNT","건수","TB_VISIT_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"506","SHOP","TB_VISIT_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"507","SHOP","TB_VISIT_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"508","SHOP","TB_VISIT_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"509","SHOP","TB_VISIT_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"510","SHOP","TB_VISIT_STAT_MON","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"511","SHOP","TB_CARECALL_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"512","SHOP","TB_CARECALL_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"513","SHOP","TB_CARECALL_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"514","SHOP","TB_CARECALL_STAT_MON","TGT_CNT","건수","TB_CARECALL_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"515","SHOP","TB_CARECALL_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"516","SHOP","TB_CARECALL_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"517","SHOP","TB_APLY_STAT_MON","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"518","SHOP","TB_APLY_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"519","SHOP","TB_APLY_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"520","SHOP","TB_APLY_STAT_MON","TGT_CNT","건수","TB_APLY_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"521","SHOP","TB_APLY_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"522","SHOP","TB_APLY_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"523","SHOP","TB_APLY_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"524","SHOP","TB_AS_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"525","SHOP","TB_AS_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"526","SHOP","TB_AS_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"527","SHOP","TB_AS_STAT_MON","TGT_CNT","건수","TB_AS_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"528","SHOP","TB_AS_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"529","SHOP","TB_AS_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"530","SHOP","TB_AS_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"531","SHOP","TB_AS_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"532","SHOP","TB_LOGIN_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"533","SHOP","TB_LOGIN_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"534","SHOP","TB_LOGIN_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"535","SHOP","TB_LOGIN_STAT_MON","TGT_CNT","건수","TB_LOGIN_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"536","SHOP","TB_LOGIN_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"537","SHOP","TB_LOGIN_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"538","SHOP","TB_LOGIN_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"539","SHOP","TB_LOGIN_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"540","SHOP","TB_LOGIN_STAT_MON","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"541","SHOP","TB_SVC_STAT_MON","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"542","SHOP","TB_SVC_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"543","SHOP","TB_SVC_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"544","SHOP","TB_SVC_STAT_MON","TGT_CNT","건수","TB_SVC_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"545","SHOP","TB_SVC_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"546","SHOP","TB_SVC_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"547","SHOP","TB_RPRT_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"548","SHOP","TB_RPRT_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"549","SHOP","TB_RPRT_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"550","SHOP","TB_RPRT_STAT_MON","TGT_CNT","건수","TB_RPRT_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"551","SHOP","TB_RPRT_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"552","SHOP","TB_RPRT_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"553","SHOP","TB_RPRT_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"554","SHOP","TB_ORG_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"555","SHOP","TB_ORG_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"556","SHOP","TB_ORG_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"557","SHOP","TB_ORG_STAT_MON","TGT_CNT","건수","TB_ORG_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"558","SHOP","TB_ORG_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"559","SHOP","TB_ORG_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"560","SHOP","TB_ORG_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"561","SHOP","TB_ORG_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"562","SHOP","TB_USER_STAT_MON","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"563","SHOP","TB_USER_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"564","SHOP","TB_USER_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"565","SHOP","TB_USER_STAT_MON","TGT_CNT","건수","TB_USER_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"566","SHOP","TB_USER_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"567","SHOP","TB_USER_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"568","SHOP","TB_USER_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"569","SHOP","TB_USER_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"570","SHOP","TB_USER_STAT_MON","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"571","SHOP","TB_ITEM_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"572","SHOP","TB_ITEM_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"573","SHOP","TB_ITEM_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"574","SHOP","TB_ITEM_STAT_MON","TGT_CNT","건수","TB_ITEM_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"575","SHOP","TB_ITEM_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"576","SHOP","TB_ITEM_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"577","SHOP","TB_STOK_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"578","SHOP","TB_STOK_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"579","SHOP","TB_STOK_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"580","SHOP","TB_STOK_STAT_MON","TGT_CNT","건수","TB_STOK_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"581","SHOP","TB_STOK_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"582","SHOP","TB_STOK_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"583","SHOP","TB_STOK_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"584","SHOP","TB_GW_STAT_MON","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"585","SHOP","TB_GW_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"586","SHOP","TB_GW_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"587","SHOP","TB_GW_STAT_MON","TGT_CNT","건수","TB_GW_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"588","SHOP","TB_GW_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"589","SHOP","TB_GW_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"590","SHOP","TB_GW_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"591","SHOP","TB_GW_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"592","SHOP","TB_CALL_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"593","SHOP","TB_CALL_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"594","SHOP","TB_CALL_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"595","SHOP","TB_CALL_STAT_MON","TGT_CNT","건수","TB_CALL_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"596","SHOP","TB_CALL_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"597","SHOP","TB_CALL_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"598","SHOP","TB_CALL_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"599","SHOP","TB_CALL_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"600","SHOP","TB_CALL_STAT_MON","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"601","SHOP","TB_MSG_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"602","SHOP","TB_MSG_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"603","SHOP","TB_MSG_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"604","SHOP","TB_MSG_STAT_MON","TGT_CNT","건수","TB_MSG_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"605","SHOP","TB_MSG_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"606","SHOP","TB_MSG_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"607","SHOP","TB_ALARM_STAT_MON","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"608","SHOP","TB_ALARM_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"609","SHOP","TB_ALARM_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"610","SHOP","TB_ALARM_STAT_MON","TGT_CNT","건수","TB_ALARM_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"611","SHOP","TB_ALARM_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"612","SHOP","TB_ALARM_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"613","SHOP","TB_ALARM_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"614","SHOP","TB_SENSR_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"615","SHOP","TB_SENSR_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"616","SHOP","TB_SENSR_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"617","SHOP","TB_SENSR_STAT_MON","TGT_CNT","건수","TB_SENSR_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"618","SHOP","TB_SENSR_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"619","SHOP","TB_SENSR_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"620","SHOP","TB_SENSR_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"621","SHOP","TB_SENSR_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"622","SHOP","TB_BTRY_STAT_MON","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"623","SHOP","TB_BTRY_STAT_MON","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"624","SHOP","TB_BTRY_STAT_MON","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"625","SHOP","TB_BTRY_STAT_MON","TGT_CNT","건수","TB_BTRY_STAT_MON","건수","N","NUMBER","10","","N","건수","4"
-"626","SHOP","TB_BTRY_STAT_MON","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"627","SHOP","TB_BTRY_STAT_MON","REG_DT","","","","N","DATE","","","N","","6"
-"628","SHOP","TB_BTRY_STAT_MON","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"629","SHOP","TB_BTRY_STAT_MON","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"630","SHOP","TB_BTRY_STAT_MON","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"631","SHOP","TB_CUST_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"632","SHOP","TB_CUST_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"633","SHOP","TB_CUST_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"634","SHOP","TB_CUST_STAT_YY","TGT_CNT","건수","TB_CUST_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"635","SHOP","TB_CUST_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"636","SHOP","TB_CUST_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"637","SHOP","TB_EMRG_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"638","SHOP","TB_EMRG_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"639","SHOP","TB_EMRG_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"640","SHOP","TB_EMRG_STAT_YY","TGT_CNT","건수","TB_EMRG_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"641","SHOP","TB_EMRG_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"642","SHOP","TB_EMRG_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"643","SHOP","TB_EMRG_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"644","SHOP","TB_DVC_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"645","SHOP","TB_DVC_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"646","SHOP","TB_DVC_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"647","SHOP","TB_DVC_STAT_YY","TGT_CNT","건수","TB_DVC_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"648","SHOP","TB_DVC_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"649","SHOP","TB_DVC_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"650","SHOP","TB_DVC_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"651","SHOP","TB_DVC_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"652","SHOP","TB_VISIT_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"653","SHOP","TB_VISIT_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"654","SHOP","TB_VISIT_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"655","SHOP","TB_VISIT_STAT_YY","TGT_CNT","건수","TB_VISIT_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"656","SHOP","TB_VISIT_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"657","SHOP","TB_VISIT_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"658","SHOP","TB_VISIT_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"659","SHOP","TB_VISIT_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"660","SHOP","TB_VISIT_STAT_YY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"661","SHOP","TB_CARECALL_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"662","SHOP","TB_CARECALL_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"663","SHOP","TB_CARECALL_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"664","SHOP","TB_CARECALL_STAT_YY","TGT_CNT","건수","TB_CARECALL_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"665","SHOP","TB_CARECALL_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"666","SHOP","TB_CARECALL_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"667","SHOP","TB_APLY_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"668","SHOP","TB_APLY_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"669","SHOP","TB_APLY_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"670","SHOP","TB_APLY_STAT_YY","TGT_CNT","건수","TB_APLY_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"671","SHOP","TB_APLY_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"672","SHOP","TB_APLY_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"673","SHOP","TB_APLY_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"674","SHOP","TB_AS_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"675","SHOP","TB_AS_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"676","SHOP","TB_AS_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"677","SHOP","TB_AS_STAT_YY","TGT_CNT","건수","TB_AS_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"678","SHOP","TB_AS_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"679","SHOP","TB_AS_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"680","SHOP","TB_AS_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"681","SHOP","TB_AS_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"682","SHOP","TB_LOGIN_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"683","SHOP","TB_LOGIN_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"684","SHOP","TB_LOGIN_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"685","SHOP","TB_LOGIN_STAT_YY","TGT_CNT","건수","TB_LOGIN_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"686","SHOP","TB_LOGIN_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"687","SHOP","TB_LOGIN_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"688","SHOP","TB_LOGIN_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"689","SHOP","TB_LOGIN_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"690","SHOP","TB_LOGIN_STAT_YY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"691","SHOP","TB_SVC_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"692","SHOP","TB_SVC_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"693","SHOP","TB_SVC_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"694","SHOP","TB_SVC_STAT_YY","TGT_CNT","건수","TB_SVC_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"695","SHOP","TB_SVC_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"696","SHOP","TB_SVC_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"697","SHOP","TB_RPRT_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"698","SHOP","TB_RPRT_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"699","SHOP","TB_RPRT_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"700","SHOP","TB_RPRT_STAT_YY","TGT_CNT","건수","TB_RPRT_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"701","SHOP","TB_RPRT_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"702","SHOP","TB_RPRT_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"703","SHOP","TB_RPRT_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"704","SHOP","TB_ORG_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"705","SHOP","TB_ORG_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"706","SHOP","TB_ORG_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"707","SHOP","TB_ORG_STAT_YY","TGT_CNT","건수","TB_ORG_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"708","SHOP","TB_ORG_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"709","SHOP","TB_ORG_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"710","SHOP","TB_ORG_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"711","SHOP","TB_ORG_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"712","SHOP","TB_USER_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"713","SHOP","TB_USER_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"714","SHOP","TB_USER_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"715","SHOP","TB_USER_STAT_YY","TGT_CNT","건수","TB_USER_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"716","SHOP","TB_USER_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"717","SHOP","TB_USER_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"718","SHOP","TB_USER_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"719","SHOP","TB_USER_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"720","SHOP","TB_USER_STAT_YY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"721","SHOP","TB_ITEM_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"722","SHOP","TB_ITEM_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"723","SHOP","TB_ITEM_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"724","SHOP","TB_ITEM_STAT_YY","TGT_CNT","건수","TB_ITEM_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"725","SHOP","TB_ITEM_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"726","SHOP","TB_ITEM_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"727","SHOP","TB_STOK_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"728","SHOP","TB_STOK_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"729","SHOP","TB_STOK_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"730","SHOP","TB_STOK_STAT_YY","TGT_CNT","건수","TB_STOK_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"731","SHOP","TB_STOK_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"732","SHOP","TB_STOK_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"733","SHOP","TB_STOK_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"734","SHOP","TB_GW_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"735","SHOP","TB_GW_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"736","SHOP","TB_GW_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"737","SHOP","TB_GW_STAT_YY","TGT_CNT","건수","TB_GW_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"738","SHOP","TB_GW_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"739","SHOP","TB_GW_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"740","SHOP","TB_GW_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"741","SHOP","TB_GW_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"742","SHOP","TB_CALL_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"743","SHOP","TB_CALL_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"744","SHOP","TB_CALL_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"745","SHOP","TB_CALL_STAT_YY","TGT_CNT","건수","TB_CALL_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"746","SHOP","TB_CALL_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"747","SHOP","TB_CALL_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"748","SHOP","TB_CALL_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"749","SHOP","TB_CALL_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"750","SHOP","TB_CALL_STAT_YY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"751","SHOP","TB_MSG_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"752","SHOP","TB_MSG_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"753","SHOP","TB_MSG_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"754","SHOP","TB_MSG_STAT_YY","TGT_CNT","건수","TB_MSG_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"755","SHOP","TB_MSG_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"756","SHOP","TB_MSG_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"757","SHOP","TB_ALARM_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"758","SHOP","TB_ALARM_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"759","SHOP","TB_ALARM_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"760","SHOP","TB_ALARM_STAT_YY","TGT_CNT","건수","TB_ALARM_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"761","SHOP","TB_ALARM_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"762","SHOP","TB_ALARM_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"763","SHOP","TB_ALARM_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"764","SHOP","TB_SENSR_STAT_YY","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"765","SHOP","TB_SENSR_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"766","SHOP","TB_SENSR_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"767","SHOP","TB_SENSR_STAT_YY","TGT_CNT","건수","TB_SENSR_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"768","SHOP","TB_SENSR_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"769","SHOP","TB_SENSR_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"770","SHOP","TB_SENSR_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"771","SHOP","TB_SENSR_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"772","SHOP","TB_BTRY_STAT_YY","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"773","SHOP","TB_BTRY_STAT_YY","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"774","SHOP","TB_BTRY_STAT_YY","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"775","SHOP","TB_BTRY_STAT_YY","TGT_CNT","건수","TB_BTRY_STAT_YY","건수","N","NUMBER","10","","N","건수","4"
-"776","SHOP","TB_BTRY_STAT_YY","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"777","SHOP","TB_BTRY_STAT_YY","REG_DT","","","","N","DATE","","","N","","6"
-"778","SHOP","TB_BTRY_STAT_YY","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"779","SHOP","TB_BTRY_STAT_YY","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"780","SHOP","TB_BTRY_STAT_YY","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"781","SHOP","TB_CUST_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"782","SHOP","TB_CUST_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"783","SHOP","TB_CUST_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"784","SHOP","TB_CUST_STAT_SUMM","TGT_CNT","건수","TB_CUST_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"785","SHOP","TB_CUST_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"786","SHOP","TB_CUST_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"787","SHOP","TB_EMRG_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"788","SHOP","TB_EMRG_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"789","SHOP","TB_EMRG_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"790","SHOP","TB_EMRG_STAT_SUMM","TGT_CNT","건수","TB_EMRG_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"791","SHOP","TB_EMRG_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"792","SHOP","TB_EMRG_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"793","SHOP","TB_EMRG_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"794","SHOP","TB_DVC_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"795","SHOP","TB_DVC_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"796","SHOP","TB_DVC_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"797","SHOP","TB_DVC_STAT_SUMM","TGT_CNT","건수","TB_DVC_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"798","SHOP","TB_DVC_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"799","SHOP","TB_DVC_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"800","SHOP","TB_DVC_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"801","SHOP","TB_DVC_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"802","SHOP","TB_VISIT_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"803","SHOP","TB_VISIT_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"804","SHOP","TB_VISIT_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"805","SHOP","TB_VISIT_STAT_SUMM","TGT_CNT","건수","TB_VISIT_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"806","SHOP","TB_VISIT_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"807","SHOP","TB_VISIT_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"808","SHOP","TB_VISIT_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"809","SHOP","TB_VISIT_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"810","SHOP","TB_VISIT_STAT_SUMM","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"811","SHOP","TB_CARECALL_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"812","SHOP","TB_CARECALL_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"813","SHOP","TB_CARECALL_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"814","SHOP","TB_CARECALL_STAT_SUMM","TGT_CNT","건수","TB_CARECALL_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"815","SHOP","TB_CARECALL_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"816","SHOP","TB_CARECALL_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"817","SHOP","TB_APLY_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"818","SHOP","TB_APLY_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"819","SHOP","TB_APLY_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"820","SHOP","TB_APLY_STAT_SUMM","TGT_CNT","건수","TB_APLY_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"821","SHOP","TB_APLY_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"822","SHOP","TB_APLY_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"823","SHOP","TB_APLY_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"824","SHOP","TB_AS_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"825","SHOP","TB_AS_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"826","SHOP","TB_AS_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"827","SHOP","TB_AS_STAT_SUMM","TGT_CNT","건수","TB_AS_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"828","SHOP","TB_AS_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"829","SHOP","TB_AS_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"830","SHOP","TB_AS_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"831","SHOP","TB_AS_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"832","SHOP","TB_LOGIN_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"833","SHOP","TB_LOGIN_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"834","SHOP","TB_LOGIN_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"835","SHOP","TB_LOGIN_STAT_SUMM","TGT_CNT","건수","TB_LOGIN_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"836","SHOP","TB_LOGIN_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"837","SHOP","TB_LOGIN_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"838","SHOP","TB_LOGIN_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"839","SHOP","TB_LOGIN_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"840","SHOP","TB_LOGIN_STAT_SUMM","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"841","SHOP","TB_SVC_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"842","SHOP","TB_SVC_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"843","SHOP","TB_SVC_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"844","SHOP","TB_SVC_STAT_SUMM","TGT_CNT","건수","TB_SVC_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"845","SHOP","TB_SVC_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"846","SHOP","TB_SVC_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"847","SHOP","TB_RPRT_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"848","SHOP","TB_RPRT_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"849","SHOP","TB_RPRT_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"850","SHOP","TB_RPRT_STAT_SUMM","TGT_CNT","건수","TB_RPRT_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"851","SHOP","TB_RPRT_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"852","SHOP","TB_RPRT_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"853","SHOP","TB_RPRT_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"854","SHOP","TB_ORG_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"855","SHOP","TB_ORG_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"856","SHOP","TB_ORG_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"857","SHOP","TB_ORG_STAT_SUMM","TGT_CNT","건수","TB_ORG_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"858","SHOP","TB_ORG_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"859","SHOP","TB_ORG_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"860","SHOP","TB_ORG_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"861","SHOP","TB_ORG_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"862","SHOP","TB_USER_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"863","SHOP","TB_USER_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"864","SHOP","TB_USER_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"865","SHOP","TB_USER_STAT_SUMM","TGT_CNT","건수","TB_USER_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"866","SHOP","TB_USER_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"867","SHOP","TB_USER_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"868","SHOP","TB_USER_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"869","SHOP","TB_USER_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"870","SHOP","TB_USER_STAT_SUMM","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"871","SHOP","TB_ITEM_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"872","SHOP","TB_ITEM_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"873","SHOP","TB_ITEM_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"874","SHOP","TB_ITEM_STAT_SUMM","TGT_CNT","건수","TB_ITEM_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"875","SHOP","TB_ITEM_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"876","SHOP","TB_ITEM_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"877","SHOP","TB_STOK_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"878","SHOP","TB_STOK_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"879","SHOP","TB_STOK_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"880","SHOP","TB_STOK_STAT_SUMM","TGT_CNT","건수","TB_STOK_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"881","SHOP","TB_STOK_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"882","SHOP","TB_STOK_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"883","SHOP","TB_STOK_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"884","SHOP","TB_GW_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"885","SHOP","TB_GW_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"886","SHOP","TB_GW_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"887","SHOP","TB_GW_STAT_SUMM","TGT_CNT","건수","TB_GW_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"888","SHOP","TB_GW_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"889","SHOP","TB_GW_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"890","SHOP","TB_GW_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"891","SHOP","TB_GW_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"892","SHOP","TB_CALL_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"893","SHOP","TB_CALL_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"894","SHOP","TB_CALL_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"895","SHOP","TB_CALL_STAT_SUMM","TGT_CNT","건수","TB_CALL_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"896","SHOP","TB_CALL_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"897","SHOP","TB_CALL_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"898","SHOP","TB_CALL_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"899","SHOP","TB_CALL_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"900","SHOP","TB_CALL_STAT_SUMM","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"901","SHOP","TB_MSG_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"902","SHOP","TB_MSG_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"903","SHOP","TB_MSG_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"904","SHOP","TB_MSG_STAT_SUMM","TGT_CNT","건수","TB_MSG_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"905","SHOP","TB_MSG_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"906","SHOP","TB_MSG_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"907","SHOP","TB_ALARM_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"908","SHOP","TB_ALARM_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"909","SHOP","TB_ALARM_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"910","SHOP","TB_ALARM_STAT_SUMM","TGT_CNT","건수","TB_ALARM_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"911","SHOP","TB_ALARM_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"912","SHOP","TB_ALARM_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"913","SHOP","TB_ALARM_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"914","SHOP","TB_SENSR_STAT_SUMM","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"915","SHOP","TB_SENSR_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"916","SHOP","TB_SENSR_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"917","SHOP","TB_SENSR_STAT_SUMM","TGT_CNT","건수","TB_SENSR_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"918","SHOP","TB_SENSR_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"919","SHOP","TB_SENSR_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"920","SHOP","TB_SENSR_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"921","SHOP","TB_SENSR_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"922","SHOP","TB_BTRY_STAT_SUMM","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"923","SHOP","TB_BTRY_STAT_SUMM","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"924","SHOP","TB_BTRY_STAT_SUMM","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"925","SHOP","TB_BTRY_STAT_SUMM","TGT_CNT","건수","TB_BTRY_STAT_SUMM","건수","N","NUMBER","10","","N","건수","4"
-"926","SHOP","TB_BTRY_STAT_SUMM","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"927","SHOP","TB_BTRY_STAT_SUMM","REG_DT","","","","N","DATE","","","N","","6"
-"928","SHOP","TB_BTRY_STAT_SUMM","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"929","SHOP","TB_BTRY_STAT_SUMM","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"930","SHOP","TB_BTRY_STAT_SUMM","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"931","SHOP","TB_CUST_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"932","SHOP","TB_CUST_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"933","SHOP","TB_CUST_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"934","SHOP","TB_CUST_STAT_TOT","TGT_CNT","건수","TB_CUST_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"935","SHOP","TB_CUST_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"936","SHOP","TB_CUST_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"937","SHOP","TB_EMRG_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"938","SHOP","TB_EMRG_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"939","SHOP","TB_EMRG_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"940","SHOP","TB_EMRG_STAT_TOT","TGT_CNT","건수","TB_EMRG_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"941","SHOP","TB_EMRG_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"942","SHOP","TB_EMRG_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"943","SHOP","TB_EMRG_STAT_TOT","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"944","SHOP","TB_DVC_STAT_TOT","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"945","SHOP","TB_DVC_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"946","SHOP","TB_DVC_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"947","SHOP","TB_DVC_STAT_TOT","TGT_CNT","건수","TB_DVC_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"948","SHOP","TB_DVC_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"949","SHOP","TB_DVC_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"950","SHOP","TB_DVC_STAT_TOT","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"951","SHOP","TB_DVC_STAT_TOT","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"952","SHOP","TB_VISIT_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"953","SHOP","TB_VISIT_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"954","SHOP","TB_VISIT_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"955","SHOP","TB_VISIT_STAT_TOT","TGT_CNT","건수","TB_VISIT_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"956","SHOP","TB_VISIT_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"957","SHOP","TB_VISIT_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"958","SHOP","TB_VISIT_STAT_TOT","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"959","SHOP","TB_VISIT_STAT_TOT","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"960","SHOP","TB_VISIT_STAT_TOT","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"961","SHOP","TB_CARECALL_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"962","SHOP","TB_CARECALL_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"963","SHOP","TB_CARECALL_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"964","SHOP","TB_CARECALL_STAT_TOT","TGT_CNT","건수","TB_CARECALL_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"965","SHOP","TB_CARECALL_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"966","SHOP","TB_CARECALL_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"967","SHOP","TB_APLY_STAT_TOT","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"968","SHOP","TB_APLY_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"969","SHOP","TB_APLY_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"970","SHOP","TB_APLY_STAT_TOT","TGT_CNT","건수","TB_APLY_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"971","SHOP","TB_APLY_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"972","SHOP","TB_APLY_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"973","SHOP","TB_APLY_STAT_TOT","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"974","SHOP","TB_AS_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"975","SHOP","TB_AS_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"976","SHOP","TB_AS_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"977","SHOP","TB_AS_STAT_TOT","TGT_CNT","건수","TB_AS_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"978","SHOP","TB_AS_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"979","SHOP","TB_AS_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"980","SHOP","TB_AS_STAT_TOT","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"981","SHOP","TB_AS_STAT_TOT","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"982","SHOP","TB_LOGIN_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"983","SHOP","TB_LOGIN_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"984","SHOP","TB_LOGIN_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"985","SHOP","TB_LOGIN_STAT_TOT","TGT_CNT","건수","TB_LOGIN_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"986","SHOP","TB_LOGIN_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"987","SHOP","TB_LOGIN_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"988","SHOP","TB_LOGIN_STAT_TOT","CMPTN_CNT","","","","N","NUMBER","10","","N","","7"
-"989","SHOP","TB_LOGIN_STAT_TOT","CANCL_CNT","","","","N","NUMBER","10","","N","","8"
-"990","SHOP","TB_LOGIN_STAT_TOT","AVRG_MIN","","","","N","NUMBER","8","1","N","","9"
-"991","SHOP","TB_SVC_STAT_TOT","STAT_SEQ","","","","N","NUMBER","12","","N","","1"
-"992","SHOP","TB_SVC_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"993","SHOP","TB_SVC_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"994","SHOP","TB_SVC_STAT_TOT","TGT_CNT","건수","TB_SVC_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
-"995","SHOP","TB_SVC_STAT_TOT","EMRG_CNT","","","","N","NUMBER","10","","N","","5"
-"996","SHOP","TB_SVC_STAT_TOT","REG_DT","","","","N","DATE","","","N","","6"
-"997","SHOP","TB_RPRT_STAT_TOT","STAT_SEQ","","","","Y","NUMBER","12","","Y","","1"
-"998","SHOP","TB_RPRT_STAT_TOT","INST_ID","","","","Y","VARCHAR2","20","","N","","2"
-"999","SHOP","TB_RPRT_STAT_TOT","STAT_YM","","","","Y","VARCHAR2","6","","N","","3"
-"1000","SHOP","TB_RPRT_STAT_TOT","TGT_CNT","건수","TB_RPRT_STAT_TOT","건수","N","NUMBER","10","","N","건수","4"
+﻿OWNER,TABLE_NAME,COLUMN_ID,COLUMN_NAME,DATA_TYPE,DATA_LENGTH,DATA_SCALE,NULLABLE,DATA_DEFAULT,COMMENTS,IS_PK,PK정보,AK정보,FK정보,개인정보여부_추정
+SHOP,TB_CUST_MST,1,CUST_ID,VARCHAR2,20,,N,,CUST 식별번호,Y,PK01,,,N
+SHOP,TB_CUST_MST,2,CUST_NM,VARCHAR2,100,,Y,,CUST 명칭,N,,,,Y
+SHOP,TB_CUST_MST,3,CUST_ADDR,VARCHAR2,300,,Y,,CUST 주소,N,,,,Y
+SHOP,TB_CUST_MST,4,CUST_TEL,VARCHAR2,20,,Y,,CUST 연락처,N,,,,Y
+SHOP,TB_CUST_MST,5,CUST_EMAIL,VARCHAR2,100,,Y,,CUST 이메일,N,,,,Y
+SHOP,TB_CUST_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_CUST_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_CUST_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CUST_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CUST_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CUST_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CUST_DTL,1,CUST_ID,VARCHAR2,20,,N,,CUST 식별번호,Y,PK01,,,N
+SHOP,TB_CUST_DTL,2,CUST_ID,VARCHAR2,20,,N,,CUST 참조키,N,,,TB_CUST_MST.CUST_ID,N
+SHOP,TB_CUST_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_CUST_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_CUST_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_CUST_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_CUST_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CUST_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CUST_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CUST_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CUST_HIST,1,CUST_ID,VARCHAR2,20,,N,,CUST 식별번호,Y,PK01,,,N
+SHOP,TB_CUST_HIST,2,CUST_ID,VARCHAR2,20,,N,,CUST 참조키,N,,,TB_CUST_MST.CUST_ID,N
+SHOP,TB_CUST_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_CUST_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_CUST_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_CUST_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CUST_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CUST_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CUST_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CUST_CD,1,CUST_ID,VARCHAR2,20,,N,,CUST 식별번호,Y,PK01,,,N
+SHOP,TB_CUST_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_CUST_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_CUST_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_CUST_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CUST_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CUST_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CUST_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ORD_MST,1,ORD_ID,VARCHAR2,20,,N,,ORD 식별번호,Y,PK01,,,N
+SHOP,TB_ORD_MST,2,ORD_NM,VARCHAR2,100,,Y,,ORD 명칭,N,,,,Y
+SHOP,TB_ORD_MST,3,ORD_ADDR,VARCHAR2,300,,Y,,ORD 주소,N,,,,Y
+SHOP,TB_ORD_MST,4,ORD_TEL,VARCHAR2,20,,Y,,ORD 연락처,N,,,,Y
+SHOP,TB_ORD_MST,5,ORD_EMAIL,VARCHAR2,100,,Y,,ORD 이메일,N,,,,Y
+SHOP,TB_ORD_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_ORD_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_ORD_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ORD_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ORD_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ORD_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ORD_DTL,1,ORD_ID,VARCHAR2,20,,N,,ORD 식별번호,Y,PK01,,,N
+SHOP,TB_ORD_DTL,2,ORD_ID,VARCHAR2,20,,N,,ORD 참조키,N,,,TB_ORD_MST.ORD_ID,N
+SHOP,TB_ORD_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_ORD_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_ORD_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_ORD_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_ORD_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ORD_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ORD_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ORD_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ORD_HIST,1,ORD_ID,VARCHAR2,20,,N,,ORD 식별번호,Y,PK01,,,N
+SHOP,TB_ORD_HIST,2,ORD_ID,VARCHAR2,20,,N,,ORD 참조키,N,,,TB_ORD_MST.ORD_ID,N
+SHOP,TB_ORD_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_ORD_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_ORD_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_ORD_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ORD_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ORD_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ORD_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ORD_CD,1,ORD_ID,VARCHAR2,20,,N,,ORD 식별번호,Y,PK01,,,N
+SHOP,TB_ORD_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_ORD_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_ORD_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_ORD_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ORD_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ORD_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ORD_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PROD_MST,1,PROD_ID,VARCHAR2,20,,N,,PROD 식별번호,Y,PK01,,,N
+SHOP,TB_PROD_MST,2,PROD_NM,VARCHAR2,100,,Y,,PROD 명칭,N,,,,Y
+SHOP,TB_PROD_MST,3,PROD_ADDR,VARCHAR2,300,,Y,,PROD 주소,N,,,,Y
+SHOP,TB_PROD_MST,4,PROD_TEL,VARCHAR2,20,,Y,,PROD 연락처,N,,,,Y
+SHOP,TB_PROD_MST,5,PROD_EMAIL,VARCHAR2,100,,Y,,PROD 이메일,N,,,,Y
+SHOP,TB_PROD_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_PROD_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_PROD_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PROD_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PROD_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PROD_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PROD_DTL,1,PROD_ID,VARCHAR2,20,,N,,PROD 식별번호,Y,PK01,,,N
+SHOP,TB_PROD_DTL,2,PROD_ID,VARCHAR2,20,,N,,PROD 참조키,N,,,TB_PROD_MST.PROD_ID,N
+SHOP,TB_PROD_DTL,3,WH_ID,VARCHAR2,20,,Y,,WH 참조키,N,,,TB_WH_MST.WH_ID,N
+SHOP,TB_PROD_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_PROD_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_PROD_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_PROD_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_PROD_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PROD_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PROD_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PROD_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PROD_HIST,1,PROD_ID,VARCHAR2,20,,N,,PROD 식별번호,Y,PK01,,,N
+SHOP,TB_PROD_HIST,2,PROD_ID,VARCHAR2,20,,N,,PROD 참조키,N,,,TB_PROD_MST.PROD_ID,N
+SHOP,TB_PROD_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_PROD_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_PROD_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_PROD_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PROD_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PROD_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PROD_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PROD_CD,1,PROD_ID,VARCHAR2,20,,N,,PROD 식별번호,Y,PK01,,,N
+SHOP,TB_PROD_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_PROD_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_PROD_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_PROD_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PROD_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PROD_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PROD_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CTRT_MST,1,CTRT_ID,VARCHAR2,20,,N,,CTRT 식별번호,Y,PK01,,,N
+SHOP,TB_CTRT_MST,2,CTRT_NM,VARCHAR2,100,,Y,,CTRT 명칭,N,,,,Y
+SHOP,TB_CTRT_MST,3,CTRT_ADDR,VARCHAR2,300,,Y,,CTRT 주소,N,,,,Y
+SHOP,TB_CTRT_MST,4,CTRT_TEL,VARCHAR2,20,,Y,,CTRT 연락처,N,,,,Y
+SHOP,TB_CTRT_MST,5,CTRT_EMAIL,VARCHAR2,100,,Y,,CTRT 이메일,N,,,,Y
+SHOP,TB_CTRT_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_CTRT_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_CTRT_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CTRT_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CTRT_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CTRT_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CTRT_DTL,1,CTRT_ID,VARCHAR2,20,,N,,CTRT 식별번호,Y,PK01,,,N
+SHOP,TB_CTRT_DTL,2,CTRT_ID,VARCHAR2,20,,N,,CTRT 참조키,N,,,TB_CTRT_MST.CTRT_ID,N
+SHOP,TB_CTRT_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_CTRT_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_CTRT_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_CTRT_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_CTRT_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CTRT_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CTRT_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CTRT_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CTRT_HIST,1,CTRT_ID,VARCHAR2,20,,N,,CTRT 식별번호,Y,PK01,,,N
+SHOP,TB_CTRT_HIST,2,CTRT_ID,VARCHAR2,20,,N,,CTRT 참조키,N,,,TB_CTRT_MST.CTRT_ID,N
+SHOP,TB_CTRT_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_CTRT_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_CTRT_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_CTRT_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CTRT_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CTRT_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CTRT_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CTRT_CD,1,CTRT_ID,VARCHAR2,20,,N,,CTRT 식별번호,Y,PK01,,,N
+SHOP,TB_CTRT_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_CTRT_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_CTRT_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_CTRT_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CTRT_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CTRT_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CTRT_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PAY_MST,1,PAY_ID,VARCHAR2,20,,N,,PAY 식별번호,Y,PK01,,,N
+SHOP,TB_PAY_MST,2,PAY_NM,VARCHAR2,100,,Y,,PAY 명칭,N,,,,Y
+SHOP,TB_PAY_MST,3,PAY_ADDR,VARCHAR2,300,,Y,,PAY 주소,N,,,,Y
+SHOP,TB_PAY_MST,4,PAY_TEL,VARCHAR2,20,,Y,,PAY 연락처,N,,,,Y
+SHOP,TB_PAY_MST,5,PAY_EMAIL,VARCHAR2,100,,Y,,PAY 이메일,N,,,,Y
+SHOP,TB_PAY_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_PAY_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_PAY_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PAY_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PAY_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PAY_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PAY_DTL,1,PAY_ID,VARCHAR2,20,,N,,PAY 식별번호,Y,PK01,,,N
+SHOP,TB_PAY_DTL,2,PAY_ID,VARCHAR2,20,,N,,PAY 참조키,N,,,TB_PAY_MST.PAY_ID,N
+SHOP,TB_PAY_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_PAY_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_PAY_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_PAY_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_PAY_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PAY_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PAY_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PAY_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PAY_HIST,1,PAY_ID,VARCHAR2,20,,N,,PAY 식별번호,Y,PK01,,,N
+SHOP,TB_PAY_HIST,2,PAY_ID,VARCHAR2,20,,N,,PAY 참조키,N,,,TB_PAY_MST.PAY_ID,N
+SHOP,TB_PAY_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_PAY_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_PAY_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_PAY_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PAY_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PAY_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PAY_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PAY_CD,1,PAY_ID,VARCHAR2,20,,N,,PAY 식별번호,Y,PK01,,,N
+SHOP,TB_PAY_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_PAY_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_PAY_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_PAY_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PAY_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PAY_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PAY_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_SHIP_MST,1,SHIP_ID,VARCHAR2,20,,N,,SHIP 식별번호,Y,PK01,,,N
+SHOP,TB_SHIP_MST,2,SHIP_NM,VARCHAR2,100,,Y,,SHIP 명칭,N,,,,Y
+SHOP,TB_SHIP_MST,3,SHIP_ADDR,VARCHAR2,300,,Y,,SHIP 주소,N,,,,Y
+SHOP,TB_SHIP_MST,4,SHIP_TEL,VARCHAR2,20,,Y,,SHIP 연락처,N,,,,Y
+SHOP,TB_SHIP_MST,5,SHIP_EMAIL,VARCHAR2,100,,Y,,SHIP 이메일,N,,,,Y
+SHOP,TB_SHIP_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_SHIP_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_SHIP_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_SHIP_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_SHIP_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_SHIP_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_SHIP_DTL,1,SHIP_ID,VARCHAR2,20,,N,,SHIP 식별번호,Y,PK01,,,N
+SHOP,TB_SHIP_DTL,2,SHIP_ID,VARCHAR2,20,,N,,SHIP 참조키,N,,,TB_SHIP_MST.SHIP_ID,N
+SHOP,TB_SHIP_DTL,3,NOTI_ID,VARCHAR2,20,,Y,,NOTI 참조키,N,,,TB_NOTI_MST.NOTI_ID,N
+SHOP,TB_SHIP_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_SHIP_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_SHIP_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_SHIP_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_SHIP_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_SHIP_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_SHIP_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_SHIP_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_SHIP_HIST,1,SHIP_ID,VARCHAR2,20,,N,,SHIP 식별번호,Y,PK01,,,N
+SHOP,TB_SHIP_HIST,2,SHIP_ID,VARCHAR2,20,,N,,SHIP 참조키,N,,,TB_SHIP_MST.SHIP_ID,N
+SHOP,TB_SHIP_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_SHIP_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_SHIP_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_SHIP_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_SHIP_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_SHIP_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_SHIP_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_SHIP_CD,1,SHIP_ID,VARCHAR2,20,,N,,SHIP 식별번호,Y,PK01,,,N
+SHOP,TB_SHIP_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_SHIP_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_SHIP_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_SHIP_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_SHIP_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_SHIP_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_SHIP_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CPN_MST,1,CPN_ID,VARCHAR2,20,,N,,CPN 식별번호,Y,PK01,,,N
+SHOP,TB_CPN_MST,2,CPN_NM,VARCHAR2,100,,Y,,CPN 명칭,N,,,,Y
+SHOP,TB_CPN_MST,3,CPN_ADDR,VARCHAR2,300,,Y,,CPN 주소,N,,,,Y
+SHOP,TB_CPN_MST,4,CPN_TEL,VARCHAR2,20,,Y,,CPN 연락처,N,,,,Y
+SHOP,TB_CPN_MST,5,CPN_EMAIL,VARCHAR2,100,,Y,,CPN 이메일,N,,,,Y
+SHOP,TB_CPN_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_CPN_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_CPN_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CPN_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CPN_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CPN_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CPN_DTL,1,CPN_ID,VARCHAR2,20,,N,,CPN 식별번호,Y,PK01,,,N
+SHOP,TB_CPN_DTL,2,CPN_ID,VARCHAR2,20,,N,,CPN 참조키,N,,,TB_CPN_MST.CPN_ID,N
+SHOP,TB_CPN_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_CPN_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_CPN_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_CPN_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_CPN_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CPN_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CPN_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CPN_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CPN_HIST,1,CPN_ID,VARCHAR2,20,,N,,CPN 식별번호,Y,PK01,,,N
+SHOP,TB_CPN_HIST,2,CPN_ID,VARCHAR2,20,,N,,CPN 참조키,N,,,TB_CPN_MST.CPN_ID,N
+SHOP,TB_CPN_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_CPN_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_CPN_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_CPN_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CPN_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CPN_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CPN_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CPN_CD,1,CPN_ID,VARCHAR2,20,,N,,CPN 식별번호,Y,PK01,,,N
+SHOP,TB_CPN_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_CPN_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_CPN_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_CPN_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CPN_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CPN_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CPN_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RVW_MST,1,RVW_ID,VARCHAR2,20,,N,,RVW 식별번호,Y,PK01,,,N
+SHOP,TB_RVW_MST,2,RVW_NM,VARCHAR2,100,,Y,,RVW 명칭,N,,,,Y
+SHOP,TB_RVW_MST,3,RVW_ADDR,VARCHAR2,300,,Y,,RVW 주소,N,,,,Y
+SHOP,TB_RVW_MST,4,RVW_TEL,VARCHAR2,20,,Y,,RVW 연락처,N,,,,Y
+SHOP,TB_RVW_MST,5,RVW_EMAIL,VARCHAR2,100,,Y,,RVW 이메일,N,,,,Y
+SHOP,TB_RVW_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_RVW_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_RVW_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RVW_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RVW_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RVW_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RVW_DTL,1,RVW_ID,VARCHAR2,20,,N,,RVW 식별번호,Y,PK01,,,N
+SHOP,TB_RVW_DTL,2,RVW_ID,VARCHAR2,20,,N,,RVW 참조키,N,,,TB_RVW_MST.RVW_ID,N
+SHOP,TB_RVW_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_RVW_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_RVW_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_RVW_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_RVW_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RVW_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RVW_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RVW_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RVW_HIST,1,RVW_ID,VARCHAR2,20,,N,,RVW 식별번호,Y,PK01,,,N
+SHOP,TB_RVW_HIST,2,RVW_ID,VARCHAR2,20,,N,,RVW 참조키,N,,,TB_RVW_MST.RVW_ID,N
+SHOP,TB_RVW_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_RVW_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_RVW_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_RVW_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RVW_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RVW_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RVW_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RVW_CD,1,RVW_ID,VARCHAR2,20,,N,,RVW 식별번호,Y,PK01,,,N
+SHOP,TB_RVW_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_RVW_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_RVW_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_RVW_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RVW_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RVW_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RVW_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_INQ_MST,1,INQ_ID,VARCHAR2,20,,N,,INQ 식별번호,Y,PK01,,,N
+SHOP,TB_INQ_MST,2,INQ_NM,VARCHAR2,100,,Y,,INQ 명칭,N,,,,Y
+SHOP,TB_INQ_MST,3,INQ_ADDR,VARCHAR2,300,,Y,,INQ 주소,N,,,,Y
+SHOP,TB_INQ_MST,4,INQ_TEL,VARCHAR2,20,,Y,,INQ 연락처,N,,,,Y
+SHOP,TB_INQ_MST,5,INQ_EMAIL,VARCHAR2,100,,Y,,INQ 이메일,N,,,,Y
+SHOP,TB_INQ_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_INQ_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_INQ_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_INQ_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_INQ_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_INQ_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_INQ_DTL,1,INQ_ID,VARCHAR2,20,,N,,INQ 식별번호,Y,PK01,,,N
+SHOP,TB_INQ_DTL,2,INQ_ID,VARCHAR2,20,,N,,INQ 참조키,N,,,TB_INQ_MST.INQ_ID,N
+SHOP,TB_INQ_DTL,3,EMP_ID,VARCHAR2,20,,Y,,EMP 참조키,N,,,TB_EMP_MST.EMP_ID,N
+SHOP,TB_INQ_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_INQ_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_INQ_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_INQ_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_INQ_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_INQ_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_INQ_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_INQ_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_INQ_HIST,1,INQ_ID,VARCHAR2,20,,N,,INQ 식별번호,Y,PK01,,,N
+SHOP,TB_INQ_HIST,2,INQ_ID,VARCHAR2,20,,N,,INQ 참조키,N,,,TB_INQ_MST.INQ_ID,N
+SHOP,TB_INQ_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_INQ_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_INQ_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_INQ_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_INQ_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_INQ_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_INQ_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_INQ_CD,1,INQ_ID,VARCHAR2,20,,N,,INQ 식별번호,Y,PK01,,,N
+SHOP,TB_INQ_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_INQ_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_INQ_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_INQ_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_INQ_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_INQ_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_INQ_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CLM_MST,1,CLM_ID,VARCHAR2,20,,N,,CLM 식별번호,Y,PK01,,,N
+SHOP,TB_CLM_MST,2,CLM_NM,VARCHAR2,100,,Y,,CLM 명칭,N,,,,Y
+SHOP,TB_CLM_MST,3,CLM_ADDR,VARCHAR2,300,,Y,,CLM 주소,N,,,,Y
+SHOP,TB_CLM_MST,4,CLM_TEL,VARCHAR2,20,,Y,,CLM 연락처,N,,,,Y
+SHOP,TB_CLM_MST,5,CLM_EMAIL,VARCHAR2,100,,Y,,CLM 이메일,N,,,,Y
+SHOP,TB_CLM_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_CLM_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_CLM_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CLM_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CLM_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CLM_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CLM_DTL,1,CLM_ID,VARCHAR2,20,,N,,CLM 식별번호,Y,PK01,,,N
+SHOP,TB_CLM_DTL,2,CLM_ID,VARCHAR2,20,,N,,CLM 참조키,N,,,TB_CLM_MST.CLM_ID,N
+SHOP,TB_CLM_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_CLM_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_CLM_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_CLM_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_CLM_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CLM_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CLM_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CLM_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CLM_HIST,1,CLM_ID,VARCHAR2,20,,N,,CLM 식별번호,Y,PK01,,,N
+SHOP,TB_CLM_HIST,2,CLM_ID,VARCHAR2,20,,N,,CLM 참조키,N,,,TB_CLM_MST.CLM_ID,N
+SHOP,TB_CLM_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_CLM_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_CLM_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_CLM_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CLM_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CLM_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CLM_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CLM_CD,1,CLM_ID,VARCHAR2,20,,N,,CLM 식별번호,Y,PK01,,,N
+SHOP,TB_CLM_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_CLM_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_CLM_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_CLM_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CLM_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CLM_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CLM_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_EMP_MST,1,EMP_ID,VARCHAR2,20,,N,,EMP 식별번호,Y,PK01,,,N
+SHOP,TB_EMP_MST,2,EMP_NM,VARCHAR2,100,,Y,,EMP 명칭,N,,,,Y
+SHOP,TB_EMP_MST,3,EMP_ADDR,VARCHAR2,300,,Y,,EMP 주소,N,,,,Y
+SHOP,TB_EMP_MST,4,EMP_TEL,VARCHAR2,20,,Y,,EMP 연락처,N,,,,Y
+SHOP,TB_EMP_MST,5,EMP_EMAIL,VARCHAR2,100,,Y,,EMP 이메일,N,,,,Y
+SHOP,TB_EMP_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_EMP_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_EMP_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_EMP_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_EMP_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_EMP_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_EMP_DTL,1,EMP_ID,VARCHAR2,20,,N,,EMP 식별번호,Y,PK01,,,N
+SHOP,TB_EMP_DTL,2,EMP_ID,VARCHAR2,20,,N,,EMP 참조키,N,,,TB_EMP_MST.EMP_ID,N
+SHOP,TB_EMP_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_EMP_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_EMP_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_EMP_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_EMP_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_EMP_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_EMP_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_EMP_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_EMP_HIST,1,EMP_ID,VARCHAR2,20,,N,,EMP 식별번호,Y,PK01,,,N
+SHOP,TB_EMP_HIST,2,EMP_ID,VARCHAR2,20,,N,,EMP 참조키,N,,,TB_EMP_MST.EMP_ID,N
+SHOP,TB_EMP_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_EMP_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_EMP_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_EMP_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_EMP_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_EMP_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_EMP_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_EMP_CD,1,EMP_ID,VARCHAR2,20,,N,,EMP 식별번호,Y,PK01,,,N
+SHOP,TB_EMP_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_EMP_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_EMP_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_EMP_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_EMP_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_EMP_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_EMP_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_DEPT_MST,1,DEPT_ID,VARCHAR2,20,,N,,DEPT 식별번호,Y,PK01,,,N
+SHOP,TB_DEPT_MST,2,DEPT_NM,VARCHAR2,100,,Y,,DEPT 명칭,N,,,,Y
+SHOP,TB_DEPT_MST,3,DEPT_ADDR,VARCHAR2,300,,Y,,DEPT 주소,N,,,,Y
+SHOP,TB_DEPT_MST,4,DEPT_TEL,VARCHAR2,20,,Y,,DEPT 연락처,N,,,,Y
+SHOP,TB_DEPT_MST,5,DEPT_EMAIL,VARCHAR2,100,,Y,,DEPT 이메일,N,,,,Y
+SHOP,TB_DEPT_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_DEPT_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_DEPT_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_DEPT_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_DEPT_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_DEPT_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_DEPT_DTL,1,DEPT_ID,VARCHAR2,20,,N,,DEPT 식별번호,Y,PK01,,,N
+SHOP,TB_DEPT_DTL,2,DEPT_ID,VARCHAR2,20,,N,,DEPT 참조키,N,,,TB_DEPT_MST.DEPT_ID,N
+SHOP,TB_DEPT_DTL,3,PNT_ID,VARCHAR2,20,,Y,,PNT 참조키,N,,,TB_PNT_MST.PNT_ID,N
+SHOP,TB_DEPT_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_DEPT_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_DEPT_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_DEPT_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_DEPT_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_DEPT_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_DEPT_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_DEPT_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_DEPT_HIST,1,DEPT_ID,VARCHAR2,20,,N,,DEPT 식별번호,Y,PK01,,,N
+SHOP,TB_DEPT_HIST,2,DEPT_ID,VARCHAR2,20,,N,,DEPT 참조키,N,,,TB_DEPT_MST.DEPT_ID,N
+SHOP,TB_DEPT_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_DEPT_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_DEPT_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_DEPT_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_DEPT_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_DEPT_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_DEPT_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_DEPT_CD,1,DEPT_ID,VARCHAR2,20,,N,,DEPT 식별번호,Y,PK01,,,N
+SHOP,TB_DEPT_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_DEPT_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_DEPT_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_DEPT_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_DEPT_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_DEPT_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_DEPT_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_WH_MST,1,WH_ID,VARCHAR2,20,,N,,WH 식별번호,Y,PK01,,,N
+SHOP,TB_WH_MST,2,WH_NM,VARCHAR2,100,,Y,,WH 명칭,N,,,,Y
+SHOP,TB_WH_MST,3,WH_ADDR,VARCHAR2,300,,Y,,WH 주소,N,,,,Y
+SHOP,TB_WH_MST,4,WH_TEL,VARCHAR2,20,,Y,,WH 연락처,N,,,,Y
+SHOP,TB_WH_MST,5,WH_EMAIL,VARCHAR2,100,,Y,,WH 이메일,N,,,,Y
+SHOP,TB_WH_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_WH_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_WH_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_WH_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_WH_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_WH_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_WH_DTL,1,WH_ID,VARCHAR2,20,,N,,WH 식별번호,Y,PK01,,,N
+SHOP,TB_WH_DTL,2,WH_ID,VARCHAR2,20,,N,,WH 참조키,N,,,TB_WH_MST.WH_ID,N
+SHOP,TB_WH_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_WH_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_WH_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_WH_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_WH_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_WH_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_WH_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_WH_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_WH_HIST,1,WH_ID,VARCHAR2,20,,N,,WH 식별번호,Y,PK01,,,N
+SHOP,TB_WH_HIST,2,WH_ID,VARCHAR2,20,,N,,WH 참조키,N,,,TB_WH_MST.WH_ID,N
+SHOP,TB_WH_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_WH_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_WH_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_WH_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_WH_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_WH_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_WH_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_WH_CD,1,WH_ID,VARCHAR2,20,,N,,WH 식별번호,Y,PK01,,,N
+SHOP,TB_WH_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_WH_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_WH_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_WH_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_WH_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_WH_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_WH_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_VEND_MST,1,VEND_ID,VARCHAR2,20,,N,,VEND 식별번호,Y,PK01,,,N
+SHOP,TB_VEND_MST,2,VEND_NM,VARCHAR2,100,,Y,,VEND 명칭,N,,,,Y
+SHOP,TB_VEND_MST,3,VEND_ADDR,VARCHAR2,300,,Y,,VEND 주소,N,,,,Y
+SHOP,TB_VEND_MST,4,VEND_TEL,VARCHAR2,20,,Y,,VEND 연락처,N,,,,Y
+SHOP,TB_VEND_MST,5,VEND_EMAIL,VARCHAR2,100,,Y,,VEND 이메일,N,,,,Y
+SHOP,TB_VEND_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_VEND_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_VEND_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_VEND_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_VEND_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_VEND_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_VEND_DTL,1,VEND_ID,VARCHAR2,20,,N,,VEND 식별번호,Y,PK01,,,N
+SHOP,TB_VEND_DTL,2,VEND_ID,VARCHAR2,20,,N,,VEND 참조키,N,,,TB_VEND_MST.VEND_ID,N
+SHOP,TB_VEND_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_VEND_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_VEND_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_VEND_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_VEND_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_VEND_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_VEND_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_VEND_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_VEND_HIST,1,VEND_ID,VARCHAR2,20,,N,,VEND 식별번호,Y,PK01,,,N
+SHOP,TB_VEND_HIST,2,VEND_ID,VARCHAR2,20,,N,,VEND 참조키,N,,,TB_VEND_MST.VEND_ID,N
+SHOP,TB_VEND_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_VEND_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_VEND_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_VEND_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_VEND_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_VEND_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_VEND_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_VEND_CD,1,VEND_ID,VARCHAR2,20,,N,,VEND 식별번호,Y,PK01,,,N
+SHOP,TB_VEND_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_VEND_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_VEND_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_VEND_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_VEND_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_VEND_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_VEND_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ITEM_MST,1,ITEM_ID,VARCHAR2,20,,N,,ITEM 식별번호,Y,PK01,,,N
+SHOP,TB_ITEM_MST,2,ITEM_NM,VARCHAR2,100,,Y,,ITEM 명칭,N,,,,Y
+SHOP,TB_ITEM_MST,3,ITEM_ADDR,VARCHAR2,300,,Y,,ITEM 주소,N,,,,Y
+SHOP,TB_ITEM_MST,4,ITEM_TEL,VARCHAR2,20,,Y,,ITEM 연락처,N,,,,Y
+SHOP,TB_ITEM_MST,5,ITEM_EMAIL,VARCHAR2,100,,Y,,ITEM 이메일,N,,,,Y
+SHOP,TB_ITEM_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_ITEM_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_ITEM_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ITEM_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ITEM_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ITEM_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ITEM_DTL,1,ITEM_ID,VARCHAR2,20,,N,,ITEM 식별번호,Y,PK01,,,N
+SHOP,TB_ITEM_DTL,2,ITEM_ID,VARCHAR2,20,,N,,ITEM 참조키,N,,,TB_ITEM_MST.ITEM_ID,N
+SHOP,TB_ITEM_DTL,3,INQ_ID,VARCHAR2,20,,Y,,INQ 참조키,N,,,TB_INQ_MST.INQ_ID,N
+SHOP,TB_ITEM_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_ITEM_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_ITEM_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_ITEM_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_ITEM_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ITEM_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ITEM_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ITEM_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ITEM_HIST,1,ITEM_ID,VARCHAR2,20,,N,,ITEM 식별번호,Y,PK01,,,N
+SHOP,TB_ITEM_HIST,2,ITEM_ID,VARCHAR2,20,,N,,ITEM 참조키,N,,,TB_ITEM_MST.ITEM_ID,N
+SHOP,TB_ITEM_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_ITEM_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_ITEM_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_ITEM_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ITEM_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ITEM_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ITEM_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ITEM_CD,1,ITEM_ID,VARCHAR2,20,,N,,ITEM 식별번호,Y,PK01,,,N
+SHOP,TB_ITEM_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_ITEM_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_ITEM_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_ITEM_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ITEM_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ITEM_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ITEM_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ACCT_MST,1,ACCT_ID,VARCHAR2,20,,N,,ACCT 식별번호,Y,PK01,,,N
+SHOP,TB_ACCT_MST,2,ACCT_NM,VARCHAR2,100,,Y,,ACCT 명칭,N,,,,Y
+SHOP,TB_ACCT_MST,3,ACCT_ADDR,VARCHAR2,300,,Y,,ACCT 주소,N,,,,Y
+SHOP,TB_ACCT_MST,4,ACCT_TEL,VARCHAR2,20,,Y,,ACCT 연락처,N,,,,Y
+SHOP,TB_ACCT_MST,5,ACCT_EMAIL,VARCHAR2,100,,Y,,ACCT 이메일,N,,,,Y
+SHOP,TB_ACCT_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_ACCT_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_ACCT_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ACCT_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ACCT_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ACCT_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ACCT_DTL,1,ACCT_ID,VARCHAR2,20,,N,,ACCT 식별번호,Y,PK01,,,N
+SHOP,TB_ACCT_DTL,2,ACCT_ID,VARCHAR2,20,,N,,ACCT 참조키,N,,,TB_ACCT_MST.ACCT_ID,N
+SHOP,TB_ACCT_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_ACCT_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_ACCT_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_ACCT_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_ACCT_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ACCT_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ACCT_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ACCT_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ACCT_HIST,1,ACCT_ID,VARCHAR2,20,,N,,ACCT 식별번호,Y,PK01,,,N
+SHOP,TB_ACCT_HIST,2,ACCT_ID,VARCHAR2,20,,N,,ACCT 참조키,N,,,TB_ACCT_MST.ACCT_ID,N
+SHOP,TB_ACCT_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_ACCT_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_ACCT_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_ACCT_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ACCT_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ACCT_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ACCT_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_ACCT_CD,1,ACCT_ID,VARCHAR2,20,,N,,ACCT 식별번호,Y,PK01,,,N
+SHOP,TB_ACCT_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_ACCT_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_ACCT_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_ACCT_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_ACCT_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_ACCT_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_ACCT_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRCH_MST,1,BRCH_ID,VARCHAR2,20,,N,,BRCH 식별번호,Y,PK01,,,N
+SHOP,TB_BRCH_MST,2,BRCH_NM,VARCHAR2,100,,Y,,BRCH 명칭,N,,,,Y
+SHOP,TB_BRCH_MST,3,BRCH_ADDR,VARCHAR2,300,,Y,,BRCH 주소,N,,,,Y
+SHOP,TB_BRCH_MST,4,BRCH_TEL,VARCHAR2,20,,Y,,BRCH 연락처,N,,,,Y
+SHOP,TB_BRCH_MST,5,BRCH_EMAIL,VARCHAR2,100,,Y,,BRCH 이메일,N,,,,Y
+SHOP,TB_BRCH_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_BRCH_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_BRCH_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRCH_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRCH_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRCH_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRCH_DTL,1,BRCH_ID,VARCHAR2,20,,N,,BRCH 식별번호,Y,PK01,,,N
+SHOP,TB_BRCH_DTL,2,BRCH_ID,VARCHAR2,20,,N,,BRCH 참조키,N,,,TB_BRCH_MST.BRCH_ID,N
+SHOP,TB_BRCH_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_BRCH_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_BRCH_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_BRCH_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_BRCH_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRCH_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRCH_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRCH_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRCH_HIST,1,BRCH_ID,VARCHAR2,20,,N,,BRCH 식별번호,Y,PK01,,,N
+SHOP,TB_BRCH_HIST,2,BRCH_ID,VARCHAR2,20,,N,,BRCH 참조키,N,,,TB_BRCH_MST.BRCH_ID,N
+SHOP,TB_BRCH_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_BRCH_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_BRCH_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_BRCH_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRCH_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRCH_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRCH_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRCH_CD,1,BRCH_ID,VARCHAR2,20,,N,,BRCH 식별번호,Y,PK01,,,N
+SHOP,TB_BRCH_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_BRCH_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_BRCH_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_BRCH_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRCH_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRCH_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRCH_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_STORE_MST,1,STORE_ID,VARCHAR2,20,,N,,STORE 식별번호,Y,PK01,,,N
+SHOP,TB_STORE_MST,2,STORE_NM,VARCHAR2,100,,Y,,STORE 명칭,N,,,,Y
+SHOP,TB_STORE_MST,3,STORE_ADDR,VARCHAR2,300,,Y,,STORE 주소,N,,,,Y
+SHOP,TB_STORE_MST,4,STORE_TEL,VARCHAR2,20,,Y,,STORE 연락처,N,,,,Y
+SHOP,TB_STORE_MST,5,STORE_EMAIL,VARCHAR2,100,,Y,,STORE 이메일,N,,,,Y
+SHOP,TB_STORE_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_STORE_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_STORE_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_STORE_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_STORE_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_STORE_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_STORE_DTL,1,STORE_ID,VARCHAR2,20,,N,,STORE 식별번호,Y,PK01,,,N
+SHOP,TB_STORE_DTL,2,STORE_ID,VARCHAR2,20,,N,,STORE 참조키,N,,,TB_STORE_MST.STORE_ID,N
+SHOP,TB_STORE_DTL,3,TAX_ID,VARCHAR2,20,,Y,,TAX 참조키,N,,,TB_TAX_MST.TAX_ID,N
+SHOP,TB_STORE_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_STORE_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_STORE_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_STORE_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_STORE_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_STORE_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_STORE_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_STORE_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_STORE_HIST,1,STORE_ID,VARCHAR2,20,,N,,STORE 식별번호,Y,PK01,,,N
+SHOP,TB_STORE_HIST,2,STORE_ID,VARCHAR2,20,,N,,STORE 참조키,N,,,TB_STORE_MST.STORE_ID,N
+SHOP,TB_STORE_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_STORE_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_STORE_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_STORE_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_STORE_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_STORE_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_STORE_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_STORE_CD,1,STORE_ID,VARCHAR2,20,,N,,STORE 식별번호,Y,PK01,,,N
+SHOP,TB_STORE_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_STORE_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_STORE_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_STORE_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_STORE_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_STORE_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_STORE_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CATG_MST,1,CATG_ID,VARCHAR2,20,,N,,CATG 식별번호,Y,PK01,,,N
+SHOP,TB_CATG_MST,2,CATG_NM,VARCHAR2,100,,Y,,CATG 명칭,N,,,,Y
+SHOP,TB_CATG_MST,3,CATG_ADDR,VARCHAR2,300,,Y,,CATG 주소,N,,,,Y
+SHOP,TB_CATG_MST,4,CATG_TEL,VARCHAR2,20,,Y,,CATG 연락처,N,,,,Y
+SHOP,TB_CATG_MST,5,CATG_EMAIL,VARCHAR2,100,,Y,,CATG 이메일,N,,,,Y
+SHOP,TB_CATG_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_CATG_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_CATG_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CATG_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CATG_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CATG_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CATG_DTL,1,CATG_ID,VARCHAR2,20,,N,,CATG 식별번호,Y,PK01,,,N
+SHOP,TB_CATG_DTL,2,CATG_ID,VARCHAR2,20,,N,,CATG 참조키,N,,,TB_CATG_MST.CATG_ID,N
+SHOP,TB_CATG_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_CATG_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_CATG_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_CATG_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_CATG_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CATG_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CATG_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CATG_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CATG_HIST,1,CATG_ID,VARCHAR2,20,,N,,CATG 식별번호,Y,PK01,,,N
+SHOP,TB_CATG_HIST,2,CATG_ID,VARCHAR2,20,,N,,CATG 참조키,N,,,TB_CATG_MST.CATG_ID,N
+SHOP,TB_CATG_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_CATG_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_CATG_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_CATG_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CATG_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CATG_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CATG_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_CATG_CD,1,CATG_ID,VARCHAR2,20,,N,,CATG 식별번호,Y,PK01,,,N
+SHOP,TB_CATG_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_CATG_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_CATG_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_CATG_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_CATG_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_CATG_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_CATG_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRND_MST,1,BRND_ID,VARCHAR2,20,,N,,BRND 식별번호,Y,PK01,,,N
+SHOP,TB_BRND_MST,2,BRND_NM,VARCHAR2,100,,Y,,BRND 명칭,N,,,,Y
+SHOP,TB_BRND_MST,3,BRND_ADDR,VARCHAR2,300,,Y,,BRND 주소,N,,,,Y
+SHOP,TB_BRND_MST,4,BRND_TEL,VARCHAR2,20,,Y,,BRND 연락처,N,,,,Y
+SHOP,TB_BRND_MST,5,BRND_EMAIL,VARCHAR2,100,,Y,,BRND 이메일,N,,,,Y
+SHOP,TB_BRND_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_BRND_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_BRND_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRND_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRND_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRND_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRND_DTL,1,BRND_ID,VARCHAR2,20,,N,,BRND 식별번호,Y,PK01,,,N
+SHOP,TB_BRND_DTL,2,BRND_ID,VARCHAR2,20,,N,,BRND 참조키,N,,,TB_BRND_MST.BRND_ID,N
+SHOP,TB_BRND_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_BRND_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_BRND_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_BRND_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_BRND_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRND_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRND_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRND_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRND_HIST,1,BRND_ID,VARCHAR2,20,,N,,BRND 식별번호,Y,PK01,,,N
+SHOP,TB_BRND_HIST,2,BRND_ID,VARCHAR2,20,,N,,BRND 참조키,N,,,TB_BRND_MST.BRND_ID,N
+SHOP,TB_BRND_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_BRND_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_BRND_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_BRND_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRND_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRND_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRND_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_BRND_CD,1,BRND_ID,VARCHAR2,20,,N,,BRND 식별번호,Y,PK01,,,N
+SHOP,TB_BRND_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_BRND_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_BRND_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_BRND_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_BRND_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_BRND_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_BRND_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_TAX_MST,1,TAX_ID,VARCHAR2,20,,N,,TAX 식별번호,Y,PK01,,,N
+SHOP,TB_TAX_MST,2,TAX_NM,VARCHAR2,100,,Y,,TAX 명칭,N,,,,Y
+SHOP,TB_TAX_MST,3,TAX_ADDR,VARCHAR2,300,,Y,,TAX 주소,N,,,,Y
+SHOP,TB_TAX_MST,4,TAX_TEL,VARCHAR2,20,,Y,,TAX 연락처,N,,,,Y
+SHOP,TB_TAX_MST,5,TAX_EMAIL,VARCHAR2,100,,Y,,TAX 이메일,N,,,,Y
+SHOP,TB_TAX_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_TAX_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_TAX_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_TAX_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_TAX_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_TAX_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_TAX_DTL,1,TAX_ID,VARCHAR2,20,,N,,TAX 식별번호,Y,PK01,,,N
+SHOP,TB_TAX_DTL,2,TAX_ID,VARCHAR2,20,,N,,TAX 참조키,N,,,TB_TAX_MST.TAX_ID,N
+SHOP,TB_TAX_DTL,3,CPN_ID,VARCHAR2,20,,Y,,CPN 참조키,N,,,TB_CPN_MST.CPN_ID,N
+SHOP,TB_TAX_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_TAX_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_TAX_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_TAX_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_TAX_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_TAX_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_TAX_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_TAX_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_TAX_HIST,1,TAX_ID,VARCHAR2,20,,N,,TAX 식별번호,Y,PK01,,,N
+SHOP,TB_TAX_HIST,2,TAX_ID,VARCHAR2,20,,N,,TAX 참조키,N,,,TB_TAX_MST.TAX_ID,N
+SHOP,TB_TAX_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_TAX_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_TAX_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_TAX_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_TAX_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_TAX_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_TAX_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_TAX_CD,1,TAX_ID,VARCHAR2,20,,N,,TAX 식별번호,Y,PK01,,,N
+SHOP,TB_TAX_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_TAX_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_TAX_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_TAX_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_TAX_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_TAX_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_TAX_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RFND_MST,1,RFND_ID,VARCHAR2,20,,N,,RFND 식별번호,Y,PK01,,,N
+SHOP,TB_RFND_MST,2,RFND_NM,VARCHAR2,100,,Y,,RFND 명칭,N,,,,Y
+SHOP,TB_RFND_MST,3,RFND_ADDR,VARCHAR2,300,,Y,,RFND 주소,N,,,,Y
+SHOP,TB_RFND_MST,4,RFND_TEL,VARCHAR2,20,,Y,,RFND 연락처,N,,,,Y
+SHOP,TB_RFND_MST,5,RFND_EMAIL,VARCHAR2,100,,Y,,RFND 이메일,N,,,,Y
+SHOP,TB_RFND_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_RFND_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_RFND_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RFND_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RFND_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RFND_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RFND_DTL,1,RFND_ID,VARCHAR2,20,,N,,RFND 식별번호,Y,PK01,,,N
+SHOP,TB_RFND_DTL,2,RFND_ID,VARCHAR2,20,,N,,RFND 참조키,N,,,TB_RFND_MST.RFND_ID,N
+SHOP,TB_RFND_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_RFND_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_RFND_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_RFND_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_RFND_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RFND_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RFND_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RFND_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RFND_HIST,1,RFND_ID,VARCHAR2,20,,N,,RFND 식별번호,Y,PK01,,,N
+SHOP,TB_RFND_HIST,2,RFND_ID,VARCHAR2,20,,N,,RFND 참조키,N,,,TB_RFND_MST.RFND_ID,N
+SHOP,TB_RFND_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_RFND_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_RFND_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_RFND_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RFND_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RFND_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RFND_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_RFND_CD,1,RFND_ID,VARCHAR2,20,,N,,RFND 식별번호,Y,PK01,,,N
+SHOP,TB_RFND_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_RFND_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_RFND_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_RFND_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_RFND_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_RFND_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_RFND_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PNT_MST,1,PNT_ID,VARCHAR2,20,,N,,PNT 식별번호,Y,PK01,,,N
+SHOP,TB_PNT_MST,2,PNT_NM,VARCHAR2,100,,Y,,PNT 명칭,N,,,,Y
+SHOP,TB_PNT_MST,3,PNT_ADDR,VARCHAR2,300,,Y,,PNT 주소,N,,,,Y
+SHOP,TB_PNT_MST,4,PNT_TEL,VARCHAR2,20,,Y,,PNT 연락처,N,,,,Y
+SHOP,TB_PNT_MST,5,PNT_EMAIL,VARCHAR2,100,,Y,,PNT 이메일,N,,,,Y
+SHOP,TB_PNT_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_PNT_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_PNT_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PNT_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PNT_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PNT_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PNT_DTL,1,PNT_ID,VARCHAR2,20,,N,,PNT 식별번호,Y,PK01,,,N
+SHOP,TB_PNT_DTL,2,PNT_ID,VARCHAR2,20,,N,,PNT 참조키,N,,,TB_PNT_MST.PNT_ID,N
+SHOP,TB_PNT_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_PNT_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_PNT_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_PNT_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_PNT_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PNT_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PNT_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PNT_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PNT_HIST,1,PNT_ID,VARCHAR2,20,,N,,PNT 식별번호,Y,PK01,,,N
+SHOP,TB_PNT_HIST,2,PNT_ID,VARCHAR2,20,,N,,PNT 참조키,N,,,TB_PNT_MST.PNT_ID,N
+SHOP,TB_PNT_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_PNT_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_PNT_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_PNT_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PNT_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PNT_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PNT_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_PNT_CD,1,PNT_ID,VARCHAR2,20,,N,,PNT 식별번호,Y,PK01,,,N
+SHOP,TB_PNT_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_PNT_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_PNT_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_PNT_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_PNT_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_PNT_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_PNT_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_GRD_MST,1,GRD_ID,VARCHAR2,20,,N,,GRD 식별번호,Y,PK01,,,N
+SHOP,TB_GRD_MST,2,GRD_NM,VARCHAR2,100,,Y,,GRD 명칭,N,,,,Y
+SHOP,TB_GRD_MST,3,GRD_ADDR,VARCHAR2,300,,Y,,GRD 주소,N,,,,Y
+SHOP,TB_GRD_MST,4,GRD_TEL,VARCHAR2,20,,Y,,GRD 연락처,N,,,,Y
+SHOP,TB_GRD_MST,5,GRD_EMAIL,VARCHAR2,100,,Y,,GRD 이메일,N,,,,Y
+SHOP,TB_GRD_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_GRD_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_GRD_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_GRD_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_GRD_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_GRD_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_GRD_DTL,1,GRD_ID,VARCHAR2,20,,N,,GRD 식별번호,Y,PK01,,,N
+SHOP,TB_GRD_DTL,2,GRD_ID,VARCHAR2,20,,N,,GRD 참조키,N,,,TB_GRD_MST.GRD_ID,N
+SHOP,TB_GRD_DTL,3,CATG_ID,VARCHAR2,20,,Y,,CATG 참조키,N,,,TB_CATG_MST.CATG_ID,N
+SHOP,TB_GRD_DTL,4,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_GRD_DTL,5,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_GRD_DTL,6,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_GRD_DTL,7,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_GRD_DTL,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_GRD_DTL,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_GRD_DTL,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_GRD_DTL,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_GRD_HIST,1,GRD_ID,VARCHAR2,20,,N,,GRD 식별번호,Y,PK01,,,N
+SHOP,TB_GRD_HIST,2,GRD_ID,VARCHAR2,20,,N,,GRD 참조키,N,,,TB_GRD_MST.GRD_ID,N
+SHOP,TB_GRD_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_GRD_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_GRD_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_GRD_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_GRD_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_GRD_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_GRD_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_GRD_CD,1,GRD_ID,VARCHAR2,20,,N,,GRD 식별번호,Y,PK01,,,N
+SHOP,TB_GRD_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_GRD_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_GRD_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_GRD_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_GRD_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_GRD_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_GRD_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_NOTI_MST,1,NOTI_ID,VARCHAR2,20,,N,,NOTI 식별번호,Y,PK01,,,N
+SHOP,TB_NOTI_MST,2,NOTI_NM,VARCHAR2,100,,Y,,NOTI 명칭,N,,,,Y
+SHOP,TB_NOTI_MST,3,NOTI_ADDR,VARCHAR2,300,,Y,,NOTI 주소,N,,,,Y
+SHOP,TB_NOTI_MST,4,NOTI_TEL,VARCHAR2,20,,Y,,NOTI 연락처,N,,,,Y
+SHOP,TB_NOTI_MST,5,NOTI_EMAIL,VARCHAR2,100,,Y,,NOTI 이메일,N,,,,Y
+SHOP,TB_NOTI_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_NOTI_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_NOTI_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_NOTI_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_NOTI_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_NOTI_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_NOTI_DTL,1,NOTI_ID,VARCHAR2,20,,N,,NOTI 식별번호,Y,PK01,,,N
+SHOP,TB_NOTI_DTL,2,NOTI_ID,VARCHAR2,20,,N,,NOTI 참조키,N,,,TB_NOTI_MST.NOTI_ID,N
+SHOP,TB_NOTI_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_NOTI_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_NOTI_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_NOTI_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_NOTI_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_NOTI_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_NOTI_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_NOTI_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_NOTI_HIST,1,NOTI_ID,VARCHAR2,20,,N,,NOTI 식별번호,Y,PK01,,,N
+SHOP,TB_NOTI_HIST,2,NOTI_ID,VARCHAR2,20,,N,,NOTI 참조키,N,,,TB_NOTI_MST.NOTI_ID,N
+SHOP,TB_NOTI_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_NOTI_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_NOTI_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_NOTI_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_NOTI_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_NOTI_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_NOTI_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_NOTI_CD,1,NOTI_ID,VARCHAR2,20,,N,,NOTI 식별번호,Y,PK01,,,N
+SHOP,TB_NOTI_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_NOTI_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_NOTI_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_NOTI_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_NOTI_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_NOTI_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_NOTI_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_FAQ_MST,1,FAQ_ID,VARCHAR2,20,,N,,FAQ 식별번호,Y,PK01,,,N
+SHOP,TB_FAQ_MST,2,FAQ_NM,VARCHAR2,100,,Y,,FAQ 명칭,N,,,,Y
+SHOP,TB_FAQ_MST,3,FAQ_ADDR,VARCHAR2,300,,Y,,FAQ 주소,N,,,,Y
+SHOP,TB_FAQ_MST,4,FAQ_TEL,VARCHAR2,20,,Y,,FAQ 연락처,N,,,,Y
+SHOP,TB_FAQ_MST,5,FAQ_EMAIL,VARCHAR2,100,,Y,,FAQ 이메일,N,,,,Y
+SHOP,TB_FAQ_MST,6,BIZ_NO,VARCHAR2,20,,Y,,사업자번호,N,,AK_1-01,,N
+SHOP,TB_FAQ_MST,7,USE_YN,CHAR,1,,N,'Y',사용여부,N,,,,N
+SHOP,TB_FAQ_MST,8,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_FAQ_MST,9,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_FAQ_MST,10,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_FAQ_MST,11,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_FAQ_DTL,1,FAQ_ID,VARCHAR2,20,,N,,FAQ 식별번호,Y,PK01,,,N
+SHOP,TB_FAQ_DTL,2,FAQ_ID,VARCHAR2,20,,N,,FAQ 참조키,N,,,TB_FAQ_MST.FAQ_ID,N
+SHOP,TB_FAQ_DTL,3,SEQ_NO,NUMBER,5,0,N,,일련번호,N,,,,N
+SHOP,TB_FAQ_DTL,4,AMT,NUMBER,15,2,Y,0,금액,N,,,,N
+SHOP,TB_FAQ_DTL,5,QTY,NUMBER,9,0,Y,0,수량,N,,,,N
+SHOP,TB_FAQ_DTL,6,STAT_CD,VARCHAR2,10,,Y,,상태코드,N,,,,N
+SHOP,TB_FAQ_DTL,7,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_FAQ_DTL,8,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_FAQ_DTL,9,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_FAQ_DTL,10,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_FAQ_HIST,1,FAQ_ID,VARCHAR2,20,,N,,FAQ 식별번호,Y,PK01,,,N
+SHOP,TB_FAQ_HIST,2,FAQ_ID,VARCHAR2,20,,N,,FAQ 참조키,N,,,TB_FAQ_MST.FAQ_ID,N
+SHOP,TB_FAQ_HIST,3,CHG_DT,VARCHAR2,14,,N,,변경일시,N,,,,N
+SHOP,TB_FAQ_HIST,4,CHG_CN,VARCHAR2,500,,Y,,변경내용,N,,,,N
+SHOP,TB_FAQ_HIST,5,CHG_ID,VARCHAR2,50,,Y,,변경자,N,,,,N
+SHOP,TB_FAQ_HIST,6,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_FAQ_HIST,7,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_FAQ_HIST,8,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_FAQ_HIST,9,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
+SHOP,TB_FAQ_CD,1,FAQ_ID,VARCHAR2,20,,N,,FAQ 식별번호,Y,PK01,,,N
+SHOP,TB_FAQ_CD,2,CD_NM,VARCHAR2,100,,N,,코드명,N,,,,Y
+SHOP,TB_FAQ_CD,3,CD_DESC,VARCHAR2,300,,Y,,코드설명,N,,,,N
+SHOP,TB_FAQ_CD,4,SORT_ORD,NUMBER,5,0,Y,,정렬순서,N,,,,N
+SHOP,TB_FAQ_CD,5,REG_ID,VARCHAR2,50,,N,,등록자,N,,,,N
+SHOP,TB_FAQ_CD,6,REG_DT,VARCHAR2,14,,N,,등록일시,N,,,,N
+SHOP,TB_FAQ_CD,7,UPD_ID,VARCHAR2,50,,Y,,수정자,N,,,,N
+SHOP,TB_FAQ_CD,8,UPD_DT,VARCHAR2,14,,Y,,수정일시,N,,,,N
