@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>산출물 SQL 가이드</title>
 <!-- 변경이력·개선메모: 개선사항_메모.md 참고 -->
 <style>
@@ -666,7 +667,8 @@ var currentDialect = hashDialect() || localStorage.getItem('deliv_dialect') || '
 if (!DIALECTS.some(function(x){ return x.key === currentDialect; })) currentDialect = 'oracle';  // 낡은 저장값 방어
 var editMode = {};    // key_idx: true → textarea 편집 중
 var editBuffer = {};  // key_idx: 편집 중 textarea 내용 (재렌더 시 보존)
-var docUse = JSON.parse(localStorage.getItem('deliv_use') || '{}');   // key → true: 이 산출물 낼 것 (체크)
+var docUse = {};   // key → true: 이 산출물 낼 것 (체크). 저장값이 깨져 있으면 체크만 초기화하고 도구는 살린다
+try { docUse = JSON.parse(localStorage.getItem('deliv_use') || '{}') || {}; } catch(e) {}
 
 var schemaInput = document.getElementById('schemas');
 // 기본값을 실제 값으로 채우지 않는다 — 채우면 IN ('SCHEMA_A','SCHEMA_B')로 치환된 쿼리가
@@ -697,7 +699,9 @@ function onSchemaChange() {
 // 기본 ON — 임시/백업 테이블이 없는 운영 DB 는 사실상 없다. 끄는 쪽이 예외.
 // TEST 만 기본 OFF (LATEST 등 정상 이름 오탐이 잦음).
 // 이미 쓰던 브라우저는 localStorage 값이 우선이라 기존 설정 그대로 유지된다.
-var exclCfg = JSON.parse(localStorage.getItem('deliv_excl') || '{"on":true,"bak":true,"date":true,"test":false,"pfx":""}');
+var exclCfg; // 저장값이 깨져 있으면 필터 설정만 기본값으로 되돌리고 도구는 살린다
+try { exclCfg = JSON.parse(localStorage.getItem('deliv_excl') || ''); } catch(e) {}
+if (!exclCfg || typeof exclCfg !== 'object') exclCfg = {on:true, bak:true, date:true, test:false, pfx:''};
 function saveExcl() {
   localStorage.setItem('deliv_excl', JSON.stringify(exclCfg));
   syncExclUI();
@@ -770,7 +774,7 @@ function copyExclCheck() {
   var conds = exclConds(m.col);
   var q;
   if (!exclCfg.on || !conds.length) {
-    q = '-- 제외 조건 없음 — 상단 필터 체크박스를 켜고 세부 항목을 선택하세요';
+    q = '-- 제외 조건 없음 — 상단 필터 체크박스를 켜고 세부 항목을 선택할 것';
   } else {
     q = '-- 제외될(임시/백업 의심) 테이블 목록 — 정상 테이블이 섞였는지 눈으로 검증 후 산출물 추출\n'
       + 'SELECT ' + m.sel + '\nFROM   ' + m.from
@@ -778,13 +782,7 @@ function copyExclCheck() {
       + '\n  AND (   ' + conds.join('\n       OR ') + ' )'
       + '\nORDER  BY ' + m.sel + ';';
   }
-  var ta = document.createElement('textarea');
-  ta.value = q;
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); toast('제외 목록 확인쿼리 복사됨'); }
-  catch(e) { toast('복사 실패 — 수동 선택 필요'); }
-  document.body.removeChild(ta);
+  copyText(q, '제외 목록 확인쿼리 복사됨');
 }
 // Sybase ASE는 USE DB명으로 전환 — 스키마 IN절을 쓰지 않으므로 입력칸을 비활성화
 function syncSchemaInputState() {
@@ -880,7 +878,7 @@ function buildQuery(raw) {
   // 스키마를 안 넣으면 쿼리가 조용히 0행을 반환한다 — 실행 전에 눈으로 알아채게
   if (raw.indexOf('__SCHEMAS__') >= 0 && schemaMissing() && currentDialect !== 'sybase') {
     q = '-- ⚠ 상단 "업무 스키마" 입력칸이 비어 있음 — 그대로 실행하면 0행만 나옵니다\n'
-      + '--    00번 문서의 스키마 분포 쿼리로 먼저 확인하세요\n' + q;
+      + '--    00번 문서의 스키마 분포 쿼리로 먼저 확인할 것\n' + q;
   }
   return q;
 }
@@ -960,16 +958,28 @@ function toggleEdit(id) {
   document.getElementById('content').scrollTop = scroll;
 }
 
+// 클립보드 복사 — navigator.clipboard 우선, 실패·미지원 시 execCommand 폴백 (다른 도구들과 동일 패턴)
+function copyText(text, okMsg) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function(){ toast(okMsg); }, function(){ copyTextFallback(text, okMsg); });
+  } else {
+    copyTextFallback(text, okMsg);
+  }
+}
+function copyTextFallback(text, okMsg) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast(okMsg); }
+  catch(e) { toast('복사 실패 — 수동 선택 필요'); }
+  document.body.removeChild(ta);
+}
 function copyQ(id) {
   var el = document.getElementById('q_' + id);
   var text = (el.tagName === 'TEXTAREA') ? el.value : el.textContent;
-  var ta = document.createElement('textarea');
-  ta.value = text;
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); toast('복사됨'); }
-  catch(e) { toast('복사 실패 — 수동 선택 필요'); }
-  document.body.removeChild(ta);
+  copyText(text, '복사됨');
 }
 
 var toastTimer;

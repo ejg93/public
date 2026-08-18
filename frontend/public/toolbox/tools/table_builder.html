@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HTML 표 편집기</title>
 <!-- 변경이력
 2026-07-17 신규 — GUI 표 편집기: 드래그 선택/병합/해제, th·td 전환, 행·열 삽입·삭제,
@@ -127,6 +128,7 @@ button:disabled:hover { opacity:.35; }
 				<span class="opt">머리글(thead) 행 수 <input type="number" id="s-thead" value="1" min="0" style="width:46px"></span>
 			</div>
 			<div class="row hint">열 너비는 편집기 열 머리글의 입력칸에 (예: 20%, 120px — 비우면 자동)</div>
+			<div class="row hint">표 내용은 수정할 때마다 이 브라우저(localStorage)에 자동 저장돼 재방문 시 복원된다. 개인정보·실데이터를 붙여넣으면 PC에 그대로 남으니 넣지 말 것</div>
 		</div>
 		<div class="box">
 			<div class="bt">출력 형식</div>

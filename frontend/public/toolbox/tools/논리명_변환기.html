@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>논리명 변환기 — 컬럼/테이블 영문명 → 한글명</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1809,7 +1810,13 @@ function saveSQL(){
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function copyOut(){
-  const t=document.getElementById('out'); t.select(); document.execCommand('copy');
+  // navigator.clipboard 우선, 실패·미지원 시 execCommand 폴백 (다른 도구들과 동일 패턴)
+  const t=document.getElementById('out');
+  const done=()=>toast('클립보드 복사됨');
+  const legacy=()=>{ t.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('복사 실패','출력 칸을 직접 선택해 복사할 것'); } };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t.value).then(done, legacy);
+  } else legacy();
 }
 function expCSV(){
   const L=['구분,스키마,테이블,컬럼,논리명,근거,미매칭토큰'];

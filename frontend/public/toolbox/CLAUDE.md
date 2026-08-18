@@ -62,6 +62,37 @@ eval(src);
 
 `jsp_formatter.html`은 화면의 **비교 탭** 자체가 검증기다. 포매팅 로직을 고쳤으면 대표 JSP를 넣고 구조 변경 0건인지 확인한다.
 
+### 브라우저 실렌더 검증 — Puppeteer
+
+위 Node 방식이 못 보는 것 — 실제 렌더, 클릭·복사·탭 전환 동작, 콘솔 에러 — 은 Puppeteer로 확인한다.
+`C:/workspace/node_modules`에 설치돼 있다(크롬 바이너리 포함). 이 저장소 밖이라 절대경로로 require 한다.
+
+```js
+// 임시 파일(작업 디렉터리 밖)에서
+const puppeteer = require('C:/workspace/node_modules/puppeteer');
+(async () => {
+  const browser = await puppeteer.launch({ headless: 'new' });
+  const page = await browser.newPage();
+  page.on('pageerror', e => console.log('JS 에러:', e.message));                      // 로드·동작 중 예외
+  page.on('console', m => { if (m.type() === 'error') console.log('콘솔:', m.text()); });
+  await page.goto('file:///C:/workspace/portfolio/frontend/public/toolbox/tools/도구.html');
+  // page.click()·page.type()·page.evaluate() 로 UI 조작, page.screenshot() 으로 화면 캡처
+  await browser.close();
+})();
+```
+
+가려 쓰는 기준 — UI·레이아웃·이벤트 배선을 고쳤으면 Puppeteer, 변환·계산 로직만 고쳤으면 위 Node 방식이 더 빠르다.
+스크린샷은 작업 디렉터리 밖에 저장한다.
+
+**Puppeteer 스크립트는 경로·파일명에 한글이 없어야 한다** — 한글이 있으면 Node 22 + puppeteer require가
+크래시한다(0xC0000005, 2026-08-18 실측). 업로드하는 데이터 파일(CSV)의 한글 경로는 문제없다.
+
+`논리명_변환기.html`의 변환 로직을 고쳤으면 `node regress_logicalname.js`(toolbox 루트)를 돌린다 —
+샘플 세트를 업로드·변환해 기대 수치(README와 한 몸)와 대조하는 회귀 점검이다.
+
+`npm run lint`(ESLint)·`npm run typecheck`(tsc)·`npm run build`는 frontend 앱 코드 전용이라 이 폴더 HTML엔 안 걸린다.
+localStorage 저장값을 읽는 도구는 오염된 값(깨진 JSON)을 넣고도 로드되는지까지 본다 — 최상위 `JSON.parse`는 try/catch 필수.
+
 ## 화면 스타일
 
 VS Code 다크 테마를 기준으로 `:root`에 CSS 변수를 선언하고(`--bg` `--surface` `--border` `--text` `--muted` `--accent`) 그 변수만 써서 색을 지정한다. 폰트는 `'Consolas','D2Coding',monospace`. 새 도구도 같은 변수 이름과 팔레트를 그대로 쓴다.
