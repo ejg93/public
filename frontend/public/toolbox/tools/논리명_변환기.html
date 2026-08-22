@@ -543,6 +543,17 @@ PK정보(Y/N)·데이터타입·길이가 다 들어 있어 <b>논리명·FK 추
 컬럼 코멘트는 테이블명이 필요해(방언 무관) DDL 생성을 막았다.<br>
 매칭결과 CSV는 저장된다.
 </div>
+<div class="err hide" id="sybNote">
+<b>Sybase ASE — 코멘트 DDL 을 실행할 수 없다</b><br>
+ASE 엔진에 테이블·컬럼 코멘트 저장소가 없다.<br>
+아래 «코멘트 DDL 생성» 은 <code>-- [미지원]</code> 주석만 만든다.<br>
+저장 파일도 <code>comment_reference_sybase.txt</code> 로 나간다 —<br>
+실행 스크립트가 아니라 물리명·논리명 대조표다.<br>
+논리명은 DB를 거치지 말고 모델 파일에 직접 넣는다 —<br>
+&nbsp;&nbsp;· <b>매칭결과 CSV</b> 를 DA#·erwin 의 엔티티·속성 일괄 편집에 붙여 논리명을 채운다<br>
+&nbsp;&nbsp;· <b>표준단어사전 CSV</b> 를 모델링 툴 표준사전에 등록해 이후 신규 테이블을 자동 조립한다<br>
+산출물 xlsx 도 DB가 아니라 이 CSV 에서 만든다.
+</div>
 <div class="row">
   <button id="ddlBtn" onclick="genDDL()" title="체크된 행을 선택한 DB 방언의 코멘트 DDL로 생성. 미매칭·부분매칭 줄은 -- [검토] 주석으로 처리돼 실행 안 됨">체크된 항목으로 코멘트 DDL 생성</button>
   <button class="sec dl" id="sqlBtn" onclick="saveSQL()" disabled title="생성된 코멘트 DDL 전체를 .sql 파일로 저장(미리보기 잘림 없이 전체)">SQL 파일 저장</button>
@@ -935,10 +946,14 @@ const DIALECTS = {
                    `@level0type=N'SCHEMA', @level0name=N'${o}', @level1type=N'TABLE', @level1name=N'${t}', `+
                    `@level2type=N'COLUMN', @level2name=N'${c}';`,
     note:"-- SQL Server: 확장속성(MS_Description) 등록. 이미 있으면 sp_addextendedproperty → sp_updateextendedproperty 로 바꿀 것" },
-  sybase:{ label:'Sybase ASE',
+  // noExec = 엔진에 코멘트 저장소가 없어 생성물이 전부 주석이 되는 방언.
+  // 헤더 문구·요약 박스·저장 파일명·버튼 라벨이 전부 이 플래그로 갈린다.
+  // 실행 가능한 것처럼 읽히면 파일만 받아본 사람이 실행 스크립트로 오해한다.
+  sybase:{ label:'Sybase ASE', noExec:true,
+    outFile:'comment_reference_sybase.txt', outBtn:'참고용 TXT 저장',
     tbl:(o,t,v)=>`-- [미지원] Sybase ASE 테이블 코멘트 표준 없음: ${o}.${t} = '${v}'`,
     col:(o,t,c,v)=>`-- [미지원] Sybase ASE 컬럼 코멘트 표준 없음: ${o}.${t}.${c} = '${v}'`,
-    note:'-- Sybase ASE: 컬럼/테이블 코멘트 저장을 표준 지원하지 않음. 아래는 참고용 주석. 실제 반영은 별도 방식 필요' }
+    note:'-- Sybase ASE: 컬럼/테이블 코멘트 저장을 표준 지원하지 않음. 아래는 전부 주석이라 실행 대상이 아니다' }
 };
 // 산출물_sql.html 로 가는 링크에 지금 고른 방언을 실어 보낸다.
 // 양쪽 다 방언 키가 'oracle'로 통일돼 있어 그대로 붙이면 된다.
@@ -955,7 +970,22 @@ function switchDb(d){
   document.querySelectorAll('.db-tab').forEach(el=>el.classList.remove('active'));
   const t=document.querySelector('.db-tab.'+d); if(t) t.classList.add('active');
   syncD03();
+  syncNoExec();
   if(DDL) genDDL();   // 이미 생성돼 있으면 방언 반영해 재생성
+}
+// 코멘트 저장소가 없는 방언(noExec)에서 출력 카드 표기를 바꾼다 — 안내 노출 + 저장 버튼 라벨·툴팁.
+// 생성물은 만들되 «실행되는 DDL» 로 읽히지 않게 하는 것이 목적이다.
+function syncNoExec(){
+  const D=DIALECTS[DIALECT]||{};
+  const n=document.getElementById('sybNote');
+  if(n) n.classList.toggle('hide', !D.noExec);
+  const b=document.getElementById('sqlBtn');
+  if(b){
+    b.textContent = D.outBtn || 'SQL 파일 저장';
+    b.title = D.noExec
+      ? '생성된 대조표 전체를 '+D.outFile+' 로 저장한다(미리보기 잘림 없이 전체). 실행 스크립트가 아니다'
+      : '생성된 코멘트 DDL 전체를 .sql 파일로 저장(미리보기 잘림 없이 전체)';
+  }
 }
 
 // ================= 안내 토글 / 샘플 양식 =================
@@ -1752,26 +1782,40 @@ function genDDL(){
   const L=[];
   // 미매칭(none)·부분매칭(mix) = 논리명에 영문 남음 → 주석(--)으로 내보내 실행 막는다.
   // 검토 후 사람이 직접 주석 해제. 자동 실행되면 기존 주석을 영문으로 덮어씀.
-  const mark = r => (r.src==='none'||r.src==='mix') ? '-- [검토] ' : '';
+  const need = r => r.src==='none'||r.src==='mix';
+  // noExec 방언은 줄 전체가 이미 '-- [미지원] ...' 주석이라 앞에 '-- [검토] '를 또 붙이면 -- 가 겹친다.
+  // 같은 정보를 줄 끝 꼬리표로 옮긴다.
+  const mark = r => (need(r) && !D.noExec) ? '-- [검토] ' : '';
+  const tail = r => (need(r) &&  D.noExec) ? '   ← [검토] 논리명에 영문 잔존' : '';
   let nCmt=0;
   if(incT) TROWS.filter(r=>r.chk&&r.name).forEach(r=>{
-    const m=mark(r); if(m) nCmt++;
-    L.push(m + D.tbl(r.owner, r.table, sq(r.name)));
+    if(need(r)) nCmt++;
+    L.push(mark(r) + D.tbl(r.owner, r.table, sq(r.name)) + tail(r));
   });
   ROWS.filter(r=>r.chk&&r.name).forEach(r=>{
-    const m=mark(r); if(m) nCmt++;
-    L.push(m + D.col(r.owner, r.table, r.col, sq(r.name)));
+    if(need(r)) nCmt++;
+    L.push(mark(r) + D.col(r.owner, r.table, r.col, sq(r.name)) + tail(r));
   });
   if(!L.length){ DDL=''; document.getElementById('out').value='체크된 항목이 없다.';
                  document.getElementById('sqlBtn').disabled=true;
                  document.getElementById('ddlSum').innerHTML=''; return; }
   ddlSummary(incT);
-  const head = `-- 생성 ${new Date().toLocaleString('ko-KR')} · [${D.label}] · 총 ${L.length}줄 `+
-               `(실행 ${L.length-nCmt} / 주석처리 ${nCmt})\n`+
-               (nCmt ? `-- ※ [검토] 표시 ${nCmt}줄은 논리명에 영문이 남아 주석 처리됨. 검토 후 '-- [검토] ' 지우면 실행됨\n` : '')+
-               `${D.note}\n`+
-               `-- 용도: erwin 스크립트 리버스용. 추출한 스키마 DDL(schema.sql) 맨 끝에 붙여 파일 하나로 만든다\n`+
-               `-- 운영 DB 실행은 별도 승인 사항\n\n`;
+  const stamp = new Date().toLocaleString('ko-KR');
+  // noExec 방언은 실행 줄이 0이다. 실행 건수·[검토] 해제 안내·erwin 리버스 용도·운영 승인 문구를
+  // 그대로 두면 전부 거짓이 된다 — 헤더를 통째로 갈아 끼운다.
+  const head = D.noExec
+    ? `-- 생성 ${stamp} · [${D.label}] · 총 ${L.length}줄 — 전부 주석, 실행 가능 0줄\n`+
+      `${D.note}\n`+
+      `-- 이 파일은 실행용이 아니다. 물리명과 논리명을 나란히 놓은 대조표다\n`+
+      `-- 논리명은 [매칭결과 CSV 저장] 으로 받아 DA#·erwin 의 엔티티·속성 일괄 편집에 붙여 모델에 직접 넣는다\n`+
+      (nCmt ? `-- ※ 줄 끝 [검토] ${nCmt}줄은 논리명에 영문이 남았다. 5번 랭킹에 한글을 넣고 다시 변환할 것\n` : '')+
+      `\n`
+    : `-- 생성 ${stamp} · [${D.label}] · 총 ${L.length}줄 `+
+      `(실행 ${L.length-nCmt} / 주석처리 ${nCmt})\n`+
+      (nCmt ? `-- ※ [검토] 표시 ${nCmt}줄은 논리명에 영문이 남아 주석 처리됨. 검토 후 '-- [검토] ' 지우면 실행됨\n` : '')+
+      `${D.note}\n`+
+      `-- 용도: erwin 스크립트 리버스용. 추출한 스키마 DDL(schema.sql) 맨 끝에 붙여 파일 하나로 만든다\n`+
+      `-- 운영 DB 실행은 별도 승인 사항\n\n`;
   DDL = head + L.join('\n');
   document.getElementById('sqlBtn').disabled=false;
   // 대량이면 textarea 는 미리보기만 (브라우저 정지 방지)
@@ -1779,7 +1823,7 @@ function genDDL(){
   document.getElementById('out').value = L.length>CAP
     ? head + L.slice(0,CAP).join('\n') +
       `\n\n-- … 이하 ${L.length-CAP}줄 생략 (미리보기 ${CAP}줄)\n`+
-      `-- 전체는 [SQL 파일 저장] 으로 받는다`
+      `-- 전체는 [${D.outBtn||'SQL 파일 저장'}] 으로 받는다`
     : DDL;
 }
 // 생성물에 섞인 위험 항목을 하단에 그대로 보여준다. 체크를 대신 풀어주지는 않는다.
@@ -1788,17 +1832,23 @@ function ddlSummary(incT){
   const cnt=s=>picked.filter(r=>r.src===s).length;
   const none=cnt('none'), mix=cnt('mix');
   const nT=picked.filter(r=>r.isTable).length, nC=picked.length-nT;
-  let h=`<div class="ok"><b>${picked.length}줄 생성</b> — 테이블 ${nT} · 컬럼 ${nC}</div>`;
+  const DL=DIALECTS[DIALECT], NE=DL.noExec;   // 코멘트 저장소가 없는 방언은 초록 «생성 완료»로 보이면 안 된다
+  let h = NE
+    ? `<div class="err"><b>${picked.length}줄 생성 — 전부 주석, 실행 가능 0줄</b> · 테이블 ${nT} · 컬럼 ${nC}<br>`+
+      `${DL.label} 는 코멘트를 저장하지 못한다. 이 출력은 물리명·논리명 대조표로만 쓴다.</div>`
+    : `<div class="ok"><b>${picked.length}줄 생성</b> — 테이블 ${nT} · 컬럼 ${nC}</div>`;
   if(none||mix){
     const ex=picked.filter(r=>r.src==='none'||r.src==='mix').slice(0,5)
       .map(r=>`${esc(r.table)}${r.col?'.'+esc(r.col):''} → '${esc(r.name)}'`).join('<br>');
-    h+=`<div class="err"><b>검토 필요 ${none+mix}줄 — 주석(--)으로 처리됨</b>. `+
+    h+=`<div class="err"><b>검토 필요 ${none+mix}줄${NE?'':' — 주석(--)으로 처리됨'}</b>. `+
        `· 미매칭 <b>${none}</b>줄 (물리명 그대로)<br>`+
        `· 부분매칭 <b>${mix}</b>줄 (일부 토큰만 한글)<br>`+
        `<div style="margin-top:6px;font-family:Consolas,monospace;font-size:11px">${ex}`+
        (none+mix>5?`<br>… 외 ${none+mix-5}줄`:'')+`</div>`+
-       `<div style="margin-top:6px">검토 후 SQL에서 <code>-- [검토] </code> 를 지우면 실행된다. `+
-       `또는 5번 랭킹에 한글을 넣고 다시 변환한다.</div></div>`;
+       `<div style="margin-top:6px">`+
+       (NE ? `해당 줄 끝에 <code>← [검토]</code> 로 표시했다. 5번 랭킹에 한글을 넣고 다시 변환한다.`
+           : `검토 후 SQL에서 <code>-- [검토] </code> 를 지우면 실행된다. 또는 5번 랭킹에 한글을 넣고 다시 변환한다.`)+
+       `</div></div>`;
   }
   document.getElementById('ddlSum').innerHTML=h;
 }
@@ -1806,7 +1856,8 @@ function saveSQL(){
   if(!DDL){ alert('먼저 코멘트 DDL 을 생성한다.'); return; }
   const blob=new Blob(['﻿'+DDL],{type:'text/plain;charset=utf-8'});
   const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download='comment_on.sql'; a.click();
+  // noExec 방언은 .sql 로 나가면 파일만 받아본 사람이 실행 스크립트로 읽는다 — 확장자부터 바꾼다
+  a.href=URL.createObjectURL(blob); a.download=DIALECTS[DIALECT].outFile||'comment_on.sql'; a.click();
   setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
 function copyOut(){
