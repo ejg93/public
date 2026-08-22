@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProjectShop 구조 노트</title>
+<style>
+  :root{
+    --bg:#0F2036; --bg-2:#0B1930; --panel:#152B47; --panel-2:#1B3958;
+    --line:#2A4A6E; --line-soft:#1F3958;
+    --ink:#E8F1FA; --ink-dim:#8FAAC7; --ink-faint:#7E9CBC;
+    --accent:#FFC24B; --accent-2:#68E3C4; --accent-3:#7BA9FF; --danger:#FF8A80;
+    --radius:10px; --nav-w:268px; --bar-h:50px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+
+  /* ---------- App bar ---------- */
+  header.app-bar{
+    position:sticky; top:0; z-index:40; height:var(--bar-h);
+    background:rgba(11,25,48,0.94); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px; padding:0 12px;
+  }
+  .icon-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    width:32px; height:32px; border-radius:8px; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; flex-shrink:0; padding:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .icon-btn:hover{background:var(--panel-2); border-color:var(--accent-2);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent-2); outline-offset:2px;}
+  .icon-btn svg{width:16px; height:16px;}
+  .bar-title{font-size:13px; font-weight:700; letter-spacing:-.01em; flex-shrink:0;}
+  .bar-sep{color:var(--ink-faint); font-size:12px;}
+  .bar-here{font-size:12px; color:var(--accent-2); font-weight:600;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .eyebrow{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;}
+
+  /* ---------- Sidebar : 스크림이 없다. 메인이 절대 안 멈춘다 ---------- */
+  .sidebar{
+    position:fixed; top:var(--bar-h); left:0; bottom:0; width:var(--nav-w); z-index:30;
+    background:var(--bg-2); border-right:1px solid var(--line);
+    transform:translateX(-100%); transition:transform .2s ease;
+    display:flex; flex-direction:column; overflow-y:auto; overscroll-behavior:contain;
+  }
+  .sidebar.open{transform:none;}
+  .nav-group{padding:14px 0 2px;}
+  .nav-group-label{
+    font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-faint); padding:0 16px 6px;
+  }
+  .nav-link{
+    display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+    background:none; border:none; border-left:2px solid transparent;
+    color:var(--ink-dim); font:inherit; font-size:13px; line-height:1.35;
+    padding:9px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    transition:background-color .12s, color .12s, border-color .12s;
+  }
+  .nav-link:hover{background:var(--panel); color:var(--ink);}
+  .nav-link:focus-visible{outline:2px solid var(--accent-2); outline-offset:-2px;}
+  .nav-link .dot{width:6px; height:6px; border-radius:50%; background:var(--line); flex-shrink:0;}
+  .nav-link[aria-current="true"]{
+    background:var(--panel); color:var(--ink); font-weight:600;
+    border-left-color:var(--accent);
+  }
+  .nav-link[aria-current="true"] .dot{background:var(--accent);}
+  .nav-foot{
+    margin-top:auto; padding:14px 16px 18px; border-top:1px dashed var(--line);
+    font-size:11px; color:var(--ink-faint);
+  }
+
+  /* ---------- Main : 넓은 화면에서만 밀린다. 좁으면 사이드바가 위에 뜬다 ---------- */
+  .main{padding:22px 16px 60px; transition:margin-left .2s ease;}
+  .main:focus{outline:none;}
+  .main-inner{max-width:860px; margin:0 auto;}
+  @media (min-width:1060px){
+    .main.shifted{margin-left:var(--nav-w);}
+  }
+
+  /* ---------- Doc ---------- */
+  .doc{display:none;}
+  .doc.on{display:block; animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
+  .doc-kicker{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700; text-transform:uppercase;}
+  .doc h1{font-size:22px; margin:4px 0 8px; letter-spacing:-.015em;}
+  .doc-lead{
+    margin:0 0 22px; padding-left:12px; border-left:2px solid var(--accent-2);
+    color:var(--ink-dim); font-size:13.5px;
+  }
+  h2{
+    font-size:15px; margin:30px 0 10px; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  h2::before{
+    content:""; width:4px; height:15px; border-radius:2px;
+    background:var(--accent); flex-shrink:0;
+  }
+  h3{font-size:13px; color:var(--accent-3); margin:18px 0 6px;}
+  p{margin:9px 0; font-size:13.8px;}
+  strong{color:var(--accent);}
+  ul,ol{padding-left:20px; margin:9px 0; font-size:13.8px;}
+  li{margin:4px 0;}
+  code{
+    font-family:"SFMono-Regular",Consolas,monospace; font-size:12px;
+    background:var(--panel-2); color:var(--accent-2); padding:1px 5px; border-radius:4px;
+  }
+
+  /* ---------- Callout ---------- */
+  .note{
+    margin:14px 0; padding:11px 14px; border-radius:0 8px 8px 0;
+    border-left:3px solid var(--accent-2); background:rgba(104,227,196,0.07);
+    font-size:13px; color:var(--ink-dim);
+  }
+  .note b{color:var(--accent-2);}
+  .note.warn{border-left-color:var(--danger); background:rgba(255,138,128,0.07);}
+  .note.warn b{color:var(--danger);}
+  .note.key{border-left-color:var(--accent); background:rgba(255,194,75,0.07);}
+  .note.key b{color:var(--accent);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto; margin:14px 0; border:1px solid var(--line); border-radius:8px;}
+  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:380px;}
+  thead th{
+    background:var(--panel-2); color:var(--accent-2); text-align:left;
+    padding:8px 10px; white-space:nowrap; border-bottom:1px solid var(--line); font-weight:700;
+  }
+  tbody td{padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-dim); vertical-align:top;}
+  tbody td strong{color:var(--ink);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
+  td .ok{color:var(--accent-2); font-weight:700;}
+  td .no{color:var(--danger); font-weight:700;}
+  td .mid{color:var(--accent); font-weight:700;}
+
+  /* ---------- Figure ---------- */
+  figure{margin:18px 0; padding:14px; border:1px solid var(--line);
+         border-radius:var(--radius); background:rgba(21,43,71,0.35);}
+  figure svg{display:block; width:100%; height:auto;}
+  figcaption{margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
+             font-size:11.5px; color:var(--ink-faint);}
+  figcaption b{color:var(--ink-dim);}
+
+  /* ---------- Pager ---------- */
+  .pager{display:flex; gap:10px; margin-top:36px; padding-top:16px; border-top:1px dashed var(--line);}
+  .pager button{
+    flex:1; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    color:var(--ink-dim); font:inherit; font-size:12px; padding:10px 12px;
+    cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent;
+  }
+  .pager button:hover:not(:disabled){background:var(--panel-2); color:var(--ink); border-color:var(--accent-2);}
+  .pager button:disabled{opacity:.35; cursor:default;}
+  .pager button span{display:block; font-size:10px; letter-spacing:.1em; color:var(--ink-faint);}
+  .pager .next{text-align:right;}
+  ::selection{background:var(--accent); color:#0B1930;}
+
+  /* 반복 영역 건너뛰기 — 목차가 본문 앞에 있어서 키보드가 그걸 다 지나야 한다.
+     display:none 으로 숨기면 초점 자체가 안 가서 있으나 마나다. */
+  .skip{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+  .skip:focus{
+    position:fixed; top:8px; left:8px; z-index:60; width:auto; height:auto;
+    margin:0; padding:8px 14px; clip:auto; overflow:visible;
+    background:var(--accent); color:#0B1930; font-size:12.5px; font-weight:700;
+    border-radius:8px; text-decoration:none;
+  }
+  /* 닫힌 목차는 화면 밖에 있으므로 초점도 안 가야 한다 */
+  .sidebar{visibility:hidden; transition:transform .2s ease, visibility .2s ease;}
+  .sidebar.open{visibility:visible;}
+  /* 절을 바꿀 때 제목으로 초점을 옮긴다. 프로그램이 옮긴 초점이라 테두리는 안 그린다 */
+  .doc h1:focus{outline:none;}
+
+  /* ---------- 스크롤바 ---------- */
+  /* color-scheme 한 줄로 브라우저 기본 스크롤바·폼 컨트롤이 어두워진다.
+     ::-webkit-scrollbar 를 안 쓰는 브라우저의 바탕이 되는 줄이라 먼저 둔다. */
+  :root{ color-scheme:dark; }
+
+  /* 표준 속성 (Firefox) */
+  html{ scrollbar-width:thin; scrollbar-color:#4573A6 var(--bg-2); }
+  .sidebar,.table-wrap{ scrollbar-width:thin; scrollbar-color:#4573A6 transparent; }
+
+  /* 고정된 머리 아래로 목표가 숨지 않게 — 건너뛰기 링크가 이걸 쓴다 */
+  html{ scroll-padding-top:calc(var(--bar-h) + 10px); }
+
+  /* WebKit · Chromium */
+  ::-webkit-scrollbar{ width:11px; height:11px; }
+  ::-webkit-scrollbar-track{ background:var(--bg-2); }
+  ::-webkit-scrollbar-thumb{
+    background:#4573A6; border-radius:99px;
+    border:3px solid var(--bg-2);   /* 트랙과 사이를 띄워 얇아 보이게 한다 */
+  }
+  ::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; }
+  ::-webkit-scrollbar-corner{ background:var(--bg-2); }
+
+  /* 안쪽 스크롤(목차·표)은 더 얇고 트랙을 안 그린다 */
+  .sidebar::-webkit-scrollbar,
+  .table-wrap::-webkit-scrollbar{ width:8px; height:8px; }
+  .sidebar::-webkit-scrollbar-track,
+  .table-wrap::-webkit-scrollbar-track{ background:transparent; }
+  .sidebar::-webkit-scrollbar-thumb,
+  .table-wrap::-webkit-scrollbar-thumb{
+    background:#4573A6; border:2px solid transparent; background-clip:padding-box;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover,
+  .table-wrap::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; background-clip:padding-box; }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">본문 바로가기</a>
+
+<header class="app-bar">
+  <button class="icon-btn" id="burger" aria-label="목차 열기" aria-expanded="false" aria-controls="sidebar">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M2 4h12M2 8h12M2 12h12"/>
+    </svg>
+  </button>
+  <span class="bar-title">ProjectShop</span>
+  <span class="bar-sep">/</span>
+  <span class="bar-here" id="barHere">한눈에</span>
+</header>
+
+<aside class="sidebar" id="sidebar" aria-label="목차">
+  <nav id="nav"></nav>
+  <div class="nav-foot">
+    멀티 셀러 쇼핑몰<br>
+    Spring Boot 4 · Next 16 · PostgreSQL 17
+  </div>
+</aside>
+
+<main class="main" id="main" tabindex="-1">
+<div class="main-inner">
+
+<!-- ══════════════════ 1. 한눈에 ══════════════════ -->
+<article class="doc" id="d1">
+  <p class="doc-kicker">개요</p>
+  <h1>한눈에 — 무엇을 만들고 있나</h1>
+  <p class="doc-lead">판매자가 여럿인 쇼핑몰. 공부용이면서 <strong>실제 시스템이 가진 확장 형태</strong>로 만드는 것이 목표다.</p>
+
+  <h2>왜 「멀티 셀러」가 핵심인가</h2>
+  <p>판매자가 하나면 안 생기는 문제가 셋 생긴다. 이 프로젝트 설계의 대부분이 여기서 나온다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>판매자 하나면</th><th>여럿이면</th><th>그래서 만든 것</th></tr></thead>
+    <tbody>
+      <tr><td>주문 = 배송 단위</td><td>한 주문이 <strong>셀러별로 쪼개져</strong> 따로 배송된다</td><td><code>shop_order</code> / <code>seller_order</code> 두 층</td></tr>
+      <tr><td>내 고객 정보</td><td>셀러에게 주문자 정보를 주는 것이 <strong>제3자 제공</strong></td><td>칸 단위 권한 — 셀러는 결제수단을 못 본다</td></tr>
+      <tr><td>내가 판다</td><td>나는 <strong>중개자</strong>다. 파는 건 셀러</td><td>셀러 신원 공개 API, 중개자 지위 고지</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>규모</h2>
+  <figure>
+    <svg viewBox="0 0 700 178" role="img" aria-label="테스트 코드가 본 코드보다 많다">
+      <text x="0" y="14" font-size="11" fill="#7E9CBC">줄 수</text>
+      <g font-size="12" fill="#8FAAC7">
+        <text x="0" y="42">테스트</text><text x="0" y="76">백엔드</text>
+        <text x="0" y="110">문서</text><text x="0" y="144">SQL · 프론트</text>
+      </g>
+      <g>
+        <rect x="96" y="30" width="540" height="16" rx="4" fill="#68E3C4"/>
+        <text x="646" y="43" font-size="12" fill="#68E3C4" font-weight="700">12,288</text>
+        <rect x="96" y="64" width="382" height="16" rx="4" fill="#7BA9FF"/>
+        <text x="488" y="77" font-size="12" fill="#7BA9FF" font-weight="700">8,689</text>
+        <rect x="96" y="98" width="339" height="16" rx="4" fill="#FFC24B"/>
+        <text x="445" y="111" font-size="12" fill="#FFC24B" font-weight="700">7,700</text>
+        <rect x="96" y="132" width="120" height="16" rx="4" fill="#2A4A6E"/>
+        <text x="226" y="145" font-size="12" fill="#7E9CBC">2,736</text>
+      </g>
+    </svg>
+    <figcaption><b>테스트가 본 코드보다 많다.</b> 이 비율이 우연이 아니라는 것은 「테스트 층」 절에서 다룬다.</figcaption>
+  </figure>
+
+  <h2>지금 어디까지 왔나</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>축</th><th>상태</th><th>무엇이 되나</th></tr></thead>
+    <tbody>
+      <tr><td>권한 판정 엔진</td><td><span class="ok">됨</span></td><td>역할·자원·스코프·거부·필드·상태 6축</td></tr>
+      <tr><td>계정</td><td><span class="ok">됨</span></td><td>가입 · 로그인 · 동의 이력 · 탈퇴 · 파기</td></tr>
+      <tr><td>상품</td><td><span class="ok">됨</span></td><td>등록 · 검수 · 제재 · 공개 조회</td></tr>
+      <tr><td>주문</td><td><span class="ok">됨</span></td><td>생성 → 발송 → 배송완료 → 확정 · 반품. <strong>HTTP 로 관통 확인</strong></td></tr>
+      <tr><td>결제</td><td><span class="no">미착수</span></td><td>모의 PG. 카드번호는 <strong>애초에 안 담는다</strong></td></tr>
+      <tr><td>화면</td><td><span class="mid">시작</span></td><td>홈 · 로그인만. 나머지는 「준비 중」 자리표시</td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note key"><b>이 저장소의 특이한 점</b> — 주간 토큰이 남을 때 <b>청크 하나씩</b> 굴린다.
+  세션이 중간에 끊기는 것을 전제로 만들어서, 진행 상태가 전부 파일에 있고 대화 기억에 의존하지 않는다.
+  그래서 <b>문서가 코드보다 먼저</b> 나온다.</div>
+</article>
+
+<!-- ══════════════════ 2. 층 구조 ══════════════════ -->
+<article class="doc" id="d2">
+  <p class="doc-kicker">개요</p>
+  <h1>층 구조</h1>
+  <p class="doc-lead">요청 하나가 어디를 지나는가. 각 층이 <strong>무엇을 알고 무엇을 모르는지</strong>가 규칙이다.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 400" role="img" aria-label="브라우저에서 Postgres 까지의 층 구조">
+      <defs>
+        <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L6.5,3 L0,6 z" fill="#7BA9FF"/></marker>
+        <marker id="ar2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L6.5,3 L0,6 z" fill="#68E3C4"/></marker>
+      </defs>
+
+      <!-- 브라우저 -->
+      <rect x="230" y="6" width="240" height="40" rx="8" fill="#1B3958" stroke="#2A4A6E"/>
+      <text x="350" y="31" font-size="13" fill="#E8F1FA" text-anchor="middle" font-weight="600">브라우저</text>
+
+      <line x1="350" y1="46" x2="350" y2="72" stroke="#7BA9FF" stroke-width="1.6" marker-end="url(#ar)"/>
+
+      <!-- Next -->
+      <rect x="60" y="74" width="580" height="112" rx="10" fill="rgba(123,169,255,0.07)" stroke="#7BA9FF" stroke-dasharray="4 3"/>
+      <text x="76" y="94" font-size="11" fill="#7BA9FF" font-weight="700">NEXT 16 · 프론트</text>
+
+      <rect x="80" y="104" width="250" height="32" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="205" y="124" font-size="12" fill="#E8F1FA" text-anchor="middle">서버 컴포넌트 — 그린다</text>
+      <rect x="350" y="104" width="270" height="32" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="485" y="124" font-size="12" fill="#E8F1FA" text-anchor="middle">클라이언트 컴포넌트 — 누른다</text>
+
+      <rect x="80" y="144" width="540" height="32" rx="7" fill="#0B1930" stroke="#68E3C4"/>
+      <text x="350" y="164" font-size="12" fill="#68E3C4" text-anchor="middle" font-weight="700">
+        src/lib/api.ts — 서버를 부르는 유일한 통로
+      </text>
+
+      <line x1="350" y1="186" x2="350" y2="212" stroke="#7BA9FF" stroke-width="1.6" marker-end="url(#ar)"/>
+      <text x="360" y="204" font-size="11" fill="#7E9CBC">/api/*</text>
+
+      <!-- Spring -->
+      <rect x="60" y="214" width="580" height="112" rx="10" fill="rgba(255,194,75,0.06)" stroke="#FFC24B" stroke-dasharray="4 3"/>
+      <text x="76" y="234" font-size="11" fill="#FFC24B" font-weight="700">SPRING BOOT 4 · 백엔드</text>
+
+      <rect x="80" y="244" width="165" height="34" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="162" y="259" font-size="12" fill="#E8F1FA" text-anchor="middle" font-weight="600">Controller</text>
+      <text x="162" y="272" font-size="10" fill="#7E9CBC" text-anchor="middle">HTTP를 안다</text>
+
+      <line x1="245" y1="261" x2="272" y2="261" stroke="#68E3C4" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+      <rect x="273" y="244" width="165" height="34" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="355" y="259" font-size="12" fill="#E8F1FA" text-anchor="middle" font-weight="600">Service</text>
+      <text x="355" y="272" font-size="10" fill="#7E9CBC" text-anchor="middle">도메인·트랜잭션을 안다</text>
+
+      <line x1="438" y1="261" x2="465" y2="261" stroke="#68E3C4" stroke-width="1.5" marker-end="url(#ar2)"/>
+
+      <rect x="466" y="244" width="154" height="34" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="543" y="259" font-size="12" fill="#E8F1FA" text-anchor="middle" font-weight="600">JdbcClient</text>
+      <text x="543" y="272" font-size="10" fill="#7E9CBC" text-anchor="middle">SQL만 안다</text>
+
+      <text x="80" y="304" font-size="11" fill="#8FAAC7">판정은 Service 에서 부른다 — Controller 에 두면 다른 입구가 생겼을 때 빠뜨린다</text>
+      <text x="80" y="318" font-size="11" fill="#8FAAC7">JPA 엔티티가 0개다. 무엇이 도는지가 코드에 그대로 보인다</text>
+
+      <line x1="350" y1="326" x2="350" y2="350" stroke="#7BA9FF" stroke-width="1.6" marker-end="url(#ar)"/>
+
+      <!-- DB -->
+      <rect x="180" y="352" width="340" height="42" rx="8" fill="#1B3958" stroke="#FFC24B"/>
+      <text x="350" y="370" font-size="13" fill="#FFC24B" text-anchor="middle" font-weight="700">PostgreSQL 17</text>
+      <text x="350" y="386" font-size="10.5" fill="#8FAAC7" text-anchor="middle">제약·트리거가 최종 방벽 — 앱을 안 거치는 입구도 막는다</text>
+    </svg>
+    <figcaption>화살표는 <b>부르는 방향</b>이다. 거꾸로 부르는 경로가 없는 것이 이 그림의 요점이다.</figcaption>
+  </figure>
+
+  <h2>층마다 「모르는 것」이 규칙이다</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>층</th><th>안다</th><th>모른다</th><th>어기면</th></tr></thead>
+    <tbody>
+      <tr><td>Controller</td><td>HTTP · 상태 코드</td><td>SQL</td><td>같은 조회가 화면마다 복제된다</td></tr>
+      <tr><td>Service</td><td>도메인 · 트랜잭션 경계</td><td><strong>웹</strong></td><td>배치에서 재사용할 때 상태 코드가 딸려 온다</td></tr>
+      <tr><td>JdbcClient</td><td>SQL</td><td>도메인</td><td>—</td></tr>
+      <tr><td>서버 컴포넌트</td><td>그리기</td><td>사용자 입력</td><td>누른 결과를 반영할 수단이 없다</td></tr>
+      <tr><td><code>api.ts</code></td><td>표기 변환 · CSRF · 오류 변환</td><td>—</td><td><strong>우회하면 어떤 응답만 안 바뀐 채 화면에 닿는다</strong></td></tr>
+    </tbody>
+  </table></div>
+
+  <div class="note"><b>예외가 하나 있고 문서에 적혀 있다.</b> 헬스체크 컨트롤러는 <code>JdbcClient</code> 를
+  직접 쓴다 — DB 에 질의가 <b>실제로 나가는지</b>가 그 엔드포인트의 목적이라, 서비스를 거치면 검사할 것이 사라진다.</div>
+
+  <h2>프론트의 두 입구</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>입구</th><th>어디서 도나</th><th>세션 쿠키</th><th>CSRF</th></tr></thead>
+    <tbody>
+      <tr><td>브라우저 입구</td><td>클라이언트 컴포넌트</td><td>브라우저가 자동으로 붙인다</td><td>붙인다</td></tr>
+      <tr><td>서버 입구</td><td>서버 컴포넌트</td><td><strong>손으로 싣는다</strong></td><td>필요 없다 — 읽기만</td></tr>
+    </tbody>
+  </table></div>
+  <p>인증이 필요한 화면도 <strong>서버 컴포넌트로 그린다</strong>. 「내 주문」은 캐시가 안 걸려서,
+  클라이언트에서 부르면 들어갈 때마다 빈 뼈대를 먼저 보게 된다.</p>
+  <div class="note warn"><b>프론트가 세션을 해석하는 것이 아니다.</b> 서버 메모리 세션이라
+  쿠키에 든 것은 뜻 없는 식별자고, 프록시가 이미 그 값을 Next 서버로 통과시킨다.
+  바뀌는 것은 <b>운반을 프레임워크가 하느냐 우리 코드가 하느냐</b>뿐이라 입구 하나에 가둔다.</div>
+</article>
+
+<!-- ══════════════════ 9. 스택과 인프라 ══════════════════ -->
+<article class="doc" id="d9">
+  <p class="doc-kicker">개요</p>
+  <h1>스택과 인프라</h1>
+  <p class="doc-lead">무엇을 쓰는지, <strong>버전이 어느 파일에 박혀 있는지</strong>, 그리고 왜 그것을 골랐는지.</p>
+
+  <h2>기술 스택</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>구역</th><th>무엇</th><th>버전</th><th>어디에 박혀 있나</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="7"><strong>백엔드</strong></td><td>Java</td><td>25</td><td><code>build.gradle.kts</code> toolchain</td></tr>
+      <tr><td>Spring Boot</td><td>4.1.0</td><td><code>build.gradle.kts</code></td></tr>
+      <tr><td>Spring Security</td><td>7.1.0</td><td>Boot BOM 이 관리</td></tr>
+      <tr><td>Gradle</td><td>9.5.1</td><td><code>gradle-wrapper.properties</code></td></tr>
+      <tr><td>Flyway</td><td>Boot 스타터</td><td>마이그레이션 17 + 시드 2</td></tr>
+      <tr><td>Caffeine</td><td>3.2.4</td><td>Boot BOM · 권한 규칙 캐시</td></tr>
+      <tr><td>Micrometer Tracing</td><td>Brave</td><td>요청마다 추적 ID</td></tr>
+      <tr><td rowspan="4"><strong>프론트</strong></td><td>Next.js</td><td>16 · App Router</td><td><code>package.json</code></td></tr>
+      <tr><td>TypeScript</td><td>—</td><td>빌드에 타입 검사가 같이 돈다</td></tr>
+      <tr><td>Tailwind CSS</td><td>v4</td><td><code>globals.css</code> 의 <code>@theme</code></td></tr>
+      <tr><td>eslint-plugin-jsx-a11y</td><td>recommended</td><td><code>eslint.config.mjs</code> — <strong>접근성 규칙이 린트에 있다</strong></td></tr>
+      <tr><td rowspan="3"><strong>데이터</strong></td><td>PostgreSQL</td><td>17-alpine</td><td><code>docker-compose.yml</code></td></tr>
+      <tr><td>Redis</td><td>7-alpine</td><td><code>docker-compose.yml</code></td></tr>
+      <tr><td>Testcontainers</td><td>1.21.4</td><td><code>build.gradle.kts</code> 의 BOM</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>버전을 물으면 이 표가 아니라 그 파일들을 본다.</b> 표는 낡을 수 있다 —
+  이것이 스택 문서에 적어 둔 규칙이고, 그래서 「어디에 박혀 있나」 칸이 있다.</div>
+
+  <h2>Docker — 로컬과 테스트가 같은 이미지를 쓴다</h2>
+  <figure>
+    <svg viewBox="0 0 700 262" role="img" aria-label="개발용 컨테이너와 테스트용 컨테이너가 같은 이미지를 쓴다">
+      <defs><marker id="dk" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L6.5,3 L0,6 z" fill="#7BA9FF"/></marker></defs>
+
+      <!-- 개발 -->
+      <rect x="0" y="8" width="336" height="234" rx="10" fill="rgba(255,194,75,0.05)" stroke="#FFC24B" stroke-dasharray="4 3"/>
+      <text x="16" y="28" font-size="11" fill="#FFC24B" font-weight="700">손으로 개발할 때</text>
+      <text x="16" y="46" font-size="10.5" fill="#7E9CBC" font-family="Consolas,monospace">docker compose up -d</text>
+
+      <rect x="20" y="58" width="296" height="40" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="34" y="76" font-size="11.5" fill="#E8F1FA" font-weight="600">shop-db</text>
+      <text x="34" y="91" font-size="10" fill="#8FAAC7">postgres:17-alpine · healthcheck 통과까지 기다린다</text>
+
+      <rect x="20" y="106" width="296" height="40" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="34" y="124" font-size="11.5" fill="#E8F1FA" font-weight="600">shop-redis</text>
+      <text x="34" y="139" font-size="10" fill="#8FAAC7">redis:7-alpine · 로그인 실패 카운터</text>
+
+      <line x1="168" y1="146" x2="168" y2="170" stroke="#7BA9FF" stroke-width="1.5" marker-end="url(#dk)"/>
+      <rect x="20" y="174" width="296" height="56" rx="7" fill="rgba(123,169,255,0.08)" stroke="#7BA9FF"/>
+      <text x="34" y="193" font-size="11.5" fill="#7BA9FF" font-weight="600">gradlew bootRun</text>
+      <text x="34" y="208" font-size="10" fill="#8FAAC7">Flyway 가 기동 때 마이그레이션을 적용한다</text>
+      <text x="34" y="222" font-size="10" fill="#68E3C4">local 프로필이면 데모 시드까지</text>
+
+      <!-- 테스트 -->
+      <rect x="364" y="8" width="336" height="234" rx="10" fill="rgba(104,227,196,0.05)" stroke="#68E3C4" stroke-dasharray="4 3"/>
+      <text x="380" y="28" font-size="11" fill="#68E3C4" font-weight="700">테스트를 돌릴 때</text>
+      <text x="380" y="46" font-size="10.5" fill="#7E9CBC" font-family="Consolas,monospace">gradlew test</text>
+
+      <rect x="384" y="58" width="296" height="56" rx="7" fill="rgba(104,227,196,0.10)" stroke="#68E3C4"/>
+      <text x="398" y="77" font-size="11.5" fill="#68E3C4" font-weight="600">Testcontainers</text>
+      <text x="398" y="92" font-size="10" fill="#8FAAC7">테스트가 컨테이너를 스스로 띄운다</text>
+      <text x="398" y="106" font-size="10" fill="#8FAAC7">JVM 당 한 번 · 끝나면 사라진다</text>
+
+      <line x1="532" y1="114" x2="532" y2="136" stroke="#7BA9FF" stroke-width="1.5" marker-end="url(#dk)"/>
+      <rect x="384" y="140" width="296" height="40" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="398" y="158" font-size="11.5" fill="#E8F1FA" font-weight="600">postgres:17-alpine</text>
+      <text x="398" y="173" font-size="10" fill="#FFC24B">개발용과 같은 이미지 · 같은 태그</text>
+
+      <rect x="384" y="188" width="296" height="42" rx="7" fill="#0B1930" stroke="#FF8A80"/>
+      <text x="398" y="206" font-size="10.5" fill="#FF8A80">버전이 갈리면 테스트가 통과해도</text>
+      <text x="398" y="221" font-size="10.5" fill="#FF8A80">운영에서 깨진다</text>
+    </svg>
+    <figcaption>테스트가 <b>손으로 띄운 DB 에 안 붙는다.</b> 붙이면 Docker 를 끈 날 전부 실패하고, 앞 테스트가 남긴 데이터에 결과가 좌우된다.</figcaption>
+  </figure>
+
+  <h2>왜 그렇게 골랐나</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>고른 것</th><th>안 고른 것</th><th>이유</th></tr></thead>
+    <tbody>
+      <tr><td><strong><code>JdbcClient</code> + SQL 직접</strong></td><td>JPA 엔티티</td><td>무엇이 도는지가 코드에 그대로 보인다. 스타터는 들어 있는데 <strong>엔티티는 0개</strong>다</td></tr>
+      <tr><td><strong>서버 메모리 세션</strong></td><td>JWT · JDBC 세션</td><td>강제 로그아웃이 필요했다. 서버가 1대라 아직 이걸로 된다 — <strong>2대가 되면 다시 본다</strong></td></tr>
+      <tr><td><strong>Caffeine</strong>(권한 규칙)</td><td>Redis 로 통일</td><td>프로세스 안에서 60초만 살면 되는 값이다. 네트워크 왕복이 손해</td></tr>
+      <tr><td><strong>Redis</strong>(로그인 실패)</td><td>Caffeine 으로 통일</td><td>재기동을 넘겨야 하는 값이다. <strong>다만 Redis 가 죽으면 프로세스 로컬로 강등해서 계속 센다</strong></td></tr>
+      <tr><td><strong>Flyway</strong></td><td>스키마 자동 생성</td><td>스키마가 코드에서 파생되면 <strong>제약을 손으로 못 쓴다</strong> — 이 프로젝트는 제약이 방벽이다</td></tr>
+      <tr><td><strong>Next 서버 컴포넌트</strong></td><td>SPA + 클라이언트 렌더</td><td>첫 그림이 비지 않는다. 공개 목록은 검색엔진도 읽는다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>마이그레이션을 다루는 방식이 특이하다</h2>
+  <div class="note key"><b>배포 전까지는 <code>alter</code> 를 쌓지 않고 <code>create</code> 문을 직접 고친다.</b><br>
+  <code>alter</code> 를 쌓으면 <b>테이블의 최종 모양을 알려면 마이그레이션을 전부 읽어야 한다</b> —
+  컬럼이 어디서 왔는지, <code>not null</code> 이 언제 풀렸는지가 파일 여럿에 흩어진다.</div>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>대가</th></tr></thead>
+    <tbody>
+      <tr><td>고친 뒤에</td><td><code>docker compose down -v</code> 로 <strong>DB 를 다시 만든다</strong>. Flyway 체크섬이 깨져서 다른 방법이 없다</td></tr>
+      <tr><td>이 방식을 못 쓰는 순간</td><td><strong>배포가 한 번이라도 나가면 끝</strong>이다. 남이 이미 돌린 마이그레이션은 되돌릴 수 없다</td></tr>
+      <tr><td>그래서 생긴 위험</td><td>제약 한 줄이 그러다 <strong>조용히 빠질 수 있다</strong> → 점검 B 가 그것을 확인하는 축이다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>검증 명령 — 「돌려 봤다」의 정의</h2>
+  <p>문서에 명령과 <strong>통과 기준</strong>을 같이 적어 둔다. 안 적으면 「빌드 통과」가 사람마다 다른 뜻이 된다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>구역</th><th>명령</th><th>통과 기준</th></tr></thead>
+    <tbody>
+      <tr><td>컨테이너</td><td><code>docker compose up -d</code></td><td><code>shop-db</code> · <code>shop-redis</code> 가 <strong>healthy</strong></td></tr>
+      <tr><td>백엔드</td><td><code>gradlew build</code></td><td><code>BUILD SUCCESSFUL</code> · 경고 0</td></tr>
+      <tr><td>백엔드</td><td><code>gradlew test</code></td><td>실패 0. <strong>컨테이너를 스스로 띄운다</strong></td></tr>
+      <tr><td>백엔드</td><td><code>bootRun</code> 후 <code>/api/health</code></td><td><code>applied_migrations</code> 가 <strong>마이그레이션 파일 수와 같다</strong></td></tr>
+      <tr><td>로그</td><td>기동 후 <code>logs/shop.log</code></td><td>요청마다 한 줄. <strong>대괄호 안 추적 ID 가 요청마다 달라야 한다</strong> — 같으면 추적이 안 붙은 것</td></tr>
+      <tr><td>프론트</td><td><code>npm run build</code></td><td><code>Compiled successfully</code> + <strong>타입 검사가 같이 돈다</strong></td></tr>
+      <tr><td>프론트</td><td><code>npm run lint</code></td><td>출력 없음. <strong>접근성 규칙이 포함돼 있다</strong></td></tr>
+      <tr><td>프록시</td><td><code>npm run dev</code> 후 <code>:3000/api/health</code></td><td>8080 을 직접 부른 것과 <strong>같은 JSON</strong>. 다르면 rewrite 가 안 걸린 것</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>돌리지 못했으면 못 돌렸다고 밝힌다.</b> 안 돌려보고 「동작한다」·「빌드 통과」라고 쓰지 않는다 —
+  이것도 저장소 규칙으로 적혀 있다.</div>
+
+  <h2>의존성 라이선스</h2>
+  <p>줄을 추가할 때 본다. <strong>GPL 계열은 0건</strong>이고, 확인한 기록을 문서에 남겼다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>라이선스</th><th>무엇</th></tr></thead>
+    <tbody>
+      <tr><td>Apache-2.0</td><td>Spring Boot · Spring Security · Micrometer · Caffeine · Flyway · Jackson</td></tr>
+      <tr><td>BSD-2-Clause</td><td>PostgreSQL JDBC Driver</td></tr>
+      <tr><td>MIT</td><td>Testcontainers · Next.js · React · Tailwind CSS</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>「판단한 적 없는 것」과 「판단해서 괜찮은 것」은 다르다.</b>
+  위 표가 그 판단을 기록한 것이다 — 로컬 전용이라 지금 위험은 없지만,
+  <b>공개하기로 하면 인용 자료의 파생물 조항부터 다시 본다.</b></div>
+</article>
+
+<!-- ══════════════════ 3. 법 → 코드 ══════════════════ -->
+<article class="doc" id="d3">
+  <p class="doc-kicker">설계 기준</p>
+  <h1>법이 어떻게 코드가 되는가</h1>
+  <p class="doc-lead">「법령 얘기」가 실제로 뜻하는 것. 조문을 옮겨 적는 게 아니라 <strong>어길 방법을 없애는 것</strong>이다.</p>
+
+  <div class="note warn"><b>문제는 이것 하나다.</b> 법은 어겨도 컴파일이 통과하고 테스트도 초록이다.
+  <b>사람이 보는 것 말고 걸릴 자리가 없다.</b><br>
+  그래서 「걸릴 자리를 만드는 것」이 이 프로젝트가 법을 다루는 방식 전부다.</div>
+
+  <h2>같은 요건을 걸 수 있는 자리가 여럿이면 아래를 고른다</h2>
+  <figure>
+    <svg viewBox="0 0 700 268" role="img" aria-label="강제 지점은 아래로 갈수록 어기기 어려워진다">
+      <defs><marker id="dn" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L6.5,3 L0,6 z" fill="#FFC24B"/></marker></defs>
+
+      <text x="0" y="13" font-size="10.5" fill="#7E9CBC">약함 — 사람이 읽어야만 지켜진다</text>
+
+      <rect x="0" y="22" width="560" height="38" rx="8" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="16" y="40" font-size="12.5" fill="#8FAAC7">5 · 주석 · 문서</text>
+      <text x="16" y="54" font-size="10.5" fill="#7E9CBC">아무것도 안 막는다</text>
+
+      <rect x="0" y="66" width="560" height="38" rx="8" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="16" y="84" font-size="12.5" fill="#8FAAC7">4 · 테스트</text>
+      <text x="16" y="98" font-size="10.5" fill="#7E9CBC">돌릴 때만 막는다</text>
+
+      <rect x="0" y="110" width="560" height="38" rx="8" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="16" y="128" font-size="12.5" fill="#8FAAC7">3 · 앱 검증</text>
+      <text x="16" y="142" font-size="10.5" fill="#7E9CBC">새 입구가 생기면 빠뜨린다</text>
+
+      <rect x="0" y="154" width="560" height="38" rx="8" fill="rgba(255,194,75,0.13)" stroke="#FFC24B"/>
+      <text x="16" y="172" font-size="12.5" fill="#FFC24B" font-weight="700">2 · DB 제약</text>
+      <text x="16" y="186" font-size="10.5" fill="#8FAAC7">쿼리 실행 순간 막힌다. 앱을 안 거치는 입구도</text>
+
+      <rect x="0" y="198" width="560" height="38" rx="8" fill="rgba(104,227,196,0.15)" stroke="#68E3C4"/>
+      <text x="16" y="216" font-size="12.5" fill="#68E3C4" font-weight="700">1 · 타입 · 이름 · 스키마 구조</text>
+      <text x="16" y="230" font-size="10.5" fill="#8FAAC7">어길 방법이 없다</text>
+
+      <line x1="600" y1="30" x2="600" y2="228" stroke="#FFC24B" stroke-width="2" marker-end="url(#dn)"/>
+      <text x="614" y="118" font-size="11" fill="#FFC24B">아래로<tspan x="614" dy="14">내릴수록</tspan><tspan x="614" dy="14">세다</tspan></text>
+
+      <text x="0" y="256" font-size="10.5" fill="#7E9CBC">못 내린 것만 문서에 남긴다 — 그리고 「왜 못 내렸는지」를 같이 적는다</text>
+    </svg>
+    <figcaption>이 사다리가 이 프로젝트에서 <b>법·표준·규약을 다루는 공통 방법</b>이다. 법에만 쓰는 게 아니다.</figcaption>
+  </figure>
+
+  <h2>실제로 내려간 예 셋</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>법</th><th>요구</th><th>어느 층까지 내려갔나</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>전자상거래법<br>제17조제2항</td>
+        <td>청약철회를 제한할 수 있는 사유는 <strong>법이 정한 것뿐</strong></td>
+        <td><span class="mid">2 · DB 제약</span><br>
+            <code>check (reason in ('copyable_media','digital_content','made_to_order'))</code><br>
+            자유 텍스트로 두면 법이 인정 안 하는 사유가 화면에 나가고, <strong>그 제한 자체가 무효</strong>가 된다</td>
+      </tr>
+      <tr>
+        <td>전자상거래법<br>제6조</td>
+        <td>거래기록 5년 보존</td>
+        <td><span class="ok">1 · 스키마 구조</span><br>
+            <strong><code>shop_order</code> 에 <code>deleted_at</code> 을 안 만들었다</strong><br>
+            「지우지 말자」는 약속이 아니라 <strong>지울 컬럼이 없는 구조</strong>다</td>
+      </tr>
+      <tr>
+        <td>물가안정법<br>가격표시제</td>
+        <td>표시 가격은 <strong>부가세 포함</strong></td>
+        <td><span class="ok">1 · 이름</span><br>
+            <code>sku.price_incl_vat</code><br>
+            값만 봐서는 세금 포함 여부를 알 수 없어 <code>check</code> 로 못 막는다.
+            공급가액을 넣으려던 사람이 <strong>이름을 보고 멈춘다</strong></td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <div class="note key"><b>셋째가 제일 흥미롭다.</b> 처음엔 주석에만 있었다(5층).
+  「값으로는 못 막으니 어쩔 수 없다」가 아니라 <b>「그럼 이름으로 올릴 수 있나」</b>를 물어서 1층까지 갔다.
+  <b>못 내리는 것과 안 내린 것은 다르다.</b></div>
+
+  <h2>대장 — 검사할 수 있는 이름을 적어 둔다</h2>
+  <p>요건마다 제약명·클래스명·테스트명을 적는다. 산문으로 「상품 속성에 걸린다」라고 쓰면
+  <strong>「그게 아직 거기 있나」를 물어볼 대상이 없다.</strong></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>R4 청약철회 제한 사유</th><th>종류</th></tr></thead>
+    <tbody>
+      <tr><td><code>product_withdrawal_reason_check</code></td><td>DB 제약 — 법이 인정한 셋만</td></tr>
+      <tr><td><code>WithdrawalRestrictionReason</code></td><td>Java enum — 모르는 값이면 터진다</td></tr>
+      <tr><td><code>ProductStatusTest.withdrawalReason…</code></td><td>둘이 갈리는 것을 막는 대조 테스트</td></tr>
+      <tr><td><code>OrderStatusService.requireWithdrawable</code></td><td>반품을 실제로 막는 자리</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>왜 대장이 필요했나.</b> 이 저장소는 배포 전이라 마이그레이션의
+  <code>create</code> 문을 직접 고친다. <b>제약 한 줄이 그러다 빠져도 테스트도 로그도 안 알려 준다.</b></div>
+
+  <h2>법 요건은 「없는 것」이 위반이다</h2>
+  <figure>
+    <svg viewBox="0 0 700 150" role="img" aria-label="코딩 규칙 위반은 코드에 있고 법 요건 위반은 코드에 없다">
+      <rect x="0" y="14" width="330" height="120" rx="9" fill="rgba(123,169,255,0.06)" stroke="#2A4A6E"/>
+      <text x="18" y="38" font-size="12" fill="#7BA9FF" font-weight="700">코딩 규칙 위반</text>
+      <text x="18" y="60" font-size="12" fill="#E8F1FA">어긋난 것이 코드에 <tspan font-weight="700">있다</tspan></text>
+      <text x="18" y="82" font-size="11.5" fill="#8FAAC7">grep 으로 나온다</text>
+      <rect x="18" y="94" width="290" height="26" rx="6" fill="#0B1930" stroke="#2A4A6E"/>
+      <text x="30" y="111" font-size="11" fill="#68E3C4" font-family="Consolas,monospace">select * → 0건</text>
+
+      <rect x="370" y="14" width="330" height="120" rx="9" fill="rgba(255,138,128,0.06)" stroke="#FF8A80"/>
+      <text x="388" y="38" font-size="12" fill="#FF8A80" font-weight="700">법 요건 위반</text>
+      <text x="388" y="60" font-size="12" fill="#E8F1FA">어긋난 것이 코드에 <tspan font-weight="700">없다</tspan></text>
+      <text x="388" y="82" font-size="11.5" fill="#8FAAC7">어느 파일을 열어도 안 드러난다</text>
+      <rect x="388" y="94" width="290" height="26" rx="6" fill="#0B1930" stroke="#2A4A6E"/>
+      <text x="400" y="111" font-size="11" fill="#FF8A80" font-family="Consolas,monospace">셀러 신원 표시 → 흔적 0</text>
+    </svg>
+    <figcaption>그래서 점검 방향이 반대다 — 법은 <b>요건표에서 코드로 내려가며</b> 훑는다.</figcaption>
+  </figure>
+  <div class="note"><b>실제로 걸렸다.</b> 셀러 신원 표시(제10조·제13조)가 코드에 흔적이 0이었다.
+  DB 컬럼은 다 있는데 내리는 경로가 없었다. 요건표를 읽고 <b>「이걸 누가 채웠나」</b>를 물어야 나왔다.</div>
+</article>
+
+<!-- ══════════════════ 4. 결정 기준 ══════════════════ -->
+<article class="doc" id="d4">
+  <p class="doc-kicker">설계 기준</p>
+  <h1>결정을 무엇이 정하는가</h1>
+  <p class="doc-lead">규칙이 서로 부딪힐 때, 그리고 할 일이 여럿일 때 무엇을 먼저 하나. <strong>축이 셋이고 섞으면 안 된다.</strong></p>
+
+  <h2>축 1 — 부딪히면 무엇이 이기나</h2>
+  <figure>
+    <svg viewBox="0 0 700 210" role="img" aria-label="출처 우선순위 네 단계">
+      <g>
+        <rect x="0" y="8" width="700" height="44" rx="8" fill="rgba(255,138,128,0.12)" stroke="#FF8A80"/>
+        <circle cx="26" cy="30" r="12" fill="#FF8A80"/><text x="26" y="35" font-size="13" fill="#0B1930" text-anchor="middle" font-weight="700">1</text>
+        <text x="50" y="27" font-size="13" fill="#FF8A80" font-weight="700">법 · 규정</text>
+        <text x="50" y="43" font-size="11" fill="#8FAAC7">어기면 과태료 · 형사 · 계약 무효 &nbsp;·&nbsp; 우리가 못 고친다</text>
+      </g>
+      <g>
+        <rect x="0" y="58" width="700" height="44" rx="8" fill="rgba(255,194,75,0.10)" stroke="#FFC24B"/>
+        <circle cx="26" cy="80" r="12" fill="#FFC24B"/><text x="26" y="85" font-size="13" fill="#0B1930" text-anchor="middle" font-weight="700">2</text>
+        <text x="50" y="77" font-size="13" fill="#FFC24B" font-weight="700">표준 · 규격</text>
+        <text x="50" y="93" font-size="11" fill="#8FAAC7">어기면 남의 시스템과 안 붙는다 &nbsp;·&nbsp; 우리가 못 고친다</text>
+      </g>
+      <g>
+        <rect x="0" y="108" width="700" height="44" rx="8" fill="rgba(104,227,196,0.08)" stroke="#68E3C4"/>
+        <circle cx="26" cy="130" r="12" fill="#68E3C4"/><text x="26" y="135" font-size="13" fill="#0B1930" text-anchor="middle" font-weight="700">3</text>
+        <text x="50" y="127" font-size="13" fill="#68E3C4" font-weight="700">프로젝트 규약</text>
+        <text x="50" y="143" font-size="11" fill="#8FAAC7">어겨도 아무 일 안 난다 &nbsp;·&nbsp; 고친다 — 단 <tspan font-weight="700">문서를 먼저</tspan></text>
+      </g>
+      <g>
+        <rect x="0" y="158" width="700" height="44" rx="8" fill="#152B47" stroke="#2A4A6E"/>
+        <circle cx="26" cy="180" r="12" fill="#7E9CBC"/><text x="26" y="185" font-size="13" fill="#0B1930" text-anchor="middle" font-weight="700">4</text>
+        <text x="50" y="177" font-size="13" fill="#8FAAC7" font-weight="700">업계 관례 · 생성형 도구의 기본값</text>
+        <text x="50" y="193" font-size="11" fill="#7E9CBC">근거만 대면 버린다</text>
+      </g>
+    </svg>
+    <figcaption>가이드를 <b>통째로 받거나 버리지 않는다</b> — 항목마다 근거를 댄다.</figcaption>
+  </figure>
+
+  <div class="note key"><b>2순위가 실제로 우리를 움직인 예.</b> NIST 표준이 개정돼서
+  「비밀번호가 단독 인증수단이면 최소 15자」가 <code>SHALL</code> 이 됐다. 우리는 8자였다.<br>
+  <b>취향 문제가 아니라 근거를 잃은 것</b>이라 15자로 올렸다.</div>
+
+  <h3>플랫폼 사실은 이 표에 안 들어온다</h3>
+  <p>「Postgres 가 마이크로초 아래를 올린다」 같은 것은 법도 표준도 규약도 아니다.
+  순위표에 자리가 없는 이유는 <strong>어길 수가 없어서</strong>다 — 어기는 게 아니라 <strong>모르면 틀리는 것</strong>이다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>출처 넷</th><th>플랫폼 사실</th></tr></thead>
+    <tbody>
+      <tr><td>성격</td><td>지킬지 말지를 고른다</td><td><strong>전제다.</strong> 고를 것이 없다</td></tr>
+      <tr><td>어긋나면</td><td>위 순위로 이긴 쪽을 따른다</td><td><strong>규약이 진다.</strong> 규약을 고친다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>축 2 — 어디에 걸어야 실제로 막히나</h2>
+  <p>앞 절의 사다리가 이 축이다. <strong>출처가 위일수록 반드시 지키고, 지키는 자리는 가능한 한 아래로 내린다.</strong></p>
+  <figure>
+    <svg viewBox="0 0 700 118" role="img" aria-label="법 조문이 문서를 거쳐 DB 제약으로 내려간다">
+      <defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L6.5,3 L0,6 z" fill="#68E3C4"/></marker></defs>
+      <rect x="0" y="10" width="200" height="38" rx="8" fill="rgba(255,138,128,0.12)" stroke="#FF8A80"/>
+      <text x="100" y="27" font-size="11.5" fill="#FF8A80" text-anchor="middle" font-weight="700">전자상거래법 제17조②</text>
+      <text x="100" y="41" font-size="10" fill="#8FAAC7" text-anchor="middle">출처 1위</text>
+
+      <line x1="200" y1="29" x2="243" y2="29" stroke="#68E3C4" stroke-width="1.5" marker-end="url(#ar3)"/>
+
+      <rect x="248" y="10" width="180" height="38" rx="8" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="338" y="27" font-size="11.5" fill="#8FAAC7" text-anchor="middle">요건표 R4</text>
+      <text x="338" y="41" font-size="10" fill="#7E9CBC" text-anchor="middle">강제 지점 5위 — 문서</text>
+
+      <line x1="428" y1="29" x2="471" y2="29" stroke="#68E3C4" stroke-width="1.5" marker-end="url(#ar3)"/>
+
+      <rect x="476" y="10" width="224" height="38" rx="8" fill="rgba(255,194,75,0.13)" stroke="#FFC24B"/>
+      <text x="588" y="27" font-size="11" fill="#FFC24B" text-anchor="middle" font-weight="700">product_withdrawal_reason_check</text>
+      <text x="588" y="41" font-size="10" fill="#8FAAC7" text-anchor="middle">강제 지점 2위 — 여기까지 내렸다</text>
+
+      <text x="0" y="76" font-size="11" fill="#7E9CBC">문서에만 적힌 법은 안 지켜진다. 내릴 수 있는 데까지 내린 다음, 못 내린 것만 문서에 남긴다.</text>
+      <text x="0" y="98" font-size="11" fill="#7E9CBC">DB 제약은 <tspan fill="#8FAAC7">출처</tspan>로는 3위(우리가 만든 것)지만 <tspan fill="#8FAAC7">막는 즉시성</tspan>은 법보다 세다 — 법은 5년 뒤, 제약은 0.1초 뒤에 걸린다.</text>
+    </svg>
+  </figure>
+
+  <h2>축 3 — 무엇을 먼저 하나</h2>
+  <div class="note warn"><b>흔한 착각.</b> 축 1 을 순서로 쓰는 것. 그건 「부딪히면 무엇이 이기나」지
+  「무엇을 먼저 고치나」가 아니다.<br>
+  <b>「법부터 고치자」는 실행이 안 된다</b> — 남은 법 요건 대부분이 화면을 기다리고 있어서 <b>지금 칠 수가 없다.</b></div>
+  <p>순서는 <strong>「나중에 하면 비싸지나」</strong>로 정한다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>순위</th><th>무엇</th><th>왜</th></tr></thead>
+    <tbody>
+      <tr><td><strong>1</strong></td><td>지금 깨져 있는 것</td><td>빨간 테스트는 <strong>다른 모든 검증의 신호를 가린다</strong></td></tr>
+      <tr><td><strong>2</strong></td><td>쓰는 곳이 늘면 비싸지는 것</td><td>응답 계약 · 스키마 · 화면 규칙. <strong>소비자 수에 비례해 값이 오른다</strong></td></tr>
+      <tr><td><strong>3</strong></td><td>결정이 막고 있는 것</td><td>먼저 물어 두면 나머지가 안 멈춘다</td></tr>
+      <tr><td>4</td><td>나머지</td><td>지금 해도 나중에 해도 값이 같다</td></tr>
+    </tbody>
+  </table></div>
+  <p>2번이 실전에서 제일 자주 걸린다. <code>price</code> → <code>price_incl_vat</code> 개명이 그 예 —
+  화면이 그 필드를 쓰기 전에는 백엔드 한 곳이고, 쓰기 시작하면 화면까지 같이 고친다.</p>
+
+  <h2>규약과 다르게 짜야 하면</h2>
+  <div class="note key"><b>코드를 먼저 바꾸지 않는다. 문서를 고친다.</b>
+  문서에 없는 방식이 코드에 먼저 들어가면 다음 사람이 그것을 <b>관례로 본다.</b></div>
+  <p>그리고 지금 어긋나 있는 것은 규약 문서에 <strong>표로</strong> 적혀 있다 — 무엇이 어긋났고 어느 작업이 치울지가 같이 있다.
+  「나중에 본다」는 처분이 아니라는 게 이 저장소의 규칙이다.</p>
+</article>
+
+<!-- ══════════════════ 5. 권한 모델 ══════════════════ -->
+<article class="doc" id="d5">
+  <p class="doc-kicker">도메인</p>
+  <h1>권한 모델</h1>
+  <p class="doc-lead">「누가 무엇을 할 수 있나」를 <strong>코드가 아니라 데이터</strong>로 둔 판정 엔진. 축이 여섯이다.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 262" role="img" aria-label="판정 엔진의 여섯 축과 두 진입점">
+      <defs><marker id="ar4" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L6.5,3 L0,6 z" fill="#7BA9FF"/></marker></defs>
+
+      <text x="0" y="12" font-size="10.5" fill="#7E9CBC">입력 — 여섯 축</text>
+      <g font-size="11">
+        <rect x="0" y="22" width="150" height="30" rx="6" fill="#152B47" stroke="#2A4A6E"/>
+        <text x="12" y="41" fill="#E8F1FA">역할</text><text x="140" y="41" fill="#7E9CBC" text-anchor="end">customer · admin …</text>
+        <rect x="0" y="58" width="150" height="30" rx="6" fill="#152B47" stroke="#2A4A6E"/>
+        <text x="12" y="77" fill="#E8F1FA">자원 : 동작</text><text x="140" y="77" fill="#7E9CBC" text-anchor="end">order:read</text>
+        <rect x="0" y="94" width="150" height="30" rx="6" fill="#152B47" stroke="#68E3C4"/>
+        <text x="12" y="113" fill="#68E3C4">스코프</text><text x="140" y="113" fill="#7E9CBC" text-anchor="end">own·seller·all</text>
+        <rect x="0" y="130" width="150" height="30" rx="6" fill="#152B47" stroke="#FF8A80"/>
+        <text x="12" y="149" fill="#FF8A80">효과</text><text x="140" y="149" fill="#7E9CBC" text-anchor="end">allow · deny</text>
+        <rect x="0" y="166" width="150" height="30" rx="6" fill="#152B47" stroke="#FFC24B"/>
+        <text x="12" y="185" fill="#FFC24B">필드 그룹</text><text x="140" y="185" fill="#7E9CBC" text-anchor="end">칸 단위</text>
+        <rect x="0" y="202" width="150" height="30" rx="6" fill="#152B47" stroke="#7BA9FF"/>
+        <text x="12" y="221" fill="#7BA9FF">상태</text><text x="140" y="221" fill="#7E9CBC" text-anchor="end">delivered …</text>
+      </g>
+
+      <line x1="152" y1="127" x2="196" y2="127" stroke="#7BA9FF" stroke-width="1.6" marker-end="url(#ar4)"/>
+
+      <rect x="200" y="88" width="180" height="78" rx="9" fill="rgba(123,169,255,0.09)" stroke="#7BA9FF"/>
+      <text x="290" y="112" font-size="13" fill="#7BA9FF" text-anchor="middle" font-weight="700">PermissionEvaluator</text>
+      <text x="290" y="130" font-size="10.5" fill="#8FAAC7" text-anchor="middle">거부를 먼저 훑는다</text>
+      <text x="290" y="146" font-size="10.5" fill="#8FAAC7" text-anchor="middle">이긴 규칙을 근거로 남긴다</text>
+
+      <line x1="380" y1="112" x2="424" y2="80" stroke="#68E3C4" stroke-width="1.6" marker-end="url(#ar4)"/>
+      <line x1="380" y1="142" x2="424" y2="176" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+      <rect x="428" y="46" width="272" height="66" rx="9" fill="rgba(104,227,196,0.10)" stroke="#68E3C4"/>
+      <text x="444" y="68" font-size="12.5" fill="#68E3C4" font-weight="700">decide() — 실제 허용·거부</text>
+      <text x="444" y="86" font-size="10.5" fill="#8FAAC7">거부가 감사 로그에 자동으로 남는다</text>
+      <text x="444" y="102" font-size="10.5" fill="#68E3C4">허용하는 자리는 여기 하나뿐이다</text>
+
+      <rect x="428" y="150" width="272" height="66" rx="9" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="444" y="172" font-size="12.5" fill="#8FAAC7" font-weight="700">조회용 — 버튼을 그릴까?</text>
+      <text x="444" y="190" font-size="10.5" fill="#7E9CBC">allowedActions · PermissionCatalog</text>
+      <text x="444" y="206" font-size="10.5" fill="#7E9CBC">감사에 안 남는다</text>
+    </svg>
+    <figcaption>진입점을 가른 이유는 <b>감사 기록</b>이다. 아래 「왜 갈랐나」 참조.</figcaption>
+  </figure>
+
+  <h2>축 여섯</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>축</th><th>무엇을 가르나</th><th>없으면</th></tr></thead>
+    <tbody>
+      <tr><td>역할</td><td>customer · seller_owner · admin · auditor</td><td>—</td></tr>
+      <tr><td>자원 : 동작</td><td><code>order:read</code>, <code>product:approve</code></td><td>—</td></tr>
+      <tr><td><strong>스코프</strong></td><td><code>own</code> / <code>seller</code> / <code>all</code></td><td>남의 주문이 보인다</td></tr>
+      <tr><td><strong>효과</strong></td><td><code>allow</code> / <code>deny</code> — <strong>거부가 이긴다</strong></td><td>「전부 되지만 이것만 안 됨」을 표현 못 한다</td></tr>
+      <tr><td><strong>필드 그룹</strong></td><td>행이 아니라 <strong>칸</strong> 단위</td><td>셀러가 주문 전체를 본다 (개인정보법 제17조)</td></tr>
+      <tr><td><strong>상태</strong></td><td>같은 사람도 <strong>지금 상태</strong>에 따라 갈린다</td><td>셀러가 배송완료를 되돌려 <strong>청약철회 기산점을 조작</strong>한다</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>마지막 축이 특이하다.</b> 역할이 아니라 <b>시간·상태가 권한을 깎는</b> 사례다.
+  새 조건이 올 때마다 「이건 권한 축인가 도메인 규칙인가」를 먼저 가르고, 축으로 올리면
+  캐시·권한 목록 API·매트릭스·판정 결과 모양 <b>넷을 같이 손봐야</b> 한다.</div>
+
+  <h2>규칙을 표에 둔 이유와 그 대가</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>얻는 것</th><th>대가</th></tr></thead>
+    <tbody>
+      <tr><td>규칙을 표에</td><td>관리자 화면이 행을 넣고 빼면 권한이 바뀐다. <strong>배포가 필요 없다</strong></td><td>판정 엔진이 권한 <strong>이름을 몰라야</strong> 성립한다 — 규칙을 그대로 읽어 비교만 한다</td></tr>
+      <tr><td>규칙을 코드에</td><td>컴파일러가 오타를 잡는다</td><td>권한 하나 늘릴 때마다 배포</td></tr>
+    </tbody>
+  </table></div>
+  <p>그래서 「값이 늘었을 때 <strong>코드를 안 고쳐도 동작하나</strong>」가 표/코드를 가르는 물음이 됐다.
+  권한·공휴일은 표, 주문 상태·상품 상태는 <code>check</code> + enum 이다.</p>
+
+  <h2>왜 진입점을 갈랐나</h2>
+  <div class="note warn"><b>화면이 「이 버튼 그려도 되나」를 물어보는 것과 침입 시도가
+  감사 기록에서 같은 모양이 된다.</b> 주문 상세 한 번에 거부가 넷씩 쌓이는데 감사는 3년 보존이다.
+  진짜 시도가 그 안에 묻힌다.</div>
+  <p>그래서 조회용 경로를 따로 냈다. 대신 <strong>그 응답은 근사치</strong>라고 코드에 못박아 뒀다 —
+  실제 허용은 언제나 서버가 그 자원을 만질 때 <code>decide()</code> 로 다시 정한다.</p>
+
+  <h2>빈 값에 뜻을 안 싣는다</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>안 한다</th><th>한다</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>Set&lt;Long&gt; visibleSellers</code><br>
+            빈 집합이 <strong>「아무것도 없음」과 「전부」</strong>를 겸한다</td>
+        <td><code>Allowed&lt;Long&gt;</code> — <code>Everything</code> | <code>Only(값들)</code><br>
+            <strong><code>switch</code> 가 두 경우를 다 안 다루면 컴파일이 안 된다</strong></td>
+      </tr>
+    </tbody>
+  </table></div>
+  <p><code>own</code>·<code>seller</code> 는 값으로 표현되는데 <code>all</code> 은 <strong>「제한이 없다」</strong>라
+  넣을 값이 없다. 타입으로 가르지 않으면 그 뜻이 주석에만 남는다 — 가장 약한 강제 지점이다.</p>
+</article>
+
+<!-- ══════════════════ 6. 주문 상태머신 ══════════════════ -->
+<article class="doc" id="d6">
+  <p class="doc-kicker">도메인</p>
+  <h1>주문 상태머신</h1>
+  <p class="doc-lead">멀티 셀러라서 상태가 한 군데면 표현이 안 된다. <strong>결제 층과 배송 층을 갈랐다.</strong></p>
+
+  <h2>왜 두 층인가</h2>
+  <p>한 주문에 셀러가 둘이면 <strong>A 는 배송완료, B 는 준비중</strong>이 동시에 성립한다.</p>
+
+  <figure>
+    <svg viewBox="0 0 700 330" role="img" aria-label="결제 층과 셀러별 배송 층의 상태 전이">
+      <defs>
+        <marker id="s1" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 z" fill="#68E3C4"/></marker>
+        <marker id="s2" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto">
+          <path d="M0,0 L6,3 L0,6 z" fill="#FF8A80"/></marker>
+      </defs>
+
+      <!-- 결제 층 -->
+      <rect x="0" y="6" width="700" height="94" rx="10" fill="rgba(255,194,75,0.06)" stroke="#FFC24B" stroke-dasharray="4 3"/>
+      <text x="16" y="26" font-size="10.5" fill="#FFC24B" font-weight="700">shop_order — 결제 층 · 주문 하나에 한 줄</text>
+
+      <rect x="20" y="38" width="120" height="34" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="80" y="59" font-size="11.5" fill="#E8F1FA" text-anchor="middle">결제 대기</text>
+      <line x1="140" y1="55" x2="192" y2="55" stroke="#68E3C4" stroke-width="1.5" marker-end="url(#s1)"/>
+      <rect x="196" y="38" width="120" height="34" rx="7" fill="rgba(104,227,196,0.13)" stroke="#68E3C4"/>
+      <text x="256" y="59" font-size="11.5" fill="#68E3C4" text-anchor="middle" font-weight="700">결제 완료</text>
+
+      <line x1="80" y1="72" x2="80" y2="84" stroke="#FF8A80" stroke-width="1.4"/>
+      <line x1="80" y1="84" x2="392" y2="84" stroke="#FF8A80" stroke-width="1.4"/>
+      <line x1="392" y1="84" x2="392" y2="76" stroke="#FF8A80" stroke-width="1.4" marker-end="url(#s2)"/>
+      <rect x="332" y="38" width="120" height="34" rx="7" fill="#152B47" stroke="#FF8A80"/>
+      <text x="392" y="59" font-size="11.5" fill="#FF8A80" text-anchor="middle">만료 · 실패</text>
+      <text x="470" y="52" font-size="10.5" fill="#8FAAC7">30분 안에 결제 안 하면 재고를 놓아 준다</text>
+      <text x="470" y="67" font-size="10.5" fill="#8FAAC7">→ 셀러 묶음도 <tspan fill="#FF8A80">같이 닫는다</tspan></text>
+
+      <!-- 분기 -->
+      <line x1="256" y1="100" x2="256" y2="116" stroke="#FFC24B" stroke-width="1.5"/>
+      <line x1="130" y1="116" x2="520" y2="116" stroke="#FFC24B" stroke-width="1.5"/>
+      <line x1="130" y1="116" x2="130" y2="132" stroke="#FFC24B" stroke-width="1.5" marker-end="url(#s1)"/>
+      <line x1="520" y1="116" x2="520" y2="132" stroke="#FFC24B" stroke-width="1.5" marker-end="url(#s1)"/>
+      <text x="266" y="112" font-size="10" fill="#FFC24B">셀러 수만큼 쪼갠다</text>
+
+      <!-- 배송 층 -->
+      <rect x="0" y="134" width="700" height="190" rx="10" fill="rgba(123,169,255,0.05)" stroke="#7BA9FF" stroke-dasharray="4 3"/>
+      <text x="16" y="153" font-size="10.5" fill="#7BA9FF" font-weight="700">seller_order — 배송 층 · 셀러마다 한 줄, 각자 흐른다</text>
+
+      <rect x="20" y="164" width="96" height="32" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="68" y="184" font-size="11" fill="#E8F1FA" text-anchor="middle">준비중</text>
+      <line x1="116" y1="180" x2="152" y2="180" stroke="#68E3C4" stroke-width="1.4" marker-end="url(#s1)"/>
+      <rect x="156" y="164" width="96" height="32" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="204" y="184" font-size="11" fill="#E8F1FA" text-anchor="middle">배송중</text>
+      <line x1="252" y1="180" x2="288" y2="180" stroke="#68E3C4" stroke-width="1.4" marker-end="url(#s1)"/>
+      <rect x="292" y="164" width="106" height="32" rx="7" fill="rgba(255,194,75,0.14)" stroke="#FFC24B"/>
+      <text x="345" y="184" font-size="11" fill="#FFC24B" text-anchor="middle" font-weight="700">배송완료</text>
+
+      <line x1="398" y1="174" x2="440" y2="174" stroke="#68E3C4" stroke-width="1.4" marker-end="url(#s1)"/>
+      <rect x="444" y="158" width="110" height="32" rx="7" fill="rgba(104,227,196,0.13)" stroke="#68E3C4"/>
+      <text x="499" y="178" font-size="11" fill="#68E3C4" text-anchor="middle" font-weight="700">구매확정</text>
+
+      <line x1="398" y1="188" x2="440" y2="216" stroke="#7BA9FF" stroke-width="1.4" marker-end="url(#s1)"/>
+      <rect x="444" y="204" width="110" height="32" rx="7" fill="#152B47" stroke="#7BA9FF"/>
+      <text x="499" y="224" font-size="11" fill="#7BA9FF" text-anchor="middle">반품요청</text>
+      <line x1="554" y1="220" x2="586" y2="220" stroke="#7BA9FF" stroke-width="1.4" marker-end="url(#s1)"/>
+      <rect x="590" y="204" width="96" height="32" rx="7" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="638" y="224" font-size="11" fill="#8FAAC7" text-anchor="middle">반품완료</text>
+
+      <line x1="68" y1="196" x2="68" y2="252" stroke="#FF8A80" stroke-width="1.4" marker-end="url(#s2)"/>
+      <rect x="20" y="256" width="96" height="32" rx="7" fill="#152B47" stroke="#FF8A80"/>
+      <text x="68" y="276" font-size="11" fill="#FF8A80" text-anchor="middle">취소</text>
+
+      <text x="132" y="262" font-size="10.5" fill="#8FAAC7">배송 시작 전에만. 취소하면 <tspan fill="#68E3C4">재고를 되돌린다</tspan></text>
+      <text x="132" y="278" font-size="10.5" fill="#8FAAC7">확정 · 취소 · 반품완료가 <tspan fill="#FFC24B">거래 종료 시각</tspan>을 채운다 — 보존 기간 기산점</text>
+      <text x="132" y="300" font-size="10.5" fill="#FF8A80">배송완료를 지나면 셀러의 전이 권한이 닫힌다 — 안 닫으면 기산점을 조작할 수 있다</text>
+    </svg>
+    <figcaption>셀러 권한(<code>scope=seller</code>)의 경계가 이 층과 <b>정확히 맞는다.</b> 그게 이 분할의 두 번째 이득이다.</figcaption>
+  </figure>
+
+  <h2>상태를 옮기는 곳이 하나뿐이다</h2>
+  <p><code>status</code> 를 직접 <code>update</code> 하지 않는다. 전이에 <strong>곁가지</strong>가 붙어 있어서다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>전이</th><th>같이 일어나는 것</th><th>밖에서 옮기면</th></tr></thead>
+    <tbody>
+      <tr><td>배송완료</td><td>청약철회 만료일 · 자동확정일 <strong>박제</strong></td><td>나중에 계산하면 임시공휴일이 추가됐을 때 <strong>지난 기한까지 흔들린다</strong></td></tr>
+      <tr><td>취소</td><td>재고 복구</td><td>팔 수 있는 물건이 사라진다</td></tr>
+      <tr><td>확정 · 취소 · 반품완료</td><td>거래 종료 시각</td><td>5년이 지나도 <strong>파기 대상으로 안 잡힌다</strong></td></tr>
+      <tr><td>전부</td><td>상태 이력 한 줄</td><td>그 주문만 이력이 빈다</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>배치는 규칙을 갖지 않는다.</b> 대상을 고르고 그 서비스를 부르는 것까지다.
+  자동확정 배치가 자기만의 조건을 들면 <b>사람이 누른 확정과 배치가 한 확정이 다른 규칙</b>을 타게 된다.</div>
+
+  <h2>기한을 「박제」한다는 것</h2>
+  <figure>
+    <svg viewBox="0 0 700 132" role="img" aria-label="말일 보정이 두 기한을 같은 날로 붙이는 문제">
+      <line x1="30" y1="46" x2="670" y2="46" stroke="#2A4A6E" stroke-width="1.5"/>
+      <g font-size="10.5" fill="#7E9CBC" text-anchor="middle">
+        <text x="70" y="66">8/10</text><text x="250" y="66">8/15</text><text x="340" y="66">8/17</text>
+        <text x="430" y="66">8/18</text><text x="520" y="66">8/19</text>
+      </g>
+      <g fill="#2A4A6E">
+        <circle cx="70" cy="46" r="4"/><circle cx="250" cy="46" r="4"/><circle cx="340" cy="46" r="4"/>
+        <circle cx="430" cy="46" r="4"/><circle cx="520" cy="46" r="4"/>
+      </g>
+      <circle cx="70" cy="46" r="6" fill="#FFC24B"/>
+      <text x="70" y="32" font-size="10.5" fill="#FFC24B" text-anchor="middle">배송완료</text>
+      <text x="250" y="32" font-size="10" fill="#FF8A80" text-anchor="middle">광복절</text>
+
+      <path d="M70,86 L340,86" stroke="#7BA9FF" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="200" y="82" font-size="10.5" fill="#7BA9FF" text-anchor="middle">청약철회 7일째 = 8/17 (대체공휴일)</text>
+      <path d="M340,86 L430,86" stroke="#7BA9FF" stroke-width="2"/>
+      <circle cx="430" cy="86" r="5" fill="#7BA9FF"/>
+      <text x="470" y="90" font-size="10.5" fill="#7BA9FF">→ 8/18 로 민다</text>
+
+      <path d="M70,112 L430,112" stroke="#68E3C4" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <text x="230" y="108" font-size="10.5" fill="#68E3C4" text-anchor="middle">자동확정 8일째 = 8/18 — 같은 날!</text>
+      <path d="M430,112 L520,112" stroke="#68E3C4" stroke-width="2"/>
+      <circle cx="520" cy="112" r="5" fill="#68E3C4"/>
+      <text x="560" y="116" font-size="10.5" fill="#68E3C4">→ 8/19 로 한 번 더</text>
+    </svg>
+    <figcaption>겹치면 <b>청약철회가 살아 있는 자정에 확정 배치가 돈다</b> — 아직 반품할 수 있는 주문이 확정돼 정산에 들어간다.</figcaption>
+  </figure>
+  <p>그래서 자동확정은 <strong><code>max(8일째, 철회만료 다음날)</code></strong> 을 구하고 거기서 다시 말일 보정을 건다.
+  「8일」이라는 날수가 규칙이 아니라 <strong>「청약철회 기간보다 짧으면 안 된다」</strong>가 규칙이다.</p>
+
+  <div class="note warn"><b>여기서 버그가 하나 나왔다.</b> 그 기한을 <code>23:59:59.999999999</code> 로 저장했는데
+  Postgres 는 마이크로초까지만 담고 <b>올린다</b> → 저장되면 <b>다음날 00:00</b> 이 된다.<br>
+  시각으로 비교하는 코드는 멀쩡하고 <b>날짜로 되돌리는 코드만</b> 틀려서,
+  <b>말일이 금요일인 날에만</b> 테스트가 깨졌다. 며칠을 잠복했다.</div>
+
+  <h2>동시성</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>문제</th><th>대응</th><th>왜 그 방법인가</th></tr></thead>
+    <tbody>
+      <tr><td>재고가 음수로 간다</td><td><strong>조건부 UPDATE 한 문장</strong><br><code>where stock &gt;= :qty</code></td><td>Postgres 가 잠금이 풀린 뒤 행을 다시 읽고 조건을 다시 본다 — <strong>낡은 값으로 판단하는 경로가 없다</strong></td></tr>
+      <tr><td>같은 주문이 두 번 만들어진다</td><td>멱등키</td><td><strong>실패 응답도 저장</strong>해서 재전송에 같은 답을 준다</td></tr>
+      <tr><td>여러 SKU 를 잠글 때 데드락</td><td>항상 <strong>id 오름차순</strong>으로 잠근다</td><td>순환이 생기지 않는다</td></tr>
+      <tr><td>그래도 나는 충돌</td><td>충돌만 골라 3회 재시도</td><td><strong>트랜잭션 바깥에서만</strong> — 안쪽은 이미 죽은 트랜잭션이라 다음 문장이 또 터진다</td></tr>
+    </tbody>
+  </table></div>
+</article>
+
+<!-- ══════════════════ 7. 테스트 층 ══════════════════ -->
+<article class="doc" id="d7">
+  <p class="doc-kicker">만드는 방식</p>
+  <h1>테스트를 어느 층에</h1>
+  <p class="doc-lead">테스트 12,288줄 / 본 코드 8,689줄. <strong>층을 안 가르면 이 양이 감당이 안 된다.</strong></p>
+
+  <figure>
+    <svg viewBox="0 0 700 250" role="img" aria-label="단위 통합 HTTP 세 층">
+      <!-- HTTP -->
+      <polygon points="290,10 410,10 440,66 260,66" fill="rgba(255,138,128,0.12)" stroke="#FF8A80"/>
+      <text x="350" y="34" font-size="12" fill="#FF8A80" text-anchor="middle" font-weight="700">HTTP</text>
+      <text x="350" y="52" font-size="10" fill="#8FAAC7" text-anchor="middle">관통 흐름만</text>
+      <text x="460" y="34" font-size="10.5" fill="#8FAAC7">진짜 서블릿 · 쿠키 · 세션</text>
+      <text x="460" y="50" font-size="10.5" fill="#FF8A80">롤백이 안 된다 → 만든 것을 직접 지운다</text>
+
+      <!-- 통합 -->
+      <polygon points="260,72 440,72 490,148 210,148" fill="rgba(255,194,75,0.10)" stroke="#FFC24B"/>
+      <text x="350" y="100" font-size="12" fill="#FFC24B" text-anchor="middle" font-weight="700">통합</text>
+      <text x="350" y="118" font-size="10" fill="#8FAAC7" text-anchor="middle">SQL · 제약 · 배선 · 응답 모양</text>
+      <text x="510" y="100" font-size="10.5" fill="#8FAAC7">컨테이너 DB 를 테스트가 직접 띄운다</text>
+      <text x="510" y="116" font-size="10.5" fill="#68E3C4">트랜잭션째 되돌린다</text>
+
+      <!-- 단위 -->
+      <polygon points="210,154 490,154 530,230 170,230" fill="rgba(104,227,196,0.09)" stroke="#68E3C4"/>
+      <text x="350" y="182" font-size="12" fill="#68E3C4" text-anchor="middle" font-weight="700">단위</text>
+      <text x="350" y="200" font-size="10" fill="#8FAAC7" text-anchor="middle">순수 계산 — 판정 규칙의 우선순위 같은 것</text>
+      <text x="350" y="218" font-size="10" fill="#7E9CBC" text-anchor="middle">DB 도 스프링도 안 띄운다 · 케이스당 30배 빠르다</text>
+
+      <text x="0" y="20" font-size="10.5" fill="#7E9CBC">느리다</text>
+      <text x="0" y="36" font-size="10.5" fill="#7E9CBC">비싸다</text>
+      <text x="0" y="212" font-size="10.5" fill="#7E9CBC">빠르다</text>
+      <text x="0" y="228" font-size="10.5" fill="#7E9CBC">싸다</text>
+    </svg>
+    <figcaption>「여기 있어야 할 이유」가 <b>쿠키 · 세션 · 실제 상태 코드</b>가 아니면 아래층으로 내린다.</figcaption>
+  </figure>
+
+  <h2>HTTP 층을 따로 둔 이유</h2>
+  <p><strong>MockMvc 는 서블릿 컨테이너를 안 띄운다.</strong> 실제 HTTP 와 갈린 자리가 세 번 나왔다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>때</th><th>MockMvc</th><th>기동한 서버</th></tr></thead>
+    <tbody>
+      <tr><td>CSRF 거부 코드</td><td>403</td><td><strong>401</strong></td></tr>
+      <tr><td>가입 API</td><td>테스트 17개 전부 통과</td><td><span class="no">아무도 가입 못 함</span></td></tr>
+      <tr><td>로그인 추가 후</td><td>손대지 않은 테스트 6개가 깨짐</td><td>정상</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>둘째가 특히 아프다.</b> CSRF 토큰을 받을 경로가 없어서
+  실제로는 <b>아무도 가입할 수 없었는데</b>, 테스트는 우회 헬퍼를 쓰고 있어서 전부 초록이었다.</div>
+
+  <h2>「진짜 잡는지」를 확인한다</h2>
+  <div class="note key"><b>테스트를 쓰고 나면 일부러 코드를 깨뜨려 본다.</b>
+  기한 정밀도를 되돌려 보고, enum 에 표에 없는 값을 넣어 보고, 최소 길이를 한 칸 낮춰 봤다.
+  <b>셋 다 의도한 테스트만 깨졌다.</b><br>
+  안 해 보면 「통과하지만 아무것도 안 막는 테스트」가 남는다.</div>
+
+  <h2>경계는 손으로 못 짚는다</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th></th><th>테스트</th><th>최소 길이가 한 칸 밀리면</th></tr></thead>
+    <tbody>
+      <tr><td>안 한다</td><td>7자 비밀번호를 거부한다</td><td><span class="no">안 잡힌다</span></td></tr>
+      <tr><td>한다</td><td>14자 거부 <strong>+</strong> 15자 수락</td><td><span class="ok">한쪽이 깨진다</span></td></tr>
+    </tbody>
+  </table></div>
+  <p>같은 이유로, 「한글 비밀번호를 막는다」 테스트도 <strong>15자를 넘겨서</strong> 쓴다 —
+  짧은 한글을 쓰면 문자 집합이 아니라 길이에 걸려서 <strong>그 테스트가 무엇을 막는지 알 수 없게</strong> 된다.</p>
+
+  <h2>알려진 구멍도 테스트로 고정한다</h2>
+  <p>지금은 정상이지만 고쳐야 할 동작은 <strong>그대로 통과하는 테스트</strong>로 남긴다.
+  나중에 고치면 그 테스트가 깨지고, 그때 기대값을 뒤집는다. <strong>주석으로만 남기면 잊는다.</strong></p>
+
+  <h2>다른 규칙들</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>규칙</th><th>왜</th></tr></thead>
+    <tbody>
+      <tr><td>테스트 이름은 <strong>한국어 평서형</strong></td><td>실패 목록이 그대로 명세가 된다</td></tr>
+      <tr><td>정리는 <strong>베이스 클래스</strong>에 둔다</td><td>빠뜨리면 깨지는 것이 <strong>빠뜨린 클래스가 아니라 남의 클래스</strong>다. 원인을 찾을 실마리가 없다</td></tr>
+      <tr><td>커버리지는 <strong>측정만 하고 목표를 안 둔다</strong></td><td>수치를 채우려는 테스트가 생긴다 — 커버리지는 올리고 아무것도 안 막는다</td></tr>
+      <tr><td><strong>오늘 날짜에 기대지 않는다</strong></td><td>달력을 타면 특정 날에만 깨지고, 그런 실패는 몇 달 잠복한다</td></tr>
+    </tbody>
+  </table></div>
+</article>
+
+<!-- ══════════════════ 8. 점검 체계 ══════════════════ -->
+<article class="doc" id="d8">
+  <p class="doc-kicker">만드는 방식</p>
+  <h1>점검 체계</h1>
+  <p class="doc-lead">규칙을 세우는 것과 <strong>지켜지는지 보는 것</strong>은 다른 일이다. 다섯 축을 따로 훑는다.</p>
+
+  <h2>왜 축마다 따로 도나 — 방향이 반대다</h2>
+  <figure>
+    <svg viewBox="0 0 700 178" role="img" aria-label="법은 문서에서 코드로 내려가고 규약은 코드에서 규칙으로 올라간다">
+      <defs>
+        <marker id="dw" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 z" fill="#FF8A80"/></marker>
+        <marker id="up" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 z" fill="#68E3C4"/></marker>
+      </defs>
+
+      <rect x="10" y="14" width="300" height="44" rx="9" fill="rgba(255,138,128,0.12)" stroke="#FF8A80"/>
+      <text x="160" y="34" font-size="12" fill="#FF8A80" text-anchor="middle" font-weight="700">법 요건표 · R1 ~ R18</text>
+      <text x="160" y="50" font-size="10.5" fill="#8FAAC7" text-anchor="middle">있어야 할 것의 목록</text>
+
+      <line x1="160" y1="58" x2="160" y2="112" stroke="#FF8A80" stroke-width="2.2" marker-end="url(#dw)"/>
+      <text x="172" y="90" font-size="11" fill="#FF8A80" font-weight="700">내려간다</text>
+
+      <rect x="10" y="118" width="300" height="44" rx="9" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="160" y="138" font-size="12" fill="#E8F1FA" text-anchor="middle">코드 · 스키마</text>
+      <text x="160" y="154" font-size="10.5" fill="#7E9CBC" text-anchor="middle">없는 것이 위반</text>
+
+      <rect x="390" y="14" width="300" height="44" rx="9" fill="#152B47" stroke="#2A4A6E"/>
+      <text x="540" y="34" font-size="12" fill="#E8F1FA" text-anchor="middle">코딩 규약 · 명명 규칙</text>
+      <text x="540" y="50" font-size="10.5" fill="#7E9CBC" text-anchor="middle">지켜야 할 것의 목록</text>
+
+      <line x1="540" y1="112" x2="540" y2="62" stroke="#68E3C4" stroke-width="2.2" marker-end="url(#up)"/>
+      <text x="552" y="90" font-size="11" fill="#68E3C4" font-weight="700">올라간다</text>
+
+      <rect x="390" y="118" width="300" height="44" rx="9" fill="rgba(104,227,196,0.10)" stroke="#68E3C4"/>
+      <text x="540" y="138" font-size="12" fill="#68E3C4" text-anchor="middle" font-weight="700">코드 8,689줄</text>
+      <text x="540" y="154" font-size="10.5" fill="#8FAAC7" text-anchor="middle">있는 것이 위반</text>
+    </svg>
+    <figcaption>섞으면 <b>한 방향으로만 훑게 되고</b>, 반대쪽에서만 보이는 것을 놓친다.</figcaption>
+  </figure>
+
+  <h2>다섯 축</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>축</th><th>방향</th><th>찾는 것</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td><strong>A 법</strong></td><td>요건표 → 코드</td><td><strong>없는 것</strong>이 위반</td><td>18개 중 내려간 것 8 · 화면 대기 5 · 미착수 4 · 주석뿐 1</td></tr>
+      <tr><td><strong>B DB 제약</strong></td><td>대장 → 스키마</td><td>제약이 <strong>아직 거기 있나</strong></td><td>제약 55/55 · 트리거 16/16 — <span class="ok">사라진 것 0</span></td></tr>
+      <tr><td><strong>C 규약·코딩</strong></td><td>코드 → 규칙</td><td><strong>있는 것</strong>이 위반</td><td>3.9배 커지는 동안 새 위반 넷</td></tr>
+      <tr><td><strong>D 프론트</strong></td><td>코드 → 규칙</td><td>접근성 · 계층 경계</td><td>전부 초록. <strong>대비비를 직접 계산해 확인</strong></td></tr>
+      <tr><td><strong>E 기준 자료</strong></td><td>바깥 → 우리</td><td>표준이 <strong>개정됐나</strong></td><td><span class="no">핵심 근거 여섯 중 둘 개정</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>E 축만 가만히 있어도 틀려진다</h2>
+  <div class="note warn">
+  다른 넷은 코드를 안 건드리면 결과가 안 바뀐다. <b>이 축은 남이 문서를 고친다.</b><br><br>
+  두 달 반 만에 <b>NIST SP 800-63B 가 Rev 4</b> 로, <b>OWASP Top 10 이 2025 판</b>으로 갔다.
+  비밀번호 최소 길이가 8 → 15 가 됐고 우리는 <b>모르는 채로 미달</b>이었다.
+  </div>
+  <p>그래서 이 점검은 한 번 하고 끝나는 게 아니라 <strong>주기로 도는 것</strong>이고,
+  다음 회차가 언제인지를 정해 두지 않으면 안 돈다.</p>
+
+  <h2>점검이 스스로에게 걸린 것</h2>
+  <p>찾은 위반 넷 중 <strong>둘이 「그 직전에 세운 규칙」에 걸렸다.</strong>
+  규칙을 코드에서 뽑아 세웠는데도 그랬다 — <strong>뽑을 때 본 범위가 좁았기</strong> 때문이다.
+  패키지 규칙을 폴더 하나만 보고 세웠는데, 다른 폴더가 그 규칙을 어기고 있었다.</p>
+  <div class="note key"><b>교훈.</b> 규칙을 세운 <b>직후</b>에 점검을 붙이면 값을 한다.
+  그때가 대상이 제일 작고, 어긋난 것을 고치는 값도 제일 싸다.</div>
+
+  <h2>「못 잡는 것」을 같이 적는다</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>축</th><th>이 방향으로는 안 보이는 것</th></tr></thead>
+    <tbody>
+      <tr><td>A</td><td>요건표에 <strong>없는 법</strong>. 훑을 대상 자체가 없다</td></tr>
+      <tr><td>B</td><td>제약이 <strong>있는지</strong>는 봤지만 <strong>옳은지</strong>는 안 봤다</td></tr>
+      <tr><td>C</td><td>주석의 질, 알고 남긴 구멍 — <strong>기계로 못 읽는다</strong></td></tr>
+      <tr><td>D</td><td>실제 렌더된 <strong>초점 순서 · 낭독 순서</strong>. 코드만 읽어선 판정이 안 된다</td></tr>
+      <tr><td>E</td><td>인용한 <strong>그 줄</strong>이 문서 안에서 바뀐 경우. 목차만 봐선 안 보인다</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>안 적으면 「초록인 것」과 「안 본 것」이 구분되지 않는다.</b>
+  점검 결과가 깨끗할수록 이 표가 중요해진다.</div>
+
+  <h2>점검이 만든 일감</h2>
+  <p>다섯 축이 <strong>청크 아홉</strong>을 세웠고, 그중 「지금 아니면 비싸지는 것」 다섯을 먼저 쳤다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>친 것</th><th>무엇</th></tr></thead>
+    <tbody>
+      <tr><td>빨간 테스트</td><td>기한이 하루 밀리던 것</td></tr>
+      <tr><td>계약 개명</td><td><code>price</code> → <code>price_incl_vat</code> · 화면이 쓰기 전이라 백엔드 한 곳</td></tr>
+      <tr><td>화면 규칙</td><td>모르는 칸을 <code>aria-invalid</code> 로 지목하지 않기</td></tr>
+      <tr><td>타입 승격</td><td>필드 그룹 코드를 생 문자열에서 enum 으로</td></tr>
+      <tr><td>표준 반영</td><td>비밀번호 15자 · OWASP 2025 재매핑</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>하나는 열린 채로 남겼다.</b> 비밀번호 블록리스트 대조가 표준의
+  <code>SHALL</code> 인데 안 한다. 다른 미완은 「우리 규약과의 어긋남」인데 <b>이것만 2순위 출처와 어긋난다</b> —
+  목록 출처와 검사 시점, 그리고 <b>바깥을 부르면 그 장애가 우리 장애가 되는가</b>를 먼저 정해야 해서다.</div>
+</article>
+
+<div class="pager" id="pager"></div>
+
+</div>
+</main>
+
+<script>
+(function(){
+  var GROUPS = [
+    { label:"개요",        items:[ ["d1","한눈에"], ["d2","층 구조"], ["d9","스택과 인프라"] ] },
+    { label:"설계 기준",   items:[ ["d3","법 → 코드"], ["d4","결정 기준"] ] },
+    { label:"도메인",      items:[ ["d5","권한 모델"], ["d6","주문 상태머신"] ] },
+    { label:"만드는 방식", items:[ ["d7","테스트 층"], ["d8","점검 체계"] ] }
+  ];
+
+  var FLAT = [];
+  GROUPS.forEach(function(g){ g.items.forEach(function(it){ FLAT.push(it); }); });
+
+  var nav     = document.getElementById("nav");
+  var sidebar = document.getElementById("sidebar");
+  var main    = document.getElementById("main");
+  var burger  = document.getElementById("burger");
+  var barHere = document.getElementById("barHere");
+  var pager   = document.getElementById("pager");
+  var links   = {};
+
+  // ── 목차 ─────────────────────────────
+  GROUPS.forEach(function(g){
+    var wrap = document.createElement("div");
+    wrap.className = "nav-group";
+    var lab = document.createElement("div");
+    lab.className = "nav-group-label";
+    lab.textContent = g.label;
+    wrap.appendChild(lab);
+
+    g.items.forEach(function(it){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "nav-link";
+      b.innerHTML = '<span class="dot"></span>';
+      b.appendChild(document.createTextNode(it[1]));
+      b.addEventListener("click", function(){ go(it[0], true); });
+      links[it[0]] = b;
+      wrap.appendChild(b);
+    });
+    nav.appendChild(wrap);
+  });
+
+  // ── 절 전환 ───────────────────────────
+  function go(id, fromClick){
+    FLAT.forEach(function(it){
+      var on = it[0] === id;
+      document.getElementById(it[0]).classList.toggle("on", on);
+      links[it[0]].setAttribute("aria-current", on ? "true" : "false");
+      if (on) barHere.textContent = it[1];
+    });
+
+    buildPager(id);
+    if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+    window.scrollTo({ top:0, behavior: fromClick ? "smooth" : "auto" });
+
+    // 본문이 통째로 바뀌었는데 초점이 목차에 남아 있으면
+    // 화면낭독기에는 아무 일도 안 일어난 것과 같다. 제목으로 옮긴다.
+    if (fromClick) {
+      var h = document.querySelector("#" + id + " h1");
+      if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll:true }); }
+    }
+
+    // 좁은 화면에서는 고르고 나면 접는다. 넓은 화면은 열어 둔 채로 둔다.
+    if (fromClick && window.innerWidth < 1060) setNav(false);
+  }
+
+  // ── 이전 / 다음 ───────────────────────
+  function buildPager(id){
+    var i = FLAT.findIndex(function(it){ return it[0] === id; });
+    pager.innerHTML = "";
+
+    var prev = document.createElement("button");
+    prev.type = "button";
+    prev.innerHTML = "<span>이전</span>" + (i > 0 ? FLAT[i-1][1] : "—");
+    prev.disabled = i <= 0;
+    if (i > 0) prev.addEventListener("click", function(){ go(FLAT[i-1][0], true); });
+
+    var next = document.createElement("button");
+    next.type = "button";
+    next.className = "next";
+    next.innerHTML = "<span>다음</span>" + (i < FLAT.length-1 ? FLAT[i+1][1] : "—");
+    next.disabled = i >= FLAT.length - 1;
+    if (i < FLAT.length-1) next.addEventListener("click", function(){ go(FLAT[i+1][0], true); });
+
+    pager.appendChild(prev);
+    pager.appendChild(next);
+  }
+
+  // ── 사이드바 ──────────────────────────
+  // 스크림이 없다. 열려 있어도 본문 스크롤·클릭이 그대로 산다.
+  function setNav(open){
+    sidebar.classList.toggle("open", open);
+    main.classList.toggle("shifted", open);
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+    burger.setAttribute("aria-label", open ? "목차 닫기" : "목차 열기");
+    try { localStorage.setItem("ps-nav", open ? "1" : "0"); } catch(e){}
+  }
+  burger.addEventListener("click", function(){ setNav(!sidebar.classList.contains("open")); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && sidebar.classList.contains("open")) setNav(false);
+  });
+
+  // ── 첫 진입 ───────────────────────────
+  var saved;
+  try { saved = localStorage.getItem("ps-nav"); } catch(e){}
+  setNav(saved !== null ? saved === "1" : window.innerWidth >= 1060);
+
+  var want = location.hash.slice(1);
+  go(FLAT.some(function(it){ return it[0] === want; }) ? want : "d1", false);
+
+  window.addEventListener("hashchange", function(){
+    var h = location.hash.slice(1);
+    if (FLAT.some(function(it){ return it[0] === h; })) go(h, false);
+  });
+})();
+</script>
+</body>
+</html>
