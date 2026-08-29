@@ -443,8 +443,10 @@ PK정보(Y/N)·데이터타입·길이가 다 들어 있어 <b>논리명·FK 추
     <select id="fkLen"></select><span class="samp" id="fkLenS"></span></div>
   <div class="row"><label class="lv-opt" title="표준도메인 후보 CSV의 저장형식·표현형식(9999.99 같은 자릿수 마스크) 생성에 쓴다. FK 추론엔 안 씀">소수점 길이 열</label>
     <select id="fkScale"></select><span class="samp" id="fkScaleS"></span></div>
+  <div class="row"><label class="lv-opt" title="8번 산출물 xls 전용. Y·N·NULL·NOT NULL 을 읽는다. FK 추론엔 안 쓴다">NOT NULL 열</label>
+    <select id="fkNull"></select><span class="samp" id="fkNullS"></span></div>
   <div class="row" style="color:#9a9a9a;margin-top:-2px">
-    <span style="color:#6a8caf">파란 라벨</span> 4개는 <code>(없음)</code> 이어도 동작한다. FK 추론·표준도메인 후보 정확도만 떨어진다
+    <span style="color:#6a8caf">파란 라벨</span> 5개는 <code>(없음)</code> 이어도 동작한다. FK 추론·표준도메인 후보·산출물 xls 정확도만 떨어진다
   </div>
   <div class="row" style="margin-top:6px;border-top:1px dashed var(--border);padding-top:8px">
     <label class="lv-opt" title="쉼표 구분 · 테이블 논리명 만들 때 건너뜀">테이블 접두 무시토큰</label>
@@ -489,6 +491,7 @@ PK정보(Y/N)·데이터타입·길이가 다 들어 있어 <b>논리명·FK 추
   <span style="margin-left:12px">
     <button class="sec dl" onclick="expCSV()" title="현재 매칭 결과 전체를 CSV로 저장한다. 구분·스키마·테이블·컬럼·논리명·근거·미매칭토큰">매칭결과 CSV 저장</button>
     <button class="sec dl" onclick="expWordUse()" title="1번 원본 공통표준단어 CSV를 그대로 두고 맨 뒤에 '사용여부(Y/N)' 열 1개만 붙여 저장. 이 컬럼목록에 실제 쓰인 단어=Y">사용여부를 추가한 공통표준단어 CSV</button>
+    <button class="sec dl" onclick="expXls()" title="테이블정의서·컬럼정의서·DA# 파일리버스 템플릿(테이블/컬럼)을 시트 4장짜리 엑셀 한 파일로 저장. ASE는 COMMENT를 못 달아 DB 재조회가 불가능하므로 여기서 직접 만든다">산출물 엑셀 저장 (시트 4장)</button>
   </span>
 </div>
 
@@ -1107,6 +1110,25 @@ function judgePk(v){
   if(!t) return null;
   return FKPKY.has(t) || PKNO.has(t);
 }
+// NOT NULL 열 — Y/N · NULL/NOT NULL · TRUE/FALSE · 0/1 을 전부 받는다
+const NN_OK=new Set(['Y','N','YES','NO','NULL','NOT NULL','NOTNULL','TRUE','FALSE','T','F','0','1']);
+function judgeNull(v){
+  const t=String(v||'').trim().toUpperCase();
+  return t ? NN_OK.has(t) : null;
+}
+// 'NOT NULL 이면 Y' 로 정규화. 원본이 NULLABLE(널 허용=Y) 인 경우도 뒤집어 맞춘다
+function normNN(v, header){
+  const t=String(v||'').trim().toUpperCase();
+  if(!t) return '';
+  const nullable = /NULLABLE/i.test(header||'');   // 열 이름이 NULLABLE 계열이면 의미가 반대
+  let notNull;
+  if(t==='NOT NULL'||t==='NOTNULL') notNull=true;
+  else if(t==='NULL') notNull=false;
+  else if(t==='Y'||t==='YES'||t==='TRUE'||t==='T'||t==='1') notNull=!nullable;
+  else if(t==='N'||t==='NO'||t==='FALSE'||t==='F'||t==='0') notNull=!!nullable;
+  else return '';
+  return notNull ? 'Y' : 'N';
+}
 function judgeOrd(v){
   const t=String(v||'').trim();
   return t ? /^\d+$/.test(t) : null;
@@ -1381,9 +1403,10 @@ function setCol(rows){
   fillSel(document.getElementById('fkType'), h, ['DATA_TYPE','타입','데이터타입'], true);
   fillSel(document.getElementById('fkLen'),  h, ['DATA_LENGTH','LENGTH','길이'], true);
   fillSel(document.getElementById('fkScale'), h, ['DATA_SCALE','SCALE','소수점'], true);
+  fillSel(document.getElementById('fkNull'), h, ['NULLABLE','IS_NULLABLE','NOT_NULL','NOTNULL','NOT NULL','널여부'], true);
   // 열 선택 옆 실제 값 미리보기 — 어느 열을 고른 건지 눈으로 확인. PK여부·순서·타입·길이·소수점은 값 적합성도 색으로
-  const FK_JUDGE={fkPk:judgePk, fkOrd:judgeOrd, fkType:judgeType, fkLen:judgeNum, fkScale:judgeNum};
-  ['cOwner','cTable','cCol','fkPk','fkOrd','fkType','fkLen','fkScale']
+  const FK_JUDGE={fkPk:judgePk, fkOrd:judgeOrd, fkType:judgeType, fkLen:judgeNum, fkScale:judgeNum, fkNull:judgeNull};
+  ['cOwner','cTable','cCol','fkPk','fkOrd','fkType','fkLen','fkScale','fkNull']
     .forEach(id=>wireSamp(id, ()=>colRaw, id+'S', FK_JUDGE[id]));
   // cOwner 는 (직접 입력) 선택 시 텍스트칸을 여닫아야 해서 미리보기와 같이 건다
   const ow=document.getElementById('cOwner');
@@ -1448,6 +1471,11 @@ function run(keepRank){
   const dtIdx=+document.getElementById('fkType').value,
         dlIdx=+document.getElementById('fkLen').value,
         dsIdx=+document.getElementById('fkScale').value;
+  // 8번 산출물 xls 전용 — 없어도(-1) 동작한다. 해당 열만 빈칸으로 나간다
+  const pkIdx=+document.getElementById('fkPk').value,
+        nnIdx=+document.getElementById('fkNull').value,
+        ordIdx=+document.getElementById('fkOrd').value,
+        nnHead= nnIdx>=0 ? (colRaw[0][nnIdx]||'') : '';
   if(!(ci>=0)){ alert('컬럼명 열을 선택한다.'); return; }
   COLONLY = (ti<0);
   const ownFix=(document.getElementById('ownerTxt').value||'').trim();
@@ -1483,7 +1511,10 @@ function run(keepRank){
         const dtype = dtIdx>=0 ? (r[dtIdx]||'').trim() : '';
         const dlen  = dlIdx>=0 ? (r[dlIdx]||'').trim() : '';
         const dscale= dsIdx>=0 ? (r[dsIdx]||'').trim() : '';
-        ROWS.push({owner:ow, table:tb, col:co, name:c.name, src:c.src, missing:c.missing, chk:!!c.name, dtype, dlen, dscale});
+        const pk    = pkIdx>=0  ? (FKPKY.has(String(r[pkIdx]||'').trim().toUpperCase()) ? 'Y' : 'N') : '';
+        const nnull = nnIdx>=0  ? normNN(r[nnIdx], nnHead) : '';
+        const ord   = ordIdx>=0 ? (r[ordIdx]||'').trim() : String(i);
+        ROWS.push({owner:ow, table:tb, col:co, name:c.name, src:c.src, missing:c.missing, chk:!!c.name, dtype, dlen, dscale, pk, nnull, ord});
       }
     }
     if(!COLONLY && tb && !tabs.has(ow+'.'+tb)){
@@ -1869,6 +1900,71 @@ function copyOut(){
     navigator.clipboard.writeText(t.value).then(done, legacy);
   } else legacy();
 }
+// ── 8. 산출물 xls (SpreadsheetML 2003) ────────────────────────────────
+// ASE 는 COMMENT 를 못 달아 DB 를 재조회하는 경로가 막힌다(P1).
+// 그래서 정의서·DA# 파일리버스 템플릿을 이 화면에서 직접 만든다.
+// 외부 라이브러리 없이 시트 여러 장을 담으려고 xlsx(zip) 대신 SpreadsheetML 을 쓴다.
+function xmlEsc(s){
+  return String(s==null?'':s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g,'');
+}
+function xlSheet(name, head, rows){
+  // 시트명 제약: 31자, : \ / ? * [ ] 금지
+  const nm=xmlEsc(String(name).replace(/[:\\\/?*\[\]]/g,'_').slice(0,31));
+  const cell=v=>{
+    const s=String(v==null?'':v);
+    const num = s!=='' && /^-?\d+(\.\d+)?$/.test(s) && s.length<15;
+    return '<Cell><Data ss:Type="'+(num?'Number':'String')+'">'+xmlEsc(s)+'</Data></Cell>';
+  };
+  const L=['<Worksheet ss:Name="'+nm+'"><Table>'];
+  L.push('<Row>'+head.map(h=>'<Cell ss:StyleID="h"><Data ss:Type="String">'+xmlEsc(h)+'</Data></Cell>').join('')+'</Row>');
+  rows.forEach(r=>L.push('<Row>'+r.map(cell).join('')+'</Row>'));
+  L.push('</Table><WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">'+
+         '<FreezePanes/><FrozenNoSplit/><SplitHorizontal>1</SplitHorizontal>'+
+         '<TopRowBottomPane>1</TopRowBottomPane><ActivePane>2</ActivePane></WorksheetOptions></Worksheet>');
+  return L.join('');
+}
+function xlBook(sheets){
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+
+    '<?mso-application progid="Excel.Sheet"?>\n'+
+    '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"'+
+    ' xmlns:o="urn:schemas-microsoft-com:office:office"'+
+    ' xmlns:x="urn:schemas-microsoft-com:office:excel"'+
+    ' xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">'+
+    '<Styles><Style ss:ID="h"><Font ss:Bold="1"/>'+
+    '<Interior ss:Color="#DDDDDD" ss:Pattern="Solid"/></Style></Styles>'+
+    sheets.join('')+'</Workbook>';
+}
+function expXls(){
+  if(!ROWS.length){ alert('먼저 3번에서 «변환 실행» 을 누른다.'); return; }
+  if(COLONLY){ alert('테이블명 열이 없으면 정의서를 만들 수 없다.\n3번에서 테이블명 열을 고른다.'); return; }
+  const db=(document.getElementById('termDb').value||'').trim();
+  const dbOf=r=>db||r.owner;
+  const KOR=new Map(TROWS.map(t=>[t.owner+'|'+t.table, t.name]));
+
+  // 1) 테이블정의서 — 테이블 1건 = 1행
+  const s1=TROWS.map(t=>[dbOf(t), t.owner, t.table, t.name,
+                         ROWS.filter(r=>r.owner===t.owner&&r.table===t.table).length]);
+  // 2) 컬럼정의서 — 컬럼 1건 = 1행
+  const s2=ROWS.map(r=>[dbOf(r), r.owner, r.table, KOR.get(r.owner+'|'+r.table)||'',
+                        r.ord, r.col, r.name, r.dtype, r.dlen, r.dscale, r.pk, r.nnull]);
+  // 3·4) DA# 파일 리버스 템플릿 — 매뉴얼 Ch.10 항목명 그대로
+  const s3=TROWS.map(t=>[dbOf(t), t.owner, t.table, t.name]);
+  const s4=ROWS.map(r=>[dbOf(r), r.owner, r.table, r.col, r.name,
+                        r.dtype, r.dlen, r.dscale, r.nnull, r.pk]);
+
+  const xml=xlBook([
+    xlSheet('테이블정의서', ['DB명','소유자','테이블명','한글테이블명','컬럼수'], s1),
+    xlSheet('컬럼정의서',   ['DB명','소유자','테이블명','한글테이블명','컬럼순서','컬럼명','한글컬럼명','타입','길이','소수점','PK','NOT NULL'], s2),
+    xlSheet('DA#_테이블',   ['데이터베이스','DB USER','테이블명','한글테이블명'], s3),
+    xlSheet('DA#_컬럼',     ['데이터베이스','DB USER','테이블명','컬럼명','한글컬럼명','타입','길이','소수점','NOT NULL','PRIMARY KEY'], s4)
+  ]);
+  const blob=new Blob(['﻿'+xml],{type:'application/vnd.ms-excel;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download='산출물_정의서.xls'; a.click();
+}
+
 function expCSV(){
   const L=['구분,스키마,테이블,컬럼,논리명,근거,미매칭토큰'];
   const q=s=>'"'+String(s==null?'':s).replace(/"/g,'""')+'"';
