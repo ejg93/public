@@ -25,9 +25,10 @@ const tagBtnBase: React.CSSProperties = {
 //   (id)              → 오른쪽 사이드바 (초록 버튼)
 //   [label](yt:url)   → 유튜브 버튼 (빨간 로고)
 //   [label](tool:경로) → public/ 정적 도구 링크 (회색 버튼, toolbox 테마색)
+//   [label](note:경로) → public/ 학습 노트 링크 (민트 버튼)
 //   [label](url)      → 외부 링크 버튼 (파란 버튼)
 function parseAnswer(text: string, details: DetailItem[], onSelect: (d: DetailItem) => void, activeId: string | null) {
-  const parts = text.split(/(\([a-z0-9-]+\)|\[.+?\]\(tool:[^)]+\)|\[.+?\]\((?:yt:)?https?:\/\/.+?\))/g)
+  const parts = text.split(/(\([a-z0-9-]+\)|\[.+?\]\((?:tool|note):[^)]+\)|\[.+?\]\((?:yt:)?https?:\/\/.+?\))/g)
   return parts.map((part, i) => {
 
     // ── 정적 도구 링크: [label](tool:/toolbox) ──
@@ -51,6 +52,31 @@ function parseAnswer(text: string, details: DetailItem[], onSelect: (d: DetailIt
           onMouseLeave={e => (e.currentTarget.style.borderColor = '#3c3c3c')}
         >
           🛠 {toolMatch[1]}
+        </a>
+      )
+    }
+
+    // ── 학습 노트 링크: [label](note:/study) ──
+    const noteMatch = part.match(/^\[(.+?)\]\(note:([^)]+)\)$/)
+    if (noteMatch) {
+      return (
+        <a
+          key={i}
+          href={noteMatch[2]}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            ...tagBtnBase,
+            gap: '6px',
+            background: 'rgba(78,201,176,0.10)',
+            color: '#4ec9b0',
+            border: '1px solid rgba(78,201,176,0.35)',
+            textDecoration: 'none',
+          }}
+          onMouseEnter={e => (e.currentTarget.style.borderColor = '#4ec9b0')}
+          onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(78,201,176,0.35)')}
+        >
+          📘 {noteMatch[1]}
         </a>
       )
     }

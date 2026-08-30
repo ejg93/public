@@ -27,7 +27,7 @@ export const QA: QAItem[] = [
         "부작용이 가장 적은 쪽을 골라 논의해서 정합니다.\n" +
         "구현은 공식 API 문서를 근거로 삼아 기본 원칙에서 벗어나지 않게 합니다.\n" +
         "업무 중 발견한 이슈나 아이디어는 그때그때 메모해두고 다시 꺼내 씁니다.\n" +
-        "(dev-tools)[개발용 HTML 도구](tool:/toolbox)[AI 시대의 공부법](yt:https://www.youtube.com/watch?v=EWAjNmFKmW4)",
+        "(dev-tools)[개발용 HTML 도구](tool:/toolbox)[학습 노트](note:/study)[AI 시대의 공부법](yt:https://www.youtube.com/watch?v=EWAjNmFKmW4)",
     details: [
       {
         id: "dev-tools",
