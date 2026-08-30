@@ -15,6 +15,10 @@ const nextConfig = {
         destination: '/study/projectshop-notes.html',
       },
       {
+        source: '/docrules/hwp-excel-rules',
+        destination: '/docrules/hwp-excel-rules.html',
+      },
+      {
         source: '/game/limbus/simulator',
         destination: '/game/limbusCompany/fusion-simulator.html',
       },
