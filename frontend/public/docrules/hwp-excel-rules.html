@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>한글·엑셀 깨짐 방지 규칙집</title>
+<style>
+  :root{
+    --bg:#0F2036;
+    --bg-2:#0B1930;
+    --panel:#152B47;
+    --panel-2:#1B3958;
+    --line:#2A4A6E;
+    --line-soft:#1F3958;
+    --ink:#E8F1FA;
+    --ink-dim:#8FAAC7;
+    --ink-faint:#7E9CBC;
+    --accent:#FFC24B;
+    --accent-2:#68E3C4;
+    --accent-3:#7BA9FF;
+    --danger:#FF8A80;
+    --radius:10px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+    padding-bottom:60px;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+
+  .skip{
+    position:absolute; left:-9999px; top:0;
+    background:var(--accent); color:#20160A; padding:8px 14px; border-radius:0 0 8px 0;
+    z-index:100; font-weight:700;
+  }
+  .skip:focus{left:0;}
+
+  /* ---------- Header ---------- */
+  header.app-bar{
+    position:sticky; top:0; z-index:40;
+    background:rgba(11,25,48,0.92);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .app-bar-row{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:6px;
+    padding:7px 10px;
+    max-width:760px; margin:0 auto;
+  }
+  .icon-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    width:30px; height:30px; border-radius:7px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:15px; cursor:pointer; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .icon-btn:hover{background:var(--panel-2);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .bar-crumb{
+    font-size:10.5px; letter-spacing:.18em; font-weight:700;
+    color:var(--accent); flex-shrink:0;
+  }
+  .bar-here{
+    font-size:12px; color:var(--ink-dim);
+    flex:1 1 120px; min-width:0;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .chip-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--ink-dim);
+    font:inherit; font-size:11.5px; padding:4px 10px; border-radius:999px;
+    cursor:pointer; flex-shrink:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .chip-btn:hover{background:var(--panel-2); color:var(--ink);}
+  .chip-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .progress-pill{
+    font-size:11.5px; color:var(--ink-dim);
+    background:var(--panel); border:1px solid var(--line);
+    padding:4px 10px; border-radius:999px; flex-shrink:0;
+    font-variant-numeric:tabular-nums;
+  }
+  .progress-pill b{color:var(--accent); font-weight:700;}
+  .progress-track{height:2px; background:var(--line-soft);}
+  .progress-fill{height:100%; width:0; background:var(--accent); transition:width .1s linear;}
+
+  /* ---------- Drawer ---------- */
+  .drawer{
+    position:fixed; top:0; left:0; bottom:0; width:min(300px, 84vw);
+    background:var(--bg-2); border-right:1px solid var(--line);
+    z-index:60; transform:translateX(-102%); transition:transform .2s ease;
+    display:flex; flex-direction:column;
+  }
+  .drawer.open{transform:none;}
+  .drawer-head{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:10px;
+    padding:14px 14px 10px; border-bottom:1px solid var(--line);
+  }
+  .drawer-head h2{margin:2px 0 0; font-size:17px;}
+  .eyebrow{
+    font-size:10px; letter-spacing:.2em; font-weight:700;
+    color:var(--accent); text-transform:uppercase;
+  }
+  .drawer-list{overflow-y:auto; padding:8px 8px 24px; flex:1;}
+  .drawer-list a{
+    display:block; padding:7px 10px; border-radius:7px;
+    color:var(--ink-dim); text-decoration:none; font-size:13px;
+    border-left:2px solid transparent;
+  }
+  .drawer-list a:hover{background:var(--panel); color:var(--ink);}
+  .drawer-list a.lv3{padding-left:22px; font-size:12.5px; color:var(--ink-faint);}
+  .drawer-list a.here{color:var(--accent); border-left-color:var(--accent); background:var(--panel);}
+  .scrim{
+    position:fixed; inset:0; background:rgba(4,10,20,.6);
+    z-index:50; opacity:0; pointer-events:none; transition:opacity .2s;
+  }
+  .scrim.on{opacity:1; pointer-events:auto;}
+
+  /* ---------- Layout ---------- */
+  main{display:block;}
+  .page-inner{max-width:760px; margin:0 auto; padding:0 12px;}
+
+  .doc-head{padding:26px 0 20px; border-bottom:1px solid var(--line);}
+  .doc-head h1{
+    margin:8px 0 12px; font-size:26px; line-height:1.32;
+    text-wrap:balance; letter-spacing:-.01em;
+  }
+  .lede{margin:0; color:var(--ink-dim); font-size:14px;}
+  .legend{
+    margin-top:16px; display:flex; flex-wrap:wrap; gap:6px 14px;
+    font-size:11.5px; color:var(--ink-faint);
+  }
+  .legend b{color:var(--ink-dim); font-weight:600;}
+
+  section{padding:30px 0 4px; scroll-margin-top:56px;}
+  section h2{
+    margin:0 0 6px; font-size:19px; letter-spacing:-.01em;
+    padding-left:10px; border-left:3px solid var(--accent);
+  }
+  .sec-note{margin:0 0 18px; color:var(--ink-dim); font-size:13.5px;}
+  h3.grp{
+    margin:26px 0 10px; padding-bottom:6px;
+    font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent-2); font-weight:700;
+    border-bottom:1px solid var(--line-soft);
+    scroll-margin-top:56px;
+  }
+
+  /* ---------- Rule card ---------- */
+  .rule{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:14px 15px; margin-bottom:10px;
+  }
+  .rule-head{display:flex; flex-wrap:wrap; align-items:center; gap:7px; margin-bottom:8px;}
+  .rid{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    font-size:11px; font-weight:600; color:var(--accent-3);
+    background:var(--panel-2); border:1px solid var(--line);
+    padding:1px 7px; border-radius:5px;
+  }
+  .chip{
+    font-size:10px; font-weight:700; letter-spacing:.08em;
+    padding:2px 8px; border-radius:999px; border:1px solid;
+  }
+  .c-req{color:var(--danger); border-color:var(--danger); background:rgba(255,138,128,.10);}
+  .c-rec{color:var(--accent); border-color:var(--accent); background:rgba(255,194,75,.10);}
+  .c-opt{color:var(--accent-2); border-color:var(--accent-2); background:rgba(104,227,196,.10);}
+  .rule-head .t{margin:0; font-size:14.5px; font-weight:600; flex:1 1 200px; line-height:1.5;}
+  .rule p{margin:0 0 7px; color:var(--ink-dim); font-size:13.5px;}
+  .rule p:last-child{margin-bottom:0;}
+  .rule ul{margin:7px 0 0; padding-left:17px; color:var(--ink-dim); font-size:13.5px;}
+  .rule li{margin-bottom:4px;}
+  .rule li:last-child{margin-bottom:0;}
+  .rule li::marker{color:var(--ink-faint);}
+  .rule b{color:var(--ink);}
+  code{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    background:var(--bg-2); border:1px solid var(--line-soft);
+    padding:1px 5px; border-radius:4px; font-size:.86em; color:var(--accent-2);
+  }
+  .no{color:var(--danger); font-weight:600;}
+  .yes{color:var(--accent-2); font-weight:600;}
+
+  /* ---------- Table ---------- */
+  .tbl-wrap{
+    overflow-x:auto; margin:12px 0 0;
+    border:1px solid var(--line); border-radius:var(--radius); background:var(--panel);
+  }
+  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:460px;}
+  th,td{
+    padding:8px 11px; text-align:left; vertical-align:top;
+    border-bottom:1px solid var(--line-soft);
+  }
+  th{
+    font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); background:var(--panel-2); white-space:nowrap;
+  }
+  td{color:var(--ink-dim);}
+  td b{color:var(--ink);}
+  tr:last-child td{border-bottom:none;}
+  td.m{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; color:var(--ink);
+  }
+
+  /* ---------- Flow ---------- */
+  .flow{display:flex; flex-direction:column; gap:8px;}
+  .flow-row{
+    display:flex; flex-wrap:wrap; align-items:center; gap:9px;
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:12px 14px;
+  }
+  .flow-q{flex:1 1 190px; font-size:13.5px; font-weight:600;}
+  .flow-a{
+    font-size:12px; font-weight:600; padding:4px 10px; border-radius:6px;
+    white-space:nowrap; border:1px solid;
+  }
+  .a-pdf{color:var(--accent-2); border-color:var(--accent-2); background:rgba(104,227,196,.10);}
+  .a-hwp{color:var(--accent); border-color:var(--accent); background:rgba(255,194,75,.10);}
+
+  /* ---------- Case ---------- */
+  .case{
+    background:var(--panel); border:1px solid var(--line);
+    border-left:3px solid var(--danger);
+    border-radius:var(--radius); padding:14px 15px; margin-bottom:10px;
+  }
+  .case.solved{border-left-color:var(--accent-2);}
+  .case h4{margin:0 0 10px; font-size:14px; font-weight:600;}
+  .case dl{margin:0; display:grid; grid-template-columns:auto 1fr; gap:6px 12px; font-size:13.5px;}
+  .case dt{
+    font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:700;
+    color:var(--ink-faint); padding-top:4px; white-space:nowrap;
+  }
+  .case dd{margin:0; color:var(--ink-dim);}
+  @media(max-width:520px){
+    .case dl{grid-template-columns:1fr; gap:1px 0;}
+    .case dd{margin-bottom:9px;}
+  }
+
+  /* ---------- Code block ---------- */
+  pre{
+    background:var(--bg-2); border:1px solid var(--line);
+    border-radius:var(--radius); padding:12px 13px; margin:12px 0 0;
+    overflow-x:auto; font-size:11.5px; line-height:1.66; color:var(--ink);
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  pre .cm{color:var(--ink-faint);}
+
+  /* ---------- Checklist ---------- */
+  .check{
+    background:var(--panel); border:1px solid var(--line);
+    border-radius:var(--radius); padding:4px 3px;
+  }
+  .check label{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:8px 12px; border-radius:7px; cursor:pointer;
+    font-size:13.5px; color:var(--ink-dim);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .check label:hover{background:var(--panel-2);}
+  .check input{
+    margin:4px 0 0; width:15px; height:15px; flex-shrink:0;
+    accent-color:var(--accent); cursor:pointer;
+  }
+  .check input:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .check input:checked + span{color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--line);}
+  .check .k{
+    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+    font-size:10.5px; color:var(--ink-faint); margin-left:5px;
+  }
+  .check b{color:var(--ink);}
+
+  footer.credit{
+    max-width:760px; margin:44px auto 0; padding:16px 12px 0;
+    border-top:1px solid var(--line);
+    font-size:11.5px; color:var(--ink-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .drawer,.scrim,.progress-fill{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#mainContent">본문 바로가기</a>
+
+<header class="app-bar">
+  <div class="app-bar-row">
+    <button class="icon-btn" id="drawerOpenBtn" aria-label="목차 열기" aria-expanded="false">☰</button>
+    <div class="bar-crumb">DOCRULES</div>
+    <div class="bar-here" id="barHere">—</div>
+    <button class="chip-btn" id="resetCheckBtn">체크 초기화</button>
+    <div class="progress-pill"><b id="doneCount">0</b>/<span id="totalCount">0</span> 완료</div>
+  </div>
+  <div class="progress-track"><div class="progress-fill" id="scrollFill"></div></div>
+</header>
+
+<div class="scrim" id="scrim"></div>
+
+<nav class="drawer" id="drawer" aria-label="목차">
+  <div class="drawer-head">
+    <div>
+      <div class="eyebrow">목차</div>
+      <h2>Contents</h2>
+    </div>
+    <button class="icon-btn" id="drawerCloseBtn" aria-label="닫기">✕</button>
+  </div>
+  <div class="drawer-list" id="drawerList"></div>
+</nav>
+
+<main id="mainContent" tabindex="-1">
+<div class="page-inner">
+
+  <div class="doc-head">
+    <div class="eyebrow">문서 배포 규칙 · 폐쇄망 실무</div>
+    <h1>한글·엑셀 깨짐 방지 규칙집</h1>
+    <p class="lede">
+      내 PC에서 멀쩡한 문서가 상대 PC에서 페이지가 늘고 글자가 겹치는 원인은 거의 언제나 문서 밖 환경이다 —<br>
+      글꼴, 프린터, 버전. 문서를 만들 때 이 규칙을 지키면 그 변수가 대부분 사라진다.
+    </p>
+    <div class="legend">
+      <span><b>필수</b> 어기면 사고 남</span>
+      <span><b>권장</b> 지키면 사고 확률 크게 낮음</span>
+      <span><b>선택</b> 상황 따라</span>
+    </div>
+  </div>
+
+  <!-- 0 ─────────────────────────────── -->
+  <section id="principle">
+    <h2>0. 대원칙</h2>
+    <p class="sec-note">규칙 스물아홉 개를 다 외울 필요 없다. 아래 흐름만 지키면 사고의 8할이 사라진다.</p>
+
+    <div class="flow">
+      <div class="flow-row">
+        <span class="flow-q">받는 사람이 이 문서를 <b>편집</b>할 이유가 있나?</span>
+        <span class="flow-a a-pdf">없다 → PDF만 배포</span>
+        <span class="flow-a a-hwp">있다 → 원본 + 아래 규칙 전부</span>
+      </div>
+      <div class="flow-row">
+        <span class="flow-q">편집이 필요해도 보고·열람용 사본은 PDF를 함께 준다</span>
+        <span class="flow-a a-pdf">레이아웃 기준본</span>
+      </div>
+      <div class="flow-row">
+        <span class="flow-q">PDF는 글꼴 포함(임베딩)으로 저장한다</span>
+        <span class="flow-a a-pdf">임베딩 없으면 PDF도 깨짐</span>
+      </div>
+    </div>
+
+    <div class="rule" style="margin-top:12px">
+      <div class="rule-head">
+        <span class="rid">CORE-01</span><span class="chip c-req">필수</span>
+        <p class="t">레이아웃을 지켜야 하는 순간, 답은 항상 PDF다</p>
+      </div>
+      <p>
+        HWP와 XLSX는 <b>재조판(reflow) 포맷</b>이다. 여는 PC의 글꼴·프린터·버전에 따라 매번 다시 계산된다.<br>
+        PDF는 <b>고정 포맷</b>이라 계산이 끝나 있다.<br>
+        편집 필요가 없는 문서를 원본으로 돌리는 건 이유 없이 사고 위험만 떠안는 것.
+      </p>
+    </div>
+  </section>
+
+  <!-- 1 ─────────────────────────────── -->
+  <section id="hwp">
+    <h2>1. 한글(HWP)</h2>
+    <p class="sec-note">
+      한글 깨짐의 1순위 원인은 버전이 아니라 <b>글꼴 대체</b>다.<br>
+      문서가 쓴 글꼴이 상대 PC에 없으면 한글이 다른 글꼴을 끼워 넣고, 글자 폭이 달라지고,<br>
+      줄바꿈 위치가 밀리고, 페이지가 늘어난다.
+    </p>
+
+    <h3 class="grp" id="hwp-font">글꼴 · 글자 모양</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-01</span><span class="chip c-req">필수</span>
+        <p class="t">안전 글꼴 목록 안에서만 고른다</p>
+      </div>
+      <p>"어디에나 설치돼 있다"가 보장되는 글꼴만 쓴다. 예쁜 글꼴은 배포 문서에서 부채다.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>구분</th><th>글꼴</th><th>근거</th></tr></thead>
+        <tbody>
+          <tr><td class="yes">안전</td><td>함초롬바탕 / 함초롬돋움</td><td>한컴오피스 설치 시 동봉</td></tr>
+          <tr><td class="yes">안전</td><td>맑은 고딕 / 굴림 / 바탕 / 돋움 / 궁서</td><td>윈도우 기본 탑재</td></tr>
+          <tr><td class="no">위험</td><td>나눔 계열, 프리텐다드, 노토 산스 KR</td><td>개별 설치 필요 — 없는 PC 많음</td></tr>
+          <tr><td class="no">위험</td><td>한컴 상위 패키지 전용 글꼴</td><td>같은 한글이라도 에디션 따라 없음</td></tr>
+          <tr><td class="no">위험</td><td>기관 전용 / 구매 글꼴</td><td>외부 배포 시 전부 대체됨 + 라이선스 문제</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-02</span><span class="chip c-req">필수</span>
+        <p class="t">한글·영문·한자·기호 글꼴을 따로 확인한다</p>
+      </div>
+      <p>
+        한글의 글자 모양은 언어별로 글꼴이 따로 지정된다.<br>
+        한글만 바꾸고 영문을 놔두면 숫자·영문·괄호만 다른 글꼴로 나가서,<br>
+        본인 PC에선 안 보이던 폭 차이가 상대 PC에서 터진다.
+      </p>
+      <ul><li><code>글자 모양(Alt+L) → 언어별 설정</code>에서 한글·영문·한자·기호를 같은 글꼴로 통일</li></ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-03</span><span class="chip c-req">필수</span>
+        <p class="t">자간 0, 장평 100%를 벗어나지 않는다</p>
+      </div>
+      <p>
+        글자가 <b>겹쳐 보이는</b> 현상의 직접 원인이다.<br>
+        자간을 음수로 조여둔 문단에서 글꼴이 폭 넓은 글꼴로 대체되면 글자끼리 파고든다.<br>
+        "한 줄에 억지로 넣으려고" 자간을 줄이는 습관이 가장 위험하다.
+      </p>
+      <ul>
+        <li>줄이 넘치면 자간이 아니라 <b>문장을 줄이거나 글자 크기를 내린다</b></li>
+        <li>표 안에서 특히 자주 발생 — 셀 폭 맞추려고 자간 조절 금지</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-04</span><span class="chip c-rec">권장</span>
+        <p class="t">글자 크기는 정수 pt로만</p>
+      </div>
+      <p>
+        <code>10.5pt</code> 같은 소수점 크기는 버전·DPI에 따라 반올림이 갈리면서 줄 높이가 미세하게 달라진다.<br>
+        한 페이지에 40줄이면 그 미세 차이가 한 줄 밀림으로 누적된다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-05</span><span class="chip c-rec">권장</span>
+        <p class="t">글꼴 포함하여 저장</p>
+      </div>
+      <p>
+        안전 목록 밖 글꼴을 반드시 써야 한다면 문서에 글꼴을 심어 보낸다.<br>
+        파일이 커지지만 대체를 원천 차단한다.<br>
+        <code>파일 → 문서 정보 / 저장 설정</code>에서 글꼴 포함 옵션을 켜고,<br>
+        그 글꼴의 라이선스가 재배포를 허용하는지 먼저 확인한다.
+      </p>
+    </div>
+
+    <h3 class="grp" id="hwp-page">편집용지 · 문단 · 줄바꿈</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-06</span><span class="chip c-req">필수</span>
+        <p class="t">편집용지를 명시적으로 설정한다</p>
+      </div>
+      <p>
+        버전별 기본 여백이 다르다. <code>F7</code>로 용지 종류·방향·여백을 손으로 지정해 저장하면<br>
+        그 값이 문서에 박혀서 어느 PC에서 열어도 같다.<br>
+        손대지 않으면 여는 쪽 기본값을 따라갈 여지가 남는다.
+      </p>
+      <ul>
+        <li>용지 A4, 방향 명시</li>
+        <li>위·아래·왼쪽·오른쪽·머리말·꼬리말 전부 숫자 확인</li>
+        <li><b>제본 여백은 0</b>인지 확인 — 0이 아니면 좌우가 비대칭으로 밀린다</li>
+        <li>구체적 수치는 소속 기관 공문서 규정을 따른다. 기관마다 다르니 임의 값을 쓰지 않는다</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-07</span><span class="chip c-req">필수</span>
+        <p class="t">빈 줄로 페이지를 넘기지 않는다</p>
+      </div>
+      <p>
+        엔터를 열 번 쳐서 다음 장으로 넘긴 문서는, 글꼴이 한 번만 대체돼도 그 열 줄이 밀려서<br>
+        빈 페이지가 생기거나 제목이 앞장 끝에 매달린다.<br>
+        <b>"페이지가 하나 더 생긴다"의 가장 흔한 원인.</b>
+      </p>
+      <ul>
+        <li>페이지 넘김 <span class="yes">→ 쪽 나누기 <code>Ctrl+Enter</code></span></li>
+        <li>문단 간격 <span class="yes">→ 문단 모양의 위·아래 간격</span></li>
+        <li>들여쓰기·정렬 <span class="yes">→ 탭 또는 문단 들여쓰기</span> <span class="no">(스페이스 반복 금지)</span></li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-08</span><span class="chip c-rec">권장</span>
+        <p class="t">제목이 혼자 떨어지지 않게 문단 보호를 건다</p>
+      </div>
+      <p>
+        <code>문단 모양 → 다음 문단과 함께 / 문단 보호</code>.<br>
+        줄이 밀려도 제목과 본문 첫 줄이 갈라지지 않는다. 밀림 자체를 못 막아도 보기 흉한 결과는 막는다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-09</span><span class="chip c-opt">선택</span>
+        <p class="t">줄간격은 조직 규정 우선, 없으면 고정값(pt)</p>
+      </div>
+      <p>
+        줄간격 <code>%</code> 지정은 글꼴 메트릭에 비례해 계산되므로,<br>
+        글꼴이 대체되면 실제 줄 높이가 함께 변한다. 고정값(pt)은 글꼴과 무관하게 일정하다.<br>
+        다만 공문서 규정이 <code>160%</code> 등 %를 명시하면 규정이 우선.
+      </p>
+    </div>
+
+    <h3 class="grp" id="hwp-table">표 · 개체</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-10</span><span class="chip c-req">필수</span>
+        <p class="t">표 너비를 본문 폭에 꽉 채우지 않는다</p>
+      </div>
+      <p>
+        본문 폭에 딱 맞춘 표는 글꼴이 조금만 넓어져도 마지막 열이 밀려 나가거나<br>
+        셀 안 텍스트가 한 줄 더 늘어나고, 그만큼 행 높이가 커져 페이지가 넘친다.<br>
+        <b>좌우 1~2mm 여유</b>를 남긴다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-11</span><span class="chip c-rec">권장</span>
+        <p class="t">셀 여백을 명시하고, 표 제목 줄 반복을 켠다</p>
+      </div>
+      <ul>
+        <li>셀 여백 기본값에 기대지 않고 표 속성에서 값을 지정한다</li>
+        <li>표가 페이지를 걸칠 수 있으면 <code>제목 줄 반복</code>을 켠다 — 머리행 없는 표 조각을 막는다</li>
+        <li>행 높이가 '자동'이면 글꼴 대체 시 높이가 커진다. 중요한 표는 최소 높이를 지정한다</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-12</span><span class="chip c-req">필수</span>
+        <p class="t">그림은 문서에 포함해 저장한다</p>
+      </div>
+      <p>"연결(링크)"로 넣은 그림은 상대 PC에 원본 경로가 없어 빈 상자로 나온다. 넣을 때 <b>포함</b> 옵션을 확인한다.</p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-13</span><span class="chip c-rec">권장</span>
+        <p class="t">개체 배치는 '글자처럼 취급' 또는 '쪽 고정' 하나로 통일</p>
+      </div>
+      <ul>
+        <li><b>글자처럼 취급</b> — 본문과 함께 흐른다. 본문이 밀리면 그림도 같이 밀려 결과가 예측된다</li>
+        <li><b>쪽 고정</b> — 페이지의 특정 위치에 못박힌다. 배경·로고에 적합</li>
+        <li><span class="no">어울림 / 자리 차지</span> — 주변 본문 흐름과 상호작용해 밀림이 가장 예측하기 어렵다</li>
+      </ul>
+    </div>
+
+    <h3 class="grp" id="hwp-save">저장 · 배포</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-14</span><span class="chip c-rec">권장</span>
+        <p class="t">편집본은 hwpx, 배포본은 PDF</p>
+      </div>
+      <p>
+        <code>.hwpx</code>는 ZIP+XML 구조라 부분 손상 복구와 외부 검사가 되고 버전 간 호환도 낫다.<br>
+        <code>.hwp</code>는 바이너리라 깨지면 통째로 잃는다.<br>
+        하위 버전 사용자가 확실히 있으면 그쪽이 열 수 있는 포맷으로 별도 저장해 함께 준다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-15</span><span class="chip c-req">필수</span>
+        <p class="t">배포 전 다른 PC에서 최소 1회 연다</p>
+      </div>
+      <p>
+        규칙을 다 지켜도 이 한 번을 대체하지 못한다.<br>
+        확인할 것은 셋 — <b>총 페이지 수</b>, <b>표가 페이지를 걸치는지</b>, <b>인쇄 미리보기</b>(화면과 인쇄는 다르다).<br>
+        가능하면 한글 버전이 다른 PC로 확인한다.
+      </p>
+    </div>
+  </section>
+
+  <!-- 2 ─────────────────────────────── -->
+  <section id="xls">
+    <h2>2. 엑셀</h2>
+    <p class="sec-note">
+      엑셀은 화면상 데이터가 멀쩡해 보여서 안전하다고 착각하기 쉽다.<br>
+      실제 사고는 인쇄 결과와 수식 호환에서 난다.
+    </p>
+
+    <h3 class="grp" id="xls-font">글꼴 · 행/열</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-01</span><span class="chip c-req">필수</span>
+        <p class="t">열 너비는 글꼴 폭에 종속된다</p>
+      </div>
+      <p>
+        엑셀 열 너비 단위는 mm가 아니라 <b>기본 글꼴의 문자 폭</b>이다.<br>
+        상대 PC 기본 글꼴이 다르면 같은 너비 값이 다른 실제 폭이 되고,<br>
+        숫자 열이 <code>#####</code>로 바뀌거나 텍스트가 잘린다.
+      </p>
+      <ul>
+        <li>통합 문서 기본 글꼴을 <b>맑은 고딕 11pt</b>(윈도우 엑셀 기본)에서 벗어나게 바꾸지 않는다</li>
+        <li>바꿔야 하면 열 너비에 여유를 크게 준다</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-02</span><span class="chip c-rec">권장</span>
+        <p class="t">행 높이 '자동'은 인쇄 페이지 수를 바꾼다</p>
+      </div>
+      <p>
+        자동 맞춤 행 높이는 여는 PC의 글꼴·DPI로 재계산된다.<br>
+        인쇄 페이지 수를 지켜야 하는 양식은 행 높이를 숫자로 고정한다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-03</span><span class="chip c-rec">권장</span>
+        <p class="t">셀 병합을 최소화한다</p>
+      </div>
+      <p>
+        병합 셀은 정렬·필터·복사·수식 참조를 전부 깨뜨린다.<br>
+        받는 사람이 데이터를 가공하려 할 때 첫 번째로 부딪히는 벽이다.<br>
+        모양이 목적이면 <code>선택 영역의 가운데로</code> 맞춤을 쓴다.
+      </p>
+    </div>
+
+    <h3 class="grp" id="xls-print">인쇄</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-04</span><span class="chip c-req">필수</span>
+        <p class="t">인쇄 영역·배율·반복 행을 명시한다</p>
+      </div>
+      <p>지정하지 않으면 엑셀이 알아서 자르고, 그 판단은 PC마다 다르다.</p>
+      <ul>
+        <li><code>페이지 레이아웃 → 인쇄 영역 설정</code></li>
+        <li>배율은 "자동 맞춤"이 아니라 <b>숫자 배율로 고정</b>한다. 자동은 PC마다 다르게 나온다</li>
+        <li>여러 장이면 <code>인쇄 제목 → 반복할 행</code>에 머리행을 지정한다</li>
+        <li><code>페이지 나누기 미리보기</code>로 실제 잘리는 위치를 확인한다</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-05</span><span class="chip c-rec">권장</span>
+        <p class="t">필터·숨긴 행이 걸린 채로 저장하지 않는다</p>
+      </div>
+      <p>
+        받는 사람은 필터가 걸린 줄 모르고 데이터 일부만 보고 판단한다.<br>
+        실무 사고 중 파급이 가장 크다. 저장 전 필터를 풀고 숨긴 행·열을 확인한다.
+      </p>
+    </div>
+
+    <h3 class="grp" id="xls-fx">수식 · 데이터</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-06</span><span class="chip c-req">필수</span>
+        <p class="t">구버전에서 깨지는 함수를 쓰지 않는다</p>
+      </div>
+      <p>상대 엑셀이 2016 이하면 아래 함수는 <code>#NAME?</code>로 나온다. 값까지 같이 날아간다.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>쓰면 위험</th><th>필요 버전</th><th>대체</th></tr></thead>
+        <tbody>
+          <tr><td class="m">XLOOKUP</td><td>M365 / 2021+</td><td class="m">INDEX + MATCH</td></tr>
+          <tr><td class="m">LET, LAMBDA</td><td>M365 / 2021+</td><td>보조 열로 분해</td></tr>
+          <tr><td class="m">동적 배열 (스필)</td><td>M365 / 2021+</td><td>구버전에서 <code>@</code> 붙어 깨짐</td></tr>
+          <tr><td class="m">TEXTJOIN, IFS, CONCAT</td><td>2019+</td><td class="m">&amp; 연결, 중첩 IF</td></tr>
+          <tr><td class="m">MAXIFS, MINIFS</td><td>2019+</td><td>배열 없는 대안 구성</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-07</span><span class="chip c-req">필수</span>
+        <p class="t">외부 파일 참조를 끊고 보낸다</p>
+      </div>
+      <p>
+        다른 통합 문서를 참조하는 수식은 상대 PC에서 <code>#REF!</code>가 되거나<br>
+        "연결 업데이트" 경고창을 띄운다.<br>
+        경로에 내부 서버명·사용자명이 노출되는 부수 문제도 있다.
+      </p>
+      <ul>
+        <li>배포 전 <code>데이터 → 연결 편집</code>에서 외부 연결을 확인하고 값으로 변환한다</li>
+        <li>같은 이유로 절대 경로를 수식에 박지 않는다</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-08</span><span class="chip c-rec">권장</span>
+        <p class="t">휘발성 함수는 배포본에서 뺀다</p>
+      </div>
+      <p>
+        <code>NOW()</code> <code>TODAY()</code> <code>RAND()</code> <code>OFFSET()</code> <code>INDIRECT()</code>는
+        파일을 열 때마다 재계산된다.<br>
+        작성일을 박아 보낸 문서가 상대가 여는 날짜로 바뀐다. 확정 값은 값 붙여넣기로 고정한다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-09</span><span class="chip c-req">필수</span>
+        <p class="t">날짜는 날짜 값으로, 표기는 서식으로</p>
+      </div>
+      <p>
+        날짜를 텍스트로 입력하면 정렬·계산이 어긋나고, 지역 설정이 다른 PC에서 월과 일이 뒤집힌다.<br>
+        셀에는 날짜 값을 넣고 표시 형식으로 <code>yyyy-mm-dd</code>를 지정한다.<br>
+        Mac에서 만든 파일은 1904 날짜 체계일 수 있어 4년 차이가 나기도 한다.
+      </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-10</span><span class="chip c-rec">권장</span>
+        <p class="t">숫자를 텍스트로 저장하지 않는다</p>
+      </div>
+      <p>
+        셀 왼쪽 정렬 + 초록 삼각형이면 텍스트다. SUM에 안 잡히고 VLOOKUP이 못 찾는다.<br>
+        받는 사람이 원인을 못 찾고 시간을 태운다.
+      </p>
+    </div>
+
+    <h3 class="grp" id="xls-save">저장 · 배포</h3>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-11</span><span class="chip c-rec">권장</span>
+        <p class="t">호환성 검사와 문서 검사를 돌린다</p>
+      </div>
+      <ul>
+        <li><code>파일 → 정보 → 문제 확인 → 호환성 검사</code> — 구버전에서 깨질 요소를 엑셀이 알려준다</li>
+        <li><code>문서 검사</code> — 메타데이터, 작성자명, 숨긴 시트·행, 메모를 제거한다</li>
+        <li>시트명은 31자 이내, <code>\ / : * ? [ ]</code> 금지</li>
+      </ul>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">XLS-12</span><span class="chip c-opt">선택</span>
+        <p class="t">매크로(xlsm)는 폐쇄망에서 차단될 수 있다</p>
+      </div>
+      <p>
+        보안 정책상 매크로가 막힌 환경이면 xlsm은 열려도 동작하지 않는다.<br>
+        매크로 없이 되는 방식을 먼저 택하고, 꼭 필요하면 매크로 없이도 값은 보이도록 설계한다.
+      </p>
+    </div>
+  </section>
+
+  <!-- 3 ─────────────────────────────── -->
+  <section id="env">
+    <h2>3. 환경 진단</h2>
+    <p class="sec-note">
+      문서 내부 설정(여백·문단모양·자간)은 문서에 박혀 있어 PC가 바뀌어도 안 변한다.<br>
+      대조할 대상은 문서가 아니라 PC 환경이다.
+    </p>
+
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>변수</th><th>영향</th><th>대응</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>설치 글꼴 목록</td>
+          <td><b>1순위 원인.</b> 대체 → 폭 변화 →<br>줄바꿈 이동 → 페이지 증가·겹침</td>
+          <td>HWP-01</td>
+        </tr>
+        <tr>
+          <td>기본 프린터 드라이버</td>
+          <td>한글은 페이지 레이아웃 계산에 프린터 메트릭이 관여한다.<br>기본 프린터가 다르면 페이지 수가 달라질 수 있다</td>
+          <td>PDF 배포로 회피</td>
+        </tr>
+        <tr>
+          <td>화면 배율 / DPI</td>
+          <td>화면 줄바꿈 위치가 인쇄와 달라 보인다</td>
+          <td>인쇄 미리보기로 판단</td>
+        </tr>
+        <tr>
+          <td>오피스·한글 버전</td>
+          <td>기본값과 함수 지원 범위가 다르다</td>
+          <td>양쪽 확인 후 하한에 맞춤</td>
+        </tr>
+        <tr>
+          <td>지역 설정</td>
+          <td>엑셀 날짜·구분 기호 해석이 달라진다</td>
+          <td>XLS-09</td>
+        </tr>
+      </tbody>
+    </table></div>
+
+    <div class="rule" style="margin-top:12px">
+      <div class="rule-head">
+        <span class="rid">ENV-01</span><span class="chip c-rec">권장</span>
+        <p class="t">사고 나면 양쪽 PC 환경을 5분 안에 대조한다</p>
+      </div>
+      <p>
+        추가 설치 없이 윈도우 내장 PowerShell만으로 뽑힌다.<br>
+        양쪽에서 돌려 <code>글꼴목록.txt</code>를 비교하면 대체된 글꼴이 바로 나온다.
+      </p>
+      <pre><span class="cm"># 설치 글꼴 목록 (시스템 + 사용자)</span>
+Get-ChildItem C:\Windows\Fonts, "$env:LOCALAPPDATA\Microsoft\Windows\Fonts" -ErrorAction SilentlyContinue |
+  Select-Object -ExpandProperty Name | Sort-Object | Out-File 글꼴목록.txt -Encoding utf8
+
+<span class="cm"># 기본 프린터와 드라이버</span>
+Get-CimInstance Win32_Printer | Where-Object { $_.Default } | Select-Object Name, DriverName
+
+<span class="cm"># 설치된 한컴 제품</span>
+Get-ItemProperty "HKLM:\SOFTWARE\HNC\*" -ErrorAction SilentlyContinue | Select-Object PSChildName
+
+<span class="cm"># 두 PC 결과 비교</span>
+Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
+      <p style="margin-top:10px">문서가 쓴 글꼴이 한쪽에만 있으면 범인 확정.</p>
+    </div>
+  </section>
+
+  <!-- 4 ─────────────────────────────── -->
+  <section id="cases">
+    <h2>4. 케이스북</h2>
+    <p class="sec-note">
+      한컴 도움말은 렌더링 엔진 변경을 이 수준으로 기술하지 않는다.<br>
+      공식 문서 대조보다 겪은 사례를 축적하는 쪽이 정확하다. 겪을 때마다 항목을 늘린다.
+    </p>
+
+    <div class="case">
+      <h4>CASE-01 · 한글 2024에서 만든 문서가 상대 PC에서 페이지 1장 증가</h4>
+      <dl>
+        <dt>증상</dt><dd>총 페이지가 하나 늘고, 마지막 장에 한두 줄만 남음</dd>
+        <dt>추정 원인</dt>
+        <dd>
+          본문 글꼴 대체로 글자 폭 증가 → 줄바꿈 위치 이동 → 줄 수 누적 증가.<br>
+          빈 줄로 페이지를 넘긴 구간이 있으면 증폭됨. 기본 프린터 차이도 기여 가능
+        </dd>
+        <dt>확인</dt><dd>ENV-01로 글꼴 목록 대조 — 문서 사용 글꼴이 상대 PC에 있는지</dd>
+        <dt>조치</dt><dd>HWP-01 안전 글꼴 / HWP-07 쪽 나누기 / 배포는 PDF</dd>
+      </dl>
+    </div>
+
+    <div class="case">
+      <h4>CASE-02 · 특정 글자 1개가 겹쳐 보임</h4>
+      <dl>
+        <dt>증상</dt><dd>한 문자가 앞 글자를 파고들어 겹쳐 표시·인쇄됨</dd>
+        <dt>추정 원인</dt>
+        <dd>해당 문단·셀에 자간 음수 또는 장평 축소가 걸린 상태에서<br>글꼴이 폭 넓은 글꼴로 대체됨</dd>
+        <dt>확인</dt><dd>겹친 위치에 커서 두고 <code>Alt+L</code> — 자간·장평이 0 / 100%가 아닌지</dd>
+        <dt>조치</dt><dd>HWP-03. 자간 0·장평 100% 복원 후 문장 길이로 조절</dd>
+      </dl>
+    </div>
+
+    <div class="case solved">
+      <h4>CASE-03 · 위 두 건의 최종 해결책</h4>
+      <dl>
+        <dt>판단</dt><dd>받는 담당자가 해당 문서를 편집할 이유가 없었음</dd>
+        <dt>조치</dt><dd>PDF로 출력해 배포 — 이후 재발 없음</dd>
+        <dt>교훈</dt><dd>편집 필요 없는 문서를 원본으로 돌리는 관행 자체가 원인이었다. CORE-01</dd>
+      </dl>
+    </div>
+
+    <p class="sec-note" style="margin-top:14px">
+      기록할 항목 — 증상 / 양쪽 한글 버전 / 문서 사용 글꼴 / 상대 PC 글꼴 유무 / 자간·장평 값 / 조치와 결과.
+    </p>
+  </section>
+
+  <!-- 5 ─────────────────────────────── -->
+  <section id="checklist">
+    <h2>5. 배포 전 점검</h2>
+    <p class="sec-note">체크 상태는 이 브라우저에만 저장된다. 다음 문서 작업 시 앱바의 <b>체크 초기화</b>를 누르고 다시 시작한다.</p>
+
+    <div class="check" id="cl">
+      <label><input type="checkbox" data-k="c1"><span>받는 사람이 편집할 이유가 있는지 판단했다. 없으면 PDF만 보낸다 <span class="k">CORE-01</span></span></label>
+      <label><input type="checkbox" data-k="c2"><span>문서에 쓴 글꼴이 전부 안전 목록 안에 있다 <span class="k">HWP-01</span></span></label>
+      <label><input type="checkbox" data-k="c3"><span>한글·영문·한자·기호 글꼴이 통일돼 있다 <span class="k">HWP-02</span></span></label>
+      <label><input type="checkbox" data-k="c4"><span>자간 0, 장평 100%다 <span class="k">HWP-03</span></span></label>
+      <label><input type="checkbox" data-k="c5"><span>편집용지 여백을 직접 지정했고 제본 여백이 0이다 <span class="k">HWP-06</span></span></label>
+      <label><input type="checkbox" data-k="c6"><span>빈 줄이 아니라 쪽 나누기로 페이지를 넘겼다 <span class="k">HWP-07</span></span></label>
+      <label><input type="checkbox" data-k="c7"><span>표 너비에 좌우 여유가 있고, 페이지 걸치는 표에 제목 줄 반복을 걸었다 <span class="k">HWP-10 · 11</span></span></label>
+      <label><input type="checkbox" data-k="c8"><span>그림이 링크가 아니라 문서에 포함돼 있다 <span class="k">HWP-12</span></span></label>
+      <label><input type="checkbox" data-k="c9"><span>엑셀 — 인쇄 영역·배율·반복 행을 지정했고 페이지 나누기 미리보기로 확인했다 <span class="k">XLS-04</span></span></label>
+      <label><input type="checkbox" data-k="c10"><span>엑셀 — 필터를 해제했고 숨긴 행·열이 없다 <span class="k">XLS-05</span></span></label>
+      <label><input type="checkbox" data-k="c11"><span>엑셀 — 구버전 미지원 함수가 없다 (호환성 검사 통과) <span class="k">XLS-06 · 11</span></span></label>
+      <label><input type="checkbox" data-k="c12"><span>엑셀 — 외부 파일 연결을 끊고 휘발성 함수를 값으로 고정했다 <span class="k">XLS-07 · 08</span></span></label>
+      <label><input type="checkbox" data-k="c13"><span>문서 검사로 작성자명·메타데이터·숨긴 시트를 제거했다 <span class="k">XLS-11</span></span></label>
+      <label><input type="checkbox" data-k="c14"><span><b>다른 PC에서 열어 총 페이지 수와 인쇄 미리보기를 확인했다</b> <span class="k">HWP-15</span></span></label>
+      <label><input type="checkbox" data-k="c15"><span>PDF를 글꼴 포함으로 저장해 함께 보낸다 <span class="k">CORE-01</span></span></label>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer class="credit">
+  구체적 여백 수치·글꼴·항목 기호는 소속 기관 공문서 규정이 우선한다.<br>
+  버전별 동작은 릴리스노트에 명시되지 않는 경우가 많으니, 4장 케이스북에 실제 사례를 계속 축적한다.
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 목차 ---------- */
+  var drawer = document.getElementById("drawer");
+  var scrim = document.getElementById("scrim");
+  var openBtn = document.getElementById("drawerOpenBtn");
+  var closeBtn = document.getElementById("drawerCloseBtn");
+  var list = document.getElementById("drawerList");
+  var barHere = document.getElementById("barHere");
+
+  var heads = [].slice.call(document.querySelectorAll("section > h2, h3.grp"));
+  var links = [];
+
+  heads.forEach(function (h) {
+    var sec = h.closest ? h.closest("section") : null;
+    var id = h.id || (sec ? sec.id : "");
+    if (!id) return;
+    var a = document.createElement("a");
+    a.href = "#" + id;
+    a.textContent = h.textContent.trim();
+    if (h.tagName === "H3") a.className = "lv3";
+    a.addEventListener("click", function () { setDrawer(false); });
+    list.appendChild(a);
+    links.push({ el: a, target: h });
+  });
+
+  function setDrawer(open) {
+    drawer.classList.toggle("open", open);
+    scrim.classList.toggle("on", open);
+    openBtn.setAttribute("aria-expanded", open ? "true" : "false");
+    if (!open) openBtn.focus();
+  }
+  openBtn.addEventListener("click", function () { setDrawer(true); });
+  closeBtn.addEventListener("click", function () { setDrawer(false); });
+  scrim.addEventListener("click", function () { setDrawer(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && drawer.classList.contains("open")) setDrawer(false);
+  });
+
+  /* ---------- 스크롤 진행률 + 현재 위치 ---------- */
+  var fill = document.getElementById("scrollFill");
+  var ticking = false;
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var max = doc.scrollHeight - doc.clientHeight;
+    fill.style.width = (max > 0 ? (doc.scrollTop / max) * 100 : 0) + "%";
+
+    var cur = null;
+    for (var i = 0; i < links.length; i++) {
+      if (links[i].target.getBoundingClientRect().top <= 70) cur = links[i];
+    }
+    links.forEach(function (l) { l.el.classList.toggle("here", l === cur); });
+    barHere.textContent = cur ? cur.el.textContent : "—";
+  }
+  window.addEventListener("scroll", function () {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(function () { onScroll(); ticking = false; });
+  }, { passive: true });
+
+  /* ---------- 체크리스트 ---------- */
+  var KEY = "docrules-hwp-xls-checklist";
+  var boxes = [].slice.call(document.querySelectorAll("#cl input[type=checkbox]"));
+  var doneEl = document.getElementById("doneCount");
+  var totalEl = document.getElementById("totalCount");
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      return raw ? (JSON.parse(raw) || {}) : {};
+    } catch (e) { return {}; }
+  }
+  function save(state) {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
+  }
+  function render() {
+    var done = boxes.filter(function (b) { return b.checked; }).length;
+    doneEl.textContent = done;
+    totalEl.textContent = boxes.length;
+  }
+
+  var state = load();
+  boxes.forEach(function (b) {
+    if (state[b.dataset.k]) b.checked = true;
+    b.addEventListener("change", function () {
+      var s = load();
+      s[b.dataset.k] = b.checked;
+      save(s);
+      render();
+    });
+  });
+  document.getElementById("resetCheckBtn").addEventListener("click", function () {
+    boxes.forEach(function (b) { b.checked = false; });
+    save({});
+    render();
+  });
+
+  render();
+  onScroll();
+})();
+</script>
+</body>
+</html>
