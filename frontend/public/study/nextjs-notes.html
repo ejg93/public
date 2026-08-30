@@ -141,9 +141,9 @@
   tbody td strong{color:var(--ink);}
   tbody tr:last-child td{border-bottom:none;}
   tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
-  td .ok{color:var(--accent-2); font-weight:700;}
-  td .no{color:var(--danger); font-weight:700;}
-  td .mid{color:var(--accent); font-weight:700;}
+  td .ok, td.ok{color:var(--accent-2); font-weight:700;}
+  td .no, td.no{color:var(--danger); font-weight:700;}
+  td .mid, td.mid{color:var(--accent); font-weight:700;}
 
   /* ---------- Figure ---------- */
   figure{margin:18px 0; padding:14px; border:1px solid var(--line);
@@ -809,6 +809,26 @@ return(0,s.jsxs)("aside",{style:{width:t?"60px":"var(--sidebar-w)",background…
   <h1>축 3 — 이동할 때 문서를 갈아엎나</h1>
   <p class="doc-lead">Next는 <strong>URL이 바뀐다.</strong> 안 바뀌는 것은 URL이 아니라 <strong>문서 전체 리로드</strong>다.</p>
 
+  <h2>판정 질문 — 세 방식을 가르는 자리</h2>
+  <p>화면 이동 하나를 앞에 두고 두 질문을 던진다. 답 조합이 아래 셋 중 하나로 떨어진다.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>이동 방식</th><th>주소창의 URL이 바뀌어야 하나</th><th>문서를 통째로 새로 받아도 되나</th></tr></thead>
+      <tbody>
+        <tr><td><strong>JSP 링크 이동</strong></td><td class="ok">예</td><td class="ok">예 — 새 문서를 받는다</td></tr>
+        <tr><td><strong>JSP + AJAX 부분갱신</strong></td><td class="no">아니오</td><td class="no">아니오 — 지금 문서 안에서 일부만 바꾼다</td></tr>
+        <tr><td><strong>Next <code>&lt;Link&gt;</code></strong></td><td class="ok">예</td><td class="no">아니오 — 주소는 갈아 끼우고 문서는 유지한다</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note key">
+    <b>둘째 질문에 「아니오」면 화면의 입력값·스크롤·열린 모달이 살아남는다.</b><br>
+    AJAX 부분갱신을 쓰던 이유가 이것이고,<br>
+    Next가 주소를 포기하지 않고 같은 결과를 내는 지점도 여기다.
+  </div>
+
   <figure>
     <svg viewBox="0 0 700 280" role="img" aria-label="세 가지 화면 이동 방식 비교">
       <!-- 1 -->
@@ -884,6 +904,29 @@ fnAjaxCall("/biz/orderEventSelectList.do", postData, renderEventList);</code></p
   <p class="doc-kicker">구조</p>
   <h1>레이아웃 — 누가 누구를 감싸나</h1>
   <p class="doc-lead">JSP include · Tiles · Sitemesh · Thymeleaf · Next 다섯 방식의 차이는 딱 두 가지다. <strong>누가 조립하나, 언제 조립하나.</strong></p>
+
+  <h2>판정 질문 — 두 개</h2>
+  <p>레이아웃 방식 하나를 앞에 두고 묻는다.<br>
+  <strong>페이지 파일이 머리·꼬리를 직접 불러오나</strong>, 그리고 <strong>페이지가 다 그려진 뒤에 껍데기를 씌우나</strong>.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>방식</th><th>페이지가 조각을 직접 불러오나</th><th>렌더가 끝난 뒤에 감싸나</th><th>조립 대상을 어디에 적나</th></tr></thead>
+      <tbody>
+        <tr><td><strong>JSP include</strong></td><td class="ok">예 — 300장이면 300번 적는다</td><td class="no">아니오</td><td>각 페이지 안</td></tr>
+        <tr><td><strong>Tiles</strong></td><td class="no">아니오 — 레이아웃이 페이지를 끼운다</td><td class="no">아니오</td><td>XML 설정</td></tr>
+        <tr><td><strong>Sitemesh</strong></td><td class="no">아니오</td><td class="ok">예 — 완성된 HTML을 필터가 다시 감싼다</td><td>필터 설정</td></tr>
+        <tr><td><strong>Thymeleaf</strong></td><td class="mid">이름만 적는다</td><td class="no">아니오</td><td>페이지 상단의 레이아웃 이름</td></tr>
+        <tr><td><strong>Next <code>layout.tsx</code></strong></td><td class="no">아니오</td><td class="no">아니오</td><td class="ok">아무 데도 안 적는다 — 폴더 위치가 곧 선언</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note key">
+    <b>Sitemesh만 셋째 열이 「예」다.</b><br>
+    페이지를 한 줄도 안 고치고 껍데기를 바꿀 수 있는 대신,<br>
+    다 만든 HTML을 다시 파싱하는 값을 치른다.
+  </div>
 
   <figure>
     <svg viewBox="0 0 700 320" role="img" aria-label="다섯 가지 레이아웃 조립 방식의 방향 비교">
@@ -1156,6 +1199,25 @@ const rows = await getOrderEvent(date)   // 함수 호출처럼 생겼지만 실
   <p class="doc-kicker">빌드</p>
   <h1>번들 — 어디에 어떤 형태로 놓이나</h1>
   <p class="doc-lead">두 곳을 구분해야 한다. <strong>빌드 산출물이 놓이는 폴더</strong>(서버)와 <strong>브라우저가 받아 두는 곳</strong>(클라이언트)은 다른 것이다.</p>
+
+  <h2>판정 질문 — 이 코드가 어디에 놓이나</h2>
+  <p>빌드 결과물 하나를 앞에 두고 묻는다. 두 질문이 배타적이지 않다 —<br>
+  클라이언트 컴포넌트는 둘 다 「예」라서 양쪽에 모두 놓인다.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>놓이는 곳</th><th>질문</th><th>예 → 형태</th></tr></thead>
+      <tbody>
+        <tr><td><strong><code>.next/server</code></strong></td><td>요청이 올 때마다 서버가 이 코드를 실행해야 하나</td><td class="ok">서버 디스크에 <code>.js</code> 파일로 남는다</td></tr>
+        <tr><td><strong>브라우저 HTTP 캐시</strong></td><td>사용자 브라우저가 이 코드를 갖고 있어야 화면이 움직이나</td><td class="mid">청크로 잘려 <code>.next/static</code> 에 놓였다가 응답으로 나간다</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note key">
+    <b>둘째 질문에 「아니오」인 코드는 브라우저로 0바이트 나간다.</b><br>
+    <code>db.query()</code> 든 API 키든 <code>.next/server</code> 밖으로 안 나온다.
+  </div>
 
   <figure>
     <svg viewBox="0 0 700 250" role="img" aria-label="소스에서 브라우저 캐시까지의 번들 파이프라인">
