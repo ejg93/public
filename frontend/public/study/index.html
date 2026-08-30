@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학습 노트 — 목록</title>
+<style>
+  :root{
+    --bg:#0F2036; --bg-2:#0B1930; --panel:#152B47; --panel-2:#1B3958;
+    --line:#2A4A6E; --line-soft:#1F3958;
+    --ink:#E8F1FA; --ink-dim:#8FAAC7; --ink-faint:#7E9CBC;
+    --accent:#FFC24B; --accent-2:#68E3C4; --accent-3:#7BA9FF; --danger:#FF8A80;
+    --radius:10px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+
+  .wrap{max-width:920px; margin:0 auto; padding:56px 22px 80px;}
+
+  /* ---------- 머리말 ---------- */
+  .eyebrow{
+    font-size:10px; letter-spacing:.16em; text-transform:uppercase;
+    color:var(--accent-2); font-weight:700; margin:0 0 10px;
+  }
+  h1{font-size:29px; line-height:1.25; margin:0 0 12px; letter-spacing:-.01em;}
+  .lead{color:var(--ink-dim); margin:0; max-width:64ch;}
+  .count{
+    display:inline-block; margin-top:18px; padding:4px 11px;
+    border:1px solid var(--line); border-radius:999px;
+    font-size:11.5px; color:var(--ink-faint); background:var(--panel);
+  }
+  .count b{color:var(--accent); font-weight:700;}
+
+  hr.sep{border:0; border-top:1px solid var(--line-soft); margin:30px 0 24px;}
+
+  /* ---------- 카드 ---------- */
+  .cards{display:flex; flex-direction:column; gap:12px;}
+
+  a.card{
+    display:flex; align-items:center; gap:20px;
+    padding:20px 22px;
+    background:var(--panel); border:1px solid var(--line);
+    border-left:3px solid var(--line);
+    border-radius:var(--radius);
+    text-decoration:none; color:inherit;
+    transition:border-color .15s, background .15s, transform .15s;
+  }
+  a.card:hover, a.card:focus-visible{
+    background:var(--panel-2);
+    border-color:var(--line);
+    border-left-color:var(--accent-2);
+    transform:translateX(3px);
+    outline:none;
+  }
+  a.card:focus-visible{box-shadow:0 0 0 2px rgba(104,227,196,0.35);}
+
+  .card .body{flex:1 1 auto; min-width:0;}
+  .card .name{font-size:16.5px; font-weight:700; margin:0 0 5px; color:var(--ink);}
+  .card:hover .name{color:var(--accent-2);}
+  .card .desc{margin:0; font-size:13.2px; color:var(--ink-dim); line-height:1.55;}
+
+  .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:11px;}
+  .tag{
+    font-size:10.5px; padding:2px 8px; border-radius:999px;
+    background:var(--bg-2); border:1px solid var(--line-soft); color:var(--ink-faint);
+  }
+
+  .card .go{
+    flex:0 0 auto; font-size:20px; color:var(--line);
+    transition:color .15s, transform .15s;
+  }
+  .card:hover .go{color:var(--accent-2); transform:translateX(3px);}
+
+  /* ---------- 꼬리말 ---------- */
+  .foot{
+    margin-top:34px; padding:14px 16px;
+    border-left:3px solid var(--line); background:rgba(21,43,71,0.55);
+    border-radius:0 var(--radius) var(--radius) 0;
+    font-size:12.5px; color:var(--ink-faint);
+  }
+  .foot code{
+    font-family:"SFMono-Regular",Consolas,Menlo,monospace;
+    font-size:11.5px; color:var(--accent); background:var(--bg-2);
+    padding:1px 5px; border-radius:4px;
+  }
+
+  @media (max-width:560px){
+    .wrap{padding:38px 16px 60px;}
+    h1{font-size:24px;}
+    a.card{gap:12px; padding:16px 16px;}
+    .card .go{display:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <p class="eyebrow">Study</p>
+  <h1>학습 노트</h1>
+  <p class="lead">공부하면서 정리한 노트를 한 장씩 HTML로 남긴 것. 각 장은 혼자 열어도 읽히게 만들었다.</p>
+  <span class="count"><b id="n">0</b>장</span>
+
+  <hr class="sep">
+
+  <div class="cards" id="cards"></div>
+
+  <div class="foot">
+    노트를 추가할 때는 이 파일 아래 <code>NOTES</code> 배열에 항목 하나를 넣는다.
+    HTML 파일은 <code>public/study/</code> 에 두고, <code>href</code> 는 확장자 없는 경로로 적은 뒤
+    <code>next.config.js</code> 의 <code>rewrites</code> 에 같은 경로를 등록한다.
+  </div>
+</div>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   노트 목록. 새 노트는 여기에 객체 하나만 추가한다.
+
+   href  : 브라우저 주소. next.config.js rewrites 에 등록한 경로
+   name  : 카드 제목. 그 노트의 <title> 과 맞춘다
+   desc  : 한 문장 소개. 무엇을 · 무엇으로 · 어떻게 가 들어가게 쓴다
+   tags  : 그 노트가 실제로 다루는 주제. 3~5개
+   ───────────────────────────────────────────────────────────── */
+var NOTES = [
+  {
+    href: '/study/architecture-notes',
+    name: '아키텍처 학습노트',
+    desc: 'Tier·트랜잭션·캐시·MSA 강의를 절 단위로 끊어 정리하고, 오라클이 SQL 한 문장을 처리하는 구조를 부록으로 붙였다.',
+    tags: ['Tier / Layer', '트랜잭션', '격리수준', '모듈러 모놀리스', 'Oracle 성능']
+  },
+  {
+    href: '/study/nextjs-notes',
+    name: '프론트엔드 학습 노트 — Next.js',
+    desc: 'JSP·Spring 으로 하던 일이 Next.js App Router 에서 어디로 갔는지를 렌더링 시점·번들 경계·화면 이동 세 축으로 갈라 적었다.',
+    tags: ['App Router', 'Server / Client', '하이드레이션', '레이아웃', '번들']
+  },
+  {
+    href: '/study/projectshop-notes',
+    name: 'ProjectShop 구조 노트',
+    desc: '멀티 셀러 쇼핑몰을 만들며 층 구조·권한 모델·주문 상태머신을 무엇을 근거로 그렇게 정했는지 남긴 기록.',
+    tags: ['층 구조', '권한 판정', '상태머신', '법 요건', '테스트 층']
+  }
+];
+
+(function(){
+  var esc = function(s){
+    return String(s).replace(/[&<>"]/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];
+    });
+  };
+
+  var html = NOTES.map(function(n){
+    var tags = (n.tags || []).map(function(t){
+      return '<span class="tag">' + esc(t) + '</span>';
+    }).join('');
+
+    return '<a class="card" href="' + esc(n.href) + '">' +
+             '<div class="body">' +
+               '<p class="name">' + esc(n.name) + '</p>' +
+               '<p class="desc">' + esc(n.desc) + '</p>' +
+               (tags ? '<div class="tags">' + tags + '</div>' : '') +
+             '</div>' +
+             '<div class="go" aria-hidden="true">→</div>' +
+           '</a>';
+  }).join('');
+
+  document.getElementById('cards').innerHTML = html;
+  document.getElementById('n').textContent = NOTES.length;
+})();
+</script>
+
+</body>
+</html>
