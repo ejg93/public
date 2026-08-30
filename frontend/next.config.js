@@ -7,6 +7,14 @@ const nextConfig = {
         destination: '/study/architecture-notes.html',
       },
       {
+        source: '/study/nextjs-notes',
+        destination: '/study/nextjs-notes.html',
+      },
+      {
+        source: '/study/projectshop-notes',
+        destination: '/study/projectshop-notes.html',
+      },
+      {
         source: '/game/limbus/simulator',
         destination: '/game/limbusCompany/fusion-simulator.html',
       },
