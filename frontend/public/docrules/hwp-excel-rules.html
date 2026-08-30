@@ -191,6 +191,21 @@
   .no{color:var(--danger); font-weight:600;}
   .yes{color:var(--accent-2); font-weight:600;}
 
+  /* 원문 인용 — 한컴·MS 문서의 문장을 그대로 옮긴 자리 */
+  blockquote.src{
+    margin:9px 0 0; padding:8px 12px;
+    background:var(--bg-2); border-left:2px solid var(--accent-3);
+    border-radius:0 6px 6px 0;
+    font-size:12.5px; color:var(--ink-dim);
+  }
+  blockquote.src p{margin:0 0 5px; font-size:12.5px;}
+  blockquote.src p:last-child{margin:0;}
+  .cite{
+    display:block; margin-top:6px;
+    font-family:"SFMono-Regular",Consolas,monospace;
+    font-size:10.5px; color:var(--ink-faint);
+  }
+
   /* ---------- Table ---------- */
   .tbl-wrap{
     overflow-x:auto; margin:12px 0 0;
@@ -255,36 +270,102 @@
     font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
   }
   pre .cm{color:var(--ink-faint);}
+  pre .fail{color:var(--danger);}
+  pre .warn{color:var(--accent);}
+  pre .pass{color:var(--accent-2);}
 
   /* ---------- Checklist ---------- */
+  .check-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:10px; margin:0 0 8px;
+  }
+  .check-head h4{
+    margin:0; font-size:14.5px; font-weight:600;
+  }
+  .check-head .cnt{
+    font-size:11.5px; color:var(--ink-faint);
+    font-variant-numeric:tabular-nums; white-space:nowrap;
+  }
+  .check-head .cnt b{color:var(--accent); font-weight:700;}
   .check{
     background:var(--panel); border:1px solid var(--line);
-    border-radius:var(--radius); padding:4px 3px;
+    border-radius:var(--radius); padding:4px 3px; margin-bottom:20px;
   }
-  .check label{
-    display:flex; gap:10px; align-items:flex-start;
-    padding:8px 12px; border-radius:7px; cursor:pointer;
-    font-size:13.5px; color:var(--ink-dim);
+  /* 한 항목 = 체크 영역 + 본문. 본문에 처리 방법이 붙으면 눌러서 펼친다 */
+  .ck{
+    display:grid; grid-template-columns:auto 1fr; align-items:start;
+    border-radius:7px;
+  }
+  .ck:hover{background:var(--panel-2);}
+  /* 체크 영역 — 정사각형으로 넉넉하게. 이 안 아무 데나 눌러도 체크된다 */
+  .ck .box{
+    display:flex; align-items:center; justify-content:center;
+    width:36px; height:36px; margin:1px 0 0 3px;
+    border-radius:7px; cursor:pointer; flex-shrink:0;
     -webkit-tap-highlight-color:transparent;
   }
-  .check label:hover{background:var(--panel-2);}
-  .check input{
-    margin:4px 0 0; width:15px; height:15px; flex-shrink:0;
+  .ck .box:hover{background:var(--line-soft);}
+  .ck .box input{
+    margin:0; width:15px; height:15px;
     accent-color:var(--accent); cursor:pointer;
   }
-  .check input:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .check input:checked + span{color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--line);}
+  .ck .box input:focus-visible{outline:2px solid var(--accent); outline-offset:3px;}
+  .ck .txt{
+    font:inherit; font-size:13.5px; line-height:1.55; text-align:left;
+    color:var(--ink-dim); background:none; border:0;
+    padding:9px 12px 9px 3px; min-width:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  button.txt{cursor:pointer;}
+  button.txt:hover{color:var(--ink);}
+  button.txt:focus-visible{outline:2px solid var(--accent); outline-offset:-2px; border-radius:6px;}
+  button.txt::after{
+    content:"처리 방법 ▾"; display:inline-block; margin-left:7px;
+    font-size:10.5px; color:var(--accent-3); white-space:nowrap;
+  }
+  button.txt[aria-expanded="true"]::after{content:"닫기 ▴"; color:var(--accent);}
+  .ck.done .txt{
+    color:var(--ink-faint);
+    text-decoration:line-through; text-decoration-color:var(--line);
+  }
+  .ck.done button.txt::after{text-decoration:none;}
   .check .k{
     font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
     font-size:10.5px; color:var(--ink-faint); margin-left:5px;
   }
   .check b{color:var(--ink);}
+  /* 펼쳐지는 처리 방법 */
+  .how{
+    grid-column:1 / -1;
+    margin:0 10px 11px 42px; padding:11px 14px;
+    background:var(--bg-2); border:1px solid var(--line-soft);
+    border-left:2px solid var(--accent-3); border-radius:0 8px 8px 0;
+    font-size:12.5px; color:var(--ink-dim); line-height:1.6;
+  }
+  .how p{margin:0 0 7px;}
+  .how p:last-child{margin:0;}
+  .how ol,.how ul{margin:0 0 7px; padding-left:17px;}
+  .how ol:last-child,.how ul:last-child{margin:0;}
+  .how li{margin-bottom:4px;}
+  .how li:last-child{margin-bottom:0;}
+  .how li::marker{color:var(--ink-faint);}
+  .how b{color:var(--ink);}
+  .how .why{
+    display:block; margin-top:8px; padding-top:7px;
+    border-top:1px solid var(--line-soft);
+    font-size:11.5px; color:var(--ink-faint);
+  }
+  @media(max-width:480px){
+    .how{margin-left:12px;}
+  }
 
   footer.credit{
     max-width:760px; margin:44px auto 0; padding:16px 12px 0;
     border-top:1px solid var(--line);
     font-size:11.5px; color:var(--ink-faint);
   }
+  footer.credit p{margin:0 0 8px;}
+  footer.credit p:last-child{margin:0;}
 
   @media (prefers-reduced-motion: reduce){
     .drawer,.scrim,.progress-fill{transition:none;}
@@ -339,7 +420,7 @@
   <!-- 0 ─────────────────────────────── -->
   <section id="principle">
     <h2>0. 대원칙</h2>
-    <p class="sec-note">규칙 스물아홉 개를 다 외울 필요 없다. 아래 흐름만 지키면 사고의 8할이 사라진다.</p>
+    <p class="sec-note">규칙 서른두 개를 다 외울 필요 없다. 아래 흐름만 지키면 사고의 8할이 사라진다.</p>
 
     <div class="flow">
       <div class="flow-row">
@@ -352,21 +433,44 @@
         <span class="flow-a a-pdf">레이아웃 기준본</span>
       </div>
       <div class="flow-row">
-        <span class="flow-q">PDF는 글꼴 포함(임베딩)으로 저장한다</span>
-        <span class="flow-a a-pdf">임베딩 없으면 PDF도 깨짐</span>
+        <span class="flow-q">PDF로 넘기기 전에 CORE-02 의 두 가지 예외를 확인한다</span>
+        <span class="flow-a a-hwp">OTF · 사용자 정의 용지</span>
       </div>
     </div>
 
     <div class="rule" style="margin-top:12px">
       <div class="rule-head">
         <span class="rid">CORE-01</span><span class="chip c-req">필수</span>
-        <p class="t">레이아웃을 지켜야 하는 순간, 답은 항상 PDF다</p>
+        <p class="t">레이아웃을 지켜야 하는 순간, 답은 PDF다</p>
       </div>
       <p>
         HWP와 XLSX는 <b>재조판(reflow) 포맷</b>이다. 여는 PC의 글꼴·프린터·버전에 따라 매번 다시 계산된다.<br>
         PDF는 <b>고정 포맷</b>이라 계산이 끝나 있다.<br>
         편집 필요가 없는 문서를 원본으로 돌리는 건 이유 없이 사고 위험만 떠안는 것.
       </p>
+      <p>한/글 도움말도 PDF를 그렇게 설명한다.</p>
+      <blockquote class="src">
+        <p>"PDF(Portable Document Format)는 프로그램 안에 글꼴 자체를 내장하여, 인쇄물과 동일한 모양을 컴퓨터 모니터로 보거나 인쇄할 수 있는 파일 형식입니다. PDF를 사용하면 영문 윈도우나 일본어 윈도우 및 매킨토시 등 한글 글꼴이 없는 운영체제에서도 한글로 문서를 보거나 인쇄할 수 있습니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/options/options(etc).htm</span>
+      </blockquote>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">CORE-02</span><span class="chip c-req">필수</span>
+        <p class="t">PDF도 만능이 아니다 — 예외 두 가지를 먼저 확인한다</p>
+      </div>
+      <p>한/글 도움말이 PDF 변환의 한계로 직접 명시한 항목이다. 둘 다 걸리면 PDF로 바꿔도 결과가 틀어진다.</p>
+      <blockquote class="src">
+        <p><b>OTF 글꼴 미지원</b> — "OTF 글꼴이 포함된 문서를 PDF로 변환하는 경우 해당 글꼴은 다른 글꼴로 대체되어 표시됩니다."</p>
+        <p><b>사용자 정의 용지 크기 미지원</b> — "[사용자 정의] 용지 크기로 설정된 문서를 PDF로 변환하는 경우 가장 유사한 크기의 용지 또는 임의의 용지 크기로 변경될 수 있으며, 영역을 벗어나는 원본 문서의 일부 내용이 올바르게 나타나지 않을 수 있습니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/to_pdf.htm</span>
+      </blockquote>
+      <ul>
+        <li>본문 글꼴이 OTF면 TTF 계열 안전 글꼴로 바꾸고 변환한다</li>
+        <li>용지는 A4 등 표준 규격을 쓴다. 사용자 정의 용지는 쓰지 않는다</li>
+        <li><b>변환한 PDF는 반드시 열어서 눈으로 확인한다.</b> 변환은 조용히 실패한다</li>
+      </ul>
     </div>
   </section>
 
@@ -384,32 +488,51 @@
     <div class="rule">
       <div class="rule-head">
         <span class="rid">HWP-01</span><span class="chip c-req">필수</span>
-        <p class="t">안전 글꼴 목록 안에서만 고른다</p>
+        <p class="t">한컴이 직접 밝힌 안전 글꼴 안에서만 고른다</p>
       </div>
-      <p>"어디에나 설치돼 있다"가 보장되는 글꼴만 쓴다. 예쁜 글꼴은 배포 문서에서 부채다.</p>
+      <p>
+        한/글 2024 는 「주의 글꼴 알림」 기능을 새로 넣으면서, <b>어느 PC에나 있다고 보는 시스템 글꼴을 명시</b>했다.<br>
+        추정이 아니라 한컴이 적어둔 목록이다.
+      </p>
+      <blockquote class="src">
+        <p>"시스템 글꼴 중 '굴림', '굴림체', '궁서', '궁서체', '돋움체', '맑은 고딕', '바탕' 및 '바탕체'는 주의 글꼴 대상이 아닙니다. 단, 글맵시, 차트 및 덧말에 포함된 주의 글꼴에 대한 알림은 제공하지 않습니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/options/options(font).htm (2018 에는 없던 기능)</span>
+      </blockquote>
       <div class="tbl-wrap"><table>
         <thead><tr><th>구분</th><th>글꼴</th><th>근거</th></tr></thead>
         <tbody>
-          <tr><td class="yes">안전</td><td>함초롬바탕 / 함초롬돋움</td><td>한컴오피스 설치 시 동봉</td></tr>
-          <tr><td class="yes">안전</td><td>맑은 고딕 / 굴림 / 바탕 / 돋움 / 궁서</td><td>윈도우 기본 탑재</td></tr>
-          <tr><td class="no">위험</td><td>나눔 계열, 프리텐다드, 노토 산스 KR</td><td>개별 설치 필요 — 없는 PC 많음</td></tr>
-          <tr><td class="no">위험</td><td>한컴 상위 패키지 전용 글꼴</td><td>같은 한글이라도 에디션 따라 없음</td></tr>
-          <tr><td class="no">위험</td><td>기관 전용 / 구매 글꼴</td><td>외부 배포 시 전부 대체됨 + 라이선스 문제</td></tr>
+          <tr><td class="yes">안전</td><td>굴림 · 굴림체 · 궁서 · 궁서체 · 돋움체 · 맑은 고딕 · 바탕 · 바탕체</td><td>한컴이 주의 글꼴에서 제외한 시스템 글꼴</td></tr>
+          <tr><td class="yes">안전</td><td>함초롬바탕 · 함초롬돋움 · 한컴바탕 등</td><td>한컴오피스가 함께 설치</td></tr>
+          <tr><td class="no">위험</td><td>나눔 계열 · 프리텐다드 · 노토 산스 KR</td><td>개별 설치 필요 — 없는 PC 많음</td></tr>
+          <tr><td class="no">위험</td><td>윤고딕 · HY· · 휴먼· · 한양· 계열</td><td>타사 유료 글꼴. 한컴이 말한 '주의 글꼴' 그 자체</td></tr>
+          <tr><td class="no">위험</td><td>기관 전용 · 구매 글꼴</td><td>외부 배포 시 전부 대체됨 + 라이선스 문제</td></tr>
         </tbody>
       </table></div>
+      <p style="margin-top:10px"><b>돋움</b>은 목록에 없다. 한컴이 적은 것은 <b>돋움체</b>다. 헷갈리면 맑은 고딕을 쓴다.</p>
+      <p>
+        <b>2024 를 쓴다면</b> <code>도구 → 환경 설정 → 글꼴</code> 에서 「주의 글꼴 알림」을 켠다.<br>
+        문서를 열거나 저장할 때 위험 글꼴이 있으면 한글이 알려준다. 다만 <b>글맵시·차트·덧말은 검사에서 빠지니</b> 그건 눈으로 본다.
+      </p>
     </div>
 
     <div class="rule">
       <div class="rule-head">
         <span class="rid">HWP-02</span><span class="chip c-req">필수</span>
-        <p class="t">한글·영문·한자·기호 글꼴을 따로 확인한다</p>
+        <p class="t">한글·영문·한자·기호 글꼴을 언어별로 따로 확인한다</p>
       </div>
       <p>
         한글의 글자 모양은 언어별로 글꼴이 따로 지정된다.<br>
         한글만 바꾸고 영문을 놔두면 숫자·영문·괄호만 다른 글꼴로 나가서,<br>
         본인 PC에선 안 보이던 폭 차이가 상대 PC에서 터진다.
       </p>
-      <ul><li><code>글자 모양(Alt+L) → 언어별 설정</code>에서 한글·영문·한자·기호를 같은 글꼴로 통일</li></ul>
+      <blockquote class="src">
+        <p>"대표 글꼴을 사용하지 않은 경우에는 [언어-대표]의 글꼴 목록에 글꼴 정보가 표시되지 않습니다. 따라서 [사용된 글꼴]과 [대체된 글꼴]은 언어별로 확인하는 것이 좋습니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/document_properties/document_fontinfo.htm</span>
+      </blockquote>
+      <ul>
+        <li><code>글자 모양(Alt+L) → 언어별 설정</code>에서 한글·영문·한자·기호를 같은 글꼴로 통일한다</li>
+        <li>자간·장평도 언어별로 따로 걸린다. 한 언어만 고치면 나머지가 남는다</li>
+      </ul>
     </div>
 
     <div class="rule">
@@ -417,14 +540,21 @@
         <span class="rid">HWP-03</span><span class="chip c-req">필수</span>
         <p class="t">자간 0, 장평 100%를 벗어나지 않는다</p>
       </div>
+      <p>글자가 <b>겹쳐 보이는</b> 현상의 직접 원인이다. 한컴 도움말이 그 증상을 예제로 쓴다.</p>
+      <blockquote class="src">
+        <p>"[글자 모양] 대화 상자가 나타나면 [기본] 탭의 [자간] 입력 상자에 '-20%'를 입력합니다. [설정] 단추를 누르면 블록으로 지정된 내용의 글자와 글자 사이의 간격이 좁아져서 <b>글자들이 약간 겹쳐 나옵니다.</b>"</p>
+        <span class="cite">한/글 2024 도움말 · format/font/fonts(spacing).htm</span>
+      </blockquote>
       <p>
-        글자가 <b>겹쳐 보이는</b> 현상의 직접 원인이다.<br>
-        자간을 음수로 조여둔 문단에서 글꼴이 폭 넓은 글꼴로 대체되면 글자끼리 파고든다.<br>
+        자간을 음수로 조여둔 문단에서 글꼴이 폭 넓은 글꼴로 대체되면 이 겹침이 더 심해진다.<br>
         "한 줄에 억지로 넣으려고" 자간을 줄이는 습관이 가장 위험하다.
       </p>
       <ul>
+        <li>자간 지정 범위 <code>-50 ~ 50%</code>, 장평 지정 범위 <code>50 ~ 200%</code></li>
         <li>줄이 넘치면 자간이 아니라 <b>문장을 줄이거나 글자 크기를 내린다</b></li>
         <li>표 안에서 특히 자주 발생 — 셀 폭 맞추려고 자간 조절 금지</li>
+        <li><b>함정</b> — "빈칸의 자간은 영문 자간 비율을 따릅니다." 한글 자간만 0으로 되돌려도 띄어쓰기 간격은 영문 설정을 따라간다</li>
+        <li><code>Alt+Shift+W / N</code>(자간), <code>Alt+Shift+K / J</code>(장평)이 1%씩 바꾼다. 실수로 눌려 값이 틀어져 있을 수 있다</li>
       </ul>
     </div>
 
@@ -441,33 +571,48 @@
 
     <div class="rule">
       <div class="rule-head">
-        <span class="rid">HWP-05</span><span class="chip c-rec">권장</span>
-        <p class="t">글꼴 포함하여 저장</p>
+        <span class="rid">HWP-05</span><span class="chip c-req">필수</span>
+        <p class="t">한/글 문서에는 글꼴을 심어 보낼 수 없다</p>
       </div>
       <p>
-        안전 목록 밖 글꼴을 반드시 써야 한다면 문서에 글꼴을 심어 보낸다.<br>
-        파일이 커지지만 대체를 원천 차단한다.<br>
-        <code>파일 → 문서 정보 / 저장 설정</code>에서 글꼴 포함 옵션을 켜고,<br>
-        그 글꼴의 라이선스가 재배포를 허용하는지 먼저 확인한다.
+        <b>2018·2024 도움말 전체를 뒤져도 hwp 저장 시 글꼴을 포함하는 옵션은 없다.</b><br>
+        글꼴 임베딩은 <b>PDF로 저장할 때만</b> 나온다.
+      </p>
+      <blockquote class="src">
+        <p>"글꼴 제공업체에서 포함 허가를 설정한 글꼴만 포함할 수 있습니다. 글꼴을 포함하면 사용자가 파일을 보거나 인쇄할 때 글꼴이 대체되지 않으며 텍스트가 원래 글꼴로 표시됩니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/to_pdf.htm 「주의」 절 (PDF 저장에 대한 서술)</span>
+      </blockquote>
+      <p>따라서 안전 목록 밖 글꼴을 꼭 써야 한다면 선택지는 둘뿐이다.</p>
+      <ul>
+        <li>받는 사람에게 그 글꼴을 함께 설치하게 한다 (라이선스 확인 필요)</li>
+        <li><b>PDF로 배포한다</b> — CORE-01. 단 OTF면 PDF에서도 대체되니 CORE-02 확인</li>
+      </ul>
+      <p style="margin-top:8px">
+        포맷 차원에서는 hwpx 의 글꼴 항목에 <code>isEmbedded</code> 속성이 있어 임베딩된 글꼴을 표현할 수는 있다.<br>
+        다만 한/글 UI 에서 그 값을 켜는 경로가 도움말에 없다. <b>있다고 가정하고 배포하면 안 된다.</b>
       </p>
     </div>
-
-    <h3 class="grp" id="hwp-page">편집용지 · 문단 · 줄바꿈</h3>
 
     <div class="rule">
       <div class="rule-head">
         <span class="rid">HWP-06</span><span class="chip c-req">필수</span>
-        <p class="t">편집용지를 명시적으로 설정한다</p>
+        <p class="t">편집용지는 용지 종류를 먼저, 여백을 나중에 지정한다</p>
       </div>
-      <p>
-        버전별 기본 여백이 다르다. <code>F7</code>로 용지 종류·방향·여백을 손으로 지정해 저장하면<br>
-        그 값이 문서에 박혀서 어느 PC에서 열어도 같다.<br>
-        손대지 않으면 여는 쪽 기본값을 따라갈 여지가 남는다.
-      </p>
+      <p>순서가 중요하다. 반대로 하면 애써 맞춘 여백이 초기화된다.</p>
+      <blockquote class="src">
+        <p>"한/글은 기본으로 제공하는 용지 종류에 따라 가장 보기 좋은 용지 여백 값을 자동으로 설정해 줍니다. 따라서 [용지 종류]를 바꾸면 그에 따른 [용지 여백]이 자동으로 바뀝니다. <b>편집 용지를 설정할 때에는 먼저 [용지 종류]를 바꾼 다음 [용지 여백]을 바꾸십시오.</b>"</p>
+        <span class="cite">한/글 2024 도움말 · format/setting_paper/setting_paper(margins).htm</span>
+      </blockquote>
+      <p>페이지 수가 늘어나는 메커니즘도 같은 문서에 적혀 있다.</p>
+      <blockquote class="src">
+        <p>"왼쪽/오른쪽 여백을 넓게 주면 문단의 폭이 좁아지고, 위/아래 여백을 많이 주면 한 쪽(페이지)에 들어가는 줄(행) 수가 적어집니다."</p>
+      </blockquote>
       <ul>
-        <li>용지 A4, 방향 명시</li>
-        <li>위·아래·왼쪽·오른쪽·머리말·꼬리말 전부 숫자 확인</li>
-        <li><b>제본 여백은 0</b>인지 확인 — 0이 아니면 좌우가 비대칭으로 밀린다</li>
+        <li><code>쪽 → 편집 용지(F7)</code>에서 용지 종류 A4 · 방향 · 여백을 손으로 지정한다. 지정한 값은 문서에 박혀서 어느 PC에서 열어도 같다</li>
+        <li><b>제본은 '한쪽'으로 둔다.</b> '맞쪽'을 고르면 좌우 여백이 <b>안쪽/바깥쪽</b>으로 바뀌어 홀수 쪽과 짝수 쪽의 여백이 서로 달라진다</li>
+        <li>제본 여백은 0인지 확인한다. 0이 아니면 용지 끝에서 여백 시작점까지가 통째로 밀린다</li>
+        <li>머리말·꼬리말 여백은 <b>내용을 넣지 않아도 지정한 높이만큼 공간을 차지한다.</b> 비어 있으니 괜찮겠지 하면 본문 시작 위치가 어긋난다</li>
+        <li>문단 모양의 왼쪽/오른쪽 여백은 편집 용지 여백에 <b>추가로 더해진다.</b> 둘을 헷갈리면 본문 폭이 예상보다 좁아진다</li>
         <li>구체적 수치는 소속 기관 공문서 규정을 따른다. 기관마다 다르니 임의 값을 쓰지 않는다</li>
       </ul>
     </div>
@@ -482,22 +627,41 @@
         빈 페이지가 생기거나 제목이 앞장 끝에 매달린다.<br>
         <b>"페이지가 하나 더 생긴다"의 가장 흔한 원인.</b>
       </p>
+      <blockquote class="src">
+        <p>"쪽이 다 차기 전에 굳이 그 쪽(페이지)을 끝내고 새로운 쪽(페이지)에서 내용을 입력하고 싶을 때에는 [쪽-쪽 나누기]를 실행하여 강제로 쪽을 분리시킬 수 있습니다."</p>
+        <span class="cite">한/글 2024 도움말 · format/break/page_break.htm</span>
+      </blockquote>
       <ul>
-        <li>페이지 넘김 <span class="yes">→ 쪽 나누기 <code>Ctrl+Enter</code></span></li>
+        <li>페이지 넘김 <span class="yes">→ 쪽 나누기 <code>Ctrl+Enter</code></span> (<code>Ctrl+J</code> 도 같은 기능)</li>
         <li>문단 간격 <span class="yes">→ 문단 모양의 위·아래 간격</span></li>
         <li>들여쓰기·정렬 <span class="yes">→ 탭 또는 문단 들여쓰기</span> <span class="no">(스페이스 반복 금지)</span></li>
+        <li>이미 들어간 쪽 나누기는 <code>쪽 윤곽</code>을 끄면 <b>빨간 대시 선</b>으로 보인다. 빈 줄 뭉치인지 쪽 나누기인지 이걸로 구분한다</li>
       </ul>
     </div>
 
     <div class="rule">
       <div class="rule-head">
         <span class="rid">HWP-08</span><span class="chip c-rec">권장</span>
-        <p class="t">제목이 혼자 떨어지지 않게 문단 보호를 건다</p>
+        <p class="t">문단 모양 [확장] 탭의 보호 옵션 세 가지를 구분해 쓴다</p>
       </div>
-      <p>
-        <code>문단 모양 → 다음 문단과 함께 / 문단 보호</code>.<br>
-        줄이 밀려도 제목과 본문 첫 줄이 갈라지지 않는다. 밀림 자체를 못 막아도 보기 흉한 결과는 막는다.
-      </p>
+      <p>밀림 자체를 못 막아도 <b>보기 흉한 결과</b>는 막는다. 세 기능이 하는 일이 각각 다르다.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>옵션</th><th>막아 주는 것</th><th>쓸 자리</th></tr></thead>
+        <tbody>
+          <tr><td><b>다음 문단과 함께</b></td><td>현재 문단과 다음 문단 사이에서 쪽이 나뉘는 것</td><td>제목 문단</td></tr>
+          <tr><td><b>문단 보호</b></td><td>한 문단 내용 전체가 앞뒤 쪽으로 갈라지는 것</td><td>표·인용 등 통으로 봐야 하는 문단</td></tr>
+          <tr><td><b>외톨이줄 보호</b></td><td>문단의 첫 줄이나 마지막 줄만 떨어져 한 줄짜리가 생기는 것</td><td>본문 전체</td></tr>
+        </tbody>
+      </table></div>
+      <blockquote class="src">
+        <p>"제목 문단에 [다음 문단과 함께]를 선택해 놓으면, 제목과 설명이 항상 같은 쪽에 붙어 다니기 때문에 읽기 편한 문서를 만들 수 있습니다."</p>
+        <span class="cite">한/글 2024 도움말 · format/paragraph/paragraph(next).htm</span>
+      </blockquote>
+      <ul>
+        <li>위치는 <code>서식 → 문단 모양 → [확장] 탭</code>이다. [기본] 탭이 아니다</li>
+        <li>문단 단위로 걸린다. 여러 문단에 걸려면 <b>블록으로 지정한 상태</b>에서 켠다</li>
+        <li><b>함정</b> — 이 속성이 걸린 문단 끝에서 엔터를 쳐서 넘어가면 <b>새 문단에서는 속성이 풀린다.</b> 글을 이어 쓰다 보면 조용히 사라져 있다</li>
+      </ul>
     </div>
 
     <div class="rule">
@@ -505,10 +669,14 @@
         <span class="rid">HWP-09</span><span class="chip c-opt">선택</span>
         <p class="t">줄간격은 조직 규정 우선, 없으면 고정값(pt)</p>
       </div>
+      <p>줄간격 <code>%</code> 지정이 글꼴에 종속된다는 것은 도움말에 적혀 있다.</p>
+      <blockquote class="src">
+        <p>"문단에서 두 줄 사이의 간격을 원하는 대로 지정합니다. <b>글자 높이에 비례하여</b> 줄 간격을 띄우거나 <b>특정 값으로 줄 간격을 고정</b>할 수 있습니다."</p>
+        <span class="cite">한/글 2024 도움말 · format/paragraph/paragraph(line_spacing).htm<br>2018 판 같은 페이지에는 문단 첫 줄 들여쓰기 설명이 잘못 들어가 있었다. 2024 에서 교정됐다.</span>
+      </blockquote>
       <p>
-        줄간격 <code>%</code> 지정은 글꼴 메트릭에 비례해 계산되므로,<br>
-        글꼴이 대체되면 실제 줄 높이가 함께 변한다. 고정값(pt)은 글꼴과 무관하게 일정하다.<br>
-        다만 공문서 규정이 <code>160%</code> 등 %를 명시하면 규정이 우선.
+        글꼴이 대체되면 글자 높이가 달라지므로 %지정은 실제 줄 높이가 함께 변한다.<br>
+        고정값(pt)은 글꼴과 무관하게 일정하다. 다만 공문서 규정이 <code>160%</code> 등 %를 명시하면 규정이 우선.
       </p>
     </div>
 
@@ -528,22 +696,40 @@
 
     <div class="rule">
       <div class="rule-head">
-        <span class="rid">HWP-11</span><span class="chip c-rec">권장</span>
-        <p class="t">셀 여백을 명시하고, 표 제목 줄 반복을 켠다</p>
+        <span class="rid">HWP-11</span><span class="chip c-req">필수</span>
+        <p class="t">제목 줄 반복은 [제목 셀] 지정이 있어야 동작한다</p>
       </div>
+      <p>"제목 줄 자동 반복"만 켜면 되는 게 아니다. <b>전제 조건이 둘 있다.</b></p>
+      <blockquote class="src">
+        <p>"선택한 셀에 대하여 [제목 셀]을 선택해 놓으면 여러 쪽에 걸친 표를 만들 때 제목 줄이 자동으로 반복될 수 있도록 지정할 수 있습니다. <b>[제목 셀]을 선택해야만 [표] 탭의 [제목 줄 자동 반복]이 동작합니다.</b> 단, [제목 셀]을 지정할 때에는 <b>표의 첫 번째 줄을 반드시 포함</b>해야 합니다. 첫 번째 줄을 제외하고 두 번째 줄을 [제목 셀]로 지정하면 [제목 줄 자동 반복]이 동작하지 않습니다."</p>
+        <span class="cite">한/글 2024 도움말 · table/tableattribute/table(cellattribute).htm (2018 에는 이 설명이 없다)</span>
+      </blockquote>
+      <p>같은 문서에 셀 속성의 다른 항목도 정리돼 있다. 표가 밀리는 상황과 직결된다.</p>
       <ul>
-        <li>셀 여백 기본값에 기대지 않고 표 속성에서 값을 지정한다</li>
-        <li>표가 페이지를 걸칠 수 있으면 <code>제목 줄 반복</code>을 켠다 — 머리행 없는 표 조각을 막는다</li>
-        <li>행 높이가 '자동'이면 글꼴 대체 시 높이가 커진다. 중요한 표는 최소 높이를 지정한다</li>
+        <li><b>크기 고정</b> — 표가 자동으로 늘어나지 않는다. 대신 <b>칸을 넘친 글은 보이지 않는다.</b> 양식 문서에서 특히 위험</li>
+        <li><b>한 줄로 입력</b> — 커서가 셀 경계에 닿아도 다음 줄로 안 넘어간다. 표 틀을 유지해야 할 때 크기 고정보다 낫다</li>
+        <li><b>셀 보호</b> — 커서가 들어가지 않는다. 해제하려면 보호 안 된 셀에서 블록을 시작해 보호된 셀로 이동한 뒤 표/셀 속성에서 푼다</li>
+        <li>셀 여백은 기본값에 기대지 않고 표 속성에서 값을 지정한다</li>
       </ul>
     </div>
 
     <div class="rule">
       <div class="rule-head">
-        <span class="rid">HWP-12</span><span class="chip c-req">필수</span>
-        <p class="t">그림은 문서에 포함해 저장한다</p>
+        <span class="rid">HWP-12</span><span class="chip c-rec">권장</span>
+        <p class="t">그림은 기본값이 이미 '문서에 포함'이다 — 해제된 것만 되돌린다</p>
       </div>
-      <p>"연결(링크)"로 넣은 그림은 상대 PC에 원본 경로가 없어 빈 상자로 나온다. 넣을 때 <b>포함</b> 옵션을 확인한다.</p>
+      <blockquote class="src">
+        <p>"그림을 삽입하면 그림 파일이 문서 파일 안에 함께 저장되므로 그림 파일을 따로 보관하지 않아도 됩니다. <b>한/글에서 그림을 넣을 때에는 처음 값으로 문서에 포함시켜 줍니다.</b>"</p>
+        <p>"만약 그림을 넣을 때 [문서에 포함]을 선택하지 않았더라도 문서에 그림을 삽입한 이후에 [서식-개체 속성]을 실행하여 문서에 포함할 수 있습니다."</p>
+        <span class="cite">한/글 2024 도움말 · insert/figure/figure(embedding).htm</span>
+      </blockquote>
+      <p>
+        즉 평소에는 신경 쓸 일이 없고, <b>누군가 체크를 풀어둔 문서</b>만 문제가 된다.<br>
+        연결(링크)로 들어간 그림은 상대 PC에 원본 경로가 없어 빈 상자로 나온다.
+      </p>
+      <ul>
+        <li>확인은 <code>파일 → 문서 정보 → 그림 정보</code>에서 한다. 문서에 포함된 그림 전체의 <b>연결 상태를 한 번에 보고 바꿀 수 있다</b></li>
+      </ul>
     </div>
 
     <div class="rule">
@@ -551,11 +737,20 @@
         <span class="rid">HWP-13</span><span class="chip c-rec">권장</span>
         <p class="t">개체 배치는 '글자처럼 취급' 또는 '쪽 고정' 하나로 통일</p>
       </div>
-      <ul>
-        <li><b>글자처럼 취급</b> — 본문과 함께 흐른다. 본문이 밀리면 그림도 같이 밀려 결과가 예측된다</li>
-        <li><b>쪽 고정</b> — 페이지의 특정 위치에 못박힌다. 배경·로고에 적합</li>
-        <li><span class="no">어울림 / 자리 차지</span> — 주변 본문 흐름과 상호작용해 밀림이 가장 예측하기 어렵다</li>
-      </ul>
+      <p>도움말이 정의하는 네 가지 배치 방식이다. 밀림 예측 가능성이 서로 다르다.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>배치</th><th>동작</th><th>배포 문서에서</th></tr></thead>
+        <tbody>
+          <tr><td>자리 차지</td><td>개체 높이만큼 줄을 차지해 본문이 못 들어온다</td><td class="yes">예측 가능</td></tr>
+          <tr><td>어울림</td><td>본문이 개체 옆으로 흘러 지나간다</td><td class="no">밀림 예측이 가장 어렵다</td></tr>
+          <tr><td>글 뒤로 / 글 앞으로</td><td>개체가 없는 것처럼 본문이 채워지고 배경·전경이 된다</td><td>배경·로고용</td></tr>
+        </tbody>
+      </table></div>
+      <blockquote class="src">
+        <p>"개체의 기준 위치를 [글자처럼 취급]으로 지정했을 때에는 [본문과의 배치]는 아무런 의미가 없습니다."</p>
+        <span class="cite">한/글 2024 도움말 · draw/arrange/objectattribute(arrange).htm</span>
+      </blockquote>
+      <p><b>글자처럼 취급</b>을 쓰면 본문과 함께 흐르므로 결과가 가장 단순하다. 배치 옵션은 그때 무시된다.</p>
     </div>
 
     <h3 class="grp" id="hwp-save">저장 · 배포</h3>
@@ -568,7 +763,11 @@
       <p>
         <code>.hwpx</code>는 ZIP+XML 구조라 부분 손상 복구와 외부 검사가 되고 버전 간 호환도 낫다.<br>
         <code>.hwp</code>는 바이너리라 깨지면 통째로 잃는다.<br>
-        하위 버전 사용자가 확실히 있으면 그쪽이 열 수 있는 포맷으로 별도 저장해 함께 준다.
+        이 규칙집의 <a href="#tool" style="color:var(--accent-3)">자동 점검기</a>도 hwpx 에서 훨씬 많은 항목을 판정한다.
+      </p>
+      <p>
+        참고 — 2024 에서 <code>문서 호환성</code>, <code>97 버전으로 저장</code>, <code>한글 2007 문서 열기</code> 도움말 항목이 사라졌다.<br>
+        구버전 포맷 지원이 정리되는 방향이니, 하위 버전 사용자가 확실히 있으면 <b>미리 확인하고 별도 저장</b>해서 함께 준다.
       </p>
     </div>
 
@@ -578,10 +777,32 @@
         <p class="t">배포 전 다른 PC에서 최소 1회 연다</p>
       </div>
       <p>
-        규칙을 다 지켜도 이 한 번을 대체하지 못한다.<br>
+        규칙을 다 지켜도, 자동 점검기를 돌려도 이 한 번을 대체하지 못한다.<br>
         확인할 것은 셋 — <b>총 페이지 수</b>, <b>표가 페이지를 걸치는지</b>, <b>인쇄 미리보기</b>(화면과 인쇄는 다르다).<br>
         가능하면 한글 버전이 다른 PC로 확인한다.
       </p>
+    </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">HWP-16</span><span class="chip c-req">필수</span>
+        <p class="t">받은 문서가 의심스러우면 [문서 정보 → 글꼴 정보]를 먼저 연다</p>
+      </div>
+      <p>
+        <b>한글에 대체 글꼴 진단기가 내장돼 있다.</b> 별도 도구가 필요 없다.<br>
+        "이 PC에서 어떤 글꼴이 대체됐는지"를 한글이 직접 알려주고, 그 자리에서 일괄 교체까지 된다.
+      </p>
+      <blockquote class="src">
+        <p>"[문서 정보] 대화 상자의 [글꼴 정보] 탭에서는 현재 문서에 사용된 글꼴이나 <b>대체된 글꼴 목록</b>을 확인하고, 사용된 글꼴이나 대체된 글꼴을 다른 글꼴로 손쉽게 바꿀 수 있습니다."</p>
+        <p>"<b>사용된 글꼴</b> — 현재 문서에 사용된 모든 글꼴 중에서 <b>사용자의 시스템에서도 제대로 나타나는 글꼴 목록만을</b> 보여 줍니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/document_properties/document_fontinfo.htm</span>
+      </blockquote>
+      <ul>
+        <li><code>파일 → 문서 정보 → [글꼴 정보] 탭</code></li>
+        <li><b>[대체된 글꼴] 목록에 뭔가 있으면 그 문서는 이미 이 PC에서 깨져 보이는 중이다</b></li>
+        <li>목록에서 글꼴을 고르고 [사용된 글꼴 바꾸기]를 누르면 문서 전체가 한 번에 바뀐다. 안전 글꼴로 정리할 때 쓴다</li>
+        <li>HWP-02 대로 <b>언어별로</b> 확인한다</li>
+      </ul>
     </div>
   </section>
 
@@ -598,16 +819,21 @@
     <div class="rule">
       <div class="rule-head">
         <span class="rid">XLS-01</span><span class="chip c-req">필수</span>
-        <p class="t">열 너비는 글꼴 폭에 종속된다</p>
+        <p class="t">열 너비 단위는 mm가 아니라 기본 글꼴의 문자 폭이다</p>
       </div>
+      <blockquote class="src">
+        <p>"Column widths are measured in a character-based unit (the number of characters of the default font that fit in a cell)."</p>
+        <p>"The value for the default column width indicates the average number of characters of the standard font that fit in a cell."</p>
+        <span class="cite">Microsoft Support · Change the column width and row height</span>
+      </blockquote>
       <p>
-        엑셀 열 너비 단위는 mm가 아니라 <b>기본 글꼴의 문자 폭</b>이다.<br>
-        상대 PC 기본 글꼴이 다르면 같은 너비 값이 다른 실제 폭이 되고,<br>
+        상대 PC 기본 글꼴이 다르면 같은 너비 값이 다른 실제 폭이 된다.<br>
         숫자 열이 <code>#####</code>로 바뀌거나 텍스트가 잘린다.
       </p>
       <ul>
         <li>통합 문서 기본 글꼴을 <b>맑은 고딕 11pt</b>(윈도우 엑셀 기본)에서 벗어나게 바꾸지 않는다</li>
         <li>바꿔야 하면 열 너비에 여유를 크게 준다</li>
+        <li>한도 — 열 너비 최대 255자, 행 높이 최대 409pt</li>
       </ul>
     </div>
 
@@ -652,7 +878,7 @@
 
     <div class="rule">
       <div class="rule-head">
-        <span class="rid">XLS-05</span><span class="chip c-rec">권장</span>
+        <span class="rid">XLS-05</span><span class="chip c-req">필수</span>
         <p class="t">필터·숨긴 행이 걸린 채로 저장하지 않는다</p>
       </div>
       <p>
@@ -666,19 +892,32 @@
     <div class="rule">
       <div class="rule-head">
         <span class="rid">XLS-06</span><span class="chip c-req">필수</span>
-        <p class="t">구버전에서 깨지는 함수를 쓰지 않는다</p>
+        <p class="t">함수마다 지원 하한이 다르다 — XLOOKUP은 2019에서도 안 된다</p>
       </div>
-      <p>상대 엑셀이 2016 이하면 아래 함수는 <code>#NAME?</code>로 나온다. 값까지 같이 날아간다.</p>
+      <p>
+        "2016 이하에서만 문제"라고 뭉뚱그리면 틀린다. Microsoft 문서가 버전을 함수별로 명시한다.
+      </p>
+      <blockquote class="src">
+        <p>"XLOOKUP is not available in Excel 2016 and Excel 2019."</p>
+        <span class="cite">Microsoft Support · XLOOKUP function</span>
+        <p style="margin-top:6px">TEXTJOIN — "This feature is available on Windows or Mac if you have Office 2019, or if you have a Microsoft 365 subscription."</p>
+        <span class="cite">Microsoft Support · TEXTJOIN function</span>
+      </blockquote>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>쓰면 위험</th><th>필요 버전</th><th>대체</th></tr></thead>
+        <thead><tr><th>함수</th><th>최소 버전</th><th>2016</th><th>2019</th><th>대체</th></tr></thead>
         <tbody>
-          <tr><td class="m">XLOOKUP</td><td>M365 / 2021+</td><td class="m">INDEX + MATCH</td></tr>
-          <tr><td class="m">LET, LAMBDA</td><td>M365 / 2021+</td><td>보조 열로 분해</td></tr>
-          <tr><td class="m">동적 배열 (스필)</td><td>M365 / 2021+</td><td>구버전에서 <code>@</code> 붙어 깨짐</td></tr>
-          <tr><td class="m">TEXTJOIN, IFS, CONCAT</td><td>2019+</td><td class="m">&amp; 연결, 중첩 IF</td></tr>
-          <tr><td class="m">MAXIFS, MINIFS</td><td>2019+</td><td>배열 없는 대안 구성</td></tr>
+          <tr><td class="m">XLOOKUP, XMATCH</td><td>2021 / M365</td><td class="no">✕</td><td class="no">✕</td><td class="m">INDEX + MATCH</td></tr>
+          <tr><td class="m">LET, LAMBDA</td><td>2021 / M365</td><td class="no">✕</td><td class="no">✕</td><td>보조 열로 분해</td></tr>
+          <tr><td class="m">동적 배열 (스필)</td><td>2021 / M365</td><td class="no">✕</td><td class="no">✕</td><td>배열 수식 회피</td></tr>
+          <tr><td class="m">TEXTJOIN, IFS, CONCAT</td><td>2019</td><td class="no">✕</td><td class="yes">○</td><td class="m">&amp; 연결, 중첩 IF</td></tr>
+          <tr><td class="m">MAXIFS, MINIFS, SWITCH</td><td>2019</td><td class="no">✕</td><td class="yes">○</td><td>배열 없는 대안</td></tr>
         </tbody>
       </table></div>
+      <p style="margin-top:10px">
+        인식하지 못하는 함수 이름에는 <code>#NAME?</code>이 뜨고 계산된 값도 함께 사라진다.<br>
+        다만 이 오류값 자체는 Microsoft 문서에 명시된 서술이 아니라 실무 관찰이다.
+      </p>
+      <p><b>상대 버전을 모르면</b> <code>파일 → 정보 → 문제 확인 → 호환성 검사</code>를 돌린다. 엑셀이 직접 짚어 준다.</p>
     </div>
 
     <div class="rule">
@@ -716,9 +955,17 @@
       </div>
       <p>
         날짜를 텍스트로 입력하면 정렬·계산이 어긋나고, 지역 설정이 다른 PC에서 월과 일이 뒤집힌다.<br>
-        셀에는 날짜 값을 넣고 표시 형식으로 <code>yyyy-mm-dd</code>를 지정한다.<br>
-        Mac에서 만든 파일은 1904 날짜 체계일 수 있어 4년 차이가 나기도 한다.
+        셀에는 날짜 값을 넣고 표시 형식으로 <code>yyyy-mm-dd</code>를 지정한다.
       </p>
+      <blockquote class="src">
+        <p>"The difference between the two date systems is 1,462 days. (…) 1,462 days is equal to four years and one day (including one leap day)."</p>
+        <span class="cite">Microsoft Support · Date systems in Excel</span>
+      </blockquote>
+      <ul>
+        <li>Mac에서 만든 파일은 1904 체계일 수 있다. 차이는 정확히 <b>1,462일 = 4년 1일</b>이다</li>
+        <li>통합 문서 간 복사 시 엑셀이 자동 변환하거나 선택 창을 띄운다</li>
+        <li><b>차트에 박힌 날짜는 자동 변환되지 않는다.</b> 손으로 고쳐야 한다</li>
+      </ul>
     </div>
 
     <div class="rule">
@@ -737,13 +984,20 @@
     <div class="rule">
       <div class="rule-head">
         <span class="rid">XLS-11</span><span class="chip c-rec">권장</span>
-        <p class="t">호환성 검사와 문서 검사를 돌린다</p>
+        <p class="t">호환성 검사·문서 검사를 돌리고 시트명 규칙을 지킨다</p>
       </div>
       <ul>
         <li><code>파일 → 정보 → 문제 확인 → 호환성 검사</code> — 구버전에서 깨질 요소를 엑셀이 알려준다</li>
         <li><code>문서 검사</code> — 메타데이터, 작성자명, 숨긴 시트·행, 메모를 제거한다</li>
-        <li>시트명은 31자 이내, <code>\ / : * ? [ ]</code> 금지</li>
       </ul>
+      <p style="margin-top:8px">시트 이름 제약은 Microsoft 문서에 명시돼 있다.</p>
+      <ul>
+        <li><b>31자 이내</b></li>
+        <li>금지 문자 <code>/ \ ? * : [ ]</code></li>
+        <li><b><code>History</code>는 엑셀 내부 예약어라 쓸 수 없다</b></li>
+        <li>빈 이름 불가, 작은따옴표로 시작·끝 불가</li>
+      </ul>
+      <span class="cite">Microsoft Support · Rename a worksheet</span>
     </div>
 
     <div class="rule">
@@ -772,7 +1026,7 @@
         <tr>
           <td>설치 글꼴 목록</td>
           <td><b>1순위 원인.</b> 대체 → 폭 변화 →<br>줄바꿈 이동 → 페이지 증가·겹침</td>
-          <td>HWP-01</td>
+          <td>HWP-01 · HWP-16</td>
         </tr>
         <tr>
           <td>기본 프린터 드라이버</td>
@@ -780,14 +1034,14 @@
           <td>PDF 배포로 회피</td>
         </tr>
         <tr>
+          <td>바탕문서 Normal.hwtx</td>
+          <td>새 문서의 기본 편집 용지가 여기서 온다.<br>PC마다 다르면 새로 만드는 문서부터 어긋난다</td>
+          <td>ENV-02</td>
+        </tr>
+        <tr>
           <td>화면 배율 / DPI</td>
           <td>화면 줄바꿈 위치가 인쇄와 달라 보인다</td>
           <td>인쇄 미리보기로 판단</td>
-        </tr>
-        <tr>
-          <td>오피스·한글 버전</td>
-          <td>기본값과 함수 지원 범위가 다르다</td>
-          <td>양쪽 확인 후 하한에 맞춤</td>
         </tr>
         <tr>
           <td>지역 설정</td>
@@ -803,8 +1057,8 @@
         <p class="t">사고 나면 양쪽 PC 환경을 5분 안에 대조한다</p>
       </div>
       <p>
-        추가 설치 없이 윈도우 내장 PowerShell만으로 뽑힌다.<br>
-        양쪽에서 돌려 <code>글꼴목록.txt</code>를 비교하면 대체된 글꼴이 바로 나온다.
+        <b>먼저 HWP-16 의 [문서 정보 → 글꼴 정보]를 연다.</b> 대체된 글꼴이 거기 바로 나온다.<br>
+        그걸로 안 풀릴 때, 추가 설치 없이 윈도우 내장 PowerShell로 양쪽 PC를 비교한다.
       </p>
       <pre><span class="cm"># 설치 글꼴 목록 (시스템 + 사용자)</span>
 Get-ChildItem C:\Windows\Fonts, "$env:LOCALAPPDATA\Microsoft\Windows\Fonts" -ErrorAction SilentlyContinue |
@@ -820,14 +1074,90 @@ Get-ItemProperty "HKLM:\SOFTWARE\HNC\*" -ErrorAction SilentlyContinue | Select-O
 Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
       <p style="margin-top:10px">문서가 쓴 글꼴이 한쪽에만 있으면 범인 확정.</p>
     </div>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">ENV-02</span><span class="chip c-opt">선택</span>
+        <p class="t">조직 표준을 강제하려면 바탕문서(Normal.hwtx)를 배포한다</p>
+      </div>
+      <p>"PC마다 기본값이 다르다"의 실제 메커니즘이 도움말에 적혀 있다.</p>
+      <blockquote class="src">
+        <p>"[쪽-편집 용지]에서 설정한 값은 <b>현재 문서의 편집 용지에만</b> 영향을 줍니다. 이와는 달리 [환경 설정-새 문서]에서 설정한 값은 <b>새로 만드는 모든 빈 문서에 적용</b>되며, 한/글을 끝내고 새로 한/글을 실행할 때에도 적용됩니다."</p>
+        <p>"한/글은 [새 문서]나 [새 탭]을 실행하여 빈 문서를 만들 때의 기본 '편집 용지'와 '스타일', '개요 번호 모양' 등을 미리 만들어 놓은 <b>바탕문서(NORMAL.HWTX)</b>에서 가져옵니다."</p>
+        <span class="cite">한/글 2024 도움말 · file/options/options(newpaper).htm</span>
+      </blockquote>
+      <ul>
+        <li>이미 만든 문서에는 영향이 없다. HWP-06 대로 문서에 값을 박아두면 안전하다는 근거이기도 하다</li>
+        <li>반대로 조직 표준을 통일하고 싶으면 표준 <code>Normal.hwtx</code>를 만들어 배포하면 새 문서부터 통일된다</li>
+      </ul>
+    </div>
   </section>
 
   <!-- 4 ─────────────────────────────── -->
-  <section id="cases">
-    <h2>4. 케이스북</h2>
+  <section id="tool">
+    <h2>4. 자동 점검기</h2>
     <p class="sec-note">
-      한컴 도움말은 렌더링 엔진 변경을 이 수준으로 기술하지 않는다.<br>
-      공식 문서 대조보다 겪은 사례를 축적하는 쪽이 정확하다. 겪을 때마다 항목을 늘린다.
+      규칙 중 파일만 보고 판정할 수 있는 것은 사람이 세지 않는다.<br>
+      같은 폴더의 <code>validate_doc.js</code>가 파일을 열어 규칙 번호로 결과를 낸다.
+    </p>
+
+    <div class="rule">
+      <div class="rule-head">
+        <span class="rid">TOOL</span><span class="chip c-rec">권장</span>
+        <p class="t">배포 전에 파일을 넣고 한 번 돌린다</p>
+      </div>
+      <pre>node validate_doc.js 보고서.hwpx 산출물.xlsx
+
+<span class="cm">지원: .hwpx  .hwp  .xlsx  .xlsm</span></pre>
+      <p style="margin-top:10px">출력은 이렇게 나온다. 규칙 번호가 그대로 찍히므로 위 본문과 대조해서 읽는다.</p>
+      <pre><span class="fail">X FAIL HWP-01   안전 목록 밖 글꼴 2종 — 상대 PC에 없으면 대체되고,
+                 글자 폭이 달라져 줄바꿈이 밀린다: 한양신명조, 명조</span>
+<span class="fail">X FAIL HWP-03   자간 0·장평 100% 를 벗어난 글자모양 23/31건</span>
+<span class="fail">X FAIL HWP-07   연속 빈 문단 최대 6줄 — 쪽 나누기 대신 엔터로 페이지를
+                 넘긴 흔적 (쪽 나누기 0건)</span>
+<span class="warn">! WARN HWP-08   다음 문단과 함께 0건 · 문단 보호 0건 · 외톨이줄 보호 0건</span>
+<span class="pass">O PASS HWP-06   용지 210×297mm (A4)</span>
+<span class="pass">O PASS HWP-11   표 2개 중 제목 줄 반복 2개</span>
+   ── 위반 3 · 주의 3 · 통과 4</pre>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>등급</th><th>뜻</th></tr></thead>
+        <tbody>
+          <tr><td class="no">FAIL</td><td>[필수] 규칙 위반. 고치지 않고 배포하면 사고 난다</td></tr>
+          <tr><td class="m" style="color:var(--accent)">WARN</td><td>[권장] 위반이거나 사람이 확인해야 하는 항목</td></tr>
+          <tr><td class="yes">PASS</td><td>통과</td></tr>
+          <tr><td class="m">INFO</td><td>판정이 아니라 사실 보고 (글꼴 목록, 여백 실측값 등)</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin-top:10px"><b>점검기가 못 잡는 것</b> — 상대 PC의 글꼴 설치 여부, 기본 프린터 차이, 인쇄 미리보기, 표가 실제로 페이지를 걸치는지. 그래서 HWP-15 는 여전히 [필수]다.</p>
+      <p>
+        <code>.hwp</code>는 바이너리라 판정 항목이 hwpx 보다 적다. 정밀 점검은 hwpx 로 저장한 뒤 돌린다.<br>
+        준비가 필요하면 <code>npm install --prefix C:/workspace jszip exceljs hwp.js</code>.
+      </p>
+      <p>
+        <b>폐쇄망에서는 못 쓸 수 있다.</b> 실행 스크립트라 반입 절차와 DRM 해제를 거쳐야 하고, Node 도 있어야 한다.<br>
+        그 경우 이 도구는 <b>망 밖에서 초안을 점검할 때</b> 쓰고, 망 안에서는 아래 셋으로 대체한다.
+      </p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>점검기가 보던 것</th><th>한글·엑셀 내장 기능으로 대체</th></tr></thead>
+        <tbody>
+          <tr><td>안전 목록 밖 글꼴 · 대체된 글꼴</td><td><code>문서 정보 → 글꼴 정보</code> — HWP-16<br>2024면 「주의 글꼴 알림」 — HWP-01</td></tr>
+          <tr><td>자간 · 장평 위반</td><td>전체 선택 후 <code>Alt+L</code> 로 값 확인 — HWP-03</td></tr>
+          <tr><td>그림 링크 여부</td><td><code>문서 정보 → 그림 정보</code> — HWP-12</td></tr>
+          <tr><td>구버전 미지원 함수</td><td><code>파일 → 정보 → 호환성 검사</code> — XLS-06</td></tr>
+          <tr><td>외부 파일 참조</td><td><code>데이터 → 연결 편집</code> — XLS-07</td></tr>
+          <tr><td>작성자 메타데이터</td><td><code>파일 → 정보 → 문서 검사</code> — XLS-11</td></tr>
+        </tbody>
+      </table></div>
+      <p style="margin-top:10px">6장 점검표의 [처리 방법]에 이 경로들이 항목마다 적혀 있다. <b>점검기 없이도 점검표만으로 끝낼 수 있다.</b></p>
+    </div>
+  </section>
+
+  <!-- 5 ─────────────────────────────── -->
+  <section id="cases">
+    <h2>5. 케이스북</h2>
+    <p class="sec-note">
+      한컴 도움말은 렌더링 엔진 변경을 기술하지 않는다. 2018 과 2024 도움말을 전수 대조해도<br>
+      줄바꿈 알고리즘에 대한 서술은 없었다. 겪은 사례를 축적하는 쪽이 정확하다.
     </p>
 
     <div class="case">
@@ -839,7 +1169,7 @@ Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
           본문 글꼴 대체로 글자 폭 증가 → 줄바꿈 위치 이동 → 줄 수 누적 증가.<br>
           빈 줄로 페이지를 넘긴 구간이 있으면 증폭됨. 기본 프린터 차이도 기여 가능
         </dd>
-        <dt>확인</dt><dd>ENV-01로 글꼴 목록 대조 — 문서 사용 글꼴이 상대 PC에 있는지</dd>
+        <dt>확인</dt><dd>HWP-16 문서 정보 → 글꼴 정보에서 [대체된 글꼴] 확인. 그다음 ENV-01</dd>
         <dt>조치</dt><dd>HWP-01 안전 글꼴 / HWP-07 쪽 나누기 / 배포는 PDF</dd>
       </dl>
     </div>
@@ -864,32 +1194,550 @@ Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
       </dl>
     </div>
 
+    <div class="case">
+      <h4>CASE-04 · 자동 점검기로 확인한 실제 문서 두 건</h4>
+      <dl>
+        <dt>hwpx</dt>
+        <dd>자간 -5% · 장평 90~95% 가 걸린 글자모양 23/31건, 안전 목록 밖 글꼴 2종,<br>연속 빈 문단 6줄. CASE-01·02 의 조건이 한 문서에 전부 들어 있었다</dd>
+        <dt>hwp</dt>
+        <dd>안전 목록 밖 글꼴 10종(윤고딕·HY헤드라인M·휴먼명조 등),<br>자간·장평 위반 45/110건</dd>
+        <dt>교훈</dt>
+        <dd>규칙 위반은 예외적 상황이 아니라 <b>평범한 실무 문서의 기본 상태</b>다.<br>배포 전에 기계로 한 번 훑는 편이 빠르다</dd>
+      </dl>
+    </div>
+
     <p class="sec-note" style="margin-top:14px">
       기록할 항목 — 증상 / 양쪽 한글 버전 / 문서 사용 글꼴 / 상대 PC 글꼴 유무 / 자간·장평 값 / 조치와 결과.
     </p>
   </section>
 
-  <!-- 5 ─────────────────────────────── -->
+  <!-- 6 ─────────────────────────────── -->
   <section id="checklist">
-    <h2>5. 배포 전 점검</h2>
-    <p class="sec-note">체크 상태는 이 브라우저에만 저장된다. 다음 문서 작업 시 앱바의 <b>체크 초기화</b>를 누르고 다시 시작한다.</p>
+    <h2>6. 배포 전 점검</h2>
+    <p class="sec-note">
+      문서 종류별로 나눠 놨다. 한글 문서만 보낼 때 엑셀 항목까지 볼 필요는 없다.<br>
+      체크 상태는 이 브라우저에만 저장된다. 다음 문서 작업 시 앱바의 <b>체크 초기화</b>를 누르고 다시 시작한다.
+    </p>
 
-    <div class="check" id="cl">
-      <label><input type="checkbox" data-k="c1"><span>받는 사람이 편집할 이유가 있는지 판단했다. 없으면 PDF만 보낸다 <span class="k">CORE-01</span></span></label>
-      <label><input type="checkbox" data-k="c2"><span>문서에 쓴 글꼴이 전부 안전 목록 안에 있다 <span class="k">HWP-01</span></span></label>
-      <label><input type="checkbox" data-k="c3"><span>한글·영문·한자·기호 글꼴이 통일돼 있다 <span class="k">HWP-02</span></span></label>
-      <label><input type="checkbox" data-k="c4"><span>자간 0, 장평 100%다 <span class="k">HWP-03</span></span></label>
-      <label><input type="checkbox" data-k="c5"><span>편집용지 여백을 직접 지정했고 제본 여백이 0이다 <span class="k">HWP-06</span></span></label>
-      <label><input type="checkbox" data-k="c6"><span>빈 줄이 아니라 쪽 나누기로 페이지를 넘겼다 <span class="k">HWP-07</span></span></label>
-      <label><input type="checkbox" data-k="c7"><span>표 너비에 좌우 여유가 있고, 페이지 걸치는 표에 제목 줄 반복을 걸었다 <span class="k">HWP-10 · 11</span></span></label>
-      <label><input type="checkbox" data-k="c8"><span>그림이 링크가 아니라 문서에 포함돼 있다 <span class="k">HWP-12</span></span></label>
-      <label><input type="checkbox" data-k="c9"><span>엑셀 — 인쇄 영역·배율·반복 행을 지정했고 페이지 나누기 미리보기로 확인했다 <span class="k">XLS-04</span></span></label>
-      <label><input type="checkbox" data-k="c10"><span>엑셀 — 필터를 해제했고 숨긴 행·열이 없다 <span class="k">XLS-05</span></span></label>
-      <label><input type="checkbox" data-k="c11"><span>엑셀 — 구버전 미지원 함수가 없다 (호환성 검사 통과) <span class="k">XLS-06 · 11</span></span></label>
-      <label><input type="checkbox" data-k="c12"><span>엑셀 — 외부 파일 연결을 끊고 휘발성 함수를 값으로 고정했다 <span class="k">XLS-07 · 08</span></span></label>
-      <label><input type="checkbox" data-k="c13"><span>문서 검사로 작성자명·메타데이터·숨긴 시트를 제거했다 <span class="k">XLS-11</span></span></label>
-      <label><input type="checkbox" data-k="c14"><span><b>다른 PC에서 열어 총 페이지 수와 인쇄 미리보기를 확인했다</b> <span class="k">HWP-15</span></span></label>
-      <label><input type="checkbox" data-k="c15"><span>PDF를 글꼴 포함으로 저장해 함께 보낸다 <span class="k">CORE-01</span></span></label>
+    <p class="sec-note" style="margin-top:-8px">
+      항목 글씨를 누르면 <b>처리 방법</b>이 펼쳐진다. 체크는 왼쪽 네모 칸을 누른다.
+    </p>
+
+    <h3 class="grp" id="check-common">공통 · 먼저 판단</h3>
+    <div class="check-head">
+      <h4>배포 방식 결정</h4>
+      <span class="cnt"><b class="d">0</b>/<span class="t">0</span></span>
+    </div>
+    <div class="check" data-key="common">
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="k1" aria-label="받는 사람이 편집할 이유가 있는지 판단했다"></label>
+        <span class="txt">받는 사람이 편집할 이유가 있는지 판단했다. 없으면 PDF만 보낸다 <span class="k">CORE-01</span></span>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="k2" aria-label="OTF 글꼴과 사용자 정의 용지 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">PDF로 보낸다면 — 본문에 OTF 글꼴이 없고, 용지가 사용자 정의가 아니다 <span class="k">CORE-02</span></button>
+        <div class="how" hidden>
+          <p><b>글꼴 형식 확인</b></p>
+          <ol>
+            <li><code>파일 → 문서 정보 → [글꼴 정보] 탭</code>에서 문서가 쓴 글꼴 이름을 적어 둔다</li>
+            <li>제어판의 <code>글꼴</code> 폴더에서 그 이름을 찾아 파일 형식을 본다. <b>OpenType</b>이면 OTF다</li>
+            <li>OTF면 TrueType 계열 안전 글꼴(맑은 고딕·함초롬바탕 등)로 바꾼다</li>
+          </ol>
+          <p><b>용지 확인</b> — <code>쪽 → 편집 용지(F7)</code>의 [용지 종류]가 <b>A4</b> 등 목록에 있는 규격인지 본다. '사용자 정의'면 표준 규격으로 바꾼다.</p>
+          <span class="why">OTF는 PDF 변환 시 다른 글꼴로 대체되고, 사용자 정의 용지는 영역을 벗어난 내용이 잘린다. 둘 다 한/글 도움말이 명시한 한계다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="k3" aria-label="변환한 PDF를 열어서 확인했다"></label>
+        <button type="button" class="txt" aria-expanded="false">변환한 PDF를 실제로 열어서 눈으로 확인했다 <span class="k">CORE-02</span></button>
+        <div class="how" hidden>
+          <p>변환은 조용히 실패한다. 오류창이 안 떴다고 성공한 게 아니다. 볼 것은 넷.</p>
+          <ul>
+            <li><b>총 페이지 수</b>가 원본과 같은지</li>
+            <li>글자가 <b>겹치거나 네모(□)로</b> 나온 곳이 없는지</li>
+            <li>표가 잘리거나 마지막 열이 밀려나지 않았는지</li>
+            <li>그림이 빈 상자로 나오지 않았는지</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="k4" aria-label="자동 점검기를 돌렸거나 대체 절차를 밟았다"></label>
+        <button type="button" class="txt" aria-expanded="false">가능하면 자동 점검기를 돌려 FAIL 이 0건이다 <span class="k">TOOL</span></button>
+        <div class="how" hidden>
+          <p><b>돌릴 수 있는 환경이면</b></p>
+          <ol>
+            <li>Node가 있는 PC에서 <code>node validate_doc.js 문서.hwpx</code></li>
+            <li>FAIL 이 뜬 규칙 번호를 이 문서 본문에서 찾아 고친다</li>
+          </ol>
+          <p><b>폐쇄망이라 반입이 어려우면 건너뛴다.</b> 이 항목은 [선택]이다. 대신 아래 셋으로 대체한다.</p>
+          <ul>
+            <li><code>문서 정보 → 글꼴 정보</code>에서 [대체된 글꼴]이 비었는지 — HWP-16</li>
+            <li>2024면 「주의 글꼴 알림」 켜기 — HWP-01</li>
+            <li>다른 PC에서 열어 페이지 수·인쇄 미리보기 확인 — HWP-15</li>
+          </ul>
+          <span class="why">점검기는 반입 절차를 밟아야 쓸 수 있는 실행 스크립트다. 한글·엑셀 내장 기능만으로도 핵심 항목은 확인된다.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="grp" id="check-hwp">한글 문서</h3>
+    <div class="check-head">
+      <h4>한/글 배포 전 점검</h4>
+      <span class="cnt"><b class="d">0</b>/<span class="t">0</span></span>
+    </div>
+    <div class="check" data-key="hwp">
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h1" aria-label="안전 글꼴만 사용"></label>
+        <button type="button" class="txt" aria-expanded="false">문서에 쓴 글꼴이 전부 안전 목록 안에 있다 <span class="k">HWP-01</span></button>
+        <div class="how" hidden>
+          <p><b>확인</b> — <code>파일 → 문서 정보 → [글꼴 정보] 탭</code>. 문서가 실제로 쓴 글꼴이 전부 나온다. 눈으로 본문만 훑으면 표·머리말·각주에 숨은 글꼴을 놓친다.</p>
+          <p><b>안전 목록</b></p>
+          <ul>
+            <li>시스템 — 굴림 · 굴림체 · 궁서 · 궁서체 · <b>돋움체</b> · 맑은 고딕 · 바탕 · 바탕체</li>
+            <li>한컴오피스 동봉 — 함초롬바탕 · 함초롬돋움 · 한컴바탕</li>
+          </ul>
+          <p><b>바꾸기</b> — 같은 [글꼴 정보] 탭에서 목록의 글꼴을 고르고 <code>[사용된 글꼴 바꾸기]</code> 아이콘을 누르면 문서 전체가 한 번에 교체된다. 하나씩 찾아 고칠 필요 없다.</p>
+          <span class="why">'돋움'은 목록에 없다. 한컴이 안전하다고 적은 것은 '돋움체'다. 헷갈리면 맑은 고딕을 쓴다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h2" aria-label="주의 글꼴 알림 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">2024 사용 시 — 「주의 글꼴 알림」을 켜고 경고가 없음을 확인했다 <span class="k">HWP-01</span></button>
+        <div class="how" hidden>
+          <p><code>도구 → 환경 설정 → [글꼴] 탭 → 「주의 글꼴 알림」 체크</code></p>
+          <p>켜 두면 문서를 열거나 저장할 때 한컴 사용권 밖 글꼴이 있으면 한글이 경고를 띄운다. 한 번 켜면 계속 유지되니 처음에 켜 두고 잊으면 된다.</p>
+          <span class="why">한/글 2024에 새로 들어온 기능이다. 2018·2020·2022에는 없다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h3" aria-label="글맵시 차트 덧말 글꼴 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">글맵시·차트·덧말의 글꼴을 눈으로 따로 확인했다 <span class="k">HWP-01</span></button>
+        <div class="how" hidden>
+          <p>세 곳은 「주의 글꼴 알림」 검사에서 빠진다. 한컴이 도움말에 명시한 예외다.</p>
+          <ul>
+            <li><b>글맵시</b> — 개체를 더블클릭해 [글맵시 만들기]에서 글꼴 확인</li>
+            <li><b>차트</b> — 차트 안 축·범례·제목이 각각 글꼴을 따로 가진다. 차트 편집 화면에서 항목마다 확인</li>
+            <li><b>덧말</b> — 본문 위에 작게 붙는 글. 덧말 위치에 커서를 두고 <code>Alt+L</code></li>
+          </ul>
+          <p>제목용으로 예쁜 글꼴을 쓴 글맵시가 가장 흔한 누락 지점이다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h4" aria-label="언어별 글꼴 통일"></label>
+        <button type="button" class="txt" aria-expanded="false">한글·영문·한자·기호 글꼴이 언어별로 통일돼 있다 <span class="k">HWP-02</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li>본문 전체 선택 <code>Ctrl+A</code></li>
+            <li><code>서식 → 글자 모양(Alt+L)</code></li>
+            <li>[기본] 탭의 <b>[언어]</b> 목록을 <code>한글 → 영문 → 한자 → 기호</code> 순으로 바꿔 가며 각각 글꼴을 같은 값으로 지정</li>
+          </ol>
+          <p>[언어]를 '대표'로 두고 한 번에 지정하는 방법도 있지만, 이미 언어별로 다르게 걸린 문서는 대표 설정이 덮이지 않는 경우가 있다. <b>하나씩 확인하는 편이 확실하다.</b></p>
+          <span class="why">한글만 바꾸고 영문을 놔두면 숫자·영문·괄호만 다른 글꼴로 나간다. 내 PC에는 그 글꼴이 있어서 안 보인다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h5" aria-label="자간 장평 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">자간 0, 장평 100%다. 빈칸 자간이 따라가는 <b>영문</b> 설정도 확인했다 <span class="k">HWP-03</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li>본문 전체 선택 <code>Ctrl+A</code></li>
+            <li><code>Alt+L</code> → [기본] 탭</li>
+            <li><b>자간 0</b>, <b>장평 100%</b> 로 지정하고 [설정]</li>
+            <li>[언어]를 <b>영문</b>으로 바꿔 같은 값인지 다시 확인</li>
+          </ol>
+          <p><b>표 안은 따로 해야 한다.</b> 표 전체를 셀 블록으로 잡고 같은 작업을 반복한다. 셀 폭을 맞추려고 자간을 조인 경우가 많다.</p>
+          <p><b>실수로 바뀌는 경로</b> — <code>Alt+Shift+W / N</code>(자간), <code>Alt+Shift+K / J</code>(장평)이 누를 때마다 1%씩 바꾼다. 값이 -3%, 97% 같은 애매한 숫자면 이걸 잘못 누른 것이다.</p>
+          <span class="why">빈칸(띄어쓰기)의 자간은 한글이 아니라 영문 자간 비율을 따라간다. 한글만 0으로 돌려도 단어 사이 간격은 그대로 남는다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h6" aria-label="글자 크기 정수 pt"></label>
+        <button type="button" class="txt" aria-expanded="false">글자 크기가 모두 정수 pt다 <span class="k">HWP-04</span></button>
+        <div class="how" hidden>
+          <p>본문에 커서를 두고 서식 도구 상자의 글자 크기 칸을 본다. <code>10.5</code>, <code>8.48</code> 처럼 소수점이 보이면 가장 가까운 정수로 바꾼다.</p>
+          <p>웹이나 다른 문서에서 붙여넣은 부분에 주로 생긴다. 붙여넣기 할 때 <code>Ctrl+Alt+V</code> → <b>텍스트 형식</b>으로 넣으면 애초에 안 생긴다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h7" aria-label="안전 목록 밖 글꼴 대응"></label>
+        <button type="button" class="txt" aria-expanded="false">안전 목록 밖 글꼴이 있다면 — 글꼴을 바꿨거나 PDF로 배포한다 <span class="k">HWP-05</span></button>
+        <div class="how" hidden>
+          <p><b>한/글에는 문서에 글꼴을 심는 기능이 없다.</b> 도움말 어디에도 없다. 선택지는 셋뿐이다.</p>
+          <ol>
+            <li><b>글꼴을 바꾼다</b> — <code>문서 정보 → 글꼴 정보 → [사용된 글꼴 바꾸기]</code>로 일괄 교체 (권장)</li>
+            <li><b>PDF로 배포한다</b> — 편집이 필요 없으면 이게 정답. 단 OTF면 PDF에서도 대체되니 CORE-02 확인</li>
+            <li><b>글꼴을 함께 준다</b> — 받는 쪽이 설치해야 한다. 라이선스가 재배포를 허용하는지 먼저 확인</li>
+          </ol>
+          <span class="why">hwpx 포맷 자체에는 글꼴 포함 속성이 있지만 한/글 UI에서 켜는 경로가 문서화돼 있지 않다. 된다고 가정하고 배포하면 안 된다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h8" aria-label="편집 용지 지정 순서"></label>
+        <button type="button" class="txt" aria-expanded="false">편집 용지를 <b>용지 종류 먼저, 여백 나중</b> 순서로 직접 지정했다 <span class="k">HWP-06</span></button>
+        <div class="how" hidden>
+          <p><code>쪽 → 편집 용지</code> 또는 <code>F7</code></p>
+          <ol>
+            <li>[기본] 탭에서 <b>[용지 종류]를 먼저</b> A4로 지정한다</li>
+            <li>[용지 방향]을 지정한다</li>
+            <li><b>그다음</b> [용지 여백]의 위·아래·왼쪽·오른쪽·머리말·꼬리말 값을 넣는다</li>
+            <li>[설정]</li>
+          </ol>
+          <p><b>순서를 바꾸면 안 된다.</b> 여백을 먼저 맞추고 용지 종류를 나중에 바꾸면, 한글이 그 용지에 맞는 여백을 자동으로 덮어써서 애써 넣은 값이 사라진다.</p>
+          <p>여백 수치는 소속 기관 공문서 규정을 따른다. 규정이 없으면 조직 안에서 하나로 정해 쓴다.</p>
+          <span class="why">지정한 값은 문서 안에 저장되므로 어느 PC에서 열어도 같다. 손대지 않고 기본값에 맡기면 여는 쪽 설정을 따라갈 여지가 남는다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h9" aria-label="제본 한쪽 제본 여백 0"></label>
+        <button type="button" class="txt" aria-expanded="false">제본이 '한쪽'이고 제본 여백이 0이다 <span class="k">HWP-06</span></button>
+        <div class="how" hidden>
+          <p><code>F7 → [기본] 탭 → [제본]</code></p>
+          <ul>
+            <li><b>한쪽</b>으로 둔다. 홀짝 구분 없이 같은 여백을 쓴다</li>
+            <li><b>맞쪽</b>을 고르면 [용지 여백]의 왼쪽/오른쪽 항목이 <b>안쪽/바깥쪽</b>으로 바뀐다. 홀수 쪽과 짝수 쪽의 여백이 서로 반대가 되므로 페이지마다 본문 위치가 달라진다</li>
+            <li>[제본 여백] 값이 <b>0</b>인지 확인한다. 0이 아니면 용지 끝에서 여백 시작점까지가 통째로 밀린다</li>
+          </ul>
+          <p>책자로 인쇄할 문서가 아니면 맞쪽을 쓸 이유가 없다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h10" aria-label="쪽 나누기 사용"></label>
+        <button type="button" class="txt" aria-expanded="false">빈 줄이 아니라 쪽 나누기로 페이지를 넘겼다 <span class="k">HWP-07</span></button>
+        <div class="how" hidden>
+          <p><b>새로 넣을 때</b> — 넘길 위치에 커서를 두고 <code>Ctrl+Enter</code> (<code>Ctrl+J</code>도 같다)</p>
+          <p><b>이미 들어간 빈 줄 찾기</b></p>
+          <ol>
+            <li><code>보기 → 조판 부호</code>를 켠다</li>
+            <li>쪽 나누기는 <b>빨간 대시 선</b>으로 보인다. 그 표시 없이 페이지가 넘어갔으면 빈 줄로 민 것이다</li>
+            <li>그 빈 줄들을 지우고 <code>Ctrl+Enter</code>로 바꾼다</li>
+          </ol>
+          <p>간격 조절도 빈 줄로 하지 않는다. <code>문단 모양 → 문단 위/아래 간격</code>을 쓴다.</p>
+          <span class="why">엔터 열 번으로 넘긴 페이지는 글꼴이 한 번만 대체돼도 그 열 줄이 밀려 빈 페이지가 생긴다. "페이지가 하나 더 생긴다"의 가장 흔한 원인이다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h11" aria-label="제목 문단 보호"></label>
+        <button type="button" class="txt" aria-expanded="false">제목 문단에 [다음 문단과 함께]를 걸었다 <span class="k">HWP-08</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li>제목 문단들을 블록으로 잡는다. <b>여러 문단에 한 번에 걸려면 반드시 블록 지정이 필요하다</b></li>
+            <li><code>서식 → 문단 모양</code> → <b>[확장] 탭</b> ([기본] 탭 아니다)</li>
+            <li><b>[다음 문단과 함께]</b> 체크 → [설정]</li>
+          </ol>
+          <p>본문 전체에는 <b>[외톨이줄 보호]</b>를 같이 걸어 두면 좋다. 문단 첫 줄이나 마지막 줄만 다음 장으로 떨어지는 것을 막는다.</p>
+          <p><b>함정</b> — 이 속성이 걸린 문단 끝에서 엔터를 쳐서 새 문단으로 넘어가면 <b>새 문단에서는 속성이 풀린다.</b> 글을 이어 쓴 뒤에는 다시 확인한다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h12" aria-label="표 너비 여유"></label>
+        <button type="button" class="txt" aria-expanded="false">표 너비에 좌우 여유가 있다 <span class="k">HWP-10</span></button>
+        <div class="how" hidden>
+          <p>표 안에 커서를 두고 <code>표 → 표 속성(P)</code> → [기본] 탭에서 [너비] 값을 본다.</p>
+          <p>본문 폭에 딱 맞춰져 있으면 <b>1~2mm 줄인다.</b> 계산은 간단하다.</p>
+          <p style="margin-top:6px"><code>본문 폭 = 용지 너비 − 왼쪽 여백 − 오른쪽 여백</code><br>
+          A4에 좌우 20mm면 본문 폭 170mm. 표는 <b>168mm 이하</b>로 둔다.</p>
+          <span class="why">딱 맞춘 표는 글꼴이 조금만 넓어져도 마지막 열이 밀려 나가거나, 셀 안 글이 한 줄 늘어 행 높이가 커지면서 페이지가 넘친다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h13" aria-label="표 제목 셀과 제목 줄 반복"></label>
+        <button type="button" class="txt" aria-expanded="false">페이지를 걸치는 표는 — <b>첫 줄을 포함해</b> [제목 셀]을 지정한 뒤 제목 줄 반복을 켰다 <span class="k">HWP-11</span></button>
+        <div class="how" hidden>
+          <p>순서가 정해져 있다. 거꾸로 하면 켜도 동작하지 않는다.</p>
+          <ol>
+            <li><b>표의 첫 번째 줄</b>을 셀 블록으로 잡는다 (머리행)</li>
+            <li><code>표 디자인 → 표/셀 속성</code> → [셀] 탭 → <b>[제목 셀]</b> 체크</li>
+            <li>표 전체를 잡고 <code>[표] 탭 → [제목 줄 자동 반복]</code></li>
+          </ol>
+          <p><b>첫 번째 줄이 빠지면 안 된다.</b> 두 번째 줄만 제목 셀로 지정하면 자동 반복이 동작하지 않는다.</p>
+          <p>표 틀을 고정해야 하면 [크기 고정]보다 <b>[한 줄로 입력]</b>이 낫다. 크기 고정은 칸을 넘친 글이 <b>보이지 않게</b> 사라진다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h14" aria-label="그림 문서 포함"></label>
+        <button type="button" class="txt" aria-expanded="false">그림이 링크가 아니라 문서에 포함돼 있다 <span class="k">HWP-12</span></button>
+        <div class="how" hidden>
+          <p><b>한 번에 확인</b> — <code>파일 → 문서 정보 → [그림 정보] 탭</code>. 문서 안 모든 그림의 연결 상태가 나오고 그 자리에서 바꿀 수 있다.</p>
+          <p><b>개별 수정</b> — 그림을 선택하고 <code>서식 → 개체 속성</code> → [그림] 탭 → <b>[문서에 포함]</b> 체크</p>
+          <p>기본값이 이미 '문서에 포함'이라 평소에는 신경 쓸 일이 없다. <b>누군가 체크를 풀어둔 문서</b>만 문제가 된다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h15" aria-label="개체 배치 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">개체 배치가 '어울림'이 아니다 <span class="k">HWP-13</span></button>
+        <div class="how" hidden>
+          <p>그림·도형을 선택하고 <code>서식 → 개체 속성</code> → [기본] 탭</p>
+          <ul>
+            <li>가장 단순한 선택은 <b>[글자처럼 취급]</b> 체크. 개체가 글자 하나처럼 본문과 함께 흐른다. 이걸 켜면 [본문과의 배치] 설정은 무시된다</li>
+            <li>위치를 고정해야 하면 [본문과의 배치]를 <b>자리 차지</b>로 둔다</li>
+            <li><b>어울림</b>은 피한다. 본문이 개체 옆으로 흘러 지나가므로 줄이 밀릴 때 결과를 예측하기 가장 어렵다</li>
+          </ul>
+          <p>배경·로고는 [글 뒤로]가 맞다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h16" aria-label="대체된 글꼴 없음"></label>
+        <button type="button" class="txt" aria-expanded="false">문서 정보 → 글꼴 정보의 [대체된 글꼴] 목록이 비어 있다 <span class="k">HWP-16</span></button>
+        <div class="how" hidden>
+          <p><code>파일 → 문서 정보 → [글꼴 정보] 탭</code></p>
+          <ul>
+            <li><b>[사용된 글꼴]</b> — 이 PC에서 제대로 나오는 글꼴만 나온다</li>
+            <li><b>[대체된 글꼴]</b> — 이 PC에 없어서 다른 글꼴로 바뀐 것들. <b>여기에 뭔가 있으면 그 문서는 이미 내 화면에서 깨져 보이는 중이다</b></li>
+          </ul>
+          <p>HWP-02 대로 <b>[언어] 목록을 바꿔 가며</b> 확인한다. 대표 글꼴을 안 쓴 문서는 '대표'에서 아무것도 안 보인다.</p>
+          <p>목록에서 글꼴을 고르고 <code>[사용된 글꼴 바꾸기]</code>를 누르면 문서 전체가 한 번에 바뀐다.</p>
+          <span class="why">받은 문서를 검토할 때 가장 먼저 열어볼 화면이다. 별도 도구 없이 한글이 대체 여부를 직접 알려준다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="h17" aria-label="다른 PC에서 확인"></label>
+        <button type="button" class="txt" aria-expanded="false"><b>다른 PC에서 열어 총 페이지 수와 인쇄 미리보기를 확인했다</b> <span class="k">HWP-15</span></button>
+        <div class="how" hidden>
+          <p>규칙을 다 지켜도 이 한 번을 대체하지 못한다. 가능하면 한글 버전이 다른 PC로 확인한다.</p>
+          <ol>
+            <li><b>총 페이지 수</b>가 내 PC와 같은지 — 상태 표시줄에 나온다</li>
+            <li><b>표가 페이지를 걸치는지</b>, 걸친다면 머리행이 반복되는지</li>
+            <li><code>파일 → 미리 보기</code>로 <b>인쇄 결과</b> 확인. 화면과 인쇄는 다르다</li>
+            <li>그 PC에서 <code>문서 정보 → 글꼴 정보</code>의 [대체된 글꼴]도 함께 본다</li>
+          </ol>
+          <span class="why">한글은 페이지 레이아웃 계산에 기본 프린터 메트릭이 관여한다. 글꼴이 같아도 프린터가 다르면 페이지 수가 달라질 수 있다.</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 class="grp" id="check-xls">엑셀 문서</h3>
+    <div class="check-head">
+      <h4>엑셀 배포 전 점검</h4>
+      <span class="cnt"><b class="d">0</b>/<span class="t">0</span></span>
+    </div>
+    <div class="check" data-key="xls">
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x1" aria-label="기본 글꼴 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">통합 문서 기본 글꼴이 맑은 고딕 11pt다 <span class="k">XLS-01</span></button>
+        <div class="how" hidden>
+          <p><b>확인·변경</b> — <code>파일 → 옵션 → 일반 → [새 통합 문서 만들기]</code>의 글꼴과 크기</p>
+          <p><b>이미 만든 문서</b>는 <code>홈 → 셀 스타일 → 표준</code>을 마우스 오른쪽으로 눌러 [수정]에서 글꼴을 본다.</p>
+          <p>다른 글꼴을 꼭 써야 하면 <b>열 너비에 여유를 크게 준다.</b> 열 너비 단위가 mm가 아니라 기본 글꼴의 문자 폭이라, 상대 PC 글꼴이 좁으면 글이 잘리고 넓으면 <code>#####</code>이 뜬다.</p>
+          <span class="why">Microsoft 문서 원문 — "Column widths are measured in a character-based unit (the number of characters of the default font that fit in a cell)."</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x2" aria-label="행 높이 고정"></label>
+        <button type="button" class="txt" aria-expanded="false">페이지 수를 지켜야 하는 양식은 행 높이를 숫자로 고정했다 <span class="k">XLS-02</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li>대상 행 머리글을 드래그해 선택</li>
+            <li>마우스 오른쪽 → <b>[행 높이]</b> → 숫자 입력</li>
+          </ol>
+          <p>행 머리글 경계를 더블클릭하면 '자동 맞춤'으로 돌아가니 주의한다. 자동 맞춤 높이는 여는 PC의 글꼴·화면 배율로 다시 계산되어 인쇄 페이지 수가 달라진다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x3" aria-label="셀 병합 최소화"></label>
+        <button type="button" class="txt" aria-expanded="false">불필요한 셀 병합이 없다 <span class="k">XLS-03</span></button>
+        <div class="how" hidden>
+          <p><b>찾기</b> — <code>Ctrl+F → [옵션] → [서식] → [맞춤] 탭 → '셀 병합' 체크 → 모두 찾기</code></p>
+          <p><b>모양만 목적이면 대체한다</b></p>
+          <ol>
+            <li>합치려던 범위를 선택</li>
+            <li><code>Ctrl+1 → [맞춤] 탭 → 가로 맞춤</code>을 <b>[선택 영역의 가운데로]</b></li>
+          </ol>
+          <p>보기에는 병합과 같지만 셀은 그대로 남아 정렬·필터·수식이 깨지지 않는다.</p>
+          <span class="why">병합 셀은 받는 사람이 데이터를 가공하려 할 때 첫 번째로 부딪히는 벽이다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x4" aria-label="인쇄 영역 지정"></label>
+        <button type="button" class="txt" aria-expanded="false">인쇄 영역을 지정했다 <span class="k">XLS-04</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li>인쇄할 범위를 선택</li>
+            <li><code>페이지 레이아웃 → 인쇄 영역 → 인쇄 영역 설정</code></li>
+          </ol>
+          <p>시트마다 따로 지정해야 한다. 한 시트에 지정했다고 다른 시트에 적용되지 않는다.</p>
+          <span class="why">지정하지 않으면 엑셀이 데이터 범위를 추측해 자르고, 그 판단은 여는 PC의 프린터·용지 설정에 따라 달라진다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x5" aria-label="배율 숫자 고정"></label>
+        <button type="button" class="txt" aria-expanded="false">배율이 "자동 맞춤"이 아니라 숫자로 고정돼 있다 <span class="k">XLS-04</span></button>
+        <div class="how" hidden>
+          <p><code>페이지 레이아웃 → [페이지 설정] 우측 아래 화살표 → [페이지] 탭</code></p>
+          <ul>
+            <li><b>[확대/축소 배율]</b>을 고르고 숫자를 넣는다 (예: 85%)</li>
+            <li><span class="no">[자동 맞춤]</span>은 쓰지 않는다. "1페이지 너비 × 1페이지 높이" 식으로 두면 여는 PC마다 배율이 다시 계산된다</li>
+          </ul>
+          <p>적정 배율은 <code>보기 → 페이지 나누기 미리보기</code>에서 잘리는 위치를 보며 정한다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x6" aria-label="반복할 행 지정"></label>
+        <button type="button" class="txt" aria-expanded="false">여러 장이면 반복할 행을 지정하고, 페이지 나누기 미리보기로 확인했다 <span class="k">XLS-04</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li><code>페이지 레이아웃 → 인쇄 제목</code></li>
+            <li>[시트] 탭의 <b>[반복할 행]</b>에 머리행을 지정한다 (예: <code>$1:$2</code>)</li>
+            <li><code>보기 → 페이지 나누기 미리보기</code>로 실제 잘리는 위치 확인. 파란 선을 끌어 조정할 수 있다</li>
+          </ol>
+          <p>지정하지 않으면 2쪽부터는 항목 이름 없는 숫자 표가 나온다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x7" aria-label="필터 해제 숨김 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">필터를 해제했고 숨긴 행·열이 없다 <span class="k">XLS-05</span></button>
+        <div class="how" hidden>
+          <p><b>필터 해제</b> — <code>데이터 → 필터</code> 버튼을 눌러 끈다. 열 머리글에 깔때기 모양이 남아 있으면 걸린 것이다.</p>
+          <p><b>숨김 해제</b> — <code>Ctrl+A</code>로 전체 선택 후 행 머리글에서 마우스 오른쪽 → [숨기기 취소]. 열도 같은 방식.</p>
+          <p>행 번호가 <code>1, 2, 7, 8</code> 처럼 건너뛰면 숨겨진 것이다.</p>
+          <span class="why">받는 사람은 필터가 걸린 줄 모르고 데이터 일부만 보고 판단한다. 실무 사고 중 파급이 가장 크다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x8" aria-label="함수 버전 하한 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">상대 엑셀 버전을 확인했고 그 하한을 넘는 함수를 쓰지 않았다 <span class="k">XLS-06</span></button>
+        <div class="how" hidden>
+          <p><b>버전별 하한</b></p>
+          <ul>
+            <li><b>2021 / M365 이상만</b> — XLOOKUP · XMATCH · LET · LAMBDA · 동적 배열(SORT·FILTER·UNIQUE). <b>2019에서도 안 된다</b></li>
+            <li><b>2019 이상</b> — TEXTJOIN · IFS · CONCAT · MAXIFS · MINIFS · SWITCH</li>
+          </ul>
+          <p><b>대체</b></p>
+          <ul>
+            <li><code>XLOOKUP</code> → <code>INDEX + MATCH</code></li>
+            <li><code>IFS</code> → 중첩 <code>IF</code></li>
+            <li><code>TEXTJOIN</code> → <code>&amp;</code> 연결</li>
+            <li><code>MAXIFS</code> → 보조 열로 조건 계산 후 <code>MAX</code></li>
+          </ul>
+          <span class="why">인식하지 못하는 함수에는 #NAME? 이 뜨고 계산된 값도 함께 사라진다. Microsoft 원문 — "XLOOKUP is not available in Excel 2016 and Excel 2019."</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x9" aria-label="호환성 검사"></label>
+        <button type="button" class="txt" aria-expanded="false">호환성 검사를 돌려 문제가 없다 <span class="k">XLS-06 · 11</span></button>
+        <div class="how" hidden>
+          <p><code>파일 → 정보 → [문제 확인] → [호환성 검사]</code></p>
+          <p>구버전에서 깨질 요소를 엑셀이 직접 목록으로 알려준다. 상대 버전을 정확히 모를 때 가장 확실한 방법이다.</p>
+          <p>[표시할 버전 선택]에서 상대가 쓰는 버전을 지정하면 그 버전 기준으로만 검사한다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x10" aria-label="외부 연결 제거"></label>
+        <button type="button" class="txt" aria-expanded="false">외부 파일 연결을 끊고 값으로 변환했다 <span class="k">XLS-07</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li><code>데이터 → [쿼리 및 연결] 그룹 → 연결 편집</code>. 목록이 비어 있으면 외부 연결이 없다</li>
+            <li>있으면 해당 항목을 고르고 <b>[연결 끊기]</b>. 수식이 현재 값으로 바뀐다</li>
+          </ol>
+          <p><b>찾기</b> — <code>Ctrl+F</code> 에서 <code>[</code> 를 검색하면 외부 참조 수식이 나온다. 외부 참조는 <code>[파일이름.xlsx]시트!셀</code> 형태다.</p>
+          <span class="why">상대 PC에서는 #REF! 가 되거나 "연결 업데이트" 경고창이 뜬다. 경로에 내부 서버명·사용자 계정명이 노출되는 부수 문제도 있다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x11" aria-label="휘발성 함수 고정"></label>
+        <button type="button" class="txt" aria-expanded="false">휘발성 함수를 값으로 고정했다 <span class="k">XLS-08</span></button>
+        <div class="how" hidden>
+          <p>대상 — <code>NOW()</code> <code>TODAY()</code> <code>RAND()</code> <code>RANDBETWEEN()</code> <code>OFFSET()</code> <code>INDIRECT()</code></p>
+          <ol>
+            <li>해당 셀 범위를 선택하고 <code>Ctrl+C</code></li>
+            <li>같은 자리에 <code>Ctrl+Alt+V</code> → <b>[값]</b> → [확인]</li>
+          </ol>
+          <p>수식이 사라지고 계산된 값만 남는다.</p>
+          <span class="why">이 함수들은 파일을 열 때마다 다시 계산된다. 작성일을 박아 보낸 문서가 상대가 여는 날짜로 바뀐다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x12" aria-label="날짜 값 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">날짜가 텍스트가 아닌 날짜 값이고, 차트 날짜도 확인했다 <span class="k">XLS-09</span></button>
+        <div class="how" hidden>
+          <p><b>구분법</b> — 서식을 지우지 않은 상태에서 날짜 셀이 <b>오른쪽 정렬</b>이면 날짜 값, <b>왼쪽 정렬</b>이면 텍스트다.</p>
+          <p><b>고치기</b> — <code>데이터 → 텍스트 나누기</code> → 다음 → 다음 → [열 데이터 서식]을 <b>날짜(YMD)</b>로 지정 → 마침</p>
+          <p><b>표기</b> — <code>Ctrl+1 → 표시 형식 → 사용자 지정</code>에 <code>yyyy-mm-dd</code></p>
+          <p><b>Mac에서 온 파일</b>이면 1904 날짜 체계일 수 있다. 값이 정확히 <b>4년 1일(1,462일)</b> 어긋나면 이 경우다. <code>파일 → 옵션 → 고급 → [1904 날짜 체계 사용]</code>에서 확인한다.</p>
+          <span class="why">차트에 박힌 날짜는 체계가 달라도 자동 변환되지 않는다. 손으로 고쳐야 한다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x13" aria-label="숫자 텍스트 저장 확인"></label>
+        <button type="button" class="txt" aria-expanded="false">숫자가 텍스트로 저장돼 있지 않다 <span class="k">XLS-10</span></button>
+        <div class="how" hidden>
+          <p><b>구분법</b> — 셀 왼쪽 위에 <b>초록 삼각형</b>이 있거나 숫자가 왼쪽 정렬이면 텍스트다.</p>
+          <p><b>고치기</b> — 범위를 선택하면 뜨는 <b>느낌표 아이콘</b>을 누르고 <code>[숫자로 변환]</code></p>
+          <p>아이콘이 안 뜨면 — 빈 셀에 <code>1</code>을 입력해 복사한 뒤, 대상 범위에 <code>Ctrl+Alt+V → [값] + [곱하기]</code>로 붙여넣는다.</p>
+          <span class="why">텍스트 숫자는 SUM에 안 잡히고 VLOOKUP이 못 찾는다. 받는 사람이 원인을 못 찾고 시간을 태운다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x14" aria-label="시트명 규칙"></label>
+        <button type="button" class="txt" aria-expanded="false">시트명이 31자 이내, 금지 문자·예약어 없음 <span class="k">XLS-11</span></button>
+        <div class="how" hidden>
+          <ul>
+            <li><b>31자 이내</b></li>
+            <li>금지 문자 <code>/ \ ? * : [ ]</code></li>
+            <li><code>History</code>는 엑셀 내부 예약어라 쓸 수 없다</li>
+            <li>빈 이름 불가, 작은따옴표로 시작·끝 불가</li>
+          </ul>
+          <p>날짜를 시트명에 넣을 때 <code>2026/08/30</code> 처럼 슬래시를 쓰면 걸린다. <code>2026-08-30</code> 으로 쓴다.</p>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x15" aria-label="문서 검사 실행"></label>
+        <button type="button" class="txt" aria-expanded="false">문서 검사로 작성자명·메타데이터·숨긴 시트를 제거했다 <span class="k">XLS-11</span></button>
+        <div class="how" hidden>
+          <p><code>파일 → 정보 → [문제 확인] → [문서 검사]</code> → 검사 → 항목별 [모두 제거]</p>
+          <p>제거되는 것 — 작성자·회사명 등 문서 속성, 메모, 숨긴 워크시트, 개인 정보.</p>
+          <p><b>되돌릴 수 없다.</b> 검사 전에 원본 사본을 따로 저장해 둔다.</p>
+          <span class="why">작성자 항목에 개인 계정명이나 이전 담당자 이름이 남아 외부로 나가는 경우가 흔하다.</span>
+        </div>
+      </div>
+
+      <div class="ck">
+        <label class="box"><input type="checkbox" data-k="x16" aria-label="다른 PC 인쇄 확인"></label>
+        <button type="button" class="txt" aria-expanded="false"><b>다른 PC에서 열어 인쇄 미리보기를 확인했다</b> <span class="k">XLS-04</span></button>
+        <div class="how" hidden>
+          <ol>
+            <li><code>Ctrl+P</code>로 인쇄 미리보기를 열어 <b>총 페이지 수</b>가 내 PC와 같은지 본다</li>
+            <li>열이 잘리거나 <code>#####</code>이 뜬 곳이 없는지 본다</li>
+            <li>2쪽 이후에도 머리행이 반복되는지 확인한다</li>
+          </ol>
+          <p>파일을 열었을 때 <b>"연결 업데이트" 경고창</b>이 뜨면 XLS-07 이 남아 있는 것이다.</p>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -897,8 +1745,14 @@ Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
 </main>
 
 <footer class="credit">
-  구체적 여백 수치·글꼴·항목 기호는 소속 기관 공문서 규정이 우선한다.<br>
-  버전별 동작은 릴리스노트에 명시되지 않는 경우가 많으니, 4장 케이스북에 실제 사례를 계속 축적한다.
+  <p>
+    1장 한/글 규칙은 한컴 공식 도움말 2018·2024 판을 전수 대조해 근거를 붙였다.<br>
+    2장 엑셀 규칙은 Microsoft Support 문서를 근거로 한다. 인용 블록의 출처 줄에 원문 위치를 적었다.
+  </p>
+  <p>
+    구체적 여백 수치·글꼴·항목 기호는 소속 기관 공문서 규정이 우선한다.<br>
+    버전별 렌더링 동작은 어느 공식 문서에도 기술되지 않으므로, 5장 케이스북에 실제 사례를 계속 축적한다.
+  </p>
 </footer>
 
 <script>
@@ -964,9 +1818,10 @@ Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
     window.requestAnimationFrame(function () { onScroll(); ticking = false; });
   }, { passive: true });
 
-  /* ---------- 체크리스트 ---------- */
-  var KEY = "docrules-hwp-xls-checklist";
-  var boxes = [].slice.call(document.querySelectorAll("#cl input[type=checkbox]"));
+  /* ---------- 체크리스트 — 목록별로 따로 세고 따로 저장한다 ---------- */
+  var KEY = "docrules-checklist-v2";
+  var groups = [].slice.call(document.querySelectorAll(".check[data-key]"));
+  var allBoxes = [];
   var doneEl = document.getElementById("doneCount");
   var totalEl = document.getElementById("totalCount");
 
@@ -979,24 +1834,58 @@ Compare-Object (Get-Content a.txt) (Get-Content b.txt)</pre>
   function save(state) {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
   }
+
   function render() {
-    var done = boxes.filter(function (b) { return b.checked; }).length;
+    var total = 0, done = 0;
+    groups.forEach(function (g) {
+      var boxes = [].slice.call(g.querySelectorAll("input[type=checkbox]"));
+      var d = 0;
+      boxes.forEach(function (b) {
+        if (b.checked) d++;
+        var row = b.closest(".ck");
+        if (row) row.classList.toggle("done", b.checked);
+      });
+      total += boxes.length;
+      done += d;
+      var head = g.previousElementSibling;
+      if (head && head.classList.contains("check-head")) {
+        head.querySelector(".d").textContent = d;
+        head.querySelector(".t").textContent = boxes.length;
+      }
+    });
     doneEl.textContent = done;
-    totalEl.textContent = boxes.length;
+    totalEl.textContent = total;
   }
 
   var state = load();
-  boxes.forEach(function (b) {
-    if (state[b.dataset.k]) b.checked = true;
-    b.addEventListener("change", function () {
-      var s = load();
-      s[b.dataset.k] = b.checked;
-      save(s);
-      render();
+  groups.forEach(function (g) {
+    var key = g.dataset.key;
+    [].slice.call(g.querySelectorAll("input[type=checkbox]")).forEach(function (b) {
+      var id = key + ":" + b.dataset.k;
+      allBoxes.push(b);
+      if (state[id]) b.checked = true;
+      b.addEventListener("change", function () {
+        var s = load();
+        s[id] = b.checked;
+        save(s);
+        render();
+      });
     });
   });
+
+  /* 본문을 누르면 처리 방법을 펼친다. 체크는 왼쪽 네모 칸에서만 된다 */
+  [].slice.call(document.querySelectorAll("button.txt")).forEach(function (btn) {
+    var how = btn.nextElementSibling;
+    if (!how || !how.classList.contains("how")) return;
+    btn.addEventListener("click", function () {
+      var open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", open ? "false" : "true");
+      how.hidden = open;
+    });
+  });
+
   document.getElementById("resetCheckBtn").addEventListener("click", function () {
-    boxes.forEach(function (b) { b.checked = false; });
+    allBoxes.forEach(function (b) { b.checked = false; });
     save({});
     render();
   });
