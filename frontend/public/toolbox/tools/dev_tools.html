@@ -513,6 +513,26 @@ select:focus, input:focus { border-color:var(--accent); }
       <span id="td_charCount" style="color:var(--muted);font-size:12px;">0자</span>
     </div>
 
+    <select id="td_lang" style="width:100%" title="붙여넣은 코드의 주석을 어느 언어 규칙으로 판정할지 고른다.&#10;붙여넣을 때마다 자동으로 바뀌고, 판별이 틀리면 여기서 직접 고친다.">
+        <option value="java">Java</option>
+        <option value="js">JS · TS</option>
+        <option value="jsx">JSX · TSX</option>
+        <option value="sql">SQL (Oracle · Tibero)</option>
+        <option value="xml">XML · HTML</option>
+        <option value="jsp">JSP</option>
+        <option value="mybatis">MyBatis XML</option>
+        <option value="css">CSS</option>
+        <option value="props">프로퍼티 · 셸 (#)</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn-p" id="td_btnStrip" style="flex:1" title="왼쪽에서 고른 언어 규칙으로 입력칸의 주석을 찾아 지운다.&#10;문자열·정규식·CDATA 안의 주석 기호는 남긴다.">주석 삭제</button>
+      <button class="btn-g" id="td_btnUndo" title="주석 삭제 직전 원문으로 입력칸을 되돌린다. 1단계만 보관한다" disabled style="padding:0 8px">↺</button>
+    </div>
+    <label class="check-row" id="td_hintRow" style="display:none" title="Oracle·Tibero의 /*+ ... */ 와 --+ 는 주석 모양이지만 실행계획을 바꾸는 힌트다.&#10;끄면 남기고, 켜면 다른 주석과 같이 지운다.">
+      <input type="checkbox" id="td_killHint"> 실행계획 힌트도 삭제 (/*+ */ · --+)
+    </label>
+    <div class="legend" id="td_stripInfo">코드를 붙여넣으면 언어를 판별해 위 목록에 표시한다</div>
+
     <hr class="div">
 
     <div class="field">
@@ -2065,8 +2085,538 @@ var els = {
 	ppiReadout: document.getElementById('td_ppiReadout'),
 	engFit: document.getElementById('td_engFit'),
 	korFit: document.getElementById('td_korFit'),
+	lang: document.getElementById('td_lang'),
+	btnStrip: document.getElementById('td_btnStrip'),
+	btnUndo: document.getElementById('td_btnUndo'),
+	hintRow: document.getElementById('td_hintRow'),
+	killHint: document.getElementById('td_killHint'),
+	stripInfo: document.getElementById('td_stripInfo'),
 	fitWarn: document.getElementById('fitWarn')
 };
+
+/* ══ 주석 삭제 ══════════════════════════════════════════════════════════
+   근거 문서: ../doc/주석문법_언어별.md
+   언어별로 주석 기호를 정하고 문자열·정규식·CDATA는 통과시킨다.
+   정규식 한 방으로는 문자열 안의 주석 기호를 못 가려서 한 글자씩 도는 상태기계로 짰다. */
+
+var CMT_KEYWORD = /^(return|typeof|case|in|of|new|delete|do|else|instanceof|void|throw|yield|await)$/;
+
+var CMT_PROFILE = {
+	java: {
+		line: ['//'], block: [['/*', '*/']],
+		strings: [{ o: '"""', c: '"""' }, { o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }]
+	},
+	js: {
+		line: ['//'], block: [['/*', '*/']],
+		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }],
+		template: true, regex: true
+	},
+	sql: {
+		line: ['--'], block: [['/*', '*/']],
+		strings: [{ o: "'", c: "'", dbl: true }, { o: '"', c: '"', dbl: true }],
+		qquote: true,
+		keep: [/^\/\*\+/, /^--\+/]          // 힌트. 지우면 실행계획이 바뀐다
+	},
+	jsx: {
+		line: ['//'], block: [['/*', '*/']],
+		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }],
+		template: true, regex: true, jsx: true
+	},
+	css: {
+		line: [], block: [['/*', '*/']],
+		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }]
+	},
+	props: {
+		line: ['#'], lineBoundary: true, block: [], strings: []
+	},
+	xml: { line: [], block: [['<!--', '-->']], strings: [], raw: [['<![CDATA[', ']]>']] }
+};
+
+/* 결과 수집기 — 줄마다 '코드가 남았나' '주석이 있었나' 를 같이 들고 있다가
+   finish() 에서 빈 줄 정리를 한다. */
+function CmtOut() {
+	this.lines = [];
+	this.cur = { t: '', code: false, cmt: false };
+	this.removed = 0;
+}
+CmtOut.prototype._nl = function () {
+	this.lines.push(this.cur);
+	this.cur = { t: '', code: false, cmt: false };
+};
+CmtOut.prototype.keep = function (s) {
+	for (var i = 0; i < s.length; i++) {
+		var c = s.charAt(i);
+		if (c === '\n') { this._nl(); continue; }
+		this.cur.t += c;
+		if (c !== ' ' && c !== '\t' && c !== '\r') this.cur.code = true;
+	}
+};
+CmtOut.prototype.drop = function (s) {
+	this.removed++;
+	this.cur.cmt = true;
+	for (var i = 0; i < s.length; i++) {
+		if (s.charAt(i) === '\n') { this._nl(); this.cur.cmt = true; }
+	}
+};
+CmtOut.prototype.finish = function (opts) {
+	this._nl();
+	var out = [], blank = 0;
+	for (var i = 0; i < this.lines.length; i++) {
+		var L = this.lines[i], t = L.t;
+		if (!L.code && L.cmt && opts.dropLine) continue;      // 주석만 있던 줄
+		if (opts.trimEnd) t = t.replace(/[ \t\r]+$/, '');
+		if (!t.replace(/[ \t\r]/g, '')) {
+			blank++;
+			if (opts.squeeze && blank > 1) continue;
+		} else blank = 0;
+		out.push(t);
+	}
+	// 머리·꼬리가 주석이던 파일은 빈 줄만 남는다. 화면에 담는 게 목적이라 잘라낸다.
+	while (out.length && !out[0].trim()) out.shift();
+	while (out.length && !out[out.length - 1].trim()) out.pop();
+	return { text: out.join('\n'), removed: this.removed, lines: out.length };
+};
+
+function cmtKeepHere(src, i, keeps) {
+	if (!keeps) return false;
+	var head = src.substr(i, 4);
+	for (var k = 0; k < keeps.length; k++) if (keeps[k].test(head)) return true;
+	return false;
+}
+
+/* / 가 정규식 시작인지 나눗셈인지 — 직전 유효토큰으로 가린다 */
+function cmtRegexOk(tail) {
+	var t = tail.replace(/\s+$/, '');
+	if (!t) return true;
+	if (/(\+\+|--)$/.test(t)) return false;
+	var c = t.charAt(t.length - 1);
+	if (c === ')' || c === ']') return false;
+	if (/[A-Za-z0-9_$]/.test(c)) {
+		var m = t.match(/[A-Za-z_$][A-Za-z0-9_$]*$/);
+		return !!(m && CMT_KEYWORD.test(m[0]));
+	}
+	return true;
+}
+
+/* JSX 원소 — 태그 사이 텍스트는 코드가 아니다.
+   JS 규칙을 그대로 쓰면 <p>경로는 // 로 구분</p> 의 // 가 줄 주석으로 잡혀 </p> 까지 날아간다. */
+function cmtJsx(src, from, prof, opts, out) {
+	var i = from, n = src.length, depth = 0, inTag = false, j, e, m, c;
+	function K(s) { out.keep(s); }
+	while (i < n) {
+		c = src.charAt(i);
+		if (inTag) {                                   // 여는 태그 안 — 속성 자리
+			if (c === '"' || c === "'") {
+				j = i + 1;
+				while (j < n && src.charAt(j) !== c) j++;
+				j = Math.min(j + 1, n);
+				K(src.slice(i, j)); i = j; continue;
+			}
+			if (c === '{') {                           // 속성값의 JS 식
+				K('{'); i = cmtScan(src, prof, opts, out, i + 1, true);
+				if (i < n) { K('}'); i++; }
+				continue;
+			}
+			if (c === '/' && src.charAt(i + 1) === '>') {
+				K('/>'); i += 2; inTag = false; depth--;
+				if (depth <= 0) return i;
+				continue;
+			}
+			if (c === '>') { K('>'); i++; inTag = false; continue; }
+			K(c); i++; continue;
+		}
+		if (c === '{') {                               // 자식 자리의 JS 식
+			m = /^\{\s*\/\*[^]*?\*\/\s*\}/.exec(src.slice(i));
+			if (m) { out.drop(m[0]); i += m[0].length; continue; }   // {/* 주석 */} 는 통째로 지운다
+			K('{'); i = cmtScan(src, prof, opts, out, i + 1, true);
+			if (i < n) { K('}'); i++; }
+			continue;
+		}
+		if (c === '<') {
+			if (src.charAt(i + 1) === '/') {           // 닫는 태그
+				e = src.indexOf('>', i); e = e < 0 ? n : e + 1;
+				K(src.slice(i, e)); i = e; depth--;
+				if (depth <= 0) return i;
+				continue;
+			}
+			K('<'); i++; inTag = true; depth++; continue;
+		}
+		K(c); i++;                                     // 텍스트 — 주석 판정을 하지 않는다
+	}
+	return i;
+}
+
+/* 단일 언어 스캐너. untilBrace 는 템플릿 ${} 안쪽을 훑을 때만 켠다 */
+function cmtScan(src, prof, opts, out, from, untilBrace) {
+	var i = from || 0, n = src.length, depth = 0, tail = '';
+	function K(s) { out.keep(s); tail = (tail + s).slice(-24); }
+
+	while (i < n) {
+		var c = src.charAt(i), j, e, k, hit;
+
+		// 통과 구간 (CDATA)
+		if (prof.raw) {
+			hit = false;
+			for (k = 0; k < prof.raw.length; k++) {
+				if (src.substr(i, prof.raw[k][0].length) === prof.raw[k][0]) {
+					e = src.indexOf(prof.raw[k][1], i + prof.raw[k][0].length);
+					e = e < 0 ? n : e + prof.raw[k][1].length;
+					K(src.slice(i, e)); i = e; hit = true; break;
+				}
+			}
+			if (hit) continue;
+		}
+
+		// 힌트 — 주석 모양이지만 남긴다
+		if (!opts.killHint && cmtKeepHere(src, i, prof.keep)) {
+			if (src.charAt(i + 1) === '*') { e = src.indexOf('*/', i + 2); e = e < 0 ? n : e + 2; }
+			else { e = src.indexOf('\n', i); e = e < 0 ? n : e; }
+			K(src.slice(i, e)); i = e; continue;
+		}
+
+		// 블록 주석
+		var bl = null;
+		for (k = 0; k < prof.block.length; k++) {
+			if (src.substr(i, prof.block[k][0].length) === prof.block[k][0]) { bl = prof.block[k]; break; }
+		}
+		if (bl) {
+			e = src.indexOf(bl[1], i + bl[0].length);
+			e = e < 0 ? n : e + bl[1].length;
+			out.drop(src.slice(i, e));
+			// 줄 가운데 블록 주석을 지운 자리 처리
+			var preWs = out.cur.t === '' || /[ \t]$/.test(out.cur.t);
+			var post = e < n ? src.charAt(e) : '\n';
+			if (preWs && /[ \t]/.test(post)) e++;              // 양쪽 공백 → 하나로 합친다
+			else if (!preWs && !/[ \t\r\n]/.test(post)) K(' '); // int/*c*/n 이 intn 이 되면 안 된다
+			i = e; continue;
+		}
+
+		// 줄 주석
+		var ln = null;
+		for (k = 0; k < prof.line.length; k++) {
+			if (src.substr(i, prof.line[k].length) !== prof.line[k]) continue;
+			if (prof.lineBoundary && i > 0 && !/\s/.test(src.charAt(i - 1))) continue;
+			ln = prof.line[k]; break;
+		}
+		if (ln) {
+			e = src.indexOf('\n', i); if (e < 0) e = n;
+			out.drop(src.slice(i, e)); i = e; continue;      // 개행은 남긴다
+		}
+
+		// Oracle q-quote — 안쪽 작은따옴표가 일반 문자다
+		if (prof.qquote && (c === 'q' || c === 'Q') && src.charAt(i + 1) === "'"
+			&& !(i > 0 && /[A-Za-z0-9_$]/.test(src.charAt(i - 1)))) {
+			var d = src.charAt(i + 2);
+			var cl = ({ '[': ']', '(': ')', '{': '}', '<': '>' })[d] || d;
+			e = src.indexOf(cl + "'", i + 3);
+			e = e < 0 ? n : e + 2;
+			K(src.slice(i, e)); i = e; continue;
+		}
+
+		// 문자열 — """ 를 " 보다 먼저 본다
+		var st = null;
+		for (k = 0; k < prof.strings.length; k++) {
+			if (src.substr(i, prof.strings[k].o.length) === prof.strings[k].o) { st = prof.strings[k]; break; }
+		}
+		if (st) {
+			j = i + st.o.length;
+			while (j < n) {
+				if (st.esc && src.charAt(j) === st.esc) { j += 2; continue; }
+				if (src.substr(j, st.c.length) === st.c) {
+					if (st.dbl && src.substr(j + st.c.length, st.c.length) === st.c) { j += st.c.length * 2; continue; }
+					j += st.c.length; break;
+				}
+				j++;
+			}
+			j = Math.min(j, n);
+			K(src.slice(i, j)); i = j; continue;
+		}
+
+		// 템플릿 리터럴 — ${} 안은 다시 코드라 재귀로 훑는다
+		if (prof.template && c === '`') {
+			K('`'); j = i + 1;
+			while (j < n) {
+				var d2 = src.charAt(j);
+				if (d2 === '\\') { K(src.substr(j, 2)); j += 2; continue; }
+				if (d2 === '`') { K('`'); j++; break; }
+				if (d2 === '$' && src.charAt(j + 1) === '{') {
+					K('${'); j = cmtScan(src, prof, opts, out, j + 2, true);
+					if (j < n) { K('}'); j++; }
+					continue;
+				}
+				K(d2); j++;
+			}
+			i = j; continue;
+		}
+
+		// JSX 원소 — 정규식과 같은 「식이 올 수 있는 자리」 판정을 쓴다.
+		// a < b 의 < 는 비교 연산자라 여기 안 걸린다.
+		if (prof.jsx && c === '<' && /[A-Za-z_$>]/.test(src.charAt(i + 1)) && cmtRegexOk(tail)) {
+			i = cmtJsx(src, i, prof, opts, out);
+			tail = ')';                                 // JSX 뒤는 값 자리다
+			continue;
+		}
+
+		// 정규식 리터럴 (주석 판정 뒤라야 // 를 빈 정규식으로 오인하지 않는다)
+		if (prof.regex && c === '/' && cmtRegexOk(tail)) {
+			j = i + 1;
+			var cls = false, ok = false;
+			while (j < n) {
+				var d3 = src.charAt(j);
+				if (d3 === '\\') { j += 2; continue; }
+				if (d3 === '\n') break;
+				if (cls) { if (d3 === ']') cls = false; }
+				else if (d3 === '[') cls = true;
+				else if (d3 === '/') { ok = true; j++; break; }
+				j++;
+			}
+			if (ok) {
+				while (j < n && /[a-z]/.test(src.charAt(j))) j++;
+				K(src.slice(i, j)); i = j; continue;
+			}
+		}
+
+		if (untilBrace) {
+			if (c === '{') { depth++; K(c); i++; continue; }
+			if (c === '}') { if (depth === 0) return i; depth--; K(c); i++; continue; }
+		}
+
+		K(c); i++;
+	}
+	return i;
+}
+
+/* HTML·JSP 리전 분할 — 층마다 규칙이 달라 먼저 조각낸다 */
+function cmtHtml(src, opts, out, isJsp) {
+	var i = 0, n = src.length, e, lower;
+	function inner(tag, prof) {
+		var gt = src.indexOf('>', i);
+		if (gt < 0) return false;
+		var ce = src.toLowerCase().indexOf('</' + tag, gt + 1);
+		out.keep(src.slice(i, gt + 1));
+		cmtScan(src.slice(gt + 1, ce < 0 ? n : ce), prof, opts, out, 0, false);
+		if (ce < 0) { i = n; return true; }
+		var ce2 = src.indexOf('>', ce);
+		ce2 = ce2 < 0 ? n : ce2 + 1;
+		out.keep(src.slice(ce, ce2)); i = ce2;
+		return true;
+	}
+	while (i < n) {
+		if (src.substr(i, 9) === '<![CDATA[') {
+			e = src.indexOf(']]>', i + 9); e = e < 0 ? n : e + 3;
+			out.keep(src.slice(i, e)); i = e; continue;
+		}
+		if (isJsp && src.substr(i, 4) === '<%--') {
+			e = src.indexOf('--%>', i + 4); e = e < 0 ? n : e + 4;
+			out.drop(src.slice(i, e)); i = e; continue;
+		}
+		if (src.substr(i, 4) === '<!--') {
+			e = src.indexOf('-->', i + 4); e = e < 0 ? n : e + 3;
+			out.drop(src.slice(i, e)); i = e; continue;
+		}
+		if (isJsp && src.substr(i, 3) === '<%@') {                 // 지시자는 주석이 아니다
+			e = src.indexOf('%>', i + 3); e = e < 0 ? n : e + 2;
+			out.keep(src.slice(i, e)); i = e; continue;
+		}
+		if (isJsp && src.substr(i, 2) === '<%') {
+			var lead = (src.charAt(i + 2) === '!' || src.charAt(i + 2) === '=') ? 3 : 2;
+			e = src.indexOf('%>', i + lead);
+			out.keep(src.slice(i, i + lead));
+			cmtScan(src.slice(i + lead, e < 0 ? n : e), CMT_PROFILE.java, opts, out, 0, false);
+			if (e < 0) { i = n; continue; }
+			out.keep('%>'); i = e + 2; continue;
+		}
+		lower = src.substr(i, 7).toLowerCase();
+		if (lower === '<script' && inner('script', CMT_PROFILE.js)) continue;
+		if (lower.substr(0, 6) === '<style' && inner('style', CMT_PROFILE.css)) continue;
+		out.keep(src.charAt(i)); i++;
+	}
+}
+
+/* MyBatis — XML 껍질은 보존하고 텍스트 노드·CDATA 안쪽만 SQL 규칙으로 훑는다 */
+function cmtMyBatis(src, opts, out) {
+	var i = 0, n = src.length, buf = '', e, j, c, q;
+	function flush() {
+		if (!buf) return;
+		cmtScan(buf, CMT_PROFILE.sql, opts, out, 0, false);
+		buf = '';
+	}
+	while (i < n) {
+		if (src.substr(i, 4) === '<!--') {
+			flush();
+			e = src.indexOf('-->', i + 4); e = e < 0 ? n : e + 3;
+			out.drop(src.slice(i, e)); i = e; continue;
+		}
+		if (src.substr(i, 9) === '<![CDATA[') {
+			flush();
+			e = src.indexOf(']]>', i + 9);
+			out.keep('<![CDATA[');
+			cmtScan(src.slice(i + 9, e < 0 ? n : e), CMT_PROFILE.sql, opts, out, 0, false);
+			if (e < 0) { i = n; continue; }
+			out.keep(']]>'); i = e + 3; continue;
+		}
+		if (src.charAt(i) === '<') {
+			flush();
+			j = i + 1; q = '';
+			while (j < n) {
+				c = src.charAt(j);
+				if (q) { if (c === q) q = ''; }
+				else if (c === '"' || c === "'") q = c;
+				else if (c === '>') { j++; break; }
+				j++;
+			}
+			out.keep(src.slice(i, j)); i = j; continue;
+		}
+		buf += src.charAt(i); i++;
+	}
+	flush();
+}
+
+function cmtStrip(text, lang, opts) {
+	opts = opts || {};
+	var out = new CmtOut();
+	if (lang === 'jsp') cmtHtml(text, opts, out, true);
+	else if (lang === 'xml') cmtHtml(text, opts, out, false);
+	else if (lang === 'mybatis') cmtMyBatis(text, opts, out);
+	else cmtScan(text, CMT_PROFILE[lang] || CMT_PROFILE.java, opts, out, 0, false);
+	var r = out.finish(opts);
+	r.before = text.length;
+	r.after = r.text.length;
+	return r;
+}
+
+/* 붙여넣은 코드가 어느 언어인지 — 확정 마커를 위에서부터 본다.
+   앞 20KB만 훑는다. 마커는 앞쪽에 나오고, 수만 줄을 다 보면 느려진다. */
+var CMT_SQLKW = '(SELECT|INSERT\\s+INTO|UPDATE|DELETE\\s+FROM|MERGE\\s+INTO|WITH|GRANT|REVOKE|TRUNCATE\\s+TABLE'
+	+ '|CREATE\\s+(OR\\s+REPLACE\\s+)?(TABLE|VIEW|INDEX|SEQUENCE|SYNONYM|PROCEDURE|FUNCTION|TRIGGER|PACKAGE)'
+	+ '|ALTER\\s+(TABLE|INDEX|SESSION)|DROP\\s+(TABLE|VIEW|INDEX|SEQUENCE)|COMMENT\\s+ON)';
+
+function cmtDetect(src) {
+	var s = src.slice(0, 20000), m;
+	if (!s.replace(/\s/g, '')) return null;
+
+	// ── 1층: 마커 하나로 갈리는 것 ──────────────────────────────────────
+	// <% 는 JS 주석 안에 예시로 박혀 있기도 하다. 지시자가 있거나 파일이 태그로 시작할 때만 JSP로 본다.
+	if ((m = s.match(/<%@/)) || (/<%/.test(s) && /^\s*</.test(s))) {
+		m = s.match(/<%--|<%@|<%=|<%!|<%/);
+		return { lang: 'jsp', why: m[0] + ' 발견' };
+	}
+	if (/<mapper\s+namespace=|DOCTYPE\s+mapper|<sqlMapConfig/i.test(s)) return { lang: 'mybatis', why: '<mapper> 발견' };
+	if (/^\s*</.test(s) && /<\/[A-Za-z][\w.:-]*>|\/>/.test(s)) return { lang: 'xml', why: '태그로 시작' };
+	// 조각만 붙여넣는 경우가 많다(수정안·발췌). class 선언이 없어도 잡히게 타입 선언·애너테이션까지 본다
+	if ((m = s.match(/^[ \t]*package\s+[\w.]+\s*;|^[ \t]*import\s+(java|javax|org|com)[\w.]*\s*;|\bpublic\s+(final\s+|abstract\s+)?(class|interface|enum)\s|@(?:Override|Autowired|Resource|RequestMapping|Service|Controller|RestController|Repository|Component|Transactional|SuppressWarnings)\b|\b(?:public|private|protected)\s+(?:static\s+)?(?:final\s+)?(?:void|int|long|boolean|double|float|char|byte|short|String|List|Map|Set|[A-Z]\w*)(?:<[^>\n]*>)?(?:\[\])?\s+\w+\s*\(|\bthrows\s+\w*Exception\b|\b(?:String|int|long|boolean|double|Integer|Long|Boolean|List|Map|Set|HashMap|ArrayList)(?:<[^>\n]*>)?(?:\[\])?\s+\w+\s*=/m)))
+		return { lang: 'java', why: m[0].trim().replace(/\s+/g, ' ').slice(0, 22) + ' 발견' };
+
+	// ── 2층: 점수로 가른다 ─────────────────────────────────────────────
+	// 실코드는 마커가 아예 없거나(Page=new Array()) 남의 언어 마커를 갖고 있다(JS 안의 SELECT 문자열).
+	// 신호 하나로 끊으면 둘 다 틀린다. 여러 신호를 합산해 제일 높은 쪽을 고른다.
+	var sc = { js: 0, css: 0, sql: 0, props: 0 }, why = {};
+	function hit(k, re, pt, label) {
+		var mm = s.match(re);
+		if (!mm) return;
+		sc[k] += pt;
+		if (!why[k] || pt > why[k].p) why[k] = { t: label || mm[0].trim().replace(/\s+/g, ' ').slice(0, 18), p: pt };
+	}
+
+	hit('js', /\bfunction\b/, 3);
+	hit('js', /=>/, 3, '=>');
+	hit('js', /\b(?:var|let|const)\s+[A-Za-z_$]/, 4);   // CSS 선언 블록보다 확실한 신호다
+	hit('js', /\brequire\s*[.(]|\bmodule\.exports\b|^[ \t]*export\s|^[ \t]*import\s[^;\n]*\bfrom\b/m, 3);
+	hit('js', /\bnew\s+[A-Z$_]\w*\s*\(/, 3);                       // Page = new Array()
+	hit('js', /\b(?:document|window|console|location|navigator|JSON|Math)\s*\./, 3);
+	hit('js', /\$\(\s*['"#.]|\bjQuery\b/, 2, 'jQuery');
+	hit('js', /\bdefine\s*\(|\btypeof\s+define\b/, 2, 'define(');   // AMD
+	hit('js', /===|!==|\btypeof\b|\breturn\b|\bnull\b/, 1);
+
+	hit('css', /@media\b|@import\b|@charset\b|@font-face\b|@keyframes\b|!important/, 4);
+	hit('css', /\{[^{}]*[a-z-]+\s*:\s*[^{};]+[;}]/, 2, '선언 블록');   // JS 객체 리터럴도 이 모양이라 약하게 둔다
+	hit('css', /\b(?:display|background(?:-[a-z]+)?|font-(?:family|size|weight)|margin|padding|border(?:-[a-z]+)?|color|width|height|position|z-index|visibility|overflow)\s*:/, 3);
+	hit('css', /^[\w.#*][^{};()=]*\{/m, 2, '셀렉터 {');                // = 이 있으면 셀렉터가 아니라 대입문이다
+
+	// SQL — 주석·빈 줄을 건너뛴 첫 유효 줄이 SQL 키워드면 파일 전체가 SQL이다
+	var head = s.replace(/\/\*[^]*?\*\//g, '').split('\n');
+	for (var hi = 0; hi < head.length; hi++) {
+		var hl = head[hi].trim();
+		if (!hl || hl.indexOf('--') === 0) continue;
+		if (new RegExp('^' + CMT_SQLKW + '\\b', 'i').test(hl)) { sc.sql += 6; why.sql = { t: hl.slice(0, 18) + ' 로 시작', p: 6 }; }
+		break;
+	}
+	hit('sql', new RegExp('^[ \\t]*' + CMT_SQLKW + '\\b', 'im'), 2);
+	hit('sql', /\bFROM\s+[A-Za-z_][\w.]*|\bWHERE\s+[A-Za-z_]|\b(?:INNER|LEFT|RIGHT)\s+(?:OUTER\s+)?JOIN\b|\bGROUP\s+BY\b|\bORDER\s+BY\b/i, 2);
+	var lines = s.split('\n').filter(function (x) { return x.trim(); });
+	var dash = lines.filter(function (x) { return /^\s*--/.test(x); }).length;
+	if (dash) { sc.sql += (dash / lines.length > 0.3) ? 4 : 1; if (!why.sql) why.sql = { t: '-- 주석 줄 위주', p: 4 }; }
+
+	// 프로퍼티 — 중괄호 블록이 있으면 CSS·JS 쪽이다
+	if (!/\{[^{}]*\}/.test(s)) {
+		var kv = lines.filter(function (x) { return /^\s*(#|!|[\w.$-]+\s*[=:])/.test(x); }).length;
+		if (lines.length >= 2 && kv / lines.length > 0.7) { sc.props += 6; why.props = { t: 'key=value 줄 위주', p: 6 }; }
+	}
+
+	var best = null;
+	['js', 'css', 'sql', 'props'].forEach(function (k) { if (sc[k] > 0 && (!best || sc[k] > sc[best])) best = k; });
+	// JS 로 갈렸는데 JSX 표시가 있으면 JSX 규칙으로 넘긴다 — 태그 사이 텍스트를 코드로 읽으면 안 된다
+	// 문자열 안의 "<div>x</div>" 에 낚이지 않게 닫는 태그 하나만으로는 안 잡는다
+	if (best === 'js' && /className=|\breturn\s*\(\s*<|=>\s*\(?\s*<[A-Za-z>]|<>[^]*<\/>|<[A-Z][\w.]*\s*(\/>|[\w-]+=)/.test(s))
+		return { lang: 'jsx', why: 'JSX 태그 발견 (' + sc.js + '점)' };
+	if (best) return { lang: best, why: (why[best] ? why[best].t + ' 발견' : '') + ' (' + sc[best] + '점)' };
+	return { lang: 'java', why: '판별 못 함 — 직접 고를 것' };
+}
+
+var CMT_LABEL = {
+	java: 'Java', js: 'JS · TS', jsx: 'JSX · TSX', sql: 'SQL', xml: 'XML · HTML',
+	jsp: 'JSP', mybatis: 'MyBatis XML', css: 'CSS', props: '프로퍼티 · 셸'
+};
+
+var stripUndo = null;                 // 주석 삭제 직전 원문. 1단계만 보관한다
+
+function stripSay(msg, warn) {
+	els.stripInfo.textContent = msg;
+	els.stripInfo.style.color = warn ? 'var(--yellow)' : 'var(--muted)';
+}
+
+function stripSyncUI() {
+	var l = els.lang.value;
+	els.hintRow.style.display = (l === 'sql' || l === 'mybatis') ? 'flex' : 'none';
+}
+
+// 붙여넣기·드롭 때만 돈다. 타이핑마다 돌리면 콤보가 요동치고 수동 선택을 덮어쓴다.
+function stripDetect() {
+	var d = cmtDetect(els.codeInput.value);
+	if (!d) { stripSay('코드를 붙여넣으면 언어를 판별해 위 목록에 표시한다'); return; }
+	els.lang.value = d.lang;
+	stripSyncUI();
+	stripSay('판별: ' + CMT_LABEL[d.lang] + ' — ' + d.why);
+}
+
+function stripRun() {
+	var src = els.codeInput.value;
+	if (!src.replace(/\s/g, '')) { stripSay('입력칸이 비어 있다', true); return; }
+	var lang = els.lang.value;
+	var r = cmtStrip(src, lang, {
+		dropLine: true, squeeze: true, trimEnd: true,
+		killHint: els.killHint.checked
+	});
+	if (!r.removed) { stripSay(CMT_LABEL[lang] + ' 규칙으로 훑었지만 지울 주석이 없다', true); return; }
+	stripUndo = src;
+	els.codeInput.value = r.text;
+	els.btnUndo.disabled = false;
+	var cut = r.before ? Math.round((1 - r.after / r.before) * 100) : 0;
+	stripSay('주석 ' + r.removed + '개 삭제 · ' + r.before.toLocaleString() + '자 → '
+		+ r.after.toLocaleString() + '자 (' + cut + '% 줄어듦)');
+	currentPage = 0;
+	renderDeferred();
+}
+
+function stripUndoRun() {
+	if (stripUndo === null) return;
+	els.codeInput.value = stripUndo;
+	stripUndo = null;
+	els.btnUndo.disabled = true;
+	stripSay('주석 삭제 직전 원문으로 되돌렸다');
+	currentPage = 0;
+	renderDeferred();
+}
 
 function isActiveTab() {
 	var p = document.getElementById('page-textdisplay');
@@ -2423,9 +2973,22 @@ document.getElementById('td_btnNext').addEventListener('click', function () { cu
 
 document.getElementById('td_btnClear').addEventListener('click', function () {
 	els.codeInput.value = '';
+	stripUndo = null;
+	els.btnUndo.disabled = true;
+	stripSay('코드를 붙여넣으면 언어를 판별해 위 목록에 표시한다');
 	currentPage = 0;
 	renderDeferred();
 });
+
+// paste 이벤트는 textarea 값이 갱신되기 전에 터진다. 한 틱 미뤄야 붙여넣은 내용을 읽는다.
+els.codeInput.addEventListener('paste', function () { setTimeout(stripDetect, 0); });
+els.codeInput.addEventListener('drop', function () { setTimeout(stripDetect, 0); });
+els.lang.addEventListener('change', function () {
+	stripSyncUI();
+	stripSay(CMT_LABEL[els.lang.value] + ' 규칙으로 지운다 — 직접 고른 값');
+});
+els.btnStrip.addEventListener('click', stripRun);
+els.btnUndo.addEventListener('click', stripUndoRun);
 
 document.getElementById('td_btnFullscreen').addEventListener('click', function () {
 	if (!document.fullscreenElement) {
