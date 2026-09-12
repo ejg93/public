@@ -88,10 +88,21 @@ export default function Toolbox() {
         <span style={{ color: 'var(--accent)' }}>BOX</span>
       </h1>
 
-      <p style={{ ...S.body, fontSize: '15px', marginBottom: '56px' }}>
+      <p style={{ ...S.body, fontSize: '15px', marginBottom: '20px' }}>
         사내 폐쇄망 PC 에 HTML 파일 하나만 복사해서 여는 개발 보조 도구.<br />
         빌드도 서버도 없다.
       </p>
+
+      <div style={{ marginBottom: '56px' }}>
+        <a href="/toolbox/toolbox.html" target="_blank" rel="noopener noreferrer" className="mono" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
+          background: 'var(--accent)', color: 'var(--bg)',
+          fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
+        }}>
+          ⌥ 런처 원본 열기 →
+        </a>
+      </div>
 
       {/* ── 절대 규칙 ──────────────────────────────── */}
       <Section label="01 · 절대 규칙">
@@ -107,19 +118,6 @@ export default function Toolbox() {
 
       {/* ── 도구 ───────────────────────────────────── */}
       <Section label="02 · 도구">
-        <div style={{ ...S.card, marginBottom: '16px', borderColor: 'rgba(255,107,53,0.3)' }}>
-          <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '10px' }}>
-            먼저 해볼 것
-          </div>
-          <p style={{ ...S.body, margin: 0 }}>
-            ① 논리명 변환기를 연다.<br />
-            ② 샘플 CSV 셋을 넣는다 — 공통표준단어는 1번 칸, 기관표준단어는 2번 칸,<br />
-            &nbsp;&nbsp;컬럼 목록은 3번 칸.<br />
-            {/* 아래 수치는 샘플 README 의 기대값이다. README 가 바뀌면 여기도 바꾼다 */}
-            ③ 결과표 상단에 <code style={{ color: 'var(--text)' }}>컬럼 944 · 완전매칭 589 (56.2%)</code> 가 나오면 정상.
-          </p>
-        </div>
-
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {tools.map(t => {
             const href = `/tools/${encodeURI(t.file.replace(/^tools\//, ''))}`
@@ -145,6 +143,12 @@ export default function Toolbox() {
                     <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>
                       샘플
                     </div>
+                    <p style={{ ...S.body, fontSize: '13px', margin: '0 0 10px' }}>
+                      빈 입력칸으로 열리는 도구라 넣을 것이 있어야 돌아간다.<br />
+                      아래 셋을 각각 1·2·3번 칸에 넣고 돌리면,<br />
+                      {/* 이 수치는 샘플 README 의 기대값이다. README 가 바뀌면 여기도 바꾼다 */}
+                      결과표 상단에 <code style={{ color: 'var(--text)' }}>컬럼 944 · 완전매칭 589 (56.2%)</code> 가 나온다.
+                    </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {SAMPLES.map(s => (
                         <a key={s.name} href={`${SAMPLE_DIR}/${encodeURI(s.name)}`} target="_blank" rel="noopener noreferrer"
@@ -175,10 +179,6 @@ export default function Toolbox() {
           ))}
         </div>
       </Section>
-
-      <a href="/toolbox/toolbox.html" target="_blank" rel="noopener noreferrer" className="mono" style={{ ...linkStyle, fontSize: '12px' }}>
-        런처 원본 열기 →
-      </a>
     </div>
   )
 }
