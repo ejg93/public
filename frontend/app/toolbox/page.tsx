@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { S, Section } from '@/components/CaseStudy'
 
+export const metadata = { title: 'TOOLBOX' }
+
 const REPO_PORTFOLIO = 'https://github.com/ejg93/public'
 const SAMPLE_DIR = '/toolbox/논리명_변환기_sample'
 

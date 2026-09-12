@@ -2,6 +2,8 @@ import fs from 'fs'
 import path from 'path'
 import { S, Section } from '@/components/CaseStudy'
 
+export const metadata = { title: 'STUDY NOTES' }
+
 type Note = {
   slug: string
   title: string

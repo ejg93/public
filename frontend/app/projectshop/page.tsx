@@ -1,6 +1,8 @@
 import { S, Section } from '@/components/CaseStudy'
 import { getShopStats } from '@/lib/github'
 
+export const metadata = { title: 'PROJECT SHOP' }
+
 const REPO_SHOP = 'https://github.com/ejg93/ProjectShop'
 
 // GitHub 호출이 실패했을 때만 쓰는 반올림 값. 기준 2026-09

@@ -4,6 +4,8 @@ import {
   QUOTE_DOC_DATE, QUOTE_DOC_STYLE, QUOTE_REQ, QUOTE_LINEBREAK,
 } from './quotes'
 
+export const metadata = { title: 'HOW I WORK' }
+
 const REPO_SHOP = 'https://github.com/ejg93/ProjectShop'
 const REPO_PORTFOLIO = 'https://github.com/ejg93/public'
 const REPO_CHUNKFRAME = 'https://github.com/ejg93/chunkframe'
