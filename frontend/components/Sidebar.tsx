@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 const menus = [
   { label: 'HOME',         href: '/',            icon: '⌂', desc: 'INTRO' },
@@ -18,9 +18,14 @@ export default function Sidebar() {
   const path = usePathname()
   const [collapsed, setCollapsed] = useState(false)
 
+  // 본문 여백과 상단 바 위치가 같은 값을 봐야 접을 때 빈 띠가 안 남는다
+  useEffect(() => {
+    document.documentElement.style.setProperty('--sidebar-cur', collapsed ? '60px' : '220px')
+  }, [collapsed])
+
   return (
     <aside style={{
-      width: collapsed ? '60px' : 'var(--sidebar-w)',
+      width: 'var(--sidebar-cur)',
       background: 'var(--surface)',
       borderRight: '1px solid var(--border)',
       position: 'fixed',

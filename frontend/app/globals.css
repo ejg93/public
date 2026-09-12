@@ -15,6 +15,8 @@
   --text: #e6edf3;
   --muted: #adbac7;
   --sidebar-w: 220px;
+  /* 지금 사이드바 폭. Sidebar 가 접힘 여부에 따라 60px 과 --sidebar-w 사이로 바꾼다 */
+  --sidebar-cur: 220px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }

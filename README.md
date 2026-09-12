@@ -2,7 +2,7 @@
 
 Next.js + Spring Boot 풀스택. 프론트는 Vercel, 백엔드는 Railway에 각각 자동배포된다.
 
-**배포**: [URL 필요]
+**배포**: https://public-alpha-roan.vercel.app
 
 ## 기능
 
