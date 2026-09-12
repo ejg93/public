@@ -48,10 +48,6 @@ const nextConfig = {
         destination: '/game/limbusCompany/ego-gift-html/icons/:path*',
       },
       {
-        source: '/toolbox',
-        destination: '/toolbox/toolbox.html',
-      },
-      {
         source: '/tools/:path*',
         destination: '/toolbox/tools/:path*',
       },

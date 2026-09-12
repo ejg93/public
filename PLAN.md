@@ -123,7 +123,7 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 
 닫힘: 링크 전부 200, `verify.sh` 초록, 스크린샷 2폭. `frontend/CLAUDE.md` 라우트 표에 `/workflow` 행.
 
-## 3. `/toolbox` — 앱 셸 안의 도구 소개  [ ]
+## 3. `/toolbox` — 앱 셸 안의 도구 소개  [x]
 
 **왜**: 폐쇄망 단일 HTML 도구 7종·행안부 표준·Tibero/Oracle 딕셔너리는 공공 SI 심사자에게 가장 직접적인 증거인데 지금은 about 칩 하나로만 들어간다.
 
