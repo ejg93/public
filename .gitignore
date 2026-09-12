@@ -41,3 +41,6 @@ Thumbs.db
 /frontend/public/toolbox/regress_logicalname.js
 /frontend/public/docrules/validate_doc.js
 /frontend/public/toolbox/도구_점검_*.md
+
+# Claude Code 로컬 설정과 그 백업. 허용 목록에 명령줄 그대로 들어가서 키 문자열이 섞일 수 있다
+.claude/settings.local.json*
