@@ -21,9 +21,9 @@ lib/api.ts    백엔드 베이스 URL·공개 키 상수 중앙 관리
 | `/` | - | 홈 |
 | `/about` | - | 소개 |
 | `/ai-battle` | `POST /api/battle/chat`, `GET /api/battle/health` | Claude 기반 AI 배틀 |
-| `/stock` | `GET /api/stock/{search,load,price,chart}` | 주식 시세·차트 |
 | `/youtube` | `GET /api/youtube/{comments,replies}` | 유튜브 댓글 뷰어 |
-| `/public-data` | `GET /api/jobs` | 채용정보 목록 + 지도 |
+| `/public-data` | `GET /api/jobs` | 채용정보 목록 + 지도. Sidebar·홈에 없고 URL 직접 접근만 된다 |
+| `/projectshop` | - | 별도 저장소 [ProjectShop](https://github.com/ejg93/ProjectShop) 소개. 설계 결정·작업 방식·CI 체계를 정리한 정적 화면. 데이터는 `page.tsx` 상단 상수 배열에 박혀 있다 |
 | `/board` | - | 게시판. 정적 데모를 `demos.tsx`/`demoMap.tsx`로 등록 |
 
 ## 스타일
@@ -50,7 +50,7 @@ npm run dev               # localhost:3000
 
 ## 검증
 
-코드를 고친 뒤 "됐다"고 보고하기 전에 돌린다. 아래로 갈수록 비용이 크다.
+저장소 루트의 `bash scripts/verify.sh` 가 아래 표에서 typecheck 와 build 를 골라 돌린다. 표는 하나만 손으로 돌릴 때 고르는 기준이다. 아래로 갈수록 비용이 크다.
 
 | 명령 | 무엇을 잡나 | 언제 |
 |---|---|---|
@@ -63,7 +63,7 @@ npm run dev               # localhost:3000
 
 `.eslintrc.json`이 있으므로 빌드 중 lint가 자동으로 돌고, lint 에러 하나로 빌드 전체가 중단된다. 스타일 룰이 새 코드를 막으면 룰을 끄는 쪽이 맞는지 먼저 판단한다.
 
-화면이 실제로 그려지는지(차트 렌더, 지도 표시, 콘솔 에러)는 위 넷이 못 잡는다. 그건 chrome-devtools MCP로 페이지를 열어 확인한다. 단 `/stock`·`/youtube`·`/ai-battle`·`/public-data`는 백엔드가 `localhost:8080`에 떠 있어야 의미가 있다. 안 떠 있으면 확인 못 한 범위를 밝힌다.
+화면이 실제로 그려지는지(차트 렌더, 지도 표시, 콘솔 에러)는 위 넷이 못 잡는다. 그건 chrome-devtools MCP로 페이지를 열어 확인한다. 단 `/youtube`·`/ai-battle`·`/public-data`는 백엔드가 `localhost:8080`에 떠 있어야 의미가 있다. 안 떠 있으면 확인 못 한 범위를 밝힌다.
 
 ## doc 참조 트리거
 
@@ -71,6 +71,5 @@ npm run dev               # localhost:3000
 
 | 작업 | 문서 |
 |---|---|
-| `/stock` 차트 축·툴팁·데이터 형식 변경 | [doc/frontend/recharts.md](../doc/frontend/recharts.md) |
 | `/public-data` 지도 마커·좌표·SDK 로딩 변경 | [doc/frontend/kakao-maps-sdk.md](../doc/frontend/kakao-maps-sdk.md) |
 | 라이브러리 버전 확인이 필요할 때 | `package.json` 직접 확인 |

@@ -1,6 +1,6 @@
 # 외부 API 정리
 
-백엔드 `service/` 계층에서 호출하는 외부 API 5종. 전부 HttpClient 5로 호출하고 Jackson으로 파싱한다 ([httpclient-jackson.md](httpclient-jackson.md) 참고). API 키는 `application.properties`(git 제외)와 Railway Variables에 등록.
+백엔드 `service/` 계층에서 호출하는 외부 API 4종. 전부 HttpClient 5로 호출하고 Jackson으로 파싱한다. API 키는 `application.properties`(git 제외)와 Railway Variables에 등록.
 
 ## 1. Anthropic Claude API
 
@@ -26,18 +26,7 @@
   - comments: https://developers.google.com/youtube/v3/docs/comments/list
   - 키 발급(Google Cloud Console): https://console.cloud.google.com/apis/library/youtube.googleapis.com
 
-## 3. Yahoo Finance (비공식) — ※ README와 불일치
-
-- 사용처: `/stock` → `GET /api/stock/*` → `StockService.java`
-- 엔드포인트:
-  - 심볼 검색: `https://query2.finance.yahoo.com/v1/finance/search`
-  - 차트(시세): `https://query1.finance.yahoo.com/v8/finance/chart/{symbol}`
-- **주의**: 루트 README와 환경변수에는 Polygon(`polygon.api.key`)으로 되어 있으나, 실제 코드는 Yahoo Finance를 키 없이 호출한다. polygon 키는 현재 미사용 잔재. Yahoo 쪽은 **공개 정식 문서가 없는 비공식 엔드포인트**라 예고 없이 막히거나 스펙이 바뀔 수 있음 (User-Agent 요구, 레이트리밋 등). 안정성이 필요해지면 정식 API(Polygon 등)로 교체 고려.
-- 참고 (정식 문서 없음, 대안 후보의 정식 문서):
-  - Polygon.io: https://polygon.io/docs
-  - Alpha Vantage: https://www.alphavantage.co/documentation/
-
-## 4. Kakao Local REST API
+## 3. Kakao Local REST API
 
 - 사용처: 채용공고 주소 → 좌표 변환 → `JobService.java`
 - 엔드포인트: `GET https://dapi.kakao.com/v2/local/search/keyword.json`
@@ -46,7 +35,7 @@
   - Local API 가이드: https://developers.kakao.com/docs/latest/ko/local/dev-guide
   - 키워드 장소 검색: https://developers.kakao.com/docs/latest/ko/local/dev-guide#search-by-keyword
 
-## 5. 사람인 오픈 API
+## 4. 사람인 오픈 API
 
 - 사용처: `/public-data` → `GET /api/jobs` → `JobService.java`
 - 엔드포인트: `GET https://oapi.saramin.co.kr/job-search`

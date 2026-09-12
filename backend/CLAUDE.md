@@ -1,6 +1,6 @@
 # backend — Spring Boot 3 API
 
-Java 17 + Spring Boot 3.2.5. 프론트가 호출하는 REST API를 제공하고, Railway가 이 폴더를 루트로 배포한다. Postgres 플러그인이 붙어 있다.
+Java 17 + Spring Boot 3.2.5. 프론트가 호출하는 REST API를 제공하고, Railway가 이 폴더를 루트로 배포한다. DB는 없다.
 
 ## 구조
 
@@ -8,9 +8,7 @@ Java 17 + Spring Boot 3.2.5. 프론트가 호출하는 REST API를 제공하고,
 com/portfolio/
 ├── controller/   REST 엔드포인트
 ├── service/      외부 API 호출·비즈니스 로직
-├── dto/          요청/응답 객체
-├── entity/       StockPrice — JPA 엔티티
-└── repository/   StockPriceRepository
+└── dto/          요청/응답 객체
 ```
 
 외부 API 호출은 전부 `service/`에서 한다. 컨트롤러는 요청 검증과 응답 변환만 맡는다. CORS 설정은 `WebConfig.java`에 있다.
@@ -20,11 +18,10 @@ com/portfolio/
 | API | 담당 클래스 | 외부 의존 |
 |---|---|---|
 | `POST /api/battle/chat`, `GET /api/battle/health` | `BattleController` / `BattleService` | Anthropic Claude API |
-| `GET /api/stock/{search,load,price,chart}` | `StockController` / `StockService` | Yahoo Finance(비공식) + Postgres 캐시 |
 | `GET /api/youtube/{comments,replies}` | `YoutubeController` / `YoutubeService` | YouTube Data API v3 |
 | `GET /api/jobs` | `JobController` / `JobService` | 사람인 오픈 API + Kakao Local(주소→좌표) |
 
-주가 데이터만 `StockPrice` 엔티티로 DB에 영속화한다. 나머지는 매 요청 외부 호출.
+영속화하는 데이터가 없다. 전부 매 요청 외부 호출이다.
 
 ## 환경변수
 
@@ -36,9 +33,8 @@ com/portfolio/
 | `youtube.api.key` | 유튜브 댓글·답글 |
 | `kakao.rest.key` | Kakao Local REST 서버사이드 호출 |
 | `saramin.access.key` | 채용정보 |
-| `spring.datasource.*` | Railway Postgres 접속 |
 
-**Yahoo Finance는 키가 필요 없다.** `StockService.java`가 공개 엔드포인트를 직접 호출한다. 과거에 쓰던 `polygon.api.key`는 제거됐으니 다시 넣지 않는다.
+과거에 쓰던 `polygon.api.key`·`spring.datasource.*`(주가 캐시용 Postgres)는 제거됐으니 다시 넣지 않는다.
 
 ## 로컬 실행
 
@@ -62,6 +58,8 @@ JAVA_HOME="C:/Program Files/Java/jdk-17.0.19" ./mvnw -B compile
 # PowerShell
 $env:JAVA_HOME='C:\Program Files\Java\jdk-17.0.19'; .\mvnw.cmd -B compile
 ```
+
+저장소 루트의 `bash scripts/verify.sh` 가 위 JAVA_HOME 을 붙여 `compile` 을 돌린다. 아래 표는 손으로 돌릴 때다.
 
 | 명령 | 무엇을 확인하나 |
 |---|---|

@@ -1,43 +1,30 @@
-# 기술 스택 문서 (doc/)
+# doc/
 
-이 폴더는 포트폴리오 프로젝트에서 실제로 사용 중인 기술(스킬)들을 하나씩 정리한 문서 모음이다.
-루트 `CLAUDE.md`는 구역 지도와 배포, 각 구역 `CLAUDE.md`는 그 구역의 구조·라우트·환경변수를 다루고, 여기는 "각 기술이 뭐고, 어디에 쓰이고, 정식 문서가 어디인지"를 다룬다.
+코드를 봐도 안 나오는 것만 둔다. 라이브러리가 뭔지, 클래스가 무엇을 호출하는지는 안 쓴다 —
+코드는 바뀌고 문서는 안 따라와서 문서 쪽이 거짓말이 된다.
+2026-09 에 주가 기능을 지울 때 소개문 여덟 파일을 같이 고쳐야 했던 것이 그 사례다.
 
-기술 문서는 `frontend/`(프론트엔드)와 `backend/`(백엔드) 두 하위 폴더로 나눠 정리한다. 외부 API는 백엔드 `service/` 계층에서 호출하므로 `backend/`에 둔다.
+## 어디에 무엇이 있나
 
-> 작성 기준일: 2026-07-15. 버전은 `frontend/package.json`, `backend/pom.xml` 기준.
-
-## 프론트엔드 — [frontend/](frontend/)
-
-| 스킬 | 버전 | 프로젝트 내 용도 | 문서 |
-|---|---|---|---|
-| Next.js (App Router) | 14.2.35 | 프론트 전체 프레임워크, 라우팅 | [nextjs.md](frontend/nextjs.md) |
-| React | 18 | UI 컴포넌트, 상태 관리 (useState/useEffect/useRef) | [react.md](frontend/react.md) |
-| TypeScript | 5 | 프론트 전체 타입 시스템 | [typescript.md](frontend/typescript.md) |
-| Tailwind CSS | 3.4.1 | 유틸리티 CSS (설정만 존재, 페이지 대부분은 인라인 스타일) | [tailwindcss.md](frontend/tailwindcss.md) |
-| Recharts | 3.8.1 | `/stock` 주가 라인 차트 | [recharts.md](frontend/recharts.md) |
-| Kakao Maps JS SDK | v2 | `/public-data` 채용정보 지도 표시 | [kakao-maps-sdk.md](frontend/kakao-maps-sdk.md) |
-
-## 백엔드 — [backend/](backend/)
-
-| 스킬 | 버전 | 프로젝트 내 용도 | 문서 |
-|---|---|---|---|
-| Spring Boot | 3.2.5 (Java 17) | 백엔드 전체 프레임워크, REST API | [spring-boot.md](backend/spring-boot.md) |
-| Spring Data JPA | (Boot 관리) | `StockPrice` 엔티티 저장/조회 | [spring-data-jpa.md](backend/spring-data-jpa.md) |
-| PostgreSQL | Railway 플러그인 | 주가 데이터 영속화 | [postgresql.md](backend/postgresql.md) |
-| Lombok | (Boot 관리) | getter/setter/로그 보일러플레이트 제거 | [lombok.md](backend/lombok.md) |
-| HttpClient 5 / Jackson | (Boot 관리) | 외부 API 호출 + JSON 파싱 | [httpclient-jackson.md](backend/httpclient-jackson.md) |
-
-## 외부 API — [backend/external-apis.md](backend/external-apis.md)
-
-| API | 사용처 | 문서 |
+| 문서 | 무엇을 답하나 | 언제 여나 |
 |---|---|---|
-| Anthropic Claude API | `/ai-battle` — `BattleService.java` | [external-apis.md](backend/external-apis.md) |
-| YouTube Data API v3 | `/youtube` — `YoutubeService.java` | [external-apis.md](backend/external-apis.md) |
-| Yahoo Finance (비공식) | `/stock` — `StockService.java`, 키 없이 호출 | [external-apis.md](backend/external-apis.md) |
-| Kakao Local REST API | 채용정보 주소 → 좌표 변환 — `JobService.java` | [external-apis.md](backend/external-apis.md) |
-| 사람인 오픈 API | `/public-data` 채용정보 — `JobService.java` | [external-apis.md](backend/external-apis.md) |
+| [backend/external-apis.md](backend/external-apis.md) | 외부 API 4종의 엔드포인트·인증 방식·쿼터·정식 문서 링크 | 외부 API 요청·응답을 바꿀 때 |
+| [frontend/kakao-maps-sdk.md](frontend/kakao-maps-sdk.md) | Kakao Maps JS SDK 로딩 방식과 JS 키·REST 키 구분 | `/public-data` 지도를 바꿀 때 |
+| [deployment.md](deployment.md) | Vercel·Railway 설정, 환경변수 등록 위치, 배포 체크리스트 | 배포 설정·환경변수를 바꿀 때 |
+| [design-standards/README.md](design-standards/README.md) | 행안부 공공 DB 표준화 지침 원본 색인 | toolbox 논리명 변환기 규칙을 바꿀 때 |
 
-## 배포
+각 구역 CLAUDE.md 의 「doc 참조 트리거」가 여기로 보낸다. 트리거에 안 걸리면 안 연다.
 
-배포(Vercel/Railway) 상세는 [deployment.md](deployment.md) 참고.
+## 문서에 안 쓰는 것
+
+| 안 쓴다 | 어디서 답하나 |
+|---|---|
+| 라이브러리 소개·버전·핵심 개념 | 공식 문서, `package.json`·`pom.xml` |
+| 클래스·폴더 구조, 무엇이 무엇을 호출하나 | 코드 검색 |
+| 지나간 작업 이력 | git log, `/board` 개발 일지 |
+
+쓰는 것은 외부 서비스의 스펙·키 종류·쿼터처럼 **코드에 안 적혀 있고 틀리면 배포가 깨지는 것**이다.
+
+## 글 쓰는 규칙
+
+루트 `CLAUDE.md` 「글 작성 규칙」을 따른다.

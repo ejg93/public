@@ -9,11 +9,3 @@ youtube.api.key=YOUR_YOUTUBE_API_KEY
 # --- 선택 (미설정 시 해당 기능만 비활성) ---
 kakao.rest.key=
 saramin.access.key=
-
-# --- DB (필수) ---
-spring.datasource.url=jdbc:postgresql://localhost:5432/portfolio
-spring.datasource.username=YOUR_DB_USER
-spring.datasource.password=YOUR_DB_PASSWORD
-spring.datasource.driver-class-name=org.postgresql.Driver
-spring.jpa.database-platform=org.hibernate.dialect.PostgreSQLDialect
-spring.jpa.hibernate.ddl-auto=update

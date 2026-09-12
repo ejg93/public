@@ -5,7 +5,7 @@
 ```
 GitHub(main push)
  ├─→ Vercel   : frontend/ 를 루트로 빌드·배포 (Next.js)
- └─→ Railway  : backend/  를 루트로 빌드·배포 (Spring Boot) + Postgres 플러그인
+ └─→ Railway  : backend/  를 루트로 빌드·배포 (Spring Boot)
 ```
 
 프론트 → 백엔드 연결은 Vercel 환경변수 `NEXT_PUBLIC_SPRING_URL`이 Railway 배포 URL을 가리키는 방식. 도메인이 다르므로 백엔드 `WebConfig.java`의 CORS 설정이 필수다.
@@ -22,17 +22,16 @@ GitHub(main push)
     - 환경변수: https://vercel.com/docs/environment-variables
     - Next.js 배포 가이드: https://vercel.com/docs/frameworks/nextjs
 
-## Railway (backend + PostgreSQL)
+## Railway (backend)
 
 - 컨테이너 기반 PaaS. Java/Maven 프로젝트를 감지해 자동 빌드(Nixpacks) 후 실행
-- 이 프로젝트 설정: 서비스 루트를 `backend/`로 지정, Postgres 플러그인 연결
-- 환경변수: `application.properties`의 `${...}` 자리표시자들이 Railway Variables에서 주입됨 (ANTHROPIC/YOUTUBE/KAKAO/SARAMIN 키 + `spring.datasource.*`. POLYGON은 미사용 잔재)
+- 이 프로젝트 설정: 서비스 루트를 `backend/`로 지정
+- 환경변수: `application.properties`의 `${...}` 자리표시자들이 Railway Variables에서 주입됨 (ANTHROPIC/YOUTUBE/KAKAO/SARAMIN 키. POLYGON·`spring.datasource.*`와 Postgres 플러그인은 주가 기능과 함께 제거된 잔재 — 콘솔에서 지운다)
 - 대시보드: https://railway.com/dashboard
 - 정식 문서:
     - Railway 문서 홈: https://docs.railway.com/
     - 모노레포: https://docs.railway.com/guides/monorepo
     - 환경변수: https://docs.railway.com/guides/variables
-    - PostgreSQL 플러그인: https://docs.railway.com/guides/postgresql
 
 ## 배포 체크리스트
 

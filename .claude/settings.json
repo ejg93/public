@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/scripts/hook-doc-lint.sh\" file",
+            "timeout": 20,
+            "statusMessage": "존댓말 검사"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/scripts/hook-doc-lint.sh\" cmd",
+            "timeout": 20,
+            "statusMessage": "존댓말 검사"
+          }
+        ]
+      }
+    ]
+  }
+}

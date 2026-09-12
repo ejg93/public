@@ -13,14 +13,17 @@
 | `frontend/public/game/` | 게임 확률 계산기 HTML. 개인용 | 요청받은 파일만 수정한다 |
 | `frontend/public/study/` | 아키텍처 노트 HTML 1장. 숨은 경로 | 요청받은 파일만 수정한다 |
 | `frontend/public/docrules/` | 한글·엑셀 문서 배포 규칙 HTML. 폐쇄망 반입 대상 | 요청받은 파일만 수정한다 |
-| `doc/` | 스택별 기술 문서. 색인은 [doc/README.md](doc/README.md) | 각 구역 CLAUDE.md의 트리거에 걸릴 때만 읽는다 |
+| `doc/` | 외부 API 스펙·배포 설정처럼 코드가 답 못 하는 것만. 색인은 [doc/README.md](doc/README.md) | 각 구역 CLAUDE.md의 트리거에 걸릴 때만 읽는다 |
+| `scripts/` | `verify.sh`(바뀐 구역 골라 검증)·`doc-lint.sh`(존댓말 검사)·`hook-doc-lint.sh`(hook 입구) | `.claude/settings.json` 의 hook 이 부른다 |
 | `doc/design-standards/` | 행안부 공공 DB 표준화 지침 등 외부 PDF 원본. 표준단어·도메인·코드 설계 근거 | 읽기 전용. 색인은 [design-standards/README.md](doc/design-standards/README.md), 트리거는 toolbox/CLAUDE.md |
 
 `public/` 아래 notes·game·study·docrules는 앱 코드가 아니라 정적 보관물이다. 근처 작업 중이라도 요청 없이 손대지 않는다.
 
 ## 검증
 
-작업을 끝내기 전에 **그 구역 CLAUDE.md의 「검증」 절에 적힌 명령을 실제로 돌린다.** 구역마다 수단이 다르고, 없는 구역도 있다.
+작업을 끝내기 전에 `bash scripts/verify.sh` 를 돌린다. HEAD 대비 바뀐 파일을 보고 `frontend/` 코드면 typecheck·build(lint 포함), `backend/` 면 JDK 17 로 `mvnw compile` 을 고른다. 출력은 실패했을 때만 나온다.
+
+스크립트가 안 보는 것은 **그 구역 CLAUDE.md 「검증」 절**이 든다 — 화면이 실제로 그려지는지, 백엔드 기동, `public/` 아래 정적 HTML.
 
 돌리지 못했으면 못 돌렸다고 밝힌다. 안 돌려보고 "동작한다"·"빌드 통과"라고 쓰지 않는다. 일부만 확인했으면 확인한 범위와 못 한 범위를 나눠서 적는다.
 
@@ -39,7 +42,7 @@
 | 서비스 | 플랫폼 | 트리거 |
 |---|---|---|
 | frontend | [Vercel](https://vercel.com/ejg93s-projects/ejgsproject) | `frontend/` 루트, `main` push 시 자동 |
-| backend | [Railway](https://railway.com/dashboard) | `backend/` 루트, Postgres 플러그인 |
+| backend | [Railway](https://railway.com/dashboard) | `backend/` 루트 |
 
 `public/` 아래 정적 파일도 Vercel 배포에 그대로 실린다. 개인 메모·게임 파일을 커밋하면 공개 URL로 접근 가능해진다.
 
@@ -52,6 +55,7 @@
 3. **늘어지지 않게** — 분량을 채우려고 미사여구나 뻔한 문장으로 늘리지 말 것. 필요한 만큼만 쓰고 끝낼 것.
 4. **존댓말 금지** — `~습니다` `~합니다` `~하세요` `~입니다` 금지.
    평서형으로 쓴다. `~한다` `~했다` `~함` `~됨` 모두 허용. 명사형으로만 끝내라는 뜻이 아니다.
+   **일곱 중 이것만 기계가 잡는다** — 파일을 고칠 때마다 hook 이 `scripts/doc-lint.sh` 로 고친 줄을 보고, 걸리면 막는다. 남의 말을 옮긴 것이면 md 에서는 백틱이나 「」로 감싼다.
 5. **자기 기능만 설명** — 어떤 항목의 설명란에는 그 항목이 하는 일만 쓴다.
    - 다른 항목이 뭘 맡는지, 여기서 안 되는 걸 어디로 가져가라는 안내는 **그 항목 설명란**에 쓴다.
    - `A로 안 되는 걸 하는 자리` 처럼 남을 기준으로 자기를 정의하지 말 것. 읽는 쪽이 A 설명을 먼저 봐야 이해되는 순환 구조가 된다.
