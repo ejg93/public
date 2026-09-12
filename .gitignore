@@ -44,3 +44,5 @@ Thumbs.db
 
 # Claude Code 로컬 설정과 그 백업. 허용 목록에 명령줄 그대로 들어가서 키 문자열이 섞일 수 있다
 .claude/settings.local.json*
+
+.vercel
