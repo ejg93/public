@@ -12,7 +12,6 @@ Next.js + Spring Boot 풀스택. 프론트는 Vercel, 백엔드는 Railway에 �
 | `/workflow` | 작업 방식과 기계가 막는 강제 지점 | - |
 | `/toolbox` | 폐쇄망 단일 파일 HTML 도구 7종 | - |
 | `/study` | 학습 노트 색인 | - |
-| `/ai-battle` | Claude 기반 AI 배틀 | Anthropic Claude API |
 | `/youtube` | 유튜브 댓글 뷰어 | YouTube Data API v3 |
 | `/public-data` | 채용정보 목록 + 지도 | 사람인 오픈 API, Kakao Local/Maps |
 

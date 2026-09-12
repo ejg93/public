@@ -35,7 +35,6 @@ export default function Home() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {[
           { label: 'PROJECT SHOP', desc: '멀티 셀러 쇼핑몰 · 권한 설계와 작업 과정', href: '/projectshop', color: 'var(--accent2)' },
-          { label: 'AI BATTLE', desc: 'Claude Opus vs Sonnet 토론 배틀', href: '/ai-battle', color: 'var(--accent)' },
         ].map(item => (
           <a key={item.href} href={item.href} style={{
             display: 'flex',

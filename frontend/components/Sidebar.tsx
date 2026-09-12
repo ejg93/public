@@ -11,7 +11,6 @@ const menus = [
   { label: 'TOOLBOX',      href: '/toolbox',     icon: '🧰', desc: 'CLOSED_NET' },
   { label: 'STUDY NOTES',  href: '/study',       icon: '✎', desc: 'NOTES' },
   { label: 'DEV LOG',      href: '/board',       icon: '✍', desc: 'LOG' },
-  { label: 'AI BATTLE',    href: '/ai-battle',   icon: '⚔', desc: 'LAB' },
   { label: 'YT COMMENTS',  href: '/youtube',     icon: '▶', desc: 'LAB' },
 ]
 

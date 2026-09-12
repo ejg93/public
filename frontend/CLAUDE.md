@@ -22,7 +22,7 @@ lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받�
 |---|---|---|
 | `/` | - | 홈 |
 | `/about` | - | 소개 |
-| `/ai-battle` | `POST /api/battle/chat`, `GET /api/battle/health` | Claude 기반 AI 배틀 |
+| `/ai-battle` | `POST /api/battle/chat`, `GET /api/battle/health` | Claude 기반 AI 배틀. Sidebar·홈에 없고 URL 직접 접근만 된다 |
 | `/youtube` | `GET /api/youtube/{comments,replies}` | 유튜브 댓글 뷰어 |
 | `/public-data` | `GET /api/jobs` | 채용정보 목록 + 지도. Sidebar·홈에 없고 URL 직접 접근만 된다 |
 | `/projectshop` | - | 별도 저장소 [ProjectShop](https://github.com/ejg93/ProjectShop) 소개. 설계 결정·작업 방식·CI 체계를 정리한 화면. 숫자와 최근 커밋은 `lib/github.ts` 가 GitHub API 로 받아온다(ISR 15분). 호출이 실패하면 `page.tsx` 의 `FALLBACK` 배열로 떨어진다 |
