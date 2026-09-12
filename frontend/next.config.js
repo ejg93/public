@@ -3,28 +3,8 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/study',
-        destination: '/study/index.html',
-      },
-      {
-        source: '/study/architecture-notes',
-        destination: '/study/architecture-notes.html',
-      },
-      {
-        source: '/study/nextjs-notes',
-        destination: '/study/nextjs-notes.html',
-      },
-      {
-        source: '/study/projectshop-notes',
-        destination: '/study/projectshop-notes.html',
-      },
-      {
-        source: '/study/ai-workflow-notes',
-        destination: '/study/ai-workflow-notes.html',
-      },
-      {
-        source: '/study/selfstudy-plan-notes',
-        destination: '/study/selfstudy-plan-notes.html',
+        source: '/study/:slug',
+        destination: '/study/:slug.html',
       },
       {
         source: '/docrules/hwp-excel-rules',

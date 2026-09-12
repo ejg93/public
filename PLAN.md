@@ -149,7 +149,7 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 
 닫힘: `/toolbox` 가 앱 셸(사이드바 포함)로 뜨고 카드 7개, 카드 클릭 시 도구가 새 탭에서 열린다. `/toolbox/toolbox.html` 직접 접근도 된다. `verify.sh` 초록. `frontend/CLAUDE.md` 라우트 표에 `/toolbox` 행, `public/toolbox/CLAUDE.md` 「파일」 절에 「`app/toolbox/page.tsx` 가 이 런처 배열을 빌드 때 읽는다 — 객체 키(`file`·`icon`·`name`·`desc`)를 바꾸면 그 정규식도 고친다」 한 줄.
 
-## 4. `/study` — 학습 노트 색인을 라우트로  [ ]
+## 4. `/study` — 학습 노트 색인을 라우트로  [x]
 
 **왜**: 노트 한 장 추가할 때 HTML·`index.html` NOTES 배열·`next.config.js` rewrite 세 곳을 고친다. 파일 하나가 단일 진실이면 안 어긋난다.
 
