@@ -12,6 +12,8 @@
 # 대상: md(CLAUDE·README·doc), frontend/app·components 의 ts·tsx(화면 문구), toolbox 의 html·md.
 # public/notes·game·study·docrules 는 뺀다 — 요청받은 파일만 고치는 구역이라 여기서 규칙을 안 건다.
 # md 는 백틱·「」 안을 걷어낸다(인용). tsx·html 은 문자열이 곧 화면 문구라 안 걷는다.
+#
+# tsx·html 은 줄바꿈 규칙(7번)도 본다 — scripts/linebreak-lint.js 가 고친 줄만 센다.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -59,6 +61,21 @@ if [ $# -gt 0 ]; then
       printf '%s\n' "$hits" | sed 's/^/    /'
       fail=1
     fi
+    case "$f" in *.tsx|*.html)
+      if git ls-files --error-unmatch -- "$f" >/dev/null 2>&1; then
+        nums=$(git diff HEAD -U0 -- "$f" 2>/dev/null | awk '/^@@/{split($3,a,","); s=substr(a[1],2)+0; c=(a[2]=="")?1:a[2]+0; for(k=0;k<c;k++) printf "%d,", s+k}' | sed 's/,$//')
+      else
+        nums=all
+      fi
+      if [ -n "$nums" ]; then
+        lb=$(node scripts/linebreak-lint.js "$f" "$nums" || true)
+        if [ -n "$lb" ]; then
+          echo "[줄바꿈] $f — 고친 줄이 규칙 7에 걸린다(CLAUDE.md 「글 작성 규칙」 7):"
+          printf '%s\n' "$lb" | sed 's/^/    /'
+          fail=1
+        fi
+      fi
+    ;; esac
   done
   exit $fail
 fi
@@ -68,6 +85,7 @@ while IFS= read -r f; do
   in_scope "$f" || continue
   [ -f "$f" ] || continue
   n=$(strip "$f" <"$f" | grep -cE "$PAT" || true)
-  if [ "${n:-0}" -gt 0 ]; then echo "$f: $n"; total=$((total + n)); fi
+  case "$f" in *.tsx|*.html) lb=$(node scripts/linebreak-lint.js "$f" all | grep -c . || true) ;; *) lb=0 ;; esac
+  if [ "${n:-0}" -gt 0 ] || [ "${lb:-0}" -gt 0 ]; then echo "$f: 존댓말 $n · 줄바꿈 $lb"; total=$((total + n + lb)); fi
 done < <( { git ls-files; git ls-files --others --exclude-standard; } | sort -u )
-echo "남은 존댓말 줄: $total — 막지 않는다. hook 은 고친 줄만 막는다"
+echo "남은 존댓말·줄바꿈: $total — 막지 않는다. hook 은 고친 줄만 막는다"

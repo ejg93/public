@@ -16,28 +16,28 @@ const DECISIONS = [
   {
     id: 'ADR-0003',
     title: '스코프는 role_permission 행에 둔다',
-    body: '역할과 권한을 테이블로 분리하고, 그 연결 행에 own·seller·all 같은 행 단위 조건을 같이 싣는다. 권한 판정이 코드 곳곳의 if 문이 아니라 한 테이블 조회로 끝난다.',
+    body: '역할과 권한을 테이블로 분리하고, 그 연결 행에 own·seller·all 같은 행 단위 조건을 같이 싣는다.\n권한 판정이 코드 곳곳의 if 문이 아니라 한 테이블 조회로 끝난다.',
   },
   {
     id: 'PLAN.md → ADR-0010',
     title: '인증은 세션 쿠키로 하고 JWT를 쓰지 않는다',
-    body: 'HttpOnly · SameSite 쿠키에 세션을 담아 서버가 상태를 쥔다. 권한 체계가 주제인 프로젝트에서 판매자 권한 박탈이 즉시 먹어야 하는데, 서버가 회수할 수 없는 토큰으로는 그게 안 된다. 끊는 지점도 두 겹으로 뒀다. 인증 필터가 요청마다 계정 생존을 확인하고, 탈퇴 시 SessionRegistry가 그 사람 세션을 전부 만료시킨다.',
+    body: 'HttpOnly · SameSite 쿠키에 세션을 담아 서버가 상태를 쥔다.\n권한 체계가 주제인 프로젝트에서 판매자 권한 박탈이 즉시 먹어야 하는데,\n서버가 회수할 수 없는 토큰으로는 그게 안 된다.\n끊는 지점도 두 겹으로 뒀다.\n인증 필터가 요청마다 계정 생존을 확인하고,\n탈퇴 시 SessionRegistry가 그 사람 세션을 전부 만료시킨다.',
   },
   {
     id: 'ADR-0001',
     title: '스키마 변경은 Flyway로 관리한다',
-    body: 'DDL을 버전 붙은 SQL 파일로 저장소에 남기고, 앱이 뜰 때 순서대로 적용한다. 스키마가 코드와 같은 리뷰·이력을 받는다.',
+    body: 'DDL을 버전 붙은 SQL 파일로 저장소에 남기고, 앱이 뜰 때 순서대로 적용한다.\n스키마가 코드와 같은 리뷰·이력을 받는다.',
   },
   {
     id: 'ADR-0009',
     title: '공휴일은 데이터로, 상태 전이표는 코드로 둔다',
-    body: '해마다 바뀌는 공휴일은 DB 행으로 넣어 배포 없이 고치고, 주문 상태 전이는 코드 상수로 박아 컴파일러와 테스트가 잡게 한다. 바뀌는 주기가 다른 둘을 같은 층에 두지 않는다.',
+    body: '해마다 바뀌는 공휴일은 DB 행으로 넣어 배포 없이 고치고,\n주문 상태 전이는 코드 상수로 박아 컴파일러와 테스트가 잡게 한다.\n바뀌는 주기가 다른 둘을 같은 층에 두지 않는다.',
   },
 ]
 
 const CI = [
   { file: 'ci.yml', desc: '푸시마다 Gradle 빌드와 백엔드·프론트 테스트를 돌려 깨진 커밋을 막는다' },
-  { file: 'codeql.yml', desc: 'Java·TypeScript 소스를 정적 분석해 주입·역직렬화 같은 취약 패턴을 경보로 올린다. 싱크 목록에 JdbcClient.sql을 더해 SQL 문자열 조립 자리를 잡는다' },
+  { file: 'codeql.yml', desc: 'Java·TypeScript 소스를 정적 분석해 주입·역직렬화 같은 취약 패턴을 경보로 올린다.\n싱크 목록에 JdbcClient.sql을 더해 SQL 문자열 조립 자리를 잡는다' },
   { file: 'e2e.yml', desc: '실제 브라우저로 로그인부터 주문까지 화면 흐름을 끝까지 밟아 본다' },
   { file: 'dependabot-automerge.yml', desc: '검사를 통과한 의존성 갱신 PR을 사람 손 없이 합친다' },
   { file: 'dependency-submission.yml', desc: 'Gradle·npm 의존성 좌표를 main에서 GitHub 의존성 그래프에 올려 취약점 경보가 붙을 대상을 만든다' },
@@ -70,6 +70,7 @@ const S = {
     fontSize: '14px',
     lineHeight: 1.85,
     color: 'var(--muted)',
+    whiteSpace: 'pre-line' as const,
   },
 }
 
@@ -100,7 +101,7 @@ export default function ProjectShop() {
         멀티 셀러 쇼핑몰. 판매자가 여럿 입점하고, 고객이 사고, 관리자가 관리한다.
       </p>
       <p style={{ ...S.body, fontSize: '15px', marginBottom: '32px' }}>
-        만드는 목적은 물건을 파는 게 아니라 <span style={{ color: 'var(--text)', fontWeight: 700 }}>권한 체계를 정갈하게 짜는 법을 익히는 것</span>이다.
+        만드는 목적은 물건을 파는 게 아니라 <span style={{ color: 'var(--text)', fontWeight: 700 }}>권한 체계를 정갈하게 짜는 법을 익히는 것</span>이다.<br />
         그래서 이 페이지도 완성된 화면이 아니라 결정과 검증이 어떻게 쌓였는지를 보여준다.
       </p>
 
@@ -146,13 +147,13 @@ export default function ProjectShop() {
       <Section label="01 · 왜 이 주제를 골랐나">
         <div style={S.card}>
           <p style={{ ...S.body, marginBottom: '14px' }}>
-            실무에서 관리자와 사용자 구분이 코드 여기저기 흩어져 유지보수가 힘들어지는 걸 겪었다.
-            그게 어디서부터 잘못되는지 정면으로 다루려고 멀티 셀러 구조를 골랐다.
-            판매자가 여럿이어야 &ldquo;자기 상품만 수정&rdquo; 같은 행 단위 권한이 필요해지고,
+            실무에서 관리자와 사용자 구분이 코드 여기저기 흩어져 유지보수가 힘들어지는 걸 겪었다.<br />
+            그게 어디서부터 잘못되는지 정면으로 다루려고 멀티 셀러 구조를 골랐다.<br />
+            판매자가 여럿이어야 &ldquo;자기 상품만 수정&rdquo; 같은 행 단위 권한이 필요해지고,<br />
             실무에서 지저분해지는 지점이 정확히 거기다.
           </p>
           <p style={{ ...S.body, margin: 0 }}>
-            그래서 판단이 갈릴 때는 기능을 늘리는 쪽이 아니라 구조가 드러나는 쪽을 고른다.
+            그래서 판단이 갈릴 때는 기능을 늘리는 쪽이 아니라 구조가 드러나는 쪽을 고른다.<br />
             할인쿠폰 10종류보다 권한 판정 한 군데를 제대로 만드는 게 이 프로젝트의 목적에 맞다.
           </p>
         </div>
@@ -161,7 +162,8 @@ export default function ProjectShop() {
       {/* ── 설계 결정 ───────────────────────────────── */}
       <Section label="02 · 무엇을 저울질해서 정했나">
         <p style={{ ...S.body, marginBottom: '18px' }}>
-          갈림길마다 고른 쪽과 버린 쪽, 그 근거를 ADR 파일로 저장소에 남긴다. 아래는 그중 넷이다.
+          갈림길마다 고른 쪽과 버린 쪽, 그 근거를 ADR 파일로 저장소에 남긴다.<br />
+          아래는 그중 넷이다.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {DECISIONS.map(d => (
@@ -203,9 +205,9 @@ export default function ProjectShop() {
         <div style={{ ...S.card, marginTop: '10px', borderColor: 'rgba(255,107,53,0.3)' }}>
           <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>아직 안 닫힌 것</div>
           <p style={{ ...S.body, margin: 0 }}>
-            <code style={{ color: 'var(--text)' }}>req-coverage.sh</code>가 요구사항 37개 중
-            테스트가 한 번도 부르지 않는 12개를 매번 세서 숫자로 남긴다.
-            그 12개가 검증 구멍인지 애초에 테스트할 수 없는 제약인지는 아직 안 갈랐다.
+            <code style={{ color: 'var(--text)' }}>req-coverage.sh</code>가 요구사항 37개 중<br />
+            테스트가 한 번도 부르지 않는 12개를 매번 세서 숫자로 남긴다.<br />
+            그 12개가 검증 구멍인지 애초에 테스트할 수 없는 제약인지는 아직 안 갈랐다.<br />
             숨기지 않고 숫자로 들고 다니는 쪽을 골랐다.
           </p>
         </div>
@@ -222,8 +224,8 @@ export default function ProjectShop() {
           ))}
         </div>
         <p style={{ ...S.body, fontSize: '13px', marginTop: '16px' }}>
-          결제는 PG를 흉내내는 모의 모듈로 둔다. 상태 전이와 멱등성 설계는 그대로 연습되고,
-          사업자등록과 심사를 안 거친다.
+          결제는 PG를 흉내내는 모의 모듈로 둔다.<br />
+          상태 전이와 멱등성 설계는 그대로 연습되고, 사업자등록과 심사를 안 거친다.
         </p>
       </Section>
 
