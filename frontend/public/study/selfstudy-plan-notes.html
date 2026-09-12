@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관측·동시성 자습 계획 노트</title>
+<style>
+  :root{
+    --bg:#0F2036; --bg-2:#0B1930; --panel:#152B47; --panel-2:#1B3958;
+    --line:#2A4A6E; --line-soft:#1F3958;
+    --ink:#E8F1FA; --ink-dim:#8FAAC7; --ink-faint:#7E9CBC;
+    --accent:#FFC24B; --accent-2:#68E3C4; --accent-3:#7BA9FF; --danger:#FF8A80;
+    --radius:10px; --nav-w:268px; --bar-h:50px;
+    font-size:15px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
+      var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
+    line-height:1.62; -webkit-font-smoothing:antialiased; min-height:100vh;
+  }
+  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
+
+  /* ---------- App bar ---------- */
+  header.app-bar{
+    position:sticky; top:0; z-index:40; height:var(--bar-h);
+    background:rgba(11,25,48,0.94); backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:10px; padding:0 12px;
+  }
+  .icon-btn{
+    background:var(--panel); border:1px solid var(--line); color:var(--ink);
+    width:32px; height:32px; border-radius:8px; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; flex-shrink:0; padding:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .icon-btn:hover{background:var(--panel-2); border-color:var(--accent-2);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent-2); outline-offset:2px;}
+  .icon-btn svg{width:16px; height:16px;}
+  .bar-title{font-size:13px; font-weight:700; letter-spacing:-.01em; flex-shrink:0;}
+  .bar-sep{color:var(--ink-faint); font-size:12px;}
+  .bar-here{font-size:12px; color:var(--accent-2); font-weight:600;
+            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .eyebrow{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;}
+
+  /* ---------- Sidebar : 스크림이 없다. 메인이 절대 안 멈춘다 ---------- */
+  .sidebar{
+    position:fixed; top:var(--bar-h); left:0; bottom:0; width:var(--nav-w); z-index:30;
+    background:var(--bg-2); border-right:1px solid var(--line);
+    transform:translateX(-100%); transition:transform .2s ease;
+    display:flex; flex-direction:column; overflow-y:auto; overscroll-behavior:contain;
+  }
+  .sidebar.open{transform:none;}
+  .nav-group{padding:14px 0 2px;}
+  .nav-group-label{
+    font-size:10px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-faint); padding:0 16px 6px;
+  }
+  .nav-link{
+    display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+    background:none; border:none; border-left:2px solid transparent;
+    color:var(--ink-dim); font:inherit; font-size:13px; line-height:1.35;
+    padding:9px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    transition:background-color .12s, color .12s, border-color .12s;
+  }
+  .nav-link:hover{background:var(--panel); color:var(--ink);}
+  .nav-link:focus-visible{outline:2px solid var(--accent-2); outline-offset:-2px;}
+  .nav-link .dot{width:6px; height:6px; border-radius:50%; background:var(--line); flex-shrink:0;}
+  .nav-link[aria-current="true"]{
+    background:var(--panel); color:var(--ink); font-weight:600;
+    border-left-color:var(--accent);
+  }
+  .nav-link[aria-current="true"] .dot{background:var(--accent);}
+  .nav-foot{
+    margin-top:auto; padding:14px 16px 18px; border-top:1px dashed var(--line);
+    font-size:11px; color:var(--ink-faint);
+  }
+
+  /* ---------- Main : 넓은 화면에서만 밀린다. 좁으면 사이드바가 위에 뜬다 ---------- */
+  .main{padding:22px 16px 60px; transition:margin-left .2s ease;}
+  .main:focus{outline:none;}
+  .main-inner{max-width:860px; margin:0 auto;}
+  @media (min-width:1060px){
+    .main.shifted{margin-left:var(--nav-w);}
+  }
+
+  /* ---------- Doc ---------- */
+  .doc{display:none;}
+  .doc.on{display:block; animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
+  .doc-kicker{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700; text-transform:uppercase;}
+  .doc h1{font-size:22px; margin:4px 0 8px; letter-spacing:-.015em;}
+  .doc-lead{
+    margin:0 0 22px; padding-left:12px; border-left:2px solid var(--accent-2);
+    color:var(--ink-dim); font-size:13.5px;
+  }
+  h2{
+    font-size:15px; margin:30px 0 10px; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  h2::before{
+    content:""; width:4px; height:15px; border-radius:2px;
+    background:var(--accent); flex-shrink:0;
+  }
+  h3{font-size:13px; color:var(--accent-3); margin:18px 0 6px;}
+  p{margin:9px 0; font-size:13.8px;}
+  strong{color:var(--accent);}
+  ul,ol{padding-left:20px; margin:9px 0; font-size:13.8px;}
+  li{margin:4px 0;}
+  code{
+    font-family:"SFMono-Regular",Consolas,monospace; font-size:12px;
+    background:var(--panel-2); color:var(--accent-2); padding:1px 5px; border-radius:4px;
+  }
+
+  /* ---------- Callout ---------- */
+  .note{
+    margin:14px 0; padding:11px 14px; border-radius:0 8px 8px 0;
+    border-left:3px solid var(--accent-2); background:rgba(104,227,196,0.07);
+    font-size:13px; color:var(--ink-dim);
+  }
+  .note b{color:var(--accent-2);}
+  .note.warn{border-left-color:var(--danger); background:rgba(255,138,128,0.07);}
+  .note.warn b{color:var(--danger);}
+  .note.key{border-left-color:var(--accent); background:rgba(255,194,75,0.07);}
+  .note.key b{color:var(--accent);}
+
+  /* ---------- Table ---------- */
+  .table-wrap{overflow-x:auto; margin:14px 0; border:1px solid var(--line); border-radius:8px;}
+  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:380px;}
+  thead th{
+    background:var(--panel-2); color:var(--accent-2); text-align:left;
+    padding:8px 10px; white-space:nowrap; border-bottom:1px solid var(--line); font-weight:700;
+  }
+  tbody td{padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-dim); vertical-align:top;}
+  tbody td strong{color:var(--ink);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
+  td .ok{color:var(--accent-2); font-weight:700;}
+  td .no{color:var(--danger); font-weight:700;}
+  td .mid{color:var(--accent); font-weight:700;}
+
+  /* ---------- Figure ---------- */
+  figure{margin:18px 0; padding:14px; border:1px solid var(--line);
+         border-radius:var(--radius); background:rgba(21,43,71,0.35);}
+  figure svg{display:block; width:100%; height:auto;}
+  figcaption{margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
+             font-size:11.5px; color:var(--ink-faint);}
+  figcaption b{color:var(--ink-dim);}
+
+  /* ---------- Pager ---------- */
+  .pager{display:flex; gap:10px; margin-top:36px; padding-top:16px; border-top:1px dashed var(--line);}
+  .pager button{
+    flex:1; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+    color:var(--ink-dim); font:inherit; font-size:12px; padding:10px 12px;
+    cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent;
+  }
+  .pager button:hover:not(:disabled){background:var(--panel-2); color:var(--ink); border-color:var(--accent-2);}
+  .pager button:disabled{opacity:.35; cursor:default;}
+  .pager button span{display:block; font-size:10px; letter-spacing:.1em; color:var(--ink-faint);}
+  .pager .next{text-align:right;}
+  ::selection{background:var(--accent); color:#0B1930;}
+
+  /* 반복 영역 건너뛰기 — 목차가 본문 앞에 있어서 키보드가 그걸 다 지나야 한다.
+     display:none 으로 숨기면 초점 자체가 안 가서 있으나 마나다. */
+  .skip{
+    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
+  .skip:focus{
+    position:fixed; top:8px; left:8px; z-index:60; width:auto; height:auto;
+    margin:0; padding:8px 14px; clip:auto; overflow:visible;
+    background:var(--accent); color:#0B1930; font-size:12.5px; font-weight:700;
+    border-radius:8px; text-decoration:none;
+  }
+  /* 닫힌 목차는 화면 밖에 있으므로 초점도 안 가야 한다 */
+  .sidebar{visibility:hidden; transition:transform .2s ease, visibility .2s ease;}
+  .sidebar.open{visibility:visible;}
+  /* 절을 바꿀 때 제목으로 초점을 옮긴다. 프로그램이 옮긴 초점이라 테두리는 안 그린다 */
+  .doc h1:focus{outline:none;}
+
+  /* ---------- 스크롤바 ---------- */
+  /* color-scheme 한 줄로 브라우저 기본 스크롤바·폼 컨트롤이 어두워진다.
+     ::-webkit-scrollbar 를 안 쓰는 브라우저의 바탕이 되는 줄이라 먼저 둔다. */
+  :root{ color-scheme:dark; }
+
+  /* 표준 속성 (Firefox) */
+  html{ scrollbar-width:thin; scrollbar-color:#4573A6 var(--bg-2); }
+  .sidebar,.table-wrap{ scrollbar-width:thin; scrollbar-color:#4573A6 transparent; }
+
+  /* 고정된 머리 아래로 목표가 숨지 않게 — 건너뛰기 링크가 이걸 쓴다 */
+  html{ scroll-padding-top:calc(var(--bar-h) + 10px); }
+
+  /* WebKit · Chromium */
+  ::-webkit-scrollbar{ width:11px; height:11px; }
+  ::-webkit-scrollbar-track{ background:var(--bg-2); }
+  ::-webkit-scrollbar-thumb{
+    background:#4573A6; border-radius:99px;
+    border:3px solid var(--bg-2);   /* 트랙과 사이를 띄워 얇아 보이게 한다 */
+  }
+  ::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; }
+  ::-webkit-scrollbar-corner{ background:var(--bg-2); }
+
+  /* 안쪽 스크롤(목차·표)은 더 얇고 트랙을 안 그린다 */
+  .sidebar::-webkit-scrollbar,
+  .table-wrap::-webkit-scrollbar{ width:8px; height:8px; }
+  .sidebar::-webkit-scrollbar-track,
+  .table-wrap::-webkit-scrollbar-track{ background:transparent; }
+  .sidebar::-webkit-scrollbar-thumb,
+  .table-wrap::-webkit-scrollbar-thumb{
+    background:#4573A6; border:2px solid transparent; background-clip:padding-box;
+  }
+  .sidebar::-webkit-scrollbar-thumb:hover,
+  .table-wrap::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; background-clip:padding-box; }
+</style>
+</head>
+<body>
+
+<a class="skip" href="#main">본문 바로가기</a>
+
+<header class="app-bar">
+  <button class="icon-btn" id="burger" aria-label="목차 열기" aria-expanded="false" aria-controls="sidebar">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <path d="M2 4h12M2 8h12M2 12h12"/>
+    </svg>
+  </button>
+  <span class="bar-title">자습 계획</span>
+  <span class="bar-sep">/</span>
+  <span class="bar-here" id="barHere">혼자 배우는 것을 계획으로</span>
+</header>
+
+<aside class="sidebar" id="sidebar" aria-label="목차">
+  <nav id="nav"></nav>
+  <div class="nav-foot">
+    관측과 동시성의 위층<br>
+    6주 · 다섯 역할
+  </div>
+</aside>
+
+<main class="main" id="main" tabindex="-1">
+<div class="main-inner">
+
+
+<!-- 이 노트는 「무엇을 배울지 고르고 어떻게 굴릴지」를 다룬다.
+     대상 선정 근거는 C:\workspace\ProjectShop 의 PLAN.md · document-map.md · doc/reference 다.
+     방법 틀(다섯 역할)은 2026-09-06 에 사용자가 가져온 AI 자습법이다. -->
+
+<!-- ══════════════════ 1. 왜 이 노트인가 ══════════════════ -->
+<article class="doc" id="d1">
+  <p class="doc-kicker">개요</p>
+  <h1>혼자 배우는 것을 계획으로 만든다</h1>
+  <p class="doc-lead">무료 공개 강의는 대부분 끝까지 안 간다. 끊기는 이유는 내용이 어려워서가 아니라 <strong>내가 왜 이걸 듣는지와 언제 끝난 것인지</strong>가 안 정해져 있어서다. 이 노트는 그 둘을 먼저 정한다.</p>
+
+  <h2>이 계획이 다르게 잡은 것</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>보통의 강의 수강</th><th>이 계획</th></tr></thead>
+    <tbody>
+      <tr><td>주제를 커리큘럼이 정한다</td><td>주제를 <strong>내 저장소의 빈 자리</strong>가 정한다</td></tr>
+      <tr><td>끝은 「마지막 영상」이다</td><td>끝은 <strong>돌아가는 청크와 문서</strong>다</td></tr>
+      <tr><td>이해했는지를 스스로 판정한다</td><td>이해했는지를 <strong>빨간 테스트와 대시보드</strong>가 판정한다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>다섯 역할로 굴린다</h2>
+  <p>AI 를 한 덩어리로 쓰지 않고 역할을 갈라 쓴다. 같은 도구라도 <strong>무엇을 시키는지</strong>가 다르면 나오는 것이 다르다.</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>역할</th><th>맡는 일</th><th>산출물</th></tr></thead>
+    <tbody>
+      <tr><td>조언자</td><td>배울 대상과 순서를 정한다</td><td>주 단위 계획표</td></tr>
+      <tr><td>사서</td><td>1차 자료를 모으고 노이즈를 걸러 낸다</td><td>자료 묶음 하나</td></tr>
+      <tr><td>튜터</td><td>질문을 던지고 내 답의 구멍을 짚는다</td><td>내가 못 답한 목록</td></tr>
+      <tr><td>에디터</td><td>내가 쓴 문서·코드의 논리를 때린다</td><td>고칠 자리 목록</td></tr>
+      <tr><td>룸메이트</td><td>다른 분야의 렌즈를 빌려 준다</td><td>안 떠올린 설계 대안</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>순서가 있다.</strong> 조언자가 대상을 정하기 전에는 사서가 무엇을 모을지 모르고,<br>
+  사서가 자료를 놓기 전에는 튜터의 질문이 일반론에 머문다.</p>
+</article>
+
+<!-- ══════════════════ 2. 무엇을 배우나 ══════════════════ -->
+<article class="doc" id="d2">
+  <p class="doc-kicker">대상</p>
+  <h1>배울 것은 저장소의 빈 자리가 정한다</h1>
+  <p class="doc-lead">ProjectShop 은 기준 문서 스물다섯 장(<span class="mono">D1</span>~<span class="mono">D25</span>)으로 무엇을 어느 층에 둘지를 먼저 정하고 코드를 쓴다. <strong>그 목록에서 아직 안 만든 층이 곧 내가 아직 모르는 것</strong>이다.</p>
+
+  <h2>이미 끝난 것과 안 끝난 것을 가른다</h2>
+  <p>관측(<span class="mono">D16</span>)과 동시성(<span class="mono">D11</span>)은 문서도 있고 코드도 있다.<br>
+  그런데 <strong>둘 다 아래층만 있고 위층이 비어 있다.</strong></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>주제</th><th>이미 있는 것 (아래층)</th><th>비어 있는 것 (위층)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>관측</td>
+        <td>추적 ID 전파, 요청 로그 한 줄,<br>개인정보 마스킹 규칙</td>
+        <td><strong>지표 · 대시보드 · 성능 목표</strong><br>숫자가 하나도 없다</td>
+      </tr>
+      <tr>
+        <td>동시성</td>
+        <td>조건부 UPDATE 재고 차감, 멱등키,<br>충돌 재시도, 경쟁 테스트</td>
+        <td><strong>인스턴스가 여럿일 때</strong><br>캐시 무효화 · 강등 · 장애 주입</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h2>관측을 동시성보다 먼저 한다</h2>
+  <p>동시성 버그는 <strong>재현해도 무슨 일이 났는지 보이지 않는 것</strong>이 본질이다. 지표와 대시보드가 없으면 장애를 일으켜 놓고도 「느려졌다」까지만 안다. 그래서 <strong>눈을 먼저 만들고 실험을 나중에 한다.</strong></p>
+
+  <h2>둘을 잇는 자리가 하나 있다</h2>
+  <p>성능 목표 문서(<span class="mono">D21</span>)는 지금 <strong>측정값이 없어서 못 쓴다</strong>고 막혀 있다. 1부가 만드는 대시보드가 그 입력이다. 즉 1부를 끝내면 <strong>막혀 있던 문서 한 장이 풀린다</strong> — 배운 것이 계획표에서 눈에 보이는 자리로 나온다.</p>
+</article>
+
+<!-- ══════════════════ 3. 1부 ══════════════════ -->
+<article class="doc" id="d3">
+  <p class="doc-kicker">1부 · 3주</p>
+  <h1>관측의 위층 — 숫자와 목표</h1>
+  <p class="doc-lead">글자 로그는 「무슨 일이 났나」에 답하고 지표는 「얼마나 자주 · 얼마나 오래」에 답한다. 이 3주는 뒤쪽 질문에 답할 장치를 만든다.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>주</th><th>배우는 것</th><th>만드는 것</th><th>1차 자료</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>지표 네 종류(카운터 · 게이지 · 타이머 · 히스토그램)와<br>라벨을 잘못 붙였을 때 터지는 카디널리티</td>
+        <td>Actuator 지표를 Prometheus 형식으로 노출<br>(청크 <span class="mono">62</span>)</td>
+        <td>Micrometer 개념 문서<br>Prometheus 노출 형식</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>PromQL — <span class="mono">rate</span> · <span class="mono">histogram_quantile</span>,<br>평균이 왜 장애를 숨기고 p99 가 왜 드러내나</td>
+        <td>Grafana 컨테이너와<br>판정 지연 · 오류율 그래프<br>(청크 <span class="mono">63</span>)</td>
+        <td>Prometheus 질의 문서<br>Google SRE Book</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>SLI 에서 SLO 로, 그리고 에러 예산</td>
+        <td>성능 목표 문서 <span class="mono">D21</span> —<br>2주차 측정값이 입력</td>
+        <td>Google SRE Book SLO 장</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h2>1주차가 실제로 어려운 자리</h2>
+  <p>지표를 다는 것은 쉽고, <strong>이름과 라벨을 정하는 것</strong>이 어렵다. 라벨에 주문 번호처럼 값이 무한한 것을 넣으면 시계열이 요청 수만큼 생겨서 저장소가 죽는다. 이름이 층마다 갈리면 대시보드가 조용히 빈다 —<br>
+  그래서 <strong>이름을 테스트로 고정하는 것</strong>이 이 청크의 강제 지점이다.</p>
+
+  <h2>3주차를 잠정치로 때우지 않는다</h2>
+  <p>「p99 300ms」 같은 값을 근거 없이 박으면 그 숫자가 관례가 된다. 잰 값이 없으면 <strong>무엇을 재면 정해지는지</strong>와 <strong>언제 나오는지</strong>만 적는다.</p>
+</article>
+
+<!-- ══════════════════ 4. 2부 ══════════════════ -->
+<article class="doc" id="d4">
+  <p class="doc-kicker">2부 · 3주</p>
+  <h1>동시성의 위층 — 인스턴스가 여럿일 때</h1>
+  <p class="doc-lead">한 대에서 도는 동안에는 락과 멱등키로 끝난다. 두 대가 되는 순간 <strong>각자 들고 있는 캐시</strong>와 <strong>공유 저장소가 죽었을 때</strong>가 새 문제로 올라온다.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>주</th><th>배우는 것</th><th>만드는 것</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>4</td>
+        <td>캐시 무효화가 왜 「지우면 끝」이 아닌가 —<br>한 대에서 지운 것이 다른 대에 안 퍼진다</td>
+        <td>권한 판정 캐시를 Redis 로 옮긴다<br>(청크 <span class="mono">39</span>)</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>강등 — 공유 캐시가 죽어도 서비스가 답해야 하나,<br>답한다면 무엇을 포기하나</td>
+        <td>Redis 가 없어도 판정이 되는 경로와<br>그때 남기는 경고 한 줄</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>장애 주입 — 고장을 기다리지 않고 일으킨다</td>
+        <td>DB 를 죽이고 앱이 어떻게 죽는지 본다<br>(청크 <span class="mono">68</span>)</td>
+      </tr>
+    </tbody>
+  </table></div>
+
+  <h2>권한 캐시가 교재로 좋은 이유</h2>
+  <p>권한은 <strong>틀리면 조용히 위험한 값</strong>이다. 캐시가 오래된 값을 들고 있으면 권한을 뺏긴 사람이 계속 통과한다. 「느려진다」로 끝나는 캐시와 달리 <strong>무효화를 못 지키면 사고가 난다</strong>는 것이 눈에 보인다.</p>
+
+  <h2>6주차가 1부와 2부를 잇는다</h2>
+  <p>DB 를 죽였을 때 <strong>1부에서 만든 대시보드가 그 장면을 그린다.</strong> 지표 없이 같은 실험을 하면 남는 것은 「느렸다」는 기억뿐이고, 지표가 있으면 <strong>몇 초 만에 무엇이 어떤 순서로 무너졌는지</strong>가 그래프로 남는다.</p>
+</article>
+
+<!-- ══════════════════ 5. 굴리는 법 ══════════════════ -->
+<article class="doc" id="d5">
+  <p class="doc-kicker">운영</p>
+  <h1>다섯 역할을 이 주제에 붙인다</h1>
+  <p class="doc-lead">역할마다 던지는 말이 다르다. 아래는 이 6주 동안 실제로 시킬 것을 역할별로 적은 것이다.</p>
+
+  <h2>사서 — 자료 묶음을 하나만 만든다</h2>
+  <p>자료를 열 개 모으면 하나도 안 읽는다. <strong>한 묶음에 넣는 것을 넷으로 자른다.</strong></p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>넣는 것</th><th>왜</th></tr></thead>
+    <tbody>
+      <tr><td>Micrometer · Prometheus 노출 형식</td><td>지표를 만드는 쪽의 1차 자료</td></tr>
+      <tr><td>Google SRE Book SLO 장</td><td>목표를 정하는 쪽의 1차 자료</td></tr>
+      <tr><td>내 저장소의 관측 규약 · 동시성 규약</td><td>일반론을 <strong>내 스키마와 내 필터</strong>에 붙인다</td></tr>
+      <tr><td>내 저장소의 도메인 모델</td><td>어떤 지표를 달지가 도메인에서 나온다</td></tr>
+    </tbody>
+  </table></div>
+  <p>내 문서를 같이 넣는 것이 핵심이다. 넣지 않으면 나오는 답이 <strong>어느 프로젝트에나 맞는 말</strong>이 되고, 그런 답은 청크로 안 바뀐다.</p>
+
+  <h2>튜터 — 답을 내가 말한다</h2>
+  <p>읽고 끄덕이는 것과 말로 설명하는 것 사이에 구멍이 있다. 그 구멍을 찾는 질문을 시킨다.</p>
+  <ul>
+    <li>요청 200건 중 p99 만 튄다. 지표 어디를 먼저 보나</li>
+    <li>지표 라벨에 상품 번호를 넣으면 무슨 일이 나나</li>
+    <li>Redis 가 죽었다. 권한 판정은 어떻게 되나. 그 선택의 대가는 무엇인가</li>
+    <li>재고 차감이 조건부 UPDATE 인데 왜 Read Committed 로 충분한가</li>
+  </ul>
+
+  <h2>에디터 — 청크 시작 세 줄을 때리게 한다</h2>
+  <p>이 저장소는 청크를 열 때 <strong>무엇을 닫나 · 걸리는 축 · 강제 지점을 어디에 두나</strong> 세 줄을 먼저 적는다. 에디터에게 그 셋을 주고 <strong>「강제 지점을 더 아래로 못 내리나」</strong> 하나만 시킨다. 문서로 막을 것을 테스트로, 테스트로 막을 것을 제약으로 내리는 자리가 거기서 나온다.</p>
+
+  <h2>룸메이트 — 다른 분야의 렌즈</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>빌리는 렌즈</th><th>보이는 것</th></tr></thead>
+    <tbody>
+      <tr><td>회계의 복식부기</td><td>에러 예산은 목표가 아니라 <strong>한도</strong>다.<br>장애는 출금이고 예산은 잔액이다</td></tr>
+      <tr><td>재고를 잔액이 아니라 원장으로</td><td>차감을 줄 추가로 보면<br><strong>락이 필요 없어지는 설계</strong>가 후보로 올라온다</td></tr>
+      <tr><td>항공 정비의 고장 주입</td><td>고장을 기다리지 않고 <strong>일으켜서</strong> 절차를 검사한다</td></tr>
+    </tbody>
+  </table></div>
+</article>
+
+<!-- ══════════════════ 6. 닫힘 조건 ══════════════════ -->
+<article class="doc" id="d6">
+  <p class="doc-kicker">판정</p>
+  <h1>언제 배운 것으로 치나</h1>
+  <p class="doc-lead">「이해했다」는 판정 기준이 될 수 없다. 스스로에게 물으면 언제나 통과한다. 그래서 주마다 <strong>남는 물건</strong>을 닫힘 조건으로 둔다.</p>
+
+  <div class="table-wrap"><table>
+    <thead><tr><th>주</th><th>이것이 있으면 닫는다</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><span class="mono">/actuator/prometheus</span> 가 지표를 내놓고,<br>이름을 바꾸면 테스트가 빨개진다</td></tr>
+      <tr><td>2</td><td>Grafana 에 그래프 둘 — 요청 지연 분포와 오류율</td></tr>
+      <tr><td>3</td><td>성능 목표 문서에 <strong>잰 값</strong>이 들어간다.<br>못 재면 무엇을 재면 되는지가 들어간다</td></tr>
+      <tr><td>4</td><td>인스턴스 둘을 띄우고 한쪽에서 권한을 바꿨을 때<br>다른 쪽이 따라온다</td></tr>
+      <tr><td>5</td><td>Redis 를 내려도 판정이 되고, 경고가 한 줄 남는다</td></tr>
+      <tr><td>6</td><td>DB 를 죽인 실험의 <strong>그래프와 로그</strong>가 남는다</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>일부러 부숴서 확인한다</h2>
+  <p>장치를 켠 것과 그 장치가 무언가를 막는 것은 다른 일이다. 지표 이름 테스트를 세웠으면 <strong>이름을 틀리게 고쳐서 빨개지는 것을 본 뒤</strong> 닫는다. 안 부숴 보면 「걸려 있다」와 「돈다」가 갈린 것을 모른다.</p>
+
+  <h2>못 한 것은 못 했다고 적는다</h2>
+  <p>3주차 성능 목표처럼 <strong>재료가 안 모여서 못 정하는 것</strong>이 나온다. 그때 임의의 숫자를 박지 않고 비워 두되, <strong>왜 비었는지</strong>를 적는다. 빈 칸은 「안 해도 된다」가 아니라 「아직 모른다」다.</p>
+</article>
+
+</div>
+</main>
+
+<script>
+(function(){
+  var GROUPS = [
+    { label:"틀",     items:[ ["d1","혼자 배우는 것을 계획으로"], ["d2","무엇을 배우나"] ] },
+    { label:"6주",    items:[ ["d3","1부 관측의 위층"], ["d4","2부 동시성의 위층"] ] },
+    { label:"굴리기", items:[ ["d5","다섯 역할"], ["d6","닫힘 조건"] ] }
+  ];
+
+  var FLAT = [];
+  GROUPS.forEach(function(g){ g.items.forEach(function(it){ FLAT.push(it); }); });
+
+  var nav     = document.getElementById("nav");
+  var sidebar = document.getElementById("sidebar");
+  var main    = document.getElementById("main");
+  var burger  = document.getElementById("burger");
+  var barHere = document.getElementById("barHere");
+  var pager   = document.getElementById("pager");
+  var links   = {};
+
+  // ── 목차 ─────────────────────────────
+  GROUPS.forEach(function(g){
+    var wrap = document.createElement("div");
+    wrap.className = "nav-group";
+    var lab = document.createElement("div");
+    lab.className = "nav-group-label";
+    lab.textContent = g.label;
+    wrap.appendChild(lab);
+
+    g.items.forEach(function(it){
+      var b = document.createElement("button");
+      b.type = "button";
+      b.className = "nav-link";
+      b.innerHTML = '<span class="dot"></span>';
+      b.appendChild(document.createTextNode(it[1]));
+      b.addEventListener("click", function(){ go(it[0], true); });
+      links[it[0]] = b;
+      wrap.appendChild(b);
+    });
+    nav.appendChild(wrap);
+  });
+
+  // ── 절 전환 ───────────────────────────
+  function go(id, fromClick){
+    FLAT.forEach(function(it){
+      var on = it[0] === id;
+      document.getElementById(it[0]).classList.toggle("on", on);
+      links[it[0]].setAttribute("aria-current", on ? "true" : "false");
+      if (on) barHere.textContent = it[1];
+    });
+
+    buildPager(id);
+    if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
+    window.scrollTo({ top:0, behavior: fromClick ? "smooth" : "auto" });
+
+    // 본문이 통째로 바뀌었는데 초점이 목차에 남아 있으면
+    // 화면낭독기에는 아무 일도 안 일어난 것과 같다. 제목으로 옮긴다.
+    if (fromClick) {
+      var h = document.querySelector("#" + id + " h1");
+      if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll:true }); }
+    }
+
+    // 좁은 화면에서는 고르고 나면 접는다. 넓은 화면은 열어 둔 채로 둔다.
+    if (fromClick && window.innerWidth < 1060) setNav(false);
+  }
+
+  // ── 이전 / 다음 ───────────────────────
+  function buildPager(id){
+    var i = FLAT.findIndex(function(it){ return it[0] === id; });
+    pager.innerHTML = "";
+
+    var prev = document.createElement("button");
+    prev.type = "button";
+    prev.innerHTML = "<span>이전</span>" + (i > 0 ? FLAT[i-1][1] : "—");
+    prev.disabled = i <= 0;
+    if (i > 0) prev.addEventListener("click", function(){ go(FLAT[i-1][0], true); });
+
+    var next = document.createElement("button");
+    next.type = "button";
+    next.className = "next";
+    next.innerHTML = "<span>다음</span>" + (i < FLAT.length-1 ? FLAT[i+1][1] : "—");
+    next.disabled = i >= FLAT.length - 1;
+    if (i < FLAT.length-1) next.addEventListener("click", function(){ go(FLAT[i+1][0], true); });
+
+    pager.appendChild(prev);
+    pager.appendChild(next);
+  }
+
+  // ── 사이드바 ──────────────────────────
+  // 스크림이 없다. 열려 있어도 본문 스크롤·클릭이 그대로 산다.
+  function setNav(open){
+    sidebar.classList.toggle("open", open);
+    main.classList.toggle("shifted", open);
+    burger.setAttribute("aria-expanded", open ? "true" : "false");
+    burger.setAttribute("aria-label", open ? "목차 닫기" : "목차 열기");
+    try { localStorage.setItem("aw-nav", open ? "1" : "0"); } catch(e){}
+  }
+  burger.addEventListener("click", function(){ setNav(!sidebar.classList.contains("open")); });
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape" && sidebar.classList.contains("open")) setNav(false);
+  });
+
+  // ── 첫 진입 ───────────────────────────
+  var saved;
+  try { saved = localStorage.getItem("aw-nav"); } catch(e){}
+  setNav(saved !== null ? saved === "1" : window.innerWidth >= 1060);
+
+  var want = location.hash.slice(1);
+  go(FLAT.some(function(it){ return it[0] === want; }) ? want : "d1", false);
+
+  window.addEventListener("hashchange", function(){
+    var h = location.hash.slice(1);
+    if (FLAT.some(function(it){ return it[0] === h; })) go(h, false);
+  });
+})();
+</script>
+</body>

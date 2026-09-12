@@ -1,0 +1,253 @@
+'use client'
+
+const REPO = 'https://github.com/ejg93/ProjectShop'
+
+// 저장소 실측값을 반올림한 것. 기준 2026-09. 정확한 수는 저장소가 답한다
+const METRICS = [
+  { n: '590+', label: '커밋' },
+  { n: '11', label: '설계 기록(ADR)' },
+  { n: '60+', label: 'Flyway 마이그레이션' },
+  { n: '40+', label: '기술 문서' },
+  { n: '110+', label: '테스트 파일' },
+  { n: '6', label: 'CI 워크플로' },
+]
+
+const DECISIONS = [
+  {
+    id: 'ADR-0003',
+    title: '스코프는 role_permission 행에 둔다',
+    body: '역할과 권한을 테이블로 분리하고, 그 연결 행에 own·seller·all 같은 행 단위 조건을 같이 싣는다. 권한 판정이 코드 곳곳의 if 문이 아니라 한 테이블 조회로 끝난다.',
+  },
+  {
+    id: 'PLAN.md → ADR-0010',
+    title: '인증은 세션 쿠키로 하고 JWT를 쓰지 않는다',
+    body: 'HttpOnly · SameSite 쿠키에 세션을 담아 서버가 상태를 쥔다. 권한 체계가 주제인 프로젝트에서 판매자 권한 박탈이 즉시 먹어야 하는데, 서버가 회수할 수 없는 토큰으로는 그게 안 된다. 끊는 지점도 두 겹으로 뒀다. 인증 필터가 요청마다 계정 생존을 확인하고, 탈퇴 시 SessionRegistry가 그 사람 세션을 전부 만료시킨다.',
+  },
+  {
+    id: 'ADR-0001',
+    title: '스키마 변경은 Flyway로 관리한다',
+    body: 'DDL을 버전 붙은 SQL 파일로 저장소에 남기고, 앱이 뜰 때 순서대로 적용한다. 스키마가 코드와 같은 리뷰·이력을 받는다.',
+  },
+  {
+    id: 'ADR-0009',
+    title: '공휴일은 데이터로, 상태 전이표는 코드로 둔다',
+    body: '해마다 바뀌는 공휴일은 DB 행으로 넣어 배포 없이 고치고, 주문 상태 전이는 코드 상수로 박아 컴파일러와 테스트가 잡게 한다. 바뀌는 주기가 다른 둘을 같은 층에 두지 않는다.',
+  },
+]
+
+const CI = [
+  { file: 'ci.yml', desc: '푸시마다 Gradle 빌드와 백엔드·프론트 테스트를 돌려 깨진 커밋을 막는다' },
+  { file: 'codeql.yml', desc: 'Java·TypeScript 소스를 정적 분석해 주입·역직렬화 같은 취약 패턴을 경보로 올린다. 싱크 목록에 JdbcClient.sql을 더해 SQL 문자열 조립 자리를 잡는다' },
+  { file: 'e2e.yml', desc: '실제 브라우저로 로그인부터 주문까지 화면 흐름을 끝까지 밟아 본다' },
+  { file: 'dependabot-automerge.yml', desc: '검사를 통과한 의존성 갱신 PR을 사람 손 없이 합친다' },
+  { file: 'dependency-submission.yml', desc: 'Gradle·npm 의존성 좌표를 main에서 GitHub 의존성 그래프에 올려 취약점 경보가 붙을 대상을 만든다' },
+  { file: 'claude-review.yml', desc: 'PR 디프를 모델에 넣어 지적 목록을 코멘트로 남긴다' },
+]
+
+const STACK = [
+  { k: '백엔드', v: 'Spring Boot 4.1 · Java 25 · Spring Security · JdbcClient' },
+  { k: '프론트', v: 'Next.js · TypeScript · Vitest · Playwright' },
+  { k: 'DB', v: 'PostgreSQL 17 · Redis 7 · Flyway · pg_stat_statements' },
+  { k: '인프라', v: 'Docker Compose · Testcontainers · GitHub Actions' },
+]
+
+const S = {
+  h2: {
+    fontSize: '13px',
+    fontWeight: 700 as const,
+    letterSpacing: '3px',
+    color: 'var(--accent)',
+    marginBottom: '20px',
+    fontFamily: 'IBM Plex Mono, monospace',
+  },
+  card: {
+    background: 'var(--surface2)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
+    padding: '20px 22px',
+  },
+  body: {
+    fontSize: '14px',
+    lineHeight: 1.85,
+    color: 'var(--muted)',
+  },
+}
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <section style={{ marginBottom: '64px' }}>
+      <div className="mono" style={S.h2}>{label}</div>
+      {children}
+    </section>
+  )
+}
+
+export default function ProjectShop() {
+  return (
+    <div style={{ paddingTop: '20px', maxWidth: '860px' }}>
+
+      {/* ── 헤더 ───────────────────────────────────── */}
+      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '14px' }}>
+        CASE_STUDY · 작업 중
+      </div>
+
+      <h1 className="display" style={{ fontSize: '64px', lineHeight: 0.95, marginBottom: '24px' }}>
+        <span style={{ color: 'var(--text)' }}>PROJECT</span><br />
+        <span style={{ color: 'var(--accent)' }}>SHOP</span>
+      </h1>
+
+      <p style={{ ...S.body, fontSize: '15px', marginBottom: '12px' }}>
+        멀티 셀러 쇼핑몰. 판매자가 여럿 입점하고, 고객이 사고, 관리자가 관리한다.
+      </p>
+      <p style={{ ...S.body, fontSize: '15px', marginBottom: '32px' }}>
+        만드는 목적은 물건을 파는 게 아니라 <span style={{ color: 'var(--text)', fontWeight: 700 }}>권한 체계를 정갈하게 짜는 법을 익히는 것</span>이다.
+        그래서 이 페이지도 완성된 화면이 아니라 결정과 검증이 어떻게 쌓였는지를 보여준다.
+      </p>
+
+      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '56px' }}>
+        <a href={REPO} target="_blank" rel="noopener noreferrer" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
+          background: 'var(--accent)', color: 'var(--bg)',
+          fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
+          fontFamily: 'IBM Plex Mono, monospace',
+        }}>
+          ⌥ GITHUB 저장소 →
+        </a>
+        <a href={`${REPO}/tree/main/doc/adr`} target="_blank" rel="noopener noreferrer" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
+          background: 'transparent', color: 'var(--accent3)',
+          border: '1px solid var(--border)',
+          fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
+          fontFamily: 'IBM Plex Mono, monospace',
+        }}>
+          ◧ 설계 기록 11건 →
+        </a>
+      </div>
+
+      {/* ── 숫자 ───────────────────────────────────── */}
+      <Section label="저장소 실측 · 2026-09 기준">
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: '10px',
+        }}>
+          {METRICS.map(m => (
+            <div key={m.label} style={{ ...S.card, padding: '16px 18px' }}>
+              <div className="display" style={{ fontSize: '30px', color: 'var(--accent3)', lineHeight: 1 }}>{m.n}</div>
+              <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '1px', marginTop: '8px' }}>{m.label}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── 주제 선정 ───────────────────────────────── */}
+      <Section label="01 · 왜 이 주제를 골랐나">
+        <div style={S.card}>
+          <p style={{ ...S.body, marginBottom: '14px' }}>
+            실무에서 관리자와 사용자 구분이 코드 여기저기 흩어져 유지보수가 힘들어지는 걸 겪었다.
+            그게 어디서부터 잘못되는지 정면으로 다루려고 멀티 셀러 구조를 골랐다.
+            판매자가 여럿이어야 &ldquo;자기 상품만 수정&rdquo; 같은 행 단위 권한이 필요해지고,
+            실무에서 지저분해지는 지점이 정확히 거기다.
+          </p>
+          <p style={{ ...S.body, margin: 0 }}>
+            그래서 판단이 갈릴 때는 기능을 늘리는 쪽이 아니라 구조가 드러나는 쪽을 고른다.
+            할인쿠폰 10종류보다 권한 판정 한 군데를 제대로 만드는 게 이 프로젝트의 목적에 맞다.
+          </p>
+        </div>
+      </Section>
+
+      {/* ── 설계 결정 ───────────────────────────────── */}
+      <Section label="02 · 무엇을 저울질해서 정했나">
+        <p style={{ ...S.body, marginBottom: '18px' }}>
+          갈림길마다 고른 쪽과 버린 쪽, 그 근거를 ADR 파일로 저장소에 남긴다. 아래는 그중 넷이다.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {DECISIONS.map(d => (
+            <div key={d.id} style={S.card}>
+              <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>{d.id}</div>
+              <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '10px' }}>{d.title}</div>
+              <p style={{ ...S.body, margin: 0 }}>{d.body}</p>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* ── 작업 방식 ───────────────────────────────── */}
+      <Section label="03 · 어떻게 굴리나">
+        <div style={S.card}>
+          <p style={{ ...S.body, marginBottom: '14px' }}>
+            세션이 끊기는 걸 전제로 진행 상태를 전부 파일에 두고, 청크 하나를 커밋 하나로 친다.
+          </p>
+          <p style={{ ...S.body, marginBottom: '18px' }}>
+            값 하나를 타입·스키마·DB 제약·앱 검증 중 어느 층에서 막을지를 코드보다 먼저 정한다.
+          </p>
+          <a href="/study/ai-workflow-notes" className="mono" style={{ fontSize: '12px', color: 'var(--accent)', letterSpacing: '1px', textDecoration: 'none' }}>
+            작업 틀 여섯 갈래는 학습 노트에 →
+          </a>
+        </div>
+      </Section>
+
+      {/* ── 검증 ───────────────────────────────────── */}
+      <Section label="04 · 무엇이 자동으로 잡나">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+          {CI.map(c => (
+            <div key={c.file} style={{ background: 'var(--surface2)', padding: '16px 20px' }}>
+              <div className="mono" style={{ fontSize: '12px', color: 'var(--accent3)', marginBottom: '6px' }}>{c.file}</div>
+              <div style={{ ...S.body, fontSize: '13px' }}>{c.desc}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ ...S.card, marginTop: '10px', borderColor: 'rgba(255,107,53,0.3)' }}>
+          <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>아직 안 닫힌 것</div>
+          <p style={{ ...S.body, margin: 0 }}>
+            <code style={{ color: 'var(--text)' }}>req-coverage.sh</code>가 요구사항 37개 중
+            테스트가 한 번도 부르지 않는 12개를 매번 세서 숫자로 남긴다.
+            그 12개가 검증 구멍인지 애초에 테스트할 수 없는 제약인지는 아직 안 갈랐다.
+            숨기지 않고 숫자로 들고 다니는 쪽을 골랐다.
+          </p>
+        </div>
+      </Section>
+
+      {/* ── 스택 ───────────────────────────────────── */}
+      <Section label="05 · 스택">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {STACK.map(s => (
+            <div key={s.k} style={{ ...S.card, display: 'flex', gap: '18px', alignItems: 'baseline', flexWrap: 'wrap' }}>
+              <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '2px', minWidth: '60px' }}>{s.k}</div>
+              <div style={{ ...S.body, fontSize: '13px' }}>{s.v}</div>
+            </div>
+          ))}
+        </div>
+        <p style={{ ...S.body, fontSize: '13px', marginTop: '16px' }}>
+          결제는 PG를 흉내내는 모의 모듈로 둔다. 상태 전이와 멱등성 설계는 그대로 연습되고,
+          사업자등록과 심사를 안 거친다.
+        </p>
+      </Section>
+
+      {/* ── 닫는 링크 ───────────────────────────────── */}
+      <div style={{
+        ...S.card,
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        gap: '16px', flexWrap: 'wrap',
+      }}>
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>
+            코드와 결정 기록 전부 공개돼 있다
+          </div>
+          <div className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
+            Apache-2.0 · 로컬 실행 전용 · 배포본 없음
+          </div>
+        </div>
+        <a href={REPO} target="_blank" rel="noopener noreferrer" style={{
+          color: 'var(--accent)', fontSize: '13px', fontWeight: 700,
+          textDecoration: 'none', fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
+        }}>
+          ejg93/ProjectShop →
+        </a>
+      </div>
+    </div>
+  )
+}

@@ -4,13 +4,12 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 
 const menus = [
-  { label: 'HOME',        href: '/',            icon: '⌂', desc: 'INTRO' },
-  { label: 'ABOUT ME',    href: '/about',        icon: '◉', desc: 'EXPERIMENT_00' },
-  { label: 'DEV LOG',     href: '/board',        icon: '✍', desc: 'EXPERIMENT_01' },
-  { label: 'AI BATTLE',   href: '/ai-battle',    icon: '⚔', desc: 'EXPERIMENT_02' },
-  { label: 'JOB RADAR',   href: '/public-data',  icon: '◈', desc: 'EXPERIMENT_03' },
-  { label: 'YT COMMENTS', href: '/youtube',      icon: '▶', desc: 'EXPERIMENT_04' },
-  { label: 'STOCK SIM',   href: '/stock',         icon: '📈', desc: 'EXPERIMENT_05' },
+  { label: 'HOME',         href: '/',            icon: '⌂', desc: 'INTRO' },
+  { label: 'ABOUT ME',     href: '/about',       icon: '◉', desc: 'EXPERIMENT_00' },
+  { label: 'PROJECT SHOP', href: '/projectshop', icon: '▤', desc: 'CASE_STUDY' },
+  { label: 'DEV LOG',      href: '/board',       icon: '✍', desc: 'EXPERIMENT_01' },
+  { label: 'YT COMMENTS',  href: '/youtube',     icon: '▶', desc: 'EXPERIMENT_04' },
+  { label: 'AI BATTLE',    href: '/ai-battle',   icon: '⚔', desc: 'EXPERIMENT_02' },
 ]
 
 export default function Sidebar() {

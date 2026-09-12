@@ -23,6 +23,10 @@ const nextConfig = {
         destination: '/study/ai-workflow-notes.html',
       },
       {
+        source: '/study/selfstudy-plan-notes',
+        destination: '/study/selfstudy-plan-notes.html',
+      },
+      {
         source: '/docrules/hwp-excel-rules',
         destination: '/docrules/hwp-excel-rules.html',
       },
