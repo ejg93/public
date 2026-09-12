@@ -145,7 +145,8 @@ export default function Toolbox() {
                     </div>
                     <p style={{ ...S.body, fontSize: '13px', margin: '0 0 10px' }}>
                       빈 입력칸으로 열리는 도구라 넣을 것이 있어야 돌아간다.<br />
-                      아래 셋을 각각 1·2·3번 칸에 넣고 돌리면,<br />
+                      아래 셋을 각각 1·2·3번 칸에 넣고,<br />
+                      「테이블 접두 무시토큰」에 TB 를 적고 돌리면,<br />
                       {/* 이 수치는 샘플 README 의 기대값이다. README 가 바뀌면 여기도 바꾼다 */}
                       결과표 상단에 <code style={{ color: 'var(--text)' }}>컬럼 944 · 완전매칭 589 (56.2%)</code> 가 나온다.
                     </p>
