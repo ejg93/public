@@ -37,12 +37,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <div className="scanline" />
         <div style={{ display: 'flex', minHeight: '100vh' }}>
           <Sidebar />
-          <div style={{ marginLeft: 'var(--sidebar-cur)', flex: 1, display: 'flex', flexDirection: 'column', transition: 'margin-left 0.25s ease' }}>
+          <div className="sidebar-push" style={{ marginLeft: 'var(--sidebar-cur)', flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{
               position: 'fixed',
               top: 0,
               left: 'var(--sidebar-cur)',
-              transition: 'left 0.25s ease',
               right: 0,
               height: '48px',
               background: 'var(--surface)',

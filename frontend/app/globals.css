@@ -28,6 +28,16 @@ html, body {
   font-family: 'Noto Sans KR', sans-serif;
 }
 
+/* 사이드바 접힘 전환. 저장된 상태를 되살린 뒤부터만 켠다 —
+   접힌 채로 들어온 첫 화면이 220px 에서 밀려오는 것을 막는다 */
+html[data-sidebar-ready="1"] .sidebar-rail {
+  transition: width 0.25s ease, padding 0.25s ease;
+}
+html[data-sidebar-ready="1"] .sidebar-push,
+html[data-sidebar-ready="1"] .sidebar-push > div:first-child {
+  transition: margin-left 0.25s ease, left 0.25s ease;
+}
+
 .mono { font-family: 'IBM Plex Mono', monospace; }
 .display { font-family: 'Bebas Neue', sans-serif; }
 

@@ -17,14 +17,33 @@ const menus = [
 export default function Sidebar() {
   const path = usePathname()
   const [collapsed, setCollapsed] = useState(false)
+  // 되살리기 전에는 전환 효과를 끈다. 접힌 채로 들어왔는데 220px 에서 밀려오면 눈에 띈다
+  const [restored, setRestored] = useState(false)
+
+  // 마지막 접힘 상태를 이 브라우저에만 남긴다. 개인정보가 아니고 서버로도 안 간다
+  useEffect(() => {
+    try {
+      setCollapsed(localStorage.getItem('sidebar-collapsed') === '1')
+    } catch {
+      // 사생활 보호 모드 등에서 접근이 막히면 펼친 기본값으로 간다
+    }
+    setRestored(true)
+  }, [])
 
   // 본문 여백과 상단 바 위치가 같은 값을 봐야 접을 때 빈 띠가 안 남는다
   useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-cur', collapsed ? '60px' : '220px')
-  }, [collapsed])
+    if (!restored) return
+    document.documentElement.setAttribute('data-sidebar-ready', '1')
+    try {
+      localStorage.setItem('sidebar-collapsed', collapsed ? '1' : '0')
+    } catch {
+      // 저장이 막혀도 이번 세션 동작에는 지장이 없다
+    }
+  }, [collapsed, restored])
 
   return (
-    <aside style={{
+    <aside className="sidebar-rail" style={{
       width: 'var(--sidebar-cur)',
       background: 'var(--surface)',
       borderRight: '1px solid var(--border)',
@@ -34,7 +53,6 @@ export default function Sidebar() {
       flexDirection: 'column',
       padding: collapsed ? '32px 10px' : '32px 20px',
       zIndex: 100,
-      transition: 'width 0.25s ease, padding 0.25s ease',
       overflow: 'hidden',
     }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: collapsed ? 'center' : 'space-between', marginBottom: '40px' }}>
