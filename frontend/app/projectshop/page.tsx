@@ -2,7 +2,7 @@
 
 import { S, Section } from '@/components/CaseStudy'
 
-const REPO = 'https://github.com/ejg93/ProjectShop'
+const REPO_SHOP = 'https://github.com/ejg93/ProjectShop'
 
 // 저장소 실측값을 반올림한 것. 기준 2026-09. 정확한 수는 저장소가 답한다
 const METRICS = [
@@ -12,6 +12,30 @@ const METRICS = [
   { n: '40+', label: '기술 문서' },
   { n: '110+', label: '테스트 파일' },
   { n: '6', label: 'CI 워크플로' },
+]
+
+// 요건 R21 하나가 법에서 CI 까지 이어지는 줄기. 링크는 전부 ProjectShop 저장소 파일
+const TRACE = [
+  {
+    step: '법',
+    body: '전자상거래법 제15조제1항 — 공급 약정이 없으면 결제일부터 3영업일 안에 발송.\n요건표 R21 이 이 조항을 받는다.',
+    links: ['doc/reference/commerce-compliance.md'],
+  },
+  {
+    step: 'DB 제약',
+    body: 'V26__supply_deadline.sql 이 seller_order.supply_lead_days 를\nnot null default 3 · check (0~60) 으로 박고,\nship_due_at 을 결제 승인 때 박제한다.',
+    links: ['backend/src/main/resources/db/migration/V26__supply_deadline.sql'],
+  },
+  {
+    step: '테스트',
+    body: 'ShipDeadlineTest 가 기한 계산과 미발송 판정을 고정한다.',
+    links: ['backend/src/test/java/com/projectshop/shop/order/ShipDeadlineTest.java'],
+  },
+  {
+    step: 'CI·화면',
+    body: 'ci.yml 의 backend 잡이 push 마다 ./gradlew build 로 그 테스트를 돌린다.\n화면은 checkout/summary.tsx 가 기한을 고지한다.',
+    links: ['.github/workflows/ci.yml', 'frontend/src/app/checkout/summary.tsx'],
+  },
 ]
 
 const DECISIONS = [
@@ -76,7 +100,7 @@ export default function ProjectShop() {
       </p>
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '56px' }}>
-        <a href={REPO} target="_blank" rel="noopener noreferrer" style={{
+        <a href={REPO_SHOP} target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: '8px',
           padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
           background: 'var(--accent)', color: 'var(--bg)',
@@ -85,7 +109,7 @@ export default function ProjectShop() {
         }}>
           ⌥ GITHUB 저장소 →
         </a>
-        <a href={`${REPO}/tree/main/doc/adr`} target="_blank" rel="noopener noreferrer" style={{
+        <a href={`${REPO_SHOP}/tree/main/doc/adr`} target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: '8px',
           padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
           background: 'transparent', color: 'var(--accent3)',
@@ -111,6 +135,40 @@ export default function ProjectShop() {
             </div>
           ))}
         </div>
+      </Section>
+
+      {/* ── 한 줄기 ───────────────────────────────── */}
+      <Section label="00 · 한 줄기로 따라가기">
+        <p style={{ ...S.body, marginBottom: '18px' }}>
+          요건 하나가 법 조항에서 DB 제약·테스트·CI 까지 어떻게 이어지는지 따라간다.
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {TRACE.map((t, i) => (
+            <div key={t.step}>
+              <div style={S.card}>
+                <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>
+                  {String(i + 1).padStart(2, '0')} · {t.step}
+                </div>
+                <p style={{ ...S.body, margin: '0 0 12px' }}>{t.body}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {t.links.map(l => (
+                    <a key={l} href={`${REPO_SHOP}/blob/main/${l}`} target="_blank" rel="noopener noreferrer" className="mono"
+                      style={{ fontSize: '11px', color: 'var(--accent)', textDecoration: 'none', wordBreak: 'break-all' }}>
+                      {l} →
+                    </a>
+                  ))}
+                </div>
+              </div>
+              {i < TRACE.length - 1 && (
+                <div className="mono" style={{ color: 'var(--accent3)', fontSize: '14px', textAlign: 'center', padding: '6px 0' }}>↓</div>
+              )}
+            </div>
+          ))}
+        </div>
+        <p style={{ ...S.body, fontSize: '13px', marginTop: '16px' }}>
+          요건 40개가 전부 이 모양으로 이어지지는 않는다 —<br />
+          아래 04 의 숫자가 그 구멍이다.
+        </p>
       </Section>
 
       {/* ── 주제 선정 ───────────────────────────────── */}
@@ -175,9 +233,9 @@ export default function ProjectShop() {
         <div style={{ ...S.card, marginTop: '10px', borderColor: 'rgba(255,107,53,0.3)' }}>
           <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>아직 안 닫힌 것</div>
           <p style={{ ...S.body, margin: 0 }}>
-            <code style={{ color: 'var(--text)' }}>req-coverage.sh</code>가 요구사항 37개 중<br />
-            테스트가 한 번도 부르지 않는 12개를 매번 세서 숫자로 남긴다.<br />
-            그 12개가 검증 구멍인지 애초에 테스트할 수 없는 제약인지는 아직 안 갈랐다.<br />
+            <code style={{ color: 'var(--text)' }}>req-coverage.sh</code>가 요구사항 40개 중<br />
+            테스트가 한 번도 부르지 않는 14개를 매번 세서 숫자로 남긴다.<br />
+            그 14개가 검증 구멍인지 애초에 테스트할 수 없는 제약인지는 아직 안 갈랐다.<br />
             숨기지 않고 숫자로 들고 다니는 쪽을 골랐다.
           </p>
         </div>
@@ -213,7 +271,7 @@ export default function ProjectShop() {
             Apache-2.0 · 로컬 실행 전용 · 배포본 없음
           </div>
         </div>
-        <a href={REPO} target="_blank" rel="noopener noreferrer" style={{
+        <a href={REPO_SHOP} target="_blank" rel="noopener noreferrer" style={{
           color: 'var(--accent)', fontSize: '13px', fontWeight: 700,
           textDecoration: 'none', fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
         }}>

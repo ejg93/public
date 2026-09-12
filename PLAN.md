@@ -21,13 +21,13 @@
 - **표 셀은 한 문장, 95폭 이내.** 줄바꿈 lint 가 tsx 의 `<td>` 도 본다. 긴 인용문은 셀에 넣지 말고 카드 안 `<pre>` 로 — lint 가 `<pre`·`<code` 줄은 건너뛴다
 - 인용문은 **PLAN 에 적힌 원문 그대로** 쓴다. 지어내거나 다듬지 않는다 — 실제로 찍히는 메시지라는 것이 증거의 값이다
 
-## 0. 공통 컴포넌트 추출  [ ]
+## 0. 공통 컴포넌트 추출  [x]
 
 `projectshop/page.tsx` 의 `S`(h2·card·body)와 `Section` 을 `frontend/components/CaseStudy.tsx` 로 옮기고 export 한다. `projectshop/page.tsx` 는 import 로 바꾼다. 1·2·3 페이지가 같은 것을 쓴다.
 
 닫힘: `verify.sh` 초록, `/projectshop` 화면이 전과 같다.
 
-## 1. `/projectshop` — 추적 흐름 한 줄기  [ ]
+## 1. `/projectshop` — 추적 흐름 한 줄기  [x]
 
 **왜**: 지금 페이지는 숫자·ADR 넷·CI 목록으로 흩어져 있다. 심사자가 3분 안에 이해하려면 「법 → 제약 → 테스트 → CI」 한 줄기를 따라가게 해야 한다.
 
