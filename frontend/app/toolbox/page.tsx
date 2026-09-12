@@ -5,7 +5,7 @@ import { S, Section } from '@/components/CaseStudy'
 export const metadata = { title: 'TOOLBOX' }
 
 const REPO_PORTFOLIO = 'https://github.com/ejg93/public'
-const SAMPLE_DIR = '/toolbox/논리명_변환기_sample'
+const SAMPLE_DIR = encodeURI('/toolbox/논리명_변환기_sample')
 
 type Tool = { file: string; icon: string; name: string; desc: string }
 
@@ -152,7 +152,7 @@ export default function Toolbox() {
                     </p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {SAMPLES.map(s => (
-                        <a key={s.name} href={encodeURI(`${SAMPLE_DIR}/${s.name}`)} target="_blank" rel="noopener noreferrer"
+                        <a key={s.name} href={`${SAMPLE_DIR}/${encodeURI(s.name)}`} target="_blank" rel="noopener noreferrer"
                           className="mono" style={linkStyle}>
                           {s.slot} · {s.name} →
                         </a>

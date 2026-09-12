@@ -14,7 +14,7 @@
 | `frontend/public/study/` | 아키텍처 노트 HTML 1장. 숨은 경로 | 요청받은 파일만 수정한다 |
 | `frontend/public/docrules/` | 한글·엑셀 문서 배포 규칙 HTML. 폐쇄망 반입 대상 | 요청받은 파일만 수정한다 |
 | `doc/` | 외부 API 스펙·배포 설정처럼 코드가 답 못 하는 것만. 색인은 [doc/README.md](doc/README.md) | 각 구역 CLAUDE.md의 트리거에 걸릴 때만 읽는다 |
-| `scripts/` | `verify.sh`(바뀐 구역 골라 검증)·`doc-lint.sh`(존댓말 검사)·`hook-doc-lint.sh`(hook 입구) | `.claude/settings.json` 의 hook 이 부른다 |
+| `scripts/` | `verify.sh`(바뀐 구역 골라 검증)·`doc-lint.sh`(존댓말·줄바꿈·경로 검사)·`linebreak-lint.js`·`href-lint.js`·`hook-doc-lint.sh`·`hook-push-gate.sh`(hook 입구) | `.claude/settings.json` 의 hook 이 부른다 |
 | `doc/design-standards/` | 행안부 공공 DB 표준화 지침 등 외부 PDF 원본. 표준단어·도메인·코드 설계 근거 | 읽기 전용. 색인은 [design-standards/README.md](doc/design-standards/README.md), 트리거는 toolbox/CLAUDE.md |
 
 `public/` 아래 notes·game·study·docrules는 앱 코드가 아니라 정적 보관물이다. 근처 작업 중이라도 요청 없이 손대지 않는다.
@@ -24,6 +24,8 @@
 작업을 끝내기 전에 `bash scripts/verify.sh` 를 돌린다. HEAD 대비 바뀐 파일을 보고 `frontend/` 코드면 typecheck·build(lint 포함), `backend/` 면 JDK 17 로 `mvnw compile` 을 고른다. 출력은 실패했을 때만 나온다.
 
 스크립트가 안 보는 것은 **그 구역 CLAUDE.md 「검증」 절**이 든다 — 화면이 실제로 그려지는지, 백엔드 기동, `public/` 아래 정적 HTML.
+
+`verify.sh` 가 초록이면 작업트리 지문을 `.git/verify-stamp` 에 남긴다. **`git push` 는 그 도장이 지금 트리와 같아야 나간다** — 다르면 hook 이 막는다(`hook-push-gate.sh`). 도장을 찍는 쪽이 검증이고, push 는 확인만 한다.
 
 돌리지 못했으면 못 돌렸다고 밝힌다. 안 돌려보고 "동작한다"·"빌드 통과"라고 쓰지 않는다. 일부만 확인했으면 확인한 범위와 못 한 범위를 나눠서 적는다.
 

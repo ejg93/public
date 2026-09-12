@@ -23,6 +23,19 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/scripts/hook-push-gate.sh\"",
+            "timeout": 20,
+            "statusMessage": "push 검증 도장 검사"
+          }
+        ]
+      }
     ]
   }
 }

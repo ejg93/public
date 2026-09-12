@@ -74,6 +74,12 @@ if [ $# -gt 0 ]; then
           printf '%s\n' "$lb" | sed 's/^/    /'
           fail=1
         fi
+        hr=$(node scripts/href-lint.js "$f" "$nums" || true)
+        if [ -n "$hr" ]; then
+          echo "[경로] $f — 고친 줄의 URL 에 인코딩 안 된 글자가 있다. encodeURI 로 감싼다:"
+          printf '%s\n' "$hr" | sed 's/^/    /'
+          fail=1
+        fi
       fi
     ;; esac
   done

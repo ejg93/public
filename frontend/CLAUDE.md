@@ -48,6 +48,16 @@ Tailwind가 설치돼 있고 `tailwind.config.js`도 있지만, **화면 스타�
 
 `NEXT_PUBLIC_` 접두사가 붙은 값은 번들에 그대로 실려 브라우저에 노출된다. 비밀 키는 백엔드에 둔다.
 
+## 경로에 한글이 들어갈 때
+
+`/` 로 시작하는 문자열 리터럴에 한글이 있으면 **그 자리에서** `encodeURI` 로 감싼다. 상수에 날것으로 담아 두고 쓰는 쪽에서 감싸면 빠뜨린다. `scripts/href-lint.js` 가 고친 줄에서 잡는다.
+
+```ts
+const SAMPLE_DIR = encodeURI('/toolbox/논리명_변환기_sample')
+```
+
+브라우저는 주소창에서 알아서 인코딩해 클릭은 되지만, 그 href 를 복사해 요청하면 404 다.
+
 ## 로컬 실행
 
 ```bash

@@ -16,6 +16,15 @@ fe=0; be=0
 hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/(package\.json|package-lock\.json|next\.config\.js|tsconfig\.json|tailwind\.config\.js|\.eslintrc\.json)$' && fe=1
 hit "${1:-}" '^backend/(src/|pom\.xml$)' && be=1
 
+# 초록일 때 작업트리 tree 해시를 도장으로 남긴다. push hook 이 이것만 보고 판단한다(hook-push-gate.sh).
+stamp() {
+  tmp=$(mktemp)
+  GIT_INDEX_FILE="$tmp" git read-tree HEAD 2>/dev/null
+  GIT_INDEX_FILE="$tmp" git add -A . 2>/dev/null
+  GIT_INDEX_FILE="$tmp" git write-tree 2>/dev/null > .git/verify-stamp
+  rm -f "$tmp"
+}
+
 log=$(mktemp); trap 'rm -f "$log"' EXIT
 ok=1
 if [ $fe = 1 ]; then
@@ -30,6 +39,7 @@ if [ $be = 1 ]; then
 fi
 if [ $fe = 0 ] && [ $be = 0 ]; then
   echo "frontend·backend 코드가 안 바뀌었다 — 돌릴 것이 없다. public/ 정적 파일은 그 구역 CLAUDE.md 「검증」."
+  stamp
   exit 0
 fi
-[ $ok = 1 ] && echo "초록" || { echo "빨갛다"; exit 1; }
+[ $ok = 1 ] && { stamp; echo "초록"; } || { echo "빨갛다"; exit 1; }
