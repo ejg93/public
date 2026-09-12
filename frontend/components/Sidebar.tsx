@@ -5,11 +5,14 @@ import { useState } from 'react'
 
 const menus = [
   { label: 'HOME',         href: '/',            icon: '⌂', desc: 'INTRO' },
-  { label: 'ABOUT ME',     href: '/about',       icon: '◉', desc: 'EXPERIMENT_00' },
+  { label: 'ABOUT ME',     href: '/about',       icon: '◉', desc: 'PROFILE' },
   { label: 'PROJECT SHOP', href: '/projectshop', icon: '▤', desc: 'CASE_STUDY' },
-  { label: 'DEV LOG',      href: '/board',       icon: '✍', desc: 'EXPERIMENT_01' },
-  { label: 'YT COMMENTS',  href: '/youtube',     icon: '▶', desc: 'EXPERIMENT_04' },
-  { label: 'AI BATTLE',    href: '/ai-battle',   icon: '⚔', desc: 'EXPERIMENT_02' },
+  { label: 'HOW I WORK',   href: '/workflow',    icon: '⚙', desc: 'METHOD' },
+  { label: 'TOOLBOX',      href: '/toolbox',     icon: '🧰', desc: 'CLOSED_NET' },
+  { label: 'STUDY NOTES',  href: '/study',       icon: '✎', desc: 'NOTES' },
+  { label: 'DEV LOG',      href: '/board',       icon: '✍', desc: 'LOG' },
+  { label: 'AI BATTLE',    href: '/ai-battle',   icon: '⚔', desc: 'LAB' },
+  { label: 'YT COMMENTS',  href: '/youtube',     icon: '▶', desc: 'LAB' },
 ]
 
 export default function Sidebar() {

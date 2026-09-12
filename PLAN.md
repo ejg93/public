@@ -168,7 +168,7 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 
 닫힘: `/study` 에 카드 5장이 날짜순으로, 각 카드가 노트로 간다. `/study/ai-workflow-notes` 같은 직접 URL 도 된다. `verify.sh` 초록. `frontend/CLAUDE.md` 라우트 표에 `/study` 행(「목록은 `public/study/*.html` 의 메타에서 빌드 때 만든다. 노트 추가 = HTML 한 장 + 메타 셋」).
 
-## 5. Sidebar 최종 배열 + 문서  [ ]
+## 5. Sidebar 최종 배열 + 문서  [x]
 
 `frontend/components/Sidebar.tsx` 의 `menus` 를 아래로 바꾼다. `EXPERIMENT_0x` 라벨은 스스로 실험이라 깎아 부르는 셈이라 없앤다.
 
