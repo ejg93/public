@@ -1,11 +1,10 @@
-'use client'
-
 import { S, Section } from '@/components/CaseStudy'
+import { getShopStats } from '@/lib/github'
 
 const REPO_SHOP = 'https://github.com/ejg93/ProjectShop'
 
-// 저장소 실측값을 반올림한 것. 기준 2026-09. 정확한 수는 저장소가 답한다
-const METRICS = [
+// GitHub 호출이 실패했을 때만 쓰는 반올림 값. 기준 2026-09
+const FALLBACK = [
   { n: '590+', label: '커밋' },
   { n: '11', label: '설계 기록(ADR)' },
   { n: '60+', label: 'Flyway 마이그레이션' },
@@ -77,7 +76,27 @@ const STACK = [
   { k: '인프라', v: 'Docker Compose · Testcontainers · GitHub Actions' },
 ]
 
-export default function ProjectShop() {
+// ISR 15분. 빌드 때 한 번 받고, 이후 15분마다 백그라운드로 다시 받는다
+export const revalidate = 900
+
+export default async function ProjectShop() {
+  const { metrics, recent } = await getShopStats()
+
+  const rows = metrics
+    ? [
+        { n: String(metrics.commits), label: '커밋' },
+        { n: String(metrics.adr), label: '설계 기록(ADR)' },
+        { n: String(metrics.migrations), label: 'Flyway 마이그레이션' },
+        { n: String(metrics.docs), label: '기술 문서' },
+        { n: String(metrics.tests), label: '테스트 파일' },
+        { n: String(metrics.workflows), label: 'CI 워크플로' },
+      ]
+    : FALLBACK
+
+  const metricsLabel = metrics
+    ? `저장소 실측 · GitHub · ${metrics.pushedAt}`
+    : '저장소 실측 · 2026-09 기준'
+
   return (
     <div style={{ paddingTop: '20px', maxWidth: '860px' }}>
 
@@ -117,18 +136,18 @@ export default function ProjectShop() {
           fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
           fontFamily: 'IBM Plex Mono, monospace',
         }}>
-          ◧ 설계 기록 11건 →
+          ◧ 설계 기록 {metrics?.adr ?? 11}건 →
         </a>
       </div>
 
       {/* ── 숫자 ───────────────────────────────────── */}
-      <Section label="저장소 실측 · 2026-09 기준">
+      <Section label={metricsLabel}>
         <div style={{
           display: 'grid',
           gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
           gap: '10px',
         }}>
-          {METRICS.map(m => (
+          {rows.map(m => (
             <div key={m.label} style={{ ...S.card, padding: '16px 18px' }}>
               <div className="display" style={{ fontSize: '30px', color: 'var(--accent3)', lineHeight: 1 }}>{m.n}</div>
               <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '1px', marginTop: '8px' }}>{m.label}</div>
@@ -136,6 +155,24 @@ export default function ProjectShop() {
           ))}
         </div>
       </Section>
+
+      {/* ── 지금 상황 ───────────────────────────────── */}
+      {recent && (
+        <Section label="지금 상황 · 최근 커밋 5">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
+            {recent.map(c => (
+              <a key={c.sha} href={c.url} target="_blank" rel="noopener noreferrer" style={{
+                background: 'var(--surface2)', padding: '12px 18px', textDecoration: 'none',
+                display: 'flex', gap: '14px', alignItems: 'baseline', flexWrap: 'wrap',
+              }}>
+                <span className="mono" style={{ fontSize: '11px', color: 'var(--accent3)' }}>{c.date}</span>
+                <span style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, minWidth: '220px' }}>{c.message}</span>
+                <span className="mono" style={{ fontSize: '11px', color: 'var(--accent)' }}>{c.sha}</span>
+              </a>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* ── 한 줄기 ───────────────────────────────── */}
       <Section label="00 · 한 줄기로 따라가기">

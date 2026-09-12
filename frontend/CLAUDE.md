@@ -9,7 +9,9 @@ App Router 기반 포트폴리오 화면. Vercel이 이 폴더를 루트로 잡�
 ```
 app/          라우트별 page.tsx (App Router)
 components/   Sidebar.tsx — 전 페이지 공통 좌측 내비
+              CaseStudy.tsx — 케이스 스터디 페이지 공통 카드·섹션 스타일
 lib/api.ts    백엔드 베이스 URL·공개 키 상수 중앙 관리
+lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받아온다
 ```
 
 새 화면은 `app/<경로>/page.tsx`로 만든다. 백엔드 주소나 공개 키를 페이지에 직접 박지 말고 `lib/api.ts`에서 import 한다.
@@ -23,7 +25,7 @@ lib/api.ts    백엔드 베이스 URL·공개 키 상수 중앙 관리
 | `/ai-battle` | `POST /api/battle/chat`, `GET /api/battle/health` | Claude 기반 AI 배틀 |
 | `/youtube` | `GET /api/youtube/{comments,replies}` | 유튜브 댓글 뷰어 |
 | `/public-data` | `GET /api/jobs` | 채용정보 목록 + 지도. Sidebar·홈에 없고 URL 직접 접근만 된다 |
-| `/projectshop` | - | 별도 저장소 [ProjectShop](https://github.com/ejg93/ProjectShop) 소개. 설계 결정·작업 방식·CI 체계를 정리한 정적 화면. 데이터는 `page.tsx` 상단 상수 배열에 박혀 있다 |
+| `/projectshop` | - | 별도 저장소 [ProjectShop](https://github.com/ejg93/ProjectShop) 소개. 설계 결정·작업 방식·CI 체계를 정리한 화면. 숫자와 최근 커밋은 `lib/github.ts` 가 GitHub API 로 받아온다(ISR 15분). 호출이 실패하면 `page.tsx` 의 `FALLBACK` 배열로 떨어진다 |
 | `/board` | - | 게시판. 정적 데모를 `demos.tsx`/`demoMap.tsx`로 등록 |
 
 ## 스타일
@@ -38,6 +40,7 @@ Tailwind가 설치돼 있고 `tailwind.config.js`도 있지만, **화면 스타�
 |---|---|
 | `NEXT_PUBLIC_SPRING_URL` | 백엔드(Railway) API 베이스 URL. 없으면 `http://localhost:8080` |
 | `NEXT_PUBLIC_KAKAO_JS_KEY` | Kakao Maps JS SDK를 브라우저에서 로드할 때 쓰는 공개 키 |
+| `GITHUB_TOKEN` | `/projectshop` 이 ProjectShop 저장소 숫자를 받아올 때 쓴다. 없어도 동작한다. 없으면 무인증 60회/시 |
 
 `NEXT_PUBLIC_` 접두사가 붙은 값은 번들에 그대로 실려 브라우저에 노출된다. 비밀 키는 백엔드에 둔다.
 
