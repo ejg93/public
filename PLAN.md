@@ -86,7 +86,7 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 
 닫힘: 로컬 `npm run build` 때 GitHub 에서 숫자를 받아 594 같은 정확값이 뜨고 「지금 상황」에 오늘 커밋이 보인다. 토큰 없이도 뜬다. 네트워크를 끊고 빌드해도(또는 `REPO` 를 없는 이름으로 바꿔) fallback 숫자와 「2026-09 기준」 라벨로 떨어지고 「지금 상황」은 안 보인다. `verify.sh` 초록. **배포 뒤 ProjectShop 에 커밋을 하나 밀고 15분 뒤 포폴 페이지에 그 커밋이 뜨는지 본다** — 이것이 실시간 연동의 최종 확인이다.
 
-## 2. `/workflow` — HOW I WORK  [ ]
+## 2. `/workflow` — HOW I WORK  [x]
 
 **왜**: ProjectShop 의 진짜 차별점은 쇼핑몰이 아니라 「규칙을 기계가 지키게 만든 작업 방식」이다. 이 페이지가 그것을 한 자리에 모으고, `chunkframe` 으로 「재사용 가능한 방법」임을 보인다.
 
