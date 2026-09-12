@@ -18,6 +18,8 @@
 - 새 페이지의 데이터(카드 목록·링크)는 `page.tsx` 상단 상수 배열에 둔다. 두 문장 이상인 문자열은 `\n` 으로 끊고 `whiteSpace: 'pre-line'` 으로 그린다(`projectshop/page.tsx` 의 `S.body` 가 그 예)
 - 저장소 링크는 상수로: `REPO_SHOP = 'https://github.com/ejg93/ProjectShop'`, `REPO_PORTFOLIO = 'https://github.com/ejg93/public'`, `REPO_CHUNKFRAME = 'https://github.com/ejg93/chunkframe'`. 파일 링크는 `${REPO}/blob/main/<경로>`
 - 화면 문구는 평서형. 사용자에게 존댓말을 쓰는 화면이 아니다(포트폴리오 전체가 그렇다)
+- **표 셀은 한 문장, 95폭 이내.** 줄바꿈 lint 가 tsx 의 `<td>` 도 본다. 긴 인용문은 셀에 넣지 말고 카드 안 `<pre>` 로 — lint 가 `<pre`·`<code` 줄은 건너뛴다
+- 인용문은 **PLAN 에 적힌 원문 그대로** 쓴다. 지어내거나 다듬지 않는다 — 실제로 찍히는 메시지라는 것이 증거의 값이다
 
 ## 0. 공통 컴포넌트 추출  [ ]
 
@@ -50,11 +52,13 @@
 
 **왜**: 박힌 숫자는 하루 만에 낡는다(590→594). 공개 저장소라 GitHub REST API 가 토큰 없이도 열려 있다.
 
-**방식**: 서버 컴포넌트 + ISR. `page.tsx` 에서 `'use client'` 를 뗀다(상호작용이 없다). 데이터 함수는 `frontend/lib/github.ts`:
+**필수 항목이다.** 1번을 치면 1-b 까지 쳐야 닫힌다 — 박힌 숫자를 남기는 것이 이 항목의 실패 조건이다.
+
+**방식**: 서버 컴포넌트 + ISR(15분). `page.tsx` 에서 `'use client'` 를 뗀다(상호작용이 없다). 데이터 함수는 `frontend/lib/github.ts`:
 
 ```ts
 const REPO = 'ejg93/ProjectShop'
-const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}, next: { revalidate: 3600 } }
+const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` } : {}, next: { revalidate: 900 } }
 ```
 
 | 숫자 | 호출 | 세는 법 |
@@ -67,7 +71,11 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 | CI 워크플로 | `GET …/actions/workflows` | `total_count` |
 | 갱신 시각 | `GET …/repos/${REPO}` | `pushed_at` |
 
-호출 4번. `tree` 응답의 `truncated` 가 true 면 실패로 친다.
+| 최근 커밋 5개 | `GET …/commits?per_page=5` | `commit.message` 첫 줄 · `commit.author.date` · `sha` 앞 7자 · `html_url` |
+
+호출 5번. `tree` 응답의 `truncated` 가 true 면 실패로 친다.
+
+**「지금 상황」 절 신설** — 「저장소 실측」 섹션 바로 아래. 최근 커밋 5개를 한 줄씩: `YYYY-MM-DD` · 메시지 첫 줄(60자 넘으면 `…`) · `sha` 7자(링크). 숫자보다 「오늘 무엇을 했나」가 진행 중이라는 증거다. 이 호출이 실패하면 절을 통째로 숨긴다(fallback 없음).
 
 **fallback**: 어느 호출이든 실패하면(429·403 포함) 지금 `METRICS` 에 박힌 반올림 값을 쓴다. 상수 배열은 `FALLBACK` 으로 이름을 바꿔 남긴다.
 섹션 라벨: 성공이면 `저장소 실측 · GitHub · <pushed_at 을 YYYY-MM-DD 로>`, 실패면 지금처럼 `저장소 실측 · 2026-09 기준`. 숫자는 성공 시 정확값(반올림 안 함).
@@ -76,7 +84,7 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 
 **요건 커버리지(40개 중 14개)는 API 로 못 받는다** — `req-coverage.sh` 가 계산하는 값이라 저장소 파일에 없다. 이번엔 손 숫자 유지. 나중에 ProjectShop CI 가 결과를 `doc/metrics.json` 으로 남기면 그때 같은 fetch 에 얹는다.
 
-닫힘: 로컬 `npm run build` 때 GitHub 에서 숫자를 받아 594 같은 정확값이 뜬다. 토큰 없이도 뜬다. 네트워크를 끊고 빌드해도(또는 `REPO` 를 없는 이름으로 바꿔) fallback 숫자와 「2026-09 기준」 라벨로 떨어진다. `verify.sh` 초록.
+닫힘: 로컬 `npm run build` 때 GitHub 에서 숫자를 받아 594 같은 정확값이 뜨고 「지금 상황」에 오늘 커밋이 보인다. 토큰 없이도 뜬다. 네트워크를 끊고 빌드해도(또는 `REPO` 를 없는 이름으로 바꿔) fallback 숫자와 「2026-09 기준」 라벨로 떨어지고 「지금 상황」은 안 보인다. `verify.sh` 초록. **배포 뒤 ProjectShop 에 커밋을 하나 밀고 15분 뒤 포폴 페이지에 그 커밋이 뜨는지 본다** — 이것이 실시간 연동의 최종 확인이다.
 
 ## 2. `/workflow` — HOW I WORK  [ ]
 
@@ -90,19 +98,26 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 
 `01 · 세션의 뼈대` — 카드 4장 가로(auto-fit 그리드): 예열 / 청크 / 마무리 / 점검. 각각 한 줄. 출처는 `public/study/ai-workflow-notes.html` 의 `<h1>세션의 뼈대</h1>` 절 — **그 절을 읽고 한 줄씩 요약**한다. 카드 아래 링크: 「전체 노트 →」 `/study/ai-workflow-notes`.
 
-`02 · 기계가 막는 것` — 표. 열: 무엇 / 언제 걸리나 / 파일. 행은 아래 사실만:
+`02 · 기계가 막는 것` — **카드 6장 세로**(표가 아니다 — 인용문이 길어 셀에 못 넣는다). 카드 하나 = 제목 한 줄 / 「언제」 한 줄 / **막힐 때 실제로 찍히는 메시지**를 `<pre>` 로 / 파일 링크. 설명문은 제목·언제 두 줄로 끝내고, 나머지는 인용문이 말하게 둔다 — 배선도(`settings.json`)가 아니라 알람이 울린 기록이 증거다.
 
-| 무엇 | 언제 | 파일(링크) |
-|---|---|---|
-| 커밋 안 된 작업물 검사 | 세션이 멈출 때(Stop hook) | `REPO_SHOP` `.claude/settings.json` |
-| 검증 도장 — `verify.sh --full` 이 HEAD 에서 초록이어야 push | `git push` 직전(PreToolUse) | 같은 파일 + `scripts/verify.sh` |
-| PR base 는 main, 열린 작업 PR 있으면 새 PR 금지 | `gh pr create` 직전 | 같은 파일 |
-| 문서 lint — 완전 중복 문장·제목의 날짜·존댓말·분할표 빈 칸 래칫 | 문서를 고친 직후(PostToolUse) | `REPO_SHOP` `scripts/doc-lint.sh` |
-| 요건 커버리지 — 법 요건 40개 중 테스트가 안 부르는 것을 센다 | 점검 때. 게이트가 아니라 리포트 | `REPO_SHOP` `scripts/req-coverage.sh` |
-| 계층·예외·의존 규칙 | 테스트 | `REPO_SHOP` `backend/src/test/java/com/projectshop/shop/ArchitectureTest.java` |
-| 존댓말·줄바꿈 lint — 고친 줄만 본다 | 이 포트폴리오. 파일을 고친 직후 | `REPO_PORTFOLIO` `scripts/doc-lint.sh`, `scripts/linebreak-lint.js` |
+인용문은 아래 원문 그대로. `$fail`·`${o}` 같은 변수 자리는 괄호 안 예시값으로 바꾼다.
 
-`03 · 기록은 재발을 못 막고 강제 지점은 막는다` — 카드 1장, 3문장. ProjectShop `CLAUDE.md` 「끝 — 이 다섯을 채워야 닫힌다」 절 밑의 사례를 옮긴다: 청크 `11-6` 이 「뷰가 컬럼을 굳힌다」를 이력에만 적었더니 다음 날 다시 밟았고, `Q2` 가 같은 것을 대조 테스트로 내렸더니 그다음 마이그레이션에서 바로 잡혔다. **이 세 문장 외에 해석을 덧붙이지 않는다.**
+| # | 제목 | 언제 | 인용문(그대로) | 링크 |
+|---|---|---|---|---|
+| 1 | 커밋 안 된 작업물이 있으면 세션이 못 멈춘다 | Stop hook | `커밋 안 된 작업물이 있다 — 청크 하나 = 커밋 하나, 미완이면 WIP 커밋을 남긴다(CLAUDE.md 「청크 규칙」). 버릴 것이면 git stash 로 치운다.` | `REPO_SHOP/blob/main/.claude/settings.json` |
+| 2 | 검증이 초록이 아니면 push 가 안 나간다 | `git push` 직전 | `full 도장이 없다: backend — push 앞엔 bash scripts/verify.sh --full (느린 레인·next build) 이 HEAD 에서 초록이어야 한다(2z-2).` | 같은 파일 + `REPO_SHOP/blob/main/scripts/verify.sh` |
+| 3 | PR 은 main 을 base 로, 한 번에 하나만 | `gh pr create` 직전 | `PR 의 base 는 언제나 main 이다(2g-1). 쌓아 올리면 아래가 머지될 때 GitHub 이 base 없는 PR 을 닫고, 닫힌 PR 은 reopen 도 base 변경도 안 된다.` 와 `열린 작업 PR 이 1 개 있다. 직렬로 간다(2g-1) — 앞 PR 을 머지하고 다음 묶음을 연다.` | 같은 파일 |
+| 4 | 문서가 부서지면 저장 직후 막힌다 | 문서를 고친 직후 | `[제목에 날짜] doc/reference/money-rules.md — 기준 문서는 「지금 무엇이 맞나」만 답한다. 이력은 PROGRESS.md 로(doc/README.md):` 와 `[존댓말] CLAUDE.md — 개발자가 읽는 글은 평서형이다(CLAUDE.md 「글 작성 규칙」 4번):` | `REPO_SHOP/blob/main/scripts/doc-lint.sh` |
+| 5 | 법 요건 중 테스트가 안 부르는 것을 센다 | 점검 때. 게이트가 아니라 리포트 | `테스트가 언급하지 않는 요건: 14/40 — R2 R10 R12 R13 R23 R26 R27 R29 R30 R31 R33 R35 R38 R39` | `REPO_SHOP/blob/main/scripts/req-coverage.sh` |
+| 6 | 이 포트폴리오도 같은 방식이다 — 글 규칙을 고친 줄에서 잡는다 | 파일을 고친 직후 | `[줄바꿈] frontend/app/projectshop/page.tsx — 고친 줄이 규칙 7에 걸린다(CLAUDE.md 「글 작성 규칙」 7):` 다음 줄 `40: A 조각 109폭 > 95 — 의미 단위에서 <br /> 또는 \n 으로 끊는다` | `REPO_PORTFOLIO/blob/main/scripts/linebreak-lint.js` |
+
+6번 카드 밑에 한 줄: 「검사기를 붙인 직후 hook 이 40번 줄을 잡았다. 오탐이었고, 검사기를 고쳤다 — 2026-09-12.」 (사실이다. 이 세션에서 일어났다.)
+
+`03 · 기록은 재발을 못 막고 강제 지점은 막는다` — 카드 1장, 아래 세 문장 **그대로**(ProjectShop `CLAUDE.md` 의 사례를 청크 번호 없이 옮긴 것이다. 밖에서 읽히게 번호만 뺐고 사실은 같다):
+
+「뷰가 컬럼을 굳힌다」는 함정을 진행 로그에만 적었더니 다음 날 같은 자리를 다시 밟았다.<br />
+같은 내용을 대조 테스트로 내리자 그다음 마이그레이션에서 바로 잡혔다.<br />
+기록은 재발을 못 막고 강제 지점은 막는다.
 
 `04 · 템플릿` — 카드 1장. `chunkframe` 은 ProjectShop 에서 도메인(커머스·한국법)을 빼고 메커니즘만 남긴 틀. 들어있는 것 넷: `CLAUDE.md`(세션 생명주기·라우팅 표·규칙 우선순위), `PLAN.md`/`PROGRESS.md` 빈 틀, `doc/reference/document-map.md`, `scripts/doc-lint.sh`. 링크 `REPO_CHUNKFRAME`. 출처는 그 저장소 README — 거기 적힌 것만 쓴다.
 
@@ -121,7 +136,12 @@ const opt = { headers: process.env.GITHUB_TOKEN ? { Authorization: `Bearer ${pro
 **구성**
 - 헤더 — 라벨 `CLOSED_NET`, 제목 `TOOL` / `BOX`. 부제: 「사내 폐쇄망 PC 에 HTML 파일 하나만 복사해서 여는 개발 보조 도구. 빌드도 서버도 없다.」
 - `01 · 절대 규칙` — 카드 3장 가로: 외부 CDN·npm 금지 / 파일 하나로 완결 / 개인정보 localStorage 저장 금지. 출처 `public/toolbox/CLAUDE.md` 「절대 규칙」 1~3 — 그 문장을 줄여 쓴다
-- `02 · 도구` — 파싱한 7개를 카드로. 클릭하면 `/tools/<파일명>` 새 탭(`file` 값에서 `tools/` 접두를 떼고 `/tools/` 를 붙인다. 한글 파일명은 `encodeURI`)
+- `02 · 도구` — 파싱한 7개를 카드로. **카드를 누르면 빈 입력칸이 뜨는 도구가 있다**(논리명 변환기는 CSV 셋을 넣어야 돌고, 산출물 SQL 은 결과를 DB 에서 돌려야 의미가 있다). 그래서 카드 하나에 링크를 셋으로 나눈다:
+  - **열기** — `/tools/<파일명>` 새 탭. `file` 값에서 `tools/` 접두를 떼고 `/tools/` 를 붙인다. 한글 파일명은 `encodeURI`
+  - **샘플** — 논리명 변환기 카드에만. `/toolbox/논리명_변환기_sample/` 아래 CSV 넷과 README 링크(경로는 `encodeURI`). 이 넷은 상수로 박는다 — 샘플 세트는 거의 안 바뀐다:
+    `행정안전부_공공데이터 공통표준단어_20251101.csv` · `샘플_기관표준단어.csv` · `샘플_컬럼목록1000개.csv` · `보조_공통약어사전.csv` · `샘플_컬럼목록1000개_README.md`
+  - **한 줄 안내** — 카드 본문. 런처의 `desc` 를 그대로. 산출물 SQL 카드에는 「DB 없이도 SQL 은 생성되고 복사할 수 있다」 한 줄을 덧붙인다
+- `02` 위에 **「먼저 해볼 것」 카드 1장** — 방문자가 3분 안에 결과를 보게 하는 경로. 세 줄: ① 논리명 변환기를 연다 ② 샘플 CSV 셋(공통표준단어 → 1번, 기관표준단어 → 2번, 컬럼목록 → 3번)을 넣는다 ③ 결과표 상단에 `컬럼 944 · 완전매칭 589 (56.2%)` 가 나오면 정상. 이 숫자는 샘플 README 의 기대 수치다 — README 가 바뀌면 여기도 바꾼다(주석으로 적어 둔다)
 - `03 · 근거 자료` — 카드 2장: 행안부 공공데이터 표준화 지침(`REPO_PORTFOLIO/blob/main/doc/design-standards/README.md`) / DB 벤더 딕셔너리 라우팅(`REPO_PORTFOLIO/blob/main/frontend/public/toolbox/db_docs/README.md`). 각각 「논리명 변환기가 / 산출물 SQL 이 무엇에 쓰나」 한 줄
 - 맨 아래 링크: 「런처 원본 열기 →」 `/toolbox/toolbox.html` 새 탭
 
