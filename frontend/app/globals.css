@@ -19,6 +19,19 @@
   --sidebar-cur: 220px;
 }
 
+/* 라이트 팔레트. AppShell 이 <html data-theme="light"> 를 걸면 이 값이 이긴다 */
+:root[data-theme="light"] {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface2: #eef1f4;
+  --border: #d0d7de;
+  --text: #1a1f2e;
+  --muted: #444c56;
+  --accent: #0a7c4e;
+  --accent2: #c94f1a;
+  --accent3: #1a6bb5;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {

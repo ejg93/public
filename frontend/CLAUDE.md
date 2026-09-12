@@ -8,7 +8,8 @@ App Router 기반 포트폴리오 화면. Vercel이 이 폴더를 루트로 잡�
 
 ```
 app/          라우트별 page.tsx (App Router)
-components/   Sidebar.tsx — 전 페이지 공통 좌측 내비
+components/   AppShell.tsx — 테마 토글·사이드바를 쥔 껍데기(클라이언트)
+              Sidebar.tsx — 전 페이지 공통 좌측 내비
               CaseStudy.tsx — 케이스 스터디 페이지 공통 카드·섹션 스타일
 lib/api.ts    백엔드 베이스 URL·공개 키 상수 중앙 관리
 lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받아온다
@@ -22,13 +23,13 @@ lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받�
 |---|---|---|
 | `/` | - | 홈 |
 | `/about` | - | 소개 |
-| `/ai-battle` | `POST /api/battle/chat`, `GET /api/battle/health` | Claude 기반 AI 배틀. Sidebar·홈에 없고 URL 직접 접근만 된다 |
 | `/youtube` | `GET /api/youtube/{comments,replies}` | 유튜브 댓글 뷰어 |
 | `/public-data` | `GET /api/jobs` | 채용정보 목록 + 지도. Sidebar·홈에 없고 URL 직접 접근만 된다 |
 | `/projectshop` | - | 별도 저장소 [ProjectShop](https://github.com/ejg93/ProjectShop) 소개. 설계 결정·작업 방식·CI 체계를 정리한 화면. 숫자와 최근 커밋은 `lib/github.ts` 가 GitHub API 로 받아온다(ISR 15분). 호출이 실패하면 `page.tsx` 의 `FALLBACK` 배열로 떨어진다 |
 | `/workflow` | - | 작업 방식 소개. 세션 뼈대·강제 지점 여섯·chunkframe 템플릿. 막힐 때 찍히는 메시지는 `workflow/quotes.ts` 에 원문 그대로 둔다(줄바꿈 규칙 7의 대상이 아니다) |
 | `/toolbox` | - | 폐쇄망 단일 파일 도구 소개. 카드 목록은 `public/toolbox/toolbox.html` 의 런처 배열을 빌드 때 읽어 만든다. 도구 본체는 `/tools/:path*` rewrite 로 연다 |
 | `/study` | - | 학습 노트 색인. 목록은 `public/study/*.html` 의 메타에서 빌드 때 만든다. 노트 추가 = HTML 한 장 + 메타 셋(description·keywords·date) |
+| (없음) | `POST /api/battle/chat` | AI 배틀 화면은 `app/_ai-battle/` 로 내려 라우트에서 뺐다. `_` 로 시작하는 폴더는 Next 가 라우팅하지 않는다. 되살리려면 폴더명에서 `_` 를 뗀다 |
 | `/board` | - | 게시판. 정적 데모를 `demos.tsx`/`demoMap.tsx`로 등록 |
 
 ## 스타일
@@ -69,7 +70,7 @@ npm run dev               # localhost:3000
 
 `.eslintrc.json`이 있으므로 빌드 중 lint가 자동으로 돌고, lint 에러 하나로 빌드 전체가 중단된다. 스타일 룰이 새 코드를 막으면 룰을 끄는 쪽이 맞는지 먼저 판단한다.
 
-화면이 실제로 그려지는지(차트 렌더, 지도 표시, 콘솔 에러)는 위 넷이 못 잡는다. 그건 chrome-devtools MCP로 페이지를 열어 확인한다. 단 `/youtube`·`/ai-battle`·`/public-data`는 백엔드가 `localhost:8080`에 떠 있어야 의미가 있다. 안 떠 있으면 확인 못 한 범위를 밝힌다.
+화면이 실제로 그려지는지(차트 렌더, 지도 표시, 콘솔 에러)는 위 넷이 못 잡는다. 그건 chrome-devtools MCP로 페이지를 열어 확인한다. 단 `/youtube`·`/public-data`는 백엔드가 `localhost:8080`에 떠 있어야 의미가 있다. 안 떠 있으면 확인 못 한 범위를 밝힌다.
 
 ## doc 참조 트리거
 

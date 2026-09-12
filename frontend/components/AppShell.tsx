@@ -6,31 +6,30 @@ import { useState, useEffect } from 'react'
 // 루트 레이아웃은 서버 컴포넌트로 남겨야 metadata(탭 제목)를 내보낼 수 있다.
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [darkMode, setDarkMode] = useState(true)
+  const [restored, setRestored] = useState(false)
 
+  // 마지막으로 고른 테마를 이 브라우저에만 남긴다
+  useEffect(() => {
+    try {
+      setDarkMode(localStorage.getItem('theme') !== 'light')
+    } catch {
+      // 접근이 막히면 다크 기본값으로 간다
+    }
+    setRestored(true)
+  }, [])
+
+  // 팔레트는 globals.css 가 쥐고 있다. 여기서는 어느 쪽을 쓸지만 표시한다
   useEffect(() => {
     const root = document.documentElement
-    if (darkMode) {
-      root.style.setProperty('--bg', '#080c10')
-      root.style.setProperty('--surface', '#0d1117')
-      root.style.setProperty('--surface2', '#161b22')
-      root.style.setProperty('--border', '#21262d')
-      root.style.setProperty('--text', '#e6edf3')
-      root.style.setProperty('--muted', '#adbac7')
-      root.style.setProperty('--accent', '#00ff88')
-      root.style.setProperty('--accent2', '#ff6b35')
-      root.style.setProperty('--accent3', '#4d9fff')
-    } else {
-      root.style.setProperty('--bg', '#f4f6f8')
-      root.style.setProperty('--surface', '#ffffff')
-      root.style.setProperty('--surface2', '#eef1f4')
-      root.style.setProperty('--border', '#d0d7de')
-      root.style.setProperty('--text', '#1a1f2e')
-      root.style.setProperty('--muted', '#444c56')
-      root.style.setProperty('--accent', '#0a7c4e')
-      root.style.setProperty('--accent2', '#c94f1a')
-      root.style.setProperty('--accent3', '#1a6bb5')
+    if (darkMode) root.removeAttribute('data-theme')
+    else root.setAttribute('data-theme', 'light')
+    if (!restored) return
+    try {
+      localStorage.setItem('theme', darkMode ? 'dark' : 'light')
+    } catch {
+      // 저장이 막혀도 이번 세션 동작에는 지장이 없다
     }
-  }, [darkMode])
+  }, [darkMode, restored])
 
   return (
     <>
