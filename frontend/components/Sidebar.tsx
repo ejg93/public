@@ -53,9 +53,10 @@ export default function Sidebar() {
       flexDirection: 'column',
       padding: collapsed ? '32px 10px' : '32px 20px',
       zIndex: 100,
-      overflow: 'hidden',
+      overflowY: 'auto',
+      overflowX: 'hidden',
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: collapsed ? 'center' : 'space-between', marginBottom: '40px' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: collapsed ? 'center' : 'space-between', marginBottom: '28px', flexShrink: 0 }}>
         {!collapsed && (
           <div>
             <div className="mono" style={{ fontSize: '10px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '6px' }}>◉ ONLINE</div>
@@ -73,16 +74,16 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {!collapsed && <div style={{ height: '1px', background: 'var(--border)', marginBottom: '24px' }} />}
+      {!collapsed && <div style={{ height: '1px', background: 'var(--border)', marginBottom: '20px', flexShrink: 0 }} />}
 
-      <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+      <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
         {menus.map(m => {
           const active = path === m.href || (m.href !== '/' && path.startsWith(m.href))
           return (
             <Link key={m.href} href={m.href} title={collapsed ? m.label : undefined} style={{
               display: 'flex', alignItems: 'center',
               justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: '10px', padding: collapsed ? '12px 0' : '12px 14px',
+              gap: '10px', padding: collapsed ? '10px 0' : '10px 14px',
               borderRadius: '6px', textDecoration: 'none',
               background: active ? 'rgba(0,255,136,0.08)' : 'transparent',
               border: active ? '1px solid rgba(0,255,136,0.2)' : '1px solid transparent',
@@ -101,7 +102,7 @@ export default function Sidebar() {
       </nav>
 
       {!collapsed && (
-        <div style={{ marginTop: 'auto' }}>
+        <div style={{ marginTop: 'auto', paddingTop: '16px', flexShrink: 0 }}>
           <div style={{ height: '1px', background: 'var(--border)', marginBottom: '16px' }} />
           <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', lineHeight: 2 }}>
             <div>EXP: 5 YRS</div>
