@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { POSTS } from '../../posts'
 import { DEMOS } from '../../demoMap'
 import SlideViewer from '../../SlideViewer'
+import { glossaryNodes } from '../../withGlossary'
 
 const CATEGORY_COLOR: Record<string, string> = {
   'UI/UX': 'var(--accent)',
@@ -17,8 +18,10 @@ export default function PostPage() {
   const { id } = useParams()
   const post = POSTS.find(p => p.id === id)
   const isSlides = !!post?.slides?.length
-  // PPT형 게시물은 진입 즉시 슬라이드 뷰어를 띄운다
-  const [viewerOpen, setViewerOpen] = useState(isSlides)
+  // 본문이 안내 한 줄뿐인 PPT형 게시물만 진입 즉시 뷰어를 띄운다. 본문이 있으면 글부터 읽힌다
+  const [viewerOpen, setViewerOpen] = useState(isSlides && (post?.blocks.length ?? 0) <= 1)
+  // 같은 용어가 여러 번 나와도 처음 한 번만 표시한다. 매 렌더마다 새로 만든다
+  const shown = new Set<string>()
 
   if (!post) return (
     <div style={{ padding: '60px 0', textAlign: 'center', color: 'var(--muted)' }}>
@@ -108,7 +111,7 @@ export default function PostPage() {
 
       {/* 본문 블록 */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
-        {(isSlides ? [] : post.blocks).map((block, i) => {
+        {post.blocks.map((block, i) => {
           if (block.type === 'text') {
             const parseLine = (line: string, lineKey: number) => {
               const parts = line.split(/(\*\*.*?\*\*|\[.+?\]\((?:yt:)?https?:\/\/.+?\))/g)
@@ -151,7 +154,12 @@ export default function PostPage() {
                         }}>↗ {urlMatch[1]}</a>
                       )
                     }
-                    return <span key={k}>{p}</span>
+                    // 남은 평문에서 용어를 찾아 뜻을 달아 준다
+                    return (
+                      <span key={k}>
+                        {glossaryNodes(p, shown)}
+                      </span>
+                    )
                   })}
                 </p>
               )

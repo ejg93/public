@@ -2,9 +2,12 @@
 import React, { useEffect, useRef, useState } from 'react'
 import type { Block, Post } from './posts'
 import { DEMOS } from './demoMap'
+import { glossaryNodes } from './withGlossary'
 
 // ── 슬라이드 내부 블록 렌더러 (본문 렌더러의 축약판) ──
 function SlideBlock({ block }: { block: Block }) {
+  // 한 장 안에서 같은 용어에 밑줄이 여러 번 그이지 않게 한다
+  const shown = new Set<string>()
   if (block.type === 'text') {
     return (
       <div style={{ fontSize: 'clamp(14px, 1.8vw, 18px)', color: 'var(--muted)', lineHeight: 2 }}>
@@ -16,7 +19,7 @@ function SlideBlock({ block }: { block: Block }) {
               {parts.map((p, k) =>
                 p.startsWith('**') && p.endsWith('**')
                   ? <strong key={k} style={{ color: 'var(--text)', fontWeight: 700, fontSize: '1.1em' }}>{p.slice(2, -2)}</strong>
-                  : <span key={k}>{p}</span>
+                  : <span key={k}>{glossaryNodes(p, shown)}</span>
               )}
             </p>
           )
