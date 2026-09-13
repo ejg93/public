@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="66" fill="#00ff88" font-size="15" letter-spacing="6">ROLE_PERMISSION</text>
+  <text x="60" y="110" fill="#e6edf3" font-size="32" font-weight="bold">같은 권한이 두 행으로 잡힌다</text>
+  <text x="60" y="146" fill="#adbac7" font-size="16">판매자 역할에 실제로 들어 있는 두 행이다</text>
+
+  <rect x="60" y="180" width="1080" height="44" rx="6" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="90" y="208" fill="#adbac7" font-size="15">역할</text>
+  <text x="330" y="208" fill="#adbac7" font-size="15">권한</text>
+  <text x="720" y="208" fill="#adbac7" font-size="15">스코프</text>
+  <text x="930" y="208" fill="#adbac7" font-size="15">효과</text>
+
+  <rect x="60" y="232" width="1080" height="56" rx="6" fill="#0d1117" stroke="#00ff88" stroke-width="2"/>
+  <text x="90" y="267" fill="#e6edf3" font-size="16">seller_owner</text>
+  <text x="330" y="267" fill="#e6edf3" font-size="16">order:update_status</text>
+  <text x="720" y="267" fill="#e6edf3" font-size="16">seller</text>
+  <text x="930" y="267" fill="#00ff88" font-size="16" font-weight="bold">allow</text>
+
+  <rect x="60" y="296" width="1080" height="56" rx="6" fill="#0d1117" stroke="#ff6b35" stroke-width="2"/>
+  <text x="90" y="331" fill="#e6edf3" font-size="16">seller_owner</text>
+  <text x="330" y="331" fill="#e6edf3" font-size="16">order:update_status</text>
+  <text x="720" y="331" fill="#e6edf3" font-size="16">own</text>
+  <text x="930" y="331" fill="#ff6b35" font-size="16" font-weight="bold">deny</text>
+
+  <text x="60" y="400" fill="#adbac7" font-size="15">판매자가 자기 계정으로 자기 상품을 사면 구매자이면서 판매자가 된다</text>
+  <text x="60" y="428" fill="#adbac7" font-size="15">혼자 주문을 결제완료에서 배송완료까지 밀 수 있어서 own 에만 거부를 걸었다</text>
+
+  <rect x="60" y="460" width="520" height="100" rx="10" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="320" y="500" fill="#e6edf3" font-size="18" text-anchor="middle">같은 셀러의 남의 주문</text>
+  <text x="320" y="532" fill="#00ff88" font-size="20" text-anchor="middle" font-weight="bold">상태를 바꾼다</text>
+
+  <rect x="620" y="460" width="520" height="100" rx="10" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="880" y="500" fill="#e6edf3" font-size="18" text-anchor="middle">자기가 구매한 주문</text>
+  <text x="880" y="532" fill="#ff6b35" font-size="20" text-anchor="middle" font-weight="bold">막힌다</text>
+
+  <text x="600" y="612" fill="#e6edf3" font-size="17" text-anchor="middle">효과는 거부가 이기고, 허용끼리는 넓은 스코프가 이긴다</text>
+  <text x="600" y="644" fill="#adbac7" font-size="15" text-anchor="middle">거부의 스코프를 all 로 줬으면 판매자는 어떤 주문도 못 바꾼다</text>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="60" fill="#00ff88" font-size="15" letter-spacing="6">ENFORCEMENT_LAYERS</text>
+  <text x="60" y="102" fill="#e6edf3" font-size="32" font-weight="bold">같은 규칙도 어디에 거느냐로 갈린다</text>
+  <text x="60" y="136" fill="#adbac7" font-size="16">아래로 갈수록 일찍, 확실하게 막힌다. 그래서 내릴 수 있으면 내린다</text>
+
+  <rect x="60" y="166" width="1080" height="76" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="86" y="196" fill="#adbac7" font-size="13" letter-spacing="2">5위 · 문서</text>
+  <text x="86" y="224" fill="#e6edf3" font-size="17">요건표에 적는다</text>
+  <text x="1114" y="212" fill="#adbac7" font-size="16" text-anchor="end">안 읽으면 그대로 깨진다</text>
+
+  <rect x="60" y="252" width="1080" height="76" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="86" y="282" fill="#adbac7" font-size="13" letter-spacing="2">4위 · 테스트</text>
+  <text x="86" y="310" fill="#e6edf3" font-size="17">ArchitectureTest · 권한 판정 매트릭스 스냅샷</text>
+  <text x="1114" y="298" fill="#adbac7" font-size="16" text-anchor="end">빌드가 빨개진다</text>
+
+  <rect x="60" y="338" width="1080" height="76" rx="8" fill="#161b22" stroke="#4d9fff" stroke-width="2"/>
+  <text x="86" y="368" fill="#4d9fff" font-size="13" letter-spacing="2">3위 · 앱 검증</text>
+  <text x="86" y="396" fill="#e6edf3" font-size="17">Bean Validation — 비밀번호는 15자 이상 ASCII</text>
+  <text x="1114" y="384" fill="#4d9fff" font-size="16" text-anchor="end">400 으로 튕긴다</text>
+
+  <rect x="60" y="424" width="1080" height="76" rx="8" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="86" y="454" fill="#ff6b35" font-size="13" letter-spacing="2">2위 · DB 제약</text>
+  <text x="86" y="482" fill="#e6edf3" font-size="17">product_withdrawal_reason_check · 지연 트리거</text>
+  <text x="1114" y="470" fill="#ff6b35" font-size="16" text-anchor="end">앱을 우회해도 막힌다</text>
+
+  <rect x="60" y="510" width="1080" height="76" rx="8" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="86" y="540" fill="#00ff88" font-size="13" letter-spacing="2">1위 · 타입</text>
+  <text x="86" y="568" fill="#e6edf3" font-size="17">enum — 정산 항목 종류, 환불 요청 주체</text>
+  <text x="1114" y="556" fill="#00ff88" font-size="16" text-anchor="end">컴파일이 안 된다</text>
+
+  <text x="600" y="636" fill="#e6edf3" font-size="17" text-anchor="middle">출처가 위일수록 반드시 지키고, 지키는 자리는 가능한 한 아래로 내린다</text>
+</svg>

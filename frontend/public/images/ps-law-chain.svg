@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="66" fill="#00ff88" font-size="15" letter-spacing="6">LAW_TO_CONSTRAINT</text>
+  <text x="60" y="110" fill="#e6edf3" font-size="32" font-weight="bold">조문 하나가 제약 하나로 내려간다</text>
+  <text x="60" y="146" fill="#adbac7" font-size="16">청약철회 제한이 실제로 지나온 세 칸이다</text>
+
+  <rect x="60" y="190" width="1080" height="84" rx="10" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="90" y="224" fill="#ff6b35" font-size="13" letter-spacing="2">출처 1위 · 법</text>
+  <text x="90" y="255" fill="#e6edf3" font-size="20" font-weight="bold">전자상거래법 제17조제2항 · 시행령 제21조</text>
+
+  <path d="M 600 274 L 600 306" stroke="#adbac7" stroke-width="2" marker-end="url(#a)"/>
+
+  <rect x="60" y="316" width="1080" height="84" rx="10" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="90" y="350" fill="#adbac7" font-size="13" letter-spacing="2">강제 지점 5위 · 문서</text>
+  <text x="90" y="381" fill="#e6edf3" font-size="20" font-weight="bold">요건표 R4 — 사유마다 성립 조건을 적는다</text>
+
+  <path d="M 600 400 L 600 432" stroke="#00ff88" stroke-width="2" marker-end="url(#g)"/>
+
+  <rect x="60" y="442" width="1080" height="104" rx="10" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="90" y="476" fill="#00ff88" font-size="13" letter-spacing="2">강제 지점 2위 · DB 제약</text>
+  <text x="90" y="507" fill="#e6edf3" font-size="20" font-weight="bold">product_withdrawal_reason_check</text>
+  <text x="90" y="533" fill="#adbac7" font-size="15">제한한다고 표시해 놓고 사유가 없는 행은 저장이 거부된다</text>
+
+  <text x="600" y="596" fill="#e6edf3" font-size="17" text-anchor="middle">문서에만 적힌 법은 안 지켜진다</text>
+  <text x="600" y="628" fill="#adbac7" font-size="15" text-anchor="middle">내릴 수 있는 데까지 내린 다음, 못 내린 것만 문서에 남긴다</text>
+
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="5" refY="8" orient="auto"><path d="M0,0 L5,8 L10,0" fill="none" stroke="#adbac7" stroke-width="2"/></marker>
+    <marker id="g" markerWidth="10" markerHeight="10" refX="5" refY="8" orient="auto"><path d="M0,0 L5,8 L10,0" fill="none" stroke="#00ff88" stroke-width="2"/></marker>
+  </defs>
+</svg>

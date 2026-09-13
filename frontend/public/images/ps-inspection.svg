@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="60" fill="#00ff88" font-size="15" letter-spacing="6">INSPECTION</text>
+  <text x="60" y="102" fill="#e6edf3" font-size="32" font-weight="bold">이미 친 코드를 아홉 줄로 다시 훑는다</text>
+  <text x="60" y="136" fill="#adbac7" font-size="16">마지막으로 본 날이 오래된 줄이 다음 차례다</text>
+
+  <rect x="60" y="164" width="1080" height="40" rx="6" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="86" y="190" fill="#adbac7" font-size="14">줄</text>
+  <text x="330" y="190" fill="#adbac7" font-size="14">마지막</text>
+  <text x="520" y="190" fill="#adbac7" font-size="14">그 줄이 잡아낸 것</text>
+
+  <text x="86" y="240" fill="#ff6b35" font-size="14" letter-spacing="2">가로 · 출처</text>
+  <text x="86" y="274" fill="#e6edf3" font-size="16">법</text>
+  <text x="330" y="274" fill="#adbac7" font-size="15">08-29</text>
+  <text x="520" y="274" fill="#adbac7" font-size="15">요건 넷이 그때 닫혔다</text>
+  <text x="86" y="304" fill="#e6edf3" font-size="16">표준</text>
+  <text x="330" y="304" fill="#adbac7" font-size="15">08-20</text>
+  <text x="520" y="304" fill="#adbac7" font-size="15">오류 식별자가 등록 안 된 이름을 쓰고 있었다</text>
+  <text x="86" y="334" fill="#e6edf3" font-size="16">규약</text>
+  <text x="330" y="334" fill="#adbac7" font-size="15">08-20</text>
+  <text x="520" y="334" fill="#adbac7" font-size="15">패키지를 자원이 아니라 관객으로 판 자리</text>
+  <text x="86" y="364" fill="#e6edf3" font-size="16">관례</text>
+  <text x="330" y="364" fill="#adbac7" font-size="15">08-20</text>
+  <text x="520" y="364" fill="#adbac7" font-size="15">쓰지도 않는 스타터가 붙어 있었다</text>
+
+  <path d="M 60 386 L 1140 386" stroke="#21262d" stroke-width="2"/>
+
+  <text x="86" y="422" fill="#4d9fff" font-size="14" letter-spacing="2">세로 · 강제 지점</text>
+  <text x="86" y="456" fill="#e6edf3" font-size="16">타입</text>
+  <text x="330" y="456" fill="#adbac7" font-size="15">08-29</text>
+  <text x="520" y="456" fill="#00ff88" font-size="15">열거형 열하나가 그날 섰다</text>
+  <text x="86" y="486" fill="#e6edf3" font-size="16">제약</text>
+  <text x="330" y="486" fill="#adbac7" font-size="15">08-20</text>
+  <text x="520" y="486" fill="#adbac7" font-size="15">마이그레이션 열셋이 뒤따랐다</text>
+  <text x="86" y="516" fill="#e6edf3" font-size="16">앱 검증</text>
+  <text x="330" y="516" fill="#adbac7" font-size="15">09-12</text>
+  <text x="520" y="516" fill="#00ff88" font-size="15">같은 이메일을 두 입구가 254 와 320 으로 쟀다</text>
+  <text x="86" y="546" fill="#e6edf3" font-size="16">테스트</text>
+  <text x="330" y="546" fill="#adbac7" font-size="15">09-12</text>
+  <text x="520" y="546" fill="#00ff88" font-size="15">걸려 있는데 한 번도 안 돌던 대조 둘</text>
+  <text x="86" y="576" fill="#e6edf3" font-size="16">문서</text>
+  <text x="330" y="576" fill="#adbac7" font-size="15">09-06</text>
+  <text x="520" y="576" fill="#adbac7" font-size="15">처분이 끝난 260줄을 걷어 냈다</text>
+
+  <text x="600" y="634" fill="#e6edf3" font-size="17" text-anchor="middle">한 번 훑는 데 위반 스물아홉이 나온 적도 있다</text>
+</svg>

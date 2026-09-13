@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="66" fill="#00ff88" font-size="15" letter-spacing="6">DOCUMENT_FIRST</text>
+  <text x="60" y="110" fill="#e6edf3" font-size="32" font-weight="bold">기준 문서를 청크의 선행으로 세웠다</text>
+
+  <text x="60" y="176" fill="#ff6b35" font-size="15" letter-spacing="2">전 · 치고 나서 되돌아온다</text>
+  <rect x="60" y="196" width="180" height="64" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="150" y="235" fill="#e6edf3" font-size="17" text-anchor="middle">청크 1</text>
+  <rect x="300" y="196" width="180" height="64" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="390" y="235" fill="#e6edf3" font-size="17" text-anchor="middle">청크 2</text>
+  <rect x="540" y="196" width="180" height="64" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="630" y="235" fill="#e6edf3" font-size="17" text-anchor="middle">청크 3</text>
+  <path d="M 240 228 L 292 228" stroke="#adbac7" stroke-width="2" marker-end="url(#f)"/>
+  <path d="M 480 228 L 532 228" stroke="#adbac7" stroke-width="2" marker-end="url(#f)"/>
+  <path d="M 600 262 C 560 304, 200 304, 160 264" stroke="#ff6b35" stroke-width="2" fill="none" marker-end="url(#o)"/>
+  <text x="760" y="222" fill="#ff6b35" font-size="16">앞에서 끝낸 청크를</text>
+  <text x="760" y="248" fill="#ff6b35" font-size="16">다시 건드리게 된다</text>
+
+  <path d="M 60 310 L 1140 310" stroke="#21262d" stroke-width="2"/>
+
+  <text x="60" y="366" fill="#00ff88" font-size="15" letter-spacing="2">후 · 규약이 먼저 서고 코드가 따라온다</text>
+  <rect x="60" y="386" width="260" height="84" rx="8" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="190" y="420" fill="#00ff88" font-size="18" text-anchor="middle" font-weight="bold">기준 문서</text>
+  <text x="190" y="448" fill="#adbac7" font-size="15" text-anchor="middle">조건이 찬 것부터 쓴다</text>
+  <path d="M 320 428 L 372 428" stroke="#00ff88" stroke-width="2" marker-end="url(#g2)"/>
+  <rect x="380" y="386" width="170" height="84" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="465" y="434" fill="#e6edf3" font-size="17" text-anchor="middle">청크</text>
+  <path d="M 550 428 L 602 428" stroke="#00ff88" stroke-width="2" marker-end="url(#g2)"/>
+  <rect x="610" y="386" width="170" height="84" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="695" y="434" fill="#e6edf3" font-size="17" text-anchor="middle">청크</text>
+  <path d="M 780 428 L 832 428" stroke="#00ff88" stroke-width="2" marker-end="url(#g2)"/>
+  <rect x="840" y="386" width="170" height="84" rx="8" fill="#161b22" stroke="#21262d" stroke-width="2"/>
+  <text x="925" y="434" fill="#e6edf3" font-size="17" text-anchor="middle">청크</text>
+
+  <text x="600" y="552" fill="#e6edf3" font-size="19" text-anchor="middle">이 결정 하나에 기준 문서 21개와 확장 청크 60개가 한꺼번에 섰다</text>
+  <text x="600" y="592" fill="#adbac7" font-size="16" text-anchor="middle">기준 문서는 지금 25개다</text>
+
+  <defs>
+    <marker id="f" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#adbac7" stroke-width="2"/></marker>
+    <marker id="o" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#ff6b35" stroke-width="2"/></marker>
+    <marker id="g2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#00ff88" stroke-width="2"/></marker>
+  </defs>
+</svg>

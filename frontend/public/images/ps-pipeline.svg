@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" font-family="'IBM Plex Mono', Consolas, monospace">
+  <rect width="1200" height="675" fill="#0d1117"/>
+  <text x="60" y="60" fill="#00ff88" font-size="15" letter-spacing="6">PULL_REQUEST</text>
+  <text x="60" y="102" fill="#e6edf3" font-size="32" font-weight="bold">청크 하나에 PR 하나, 검사 넷</text>
+  <text x="60" y="136" fill="#adbac7" font-size="16">그전에는 main 에 직접 커밋해서 리뷰가 붙을 자리 자체가 없었다</text>
+
+  <rect x="450" y="172" width="300" height="64" rx="10" fill="#161b22" stroke="#e6edf3" stroke-width="2"/>
+  <text x="600" y="212" fill="#e6edf3" font-size="20" text-anchor="middle" font-weight="bold">PR 하나</text>
+
+  <path d="M 520 236 L 200 292" stroke="#00ff88" stroke-width="2" fill="none" marker-end="url(#g3)"/>
+  <path d="M 570 236 L 480 292" stroke="#4d9fff" stroke-width="2" fill="none" marker-end="url(#b3)"/>
+  <path d="M 630 236 L 720 292" stroke="#ff6b35" stroke-width="2" fill="none" marker-end="url(#o3)"/>
+  <path d="M 680 236 L 1000 292" stroke="#e6edf3" stroke-width="2" fill="none" marker-end="url(#w3)"/>
+
+  <rect x="60" y="302" width="250" height="200" rx="10" fill="#161b22" stroke="#00ff88" stroke-width="2"/>
+  <text x="185" y="338" fill="#00ff88" font-size="17" text-anchor="middle" font-weight="bold">정적 분석</text>
+  <text x="82" y="378" fill="#e6edf3" font-size="15">· SpotBugs</text>
+  <text x="82" y="406" fill="#e6edf3" font-size="15">· gitleaks</text>
+  <text x="82" y="434" fill="#e6edf3" font-size="15">· CodeQL</text>
+  <text x="82" y="474" fill="#adbac7" font-size="14">첫 측정 100건 중</text>
+  <text x="82" y="494" fill="#adbac7" font-size="14">96건이 구조적이었다</text>
+
+  <rect x="340" y="302" width="250" height="200" rx="10" fill="#161b22" stroke="#4d9fff" stroke-width="2"/>
+  <text x="465" y="338" fill="#4d9fff" font-size="17" text-anchor="middle" font-weight="bold">의존성</text>
+  <text x="362" y="378" fill="#e6edf3" font-size="15">· Dependabot</text>
+  <text x="362" y="418" fill="#adbac7" font-size="14">새 판과 취약점을</text>
+  <text x="362" y="438" fill="#adbac7" font-size="14">PR 로 올린다</text>
+  <text x="362" y="474" fill="#adbac7" font-size="14">minor 와 patch 는</text>
+  <text x="362" y="494" fill="#adbac7" font-size="14">자동으로 합친다</text>
+
+  <rect x="620" y="302" width="250" height="200" rx="10" fill="#161b22" stroke="#ff6b35" stroke-width="2"/>
+  <text x="745" y="338" fill="#ff6b35" font-size="17" text-anchor="middle" font-weight="bold">문체 검사</text>
+  <text x="642" y="378" fill="#e6edf3" font-size="15">· CI 에서 한 번</text>
+  <text x="642" y="406" fill="#e6edf3" font-size="15">· 로컬 훅에서 한 번</text>
+  <text x="642" y="446" fill="#adbac7" font-size="14">문서를 고치는 순간</text>
+  <text x="642" y="466" fill="#adbac7" font-size="14">그 자리에서 막는다</text>
+
+  <rect x="900" y="302" width="240" height="200" rx="10" fill="#161b22" stroke="#e6edf3" stroke-width="2"/>
+  <text x="1020" y="338" fill="#e6edf3" font-size="17" text-anchor="middle" font-weight="bold">AI 리뷰</text>
+  <text x="922" y="378" fill="#e6edf3" font-size="15">· diff 를 읽는다</text>
+  <text x="922" y="418" fill="#adbac7" font-size="14">빌드가 초록이어도</text>
+  <text x="922" y="438" fill="#adbac7" font-size="14">안 걸리는 것을 묻는다</text>
+  <text x="922" y="474" fill="#adbac7" font-size="14">첫 실행에서 지적 열여섯</text>
+  <text x="922" y="494" fill="#adbac7" font-size="14">중 열셋을 고쳤다</text>
+
+  <text x="600" y="560" fill="#e6edf3" font-size="17" text-anchor="middle">리뷰가 묻는 것 — 말한 축과 실제로 편 축이 같나</text>
+  <text x="600" y="592" fill="#adbac7" font-size="16" text-anchor="middle">강제 지점을 더 아래로 내릴 수 있었나, 이 PR 안의 결정끼리 부딪치지 않나</text>
+
+  <defs>
+    <marker id="g3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#00ff88" stroke-width="2"/></marker>
+    <marker id="b3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#4d9fff" stroke-width="2"/></marker>
+    <marker id="o3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#ff6b35" stroke-width="2"/></marker>
+    <marker id="w3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#e6edf3" stroke-width="2"/></marker>
+  </defs>
+</svg>
