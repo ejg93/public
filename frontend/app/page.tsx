@@ -79,7 +79,7 @@ export default function Home() {
             <span style={{ color: 'var(--muted)' }}>EJK</span>
           </h1>
           <p style={{ color: 'var(--text)', fontSize: '16px', lineHeight: 1.7, margin: 0 }}>
-            공공·금융 SI Java 백엔드 5년차 — eGovFrame · Spring · Oracle · Tibero
+            공공·금융 SI Java 백엔드 5년차
           </p>
           <p style={{ color: 'var(--muted)', fontSize: '15px', lineHeight: 1.7, margin: '4px 0 0' }}>
             폐쇄망 프로젝트 {CAREERS.length}건 · {totalMonths}개월. 요구사항 재정의부터 테이블 설계·배치 운영까지
@@ -149,14 +149,10 @@ export default function Home() {
         fontSize: '12px',
         color: 'var(--accent)',
         letterSpacing: '4px',
-        margin: '36px 0 8px',
+        margin: '36px 0 14px',
       }}>
         CAREER
       </div>
-      <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.8, margin: '0 0 14px' }}>
-        행을 누르면 역할·기여도·담당 업무 표시.<br />
-        전 프로젝트 폐쇄망으로 코드·화면 반출 불가.
-      </p>
       <Career />
     </div>
   )
