@@ -23,7 +23,11 @@ function aggregate(): Agg[] {
 const STACK = aggregate()
 
 // 강조는 최신 두 프로젝트의 스택. 등장 순서대로 — 지금 쓰는 것이 앞에 온다
-const RECENT = new Set(CAREERS.slice(0, 2).flatMap(c => c.stack.split(' · ').map(s => s.trim())))
+// 최신 프로젝트에 있어도 강조에서 뺄 것. 잠깐 스쳐 자신 없는 것은 흐린 줄로
+const DEMOTE = new Set(['AngularJS'])
+const RECENT = new Set(
+  CAREERS.slice(0, 2).flatMap(c => c.stack.split(' · ').map(s => s.trim())).filter(s => !DEMOTE.has(s)),
+)
 const recentOrder = Array.from(RECENT)
 const MAIN = STACK.filter(s => RECENT.has(s.name)).sort((a, b) => recentOrder.indexOf(a.name) - recentOrder.indexOf(b.name))
 const REST = STACK.filter(s => !RECENT.has(s.name))
