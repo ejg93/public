@@ -89,15 +89,9 @@ export default function Home() {
             className="mono"
             onClick={copyEmail}
             title="누르면 주소를 복사한다"
-            style={{
-              ...linkBtn,
-              background: 'transparent',
-              cursor: 'pointer',
-              color: copied === 'ok' ? 'var(--accent)' : copied === 'fail' ? 'var(--accent2)' : 'var(--text)',
-              borderColor: copied === 'ok' ? 'var(--accent)' : 'var(--border)',
-            }}
+            style={{ ...linkBtn, background: 'transparent', cursor: 'pointer' }}
           >
-            {copied === 'ok' ? '✓ 복사됨' : copied === 'fail' ? '복사 실패 — ' + EMAIL : EMAIL}
+            {EMAIL}
           </button>
         </div>
       </div>
@@ -148,6 +142,27 @@ export default function Home() {
         CAREER
       </div>
       <Career />
+
+      {/* ── 복사 토스트: 화면 하단 가운데에 잠깐 떴다 사라진다 ── */}
+      {copied && (
+        <div className="mono" role="status" style={{
+          position: 'fixed',
+          left: 'calc(var(--sidebar-cur) + (100vw - var(--sidebar-cur)) / 2)',
+          bottom: '40px',
+          transform: 'translateX(-50%)',
+          padding: '10px 18px',
+          borderRadius: '8px',
+          fontSize: '13px',
+          background: 'var(--surface)',
+          border: `1px solid ${copied === 'ok' ? 'var(--accent)' : 'var(--accent2)'}`,
+          color: copied === 'ok' ? 'var(--accent)' : 'var(--accent2)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
+          zIndex: 200,
+          whiteSpace: 'nowrap',
+        }}>
+          {copied === 'ok' ? '✓ e-mail 복사됨' : '복사 실패 — ' + EMAIL}
+        </div>
+      )}
     </div>
   )
 }
