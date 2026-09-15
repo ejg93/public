@@ -1,5 +1,6 @@
 // 기술 스택 칩. career-data 의 stack 을 집계해서 그린다 — 손으로 안 센다.
 // 숫자는 화면에 안 쓴다. 비교를 부르고 얇은 자리가 먼저 보인다. title 로만 남긴다.
+// 강조 기준은 최신 두 프로젝트 — 횟수로 가르면 지금 쓰는 것이 흐린 줄로 밀린다.
 import { CAREERS } from './career-data'
 
 type Agg = { name: string; count: number; months: number }
@@ -20,8 +21,12 @@ function aggregate(): Agg[] {
 }
 
 const STACK = aggregate()
-const MAIN = STACK.filter(s => s.count >= 2)
-const REST = STACK.filter(s => s.count < 2)
+
+// 강조는 최신 두 프로젝트의 스택. 등장 순서대로 — 지금 쓰는 것이 앞에 온다
+const RECENT = new Set(CAREERS.slice(0, 2).flatMap(c => c.stack.split(' · ').map(s => s.trim())))
+const recentOrder = Array.from(RECENT)
+const MAIN = STACK.filter(s => RECENT.has(s.name)).sort((a, b) => recentOrder.indexOf(a.name) - recentOrder.indexOf(b.name))
+const REST = STACK.filter(s => !RECENT.has(s.name))
 
 const tip = (s: Agg) => `${s.count}건 · ${s.months}개월`
 
