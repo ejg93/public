@@ -2,7 +2,6 @@
 import { useState } from 'react'
 import Career from './Career'
 import StackChips from './StackChips'
-import { CAREERS } from './career-data'
 
 const GITHUB = 'https://github.com/ejg93'
 const EMAIL = 'ejg933@gmail.com'
@@ -42,8 +41,6 @@ const chip: React.CSSProperties = {
   color: 'var(--muted)',
 }
 
-const totalMonths = CAREERS.reduce((s, c) => s + parseInt(c.months, 10), 0)
-
 const linkBtn: React.CSSProperties = {
   fontSize: '12px',
   letterSpacing: '1px',
@@ -79,10 +76,7 @@ export default function Home() {
             <span style={{ color: 'var(--muted)' }}>EJK</span>
           </h1>
           <p style={{ color: 'var(--text)', fontSize: '16px', lineHeight: 1.7, margin: 0 }}>
-            공공·금융 SI Java 백엔드 5년차
-          </p>
-          <p style={{ color: 'var(--muted)', fontSize: '15px', lineHeight: 1.7, margin: '4px 0 0' }}>
-            폐쇄망 프로젝트 {CAREERS.length}건 · {totalMonths}개월. 요구사항 재정의부터 테이블 설계·배치 운영까지
+            공공·금융 SI Java 백엔드 5년차 — 요구사항 재정의부터 테이블 설계·배치 운영까지
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
