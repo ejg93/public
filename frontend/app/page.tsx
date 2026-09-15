@@ -10,7 +10,7 @@ const TILES = [
   {
     label: 'PROJECT SHOP',
     hook: '멀티 셀러 쇼핑몰',
-    desc: '권한 체계 · CI 6종 · 설계 기록 · 개발 중',
+    desc: '권한 체계 · CI 6종 · 개발 중',
     stack: ['Spring Boot', 'Java', 'Next.js', 'PostgreSQL', 'Flyway', 'Playwright'],
     href: '/projectshop',
     color: 'var(--accent2)',
@@ -80,8 +80,8 @@ export default function Home() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '8px', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-          <span className="mono" style={{ ...linkBtn, color: 'var(--accent)', borderColor: 'var(--accent)' }}>
-            ◉ 재직 중 · 2026.09
+          <span className="mono" style={{ ...linkBtn, color: 'var(--muted)', border: 0, padding: '6px 4px' }}>
+            ◉ 재직중
           </span>
           <a className="mono" href={GITHUB} target="_blank" rel="noopener noreferrer" style={linkBtn}>GITHUB ↗</a>
           <button

@@ -81,7 +81,7 @@ export default function Career() {
 
                 <div style={{ gridColumn: '1 / -1' }}>
                   <div className="mono" style={label}>담당 업무 · 성과</div>
-                  <ol style={{ ...body, margin: 0, paddingLeft: '20px' }}>
+                  <ol style={{ ...body, margin: 0, paddingLeft: '22px', listStyle: 'decimal' }}>
                     {c.tasks.map(t => <li key={t}>{t}</li>)}
                   </ol>
                 </div>
