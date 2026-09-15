@@ -18,15 +18,15 @@ const TILES = [
   {
     label: 'TOOLBOX',
     hook: '폐쇄망 반입 도구 7개',
-    desc: '파일 하나 · CDN 없음 · 표준단어 변환',
+    desc: 'CDN 없음 · 표준단어 변환',
     stack: ['HTML', 'Vanilla JS', '단일 파일'],
     href: '/toolbox',
     color: 'var(--accent3)',
   },
   {
     label: 'AI WORKFLOW',
-    hook: 'Claude Code 를 규칙으로 묶는다',
-    desc: 'hook · skill · 검증 도장 · PR 게이트',
+    hook: 'Claude Code 로 일하는 틀',
+    desc: 'hook · skill · 검증 도장',
     stack: ['Claude Code', 'bash hook', 'GitHub Actions'],
     href: '/workflow',
     color: 'var(--accent)',
