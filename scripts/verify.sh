@@ -29,7 +29,7 @@ log=$(mktemp); trap 'rm -f "$log"' EXIT
 ok=1
 if [ $fe = 1 ]; then
   echo "== frontend 바뀜 → npm run typecheck · npm run build(lint 포함)"
-  (cd frontend && npm run typecheck && npm run build) >"$log" 2>&1 || { tail -40 "$log"; ok=0; }
+  (cd frontend && npm run typecheck && NEXT_DIST_DIR=.next-verify npm run build) >"$log" 2>&1 || { tail -40 "$log"; ok=0; }
 fi
 if [ $be = 1 ]; then
   echo "== backend 바뀜 → ./mvnw compile (JDK 17)"

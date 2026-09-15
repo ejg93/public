@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 검증 빌드는 dev 서버와 다른 폴더에 쓴다. 같은 .next 를 쓰면 빌드가 dev 를 500 으로 만들고
+  // dev 가 빌드를 깨뜨린다. verify.sh 가 NEXT_DIST_DIR=.next-verify 로 부른다. Vercel 은 기본값
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   async rewrites() {
     return [
       {

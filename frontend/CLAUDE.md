@@ -76,6 +76,8 @@ npm run dev               # localhost:3000
 | `npm run build` | 위 둘 + 정적 생성·설정 오류 | **커밋 전 최소 1회** |
 | `npm audit --omit=dev` | 배포본에 실리는 의존성의 취약점 | 의존성 추가·변경 후 |
 
+`verify.sh` 의 빌드는 `NEXT_DIST_DIR=.next-verify` 로 딴 폴더에 쓴다 — dev 서버가 쓰는 `.next` 를 갈아엎으면 `GET / 500` 이 난다. 손으로 돌릴 때도 dev 가 떠 있으면 그 변수를 붙인다.
+
 `npm run build`가 Vercel이 실제로 돌리는 명령이다. 여기서 실패하면 배포도 실패한다. **빌드가 깨진 상태로 작업을 끝내지 않는다.**
 
 `.eslintrc.json`이 있으므로 빌드 중 lint가 자동으로 돌고, lint 에러 하나로 빌드 전체가 중단된다. 스타일 룰이 새 코드를 막으면 룰을 끄는 쪽이 맞는지 먼저 판단한다.
