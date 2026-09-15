@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import Career from './Career'
 import StackChips from './StackChips'
 import { CAREERS } from './career-data'
@@ -11,6 +12,7 @@ const TILES = [
     label: 'PROJECT SHOP',
     hook: '멀티 셀러 쇼핑몰',
     desc: '권한 체계 · CI 6종 · 설계 기록 · 개발 중',
+    stack: ['Spring Boot', 'Java', 'Next.js', 'PostgreSQL', 'Flyway', 'Playwright'],
     href: '/projectshop',
     color: 'var(--accent2)',
   },
@@ -18,6 +20,7 @@ const TILES = [
     label: 'TOOLBOX',
     hook: '폐쇄망 반입 도구 7개',
     desc: '파일 하나 · CDN 없음 · 표준단어 변환',
+    stack: ['HTML', 'Vanilla JS', '단일 파일'],
     href: '/toolbox',
     color: 'var(--accent3)',
   },
@@ -25,10 +28,19 @@ const TILES = [
     label: 'HOW I WORK',
     hook: '규칙을 기계가 지킨다',
     desc: 'hook · lint · 검증 도장 · PR 게이트',
+    stack: ['bash hook', 'ESLint', 'GitHub Actions'],
     href: '/workflow',
     color: 'var(--accent)',
   },
 ]
+
+const chip: React.CSSProperties = {
+  fontSize: '12px',
+  padding: '2px 8px',
+  borderRadius: '999px',
+  border: '1px solid var(--border)',
+  color: 'var(--muted)',
+}
 
 const totalMonths = CAREERS.reduce((s, c) => s + parseInt(c.months, 10), 0)
 
@@ -43,6 +55,19 @@ const linkBtn: React.CSSProperties = {
 }
 
 export default function Home() {
+  const [copied, setCopied] = useState<'ok' | 'fail' | null>(null)
+
+  // 이메일은 mailto 로 안 열고 복사만 한다. 결과를 1.5초 보여 준다
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL)
+      setCopied('ok')
+    } catch {
+      setCopied('fail')
+    }
+    setTimeout(() => setCopied(null), 1500)
+  }
+
   return (
     <div style={{ paddingTop: '8px', maxWidth: '880px' }}>
       {/* ── 히어로: 누구인가 ── */}
@@ -65,7 +90,21 @@ export default function Home() {
             ◉ 재직 중 · 2026.09
           </span>
           <a className="mono" href={GITHUB} target="_blank" rel="noopener noreferrer" style={linkBtn}>GITHUB ↗</a>
-          <a className="mono" href={`mailto:${EMAIL}`} style={linkBtn}>{EMAIL}</a>
+          <button
+            type="button"
+            className="mono"
+            onClick={copyEmail}
+            title="누르면 주소를 복사한다"
+            style={{
+              ...linkBtn,
+              background: 'transparent',
+              cursor: 'pointer',
+              color: copied === 'ok' ? 'var(--accent)' : copied === 'fail' ? 'var(--accent2)' : 'var(--text)',
+              borderColor: copied === 'ok' ? 'var(--accent)' : 'var(--border)',
+            }}
+          >
+            {copied === 'ok' ? '✓ 복사됨' : copied === 'fail' ? '복사 실패 — ' + EMAIL : EMAIL}
+          </button>
         </div>
       </div>
 
@@ -95,6 +134,9 @@ export default function Home() {
             </div>
             <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{t.hook}</div>
             <div className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>{t.desc}</div>
+            <div className="mono" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
+              {t.stack.map(s => <span key={s} style={chip}>{s}</span>)}
+            </div>
           </a>
         ))}
       </div>
