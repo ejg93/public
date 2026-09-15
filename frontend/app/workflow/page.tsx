@@ -4,7 +4,7 @@ import {
   QUOTE_DOC_DATE, QUOTE_DOC_STYLE, QUOTE_REQ, QUOTE_LINEBREAK,
 } from './quotes'
 
-export const metadata = { title: 'HOW I WORK' }
+export const metadata = { title: 'AI WORKFLOW' }
 
 const REPO_SHOP = 'https://github.com/ejg93/ProjectShop'
 const REPO_PORTFOLIO = 'https://github.com/ejg93/public'
@@ -110,8 +110,8 @@ export default function Workflow() {
       </div>
 
       <h1 className="display" style={{ fontSize: '64px', lineHeight: 0.95, marginBottom: '24px' }}>
-        <span style={{ color: 'var(--text)' }}>HOW I</span><br />
-        <span style={{ color: 'var(--accent)' }}>WORK</span>
+        <span style={{ color: 'var(--text)' }}>AI</span><br />
+        <span style={{ color: 'var(--accent)' }}>WORKFLOW</span>
       </h1>
 
       <p style={{ ...S.body, fontSize: '15px', marginBottom: '56px' }}>

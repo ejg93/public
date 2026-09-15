@@ -7,7 +7,7 @@ const menus = [
   { label: 'HOME',         href: '/',            icon: '⌂', desc: 'INTRO' },
   // /about 은 라우트만 남긴다. Q&A 형식이 리뷰어 동선에 안 맞아 메뉴에서 뺐다
   { label: 'PROJECT SHOP', href: '/projectshop', icon: '▤', desc: 'CASE_STUDY' },
-  { label: 'HOW I WORK',   href: '/workflow',    icon: '⚙', desc: 'METHOD' },
+  { label: 'AI WORKFLOW',  href: '/workflow',    icon: '⚙', desc: 'CLAUDE_CODE' },
   { label: 'TOOLBOX',      href: '/toolbox',     icon: '🧰', desc: 'CLOSED_NET' },
   { label: 'STUDY NOTES',  href: '/study',       icon: '✎', desc: 'NOTES' },
 ]
