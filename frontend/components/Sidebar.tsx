@@ -5,11 +5,15 @@ import { useEffect, useState } from 'react'
 
 const menus = [
   { label: 'HOME',         href: '/',            icon: '⌂', desc: 'INTRO' },
-  { label: 'ABOUT ME',     href: '/about',       icon: '◉', desc: 'PROFILE' },
+  // /about 은 라우트만 남긴다. Q&A 형식이 리뷰어 동선에 안 맞아 메뉴에서 뺐다
   { label: 'PROJECT SHOP', href: '/projectshop', icon: '▤', desc: 'CASE_STUDY' },
   { label: 'HOW I WORK',   href: '/workflow',    icon: '⚙', desc: 'METHOD' },
   { label: 'TOOLBOX',      href: '/toolbox',     icon: '🧰', desc: 'CLOSED_NET' },
   { label: 'STUDY NOTES',  href: '/study',       icon: '✎', desc: 'NOTES' },
+]
+
+// 리뷰어 동선에서 빠지는 것. 아래 LAB 묶음으로 내린다
+const labMenus = [
   { label: 'DEV LOG',      href: '/board',       icon: '✍', desc: 'LOG' },
   { label: 'YT COMMENTS',  href: '/youtube',     icon: '▶', desc: 'LAB' },
 ]
@@ -41,6 +45,29 @@ export default function Sidebar() {
       // 저장이 막혀도 이번 세션 동작에는 지장이 없다
     }
   }, [collapsed, restored])
+
+  const renderMenu = (m: typeof menus[number]) => {
+    const active = path === m.href || (m.href !== '/' && path.startsWith(m.href))
+    return (
+      <Link key={m.href} href={m.href} title={collapsed ? m.label : undefined} style={{
+        display: 'flex', alignItems: 'center',
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        gap: '10px', padding: collapsed ? '10px 0' : '10px 14px',
+        borderRadius: '6px', textDecoration: 'none',
+        background: active ? 'rgba(0,255,136,0.08)' : 'transparent',
+        border: active ? '1px solid rgba(0,255,136,0.2)' : '1px solid transparent',
+        transition: 'all 0.15s',
+      }}>
+        <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.icon}</span>
+        {!collapsed && (
+          <div>
+            <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '2px' }}>{m.desc}</div>
+            <div style={{ fontSize: '13px', fontWeight: 700, color: active ? 'var(--accent)' : 'var(--text)' }}>{m.label}</div>
+          </div>
+        )}
+      </Link>
+    )
+  }
 
   return (
     <aside className="sidebar-rail" style={{
@@ -77,28 +104,14 @@ export default function Sidebar() {
       {!collapsed && <div style={{ height: '1px', background: 'var(--border)', marginBottom: '20px', flexShrink: 0 }} />}
 
       <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px', flexShrink: 0 }}>
-        {menus.map(m => {
-          const active = path === m.href || (m.href !== '/' && path.startsWith(m.href))
-          return (
-            <Link key={m.href} href={m.href} title={collapsed ? m.label : undefined} style={{
-              display: 'flex', alignItems: 'center',
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              gap: '10px', padding: collapsed ? '10px 0' : '10px 14px',
-              borderRadius: '6px', textDecoration: 'none',
-              background: active ? 'rgba(0,255,136,0.08)' : 'transparent',
-              border: active ? '1px solid rgba(0,255,136,0.2)' : '1px solid transparent',
-              transition: 'all 0.15s',
-            }}>
-              <span style={{ fontSize: '18px', flexShrink: 0 }}>{m.icon}</span>
-              {!collapsed && (
-                <div>
-                  <div className="mono" style={{ fontSize: '10px', color: 'var(--muted)', letterSpacing: '2px' }}>{m.desc}</div>
-                  <div style={{ fontSize: '13px', fontWeight: 700, color: active ? 'var(--accent)' : 'var(--text)' }}>{m.label}</div>
-                </div>
-              )}
-            </Link>
-          )
-        })}
+        {menus.map(renderMenu)}
+        {!collapsed && (
+          <div className="mono" style={{ fontSize: '9px', color: 'var(--muted)', letterSpacing: '3px', margin: '14px 14px 2px' }}>
+            LAB
+          </div>
+        )}
+        {collapsed && <div style={{ height: '1px', background: 'var(--border)', margin: '10px 4px' }} />}
+        {labMenus.map(renderMenu)}
       </nav>
 
       {!collapsed && (

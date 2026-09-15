@@ -1,64 +1,121 @@
 'use client'
+import Career from './Career'
+import StackChips from './StackChips'
+import { CAREERS } from './career-data'
+
+const GITHUB = 'https://github.com/ejg93'
+const EMAIL = 'ejg933@gmail.com'
+
+const TILES = [
+  {
+    label: 'PROJECT SHOP',
+    hook: '멀티 셀러 쇼핑몰',
+    desc: '권한 체계 · CI 6종 · 설계 기록 · 개발 중',
+    href: '/projectshop',
+    color: 'var(--accent2)',
+  },
+  {
+    label: 'TOOLBOX',
+    hook: '폐쇄망 반입 도구 7개',
+    desc: '파일 하나 · CDN 없음 · 표준단어 변환',
+    href: '/toolbox',
+    color: 'var(--accent3)',
+  },
+  {
+    label: 'HOW I WORK',
+    hook: '규칙을 기계가 지킨다',
+    desc: 'hook · lint · 검증 도장 · PR 게이트',
+    href: '/workflow',
+    color: 'var(--accent)',
+  },
+]
+
+const totalMonths = CAREERS.reduce((s, c) => s + parseInt(c.months, 10), 0)
+
+const linkBtn: React.CSSProperties = {
+  fontSize: '12px',
+  letterSpacing: '1px',
+  padding: '6px 12px',
+  border: '1px solid var(--border)',
+  borderRadius: '6px',
+  color: 'var(--text)',
+  textDecoration: 'none',
+}
 
 export default function Home() {
   return (
-    <div style={{ paddingTop: '60px', maxWidth: '640px' }}>
-      <div className="mono" style={{
-        fontSize: '11px',
-        color: 'var(--accent)',
-        letterSpacing: '4px',
-        marginBottom: '16px',
-      }}>
-        SYSTEM READY
+    <div style={{ paddingTop: '8px', maxWidth: '880px' }}>
+      {/* ── 히어로: 누구인가 ── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
+        <div>
+          <h1 className="display" style={{ fontSize: '44px', lineHeight: 1, margin: '0 0 12px' }}>
+            <span style={{ color: 'var(--text)' }}>JAVA </span>
+            <span style={{ color: 'var(--accent)' }}>DEVELOPER </span>
+            <span style={{ color: 'var(--muted)' }}>EJK</span>
+          </h1>
+          <p style={{ color: 'var(--text)', fontSize: '16px', lineHeight: 1.7, margin: 0 }}>
+            공공·금융 SI Java 백엔드 5년차 — eGovFrame · Spring · Oracle · Tibero
+          </p>
+          <p style={{ color: 'var(--muted)', fontSize: '15px', lineHeight: 1.7, margin: '4px 0 0' }}>
+            폐쇄망 프로젝트 {CAREERS.length}건 · {totalMonths}개월. 요구사항 재정의부터 테이블 설계·배치 운영까지
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '8px', paddingTop: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className="mono" style={{ ...linkBtn, color: 'var(--accent)', borderColor: 'var(--accent)' }}>
+            ◉ 재직 중 · 2026.09
+          </span>
+          <a className="mono" href={GITHUB} target="_blank" rel="noopener noreferrer" style={linkBtn}>GITHUB ↗</a>
+          <a className="mono" href={`mailto:${EMAIL}`} style={linkBtn}>{EMAIL}</a>
+        </div>
       </div>
 
-      <h1 className="display" style={{
-        fontSize: '80px',
-        lineHeight: 0.9,
-        marginBottom: '32px',
+      {/* ── 타일: 어디를 누르나 ── */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        gap: '12px',
+        margin: '28px 0 20px',
       }}>
-        <span style={{ color: 'var(--text)' }}>JAVA</span><br />
-        <span style={{ color: 'var(--accent)' }}>DEV</span><br />
-        <span style={{ color: 'var(--muted)' }}>93</span>
-      </h1>
-
-      <p style={{
-        color: 'var(--muted)',
-        lineHeight: 1.9,
-        fontSize: '15px',
-        marginBottom: '40px',
-      }}>
-        JSP · Java · Spring 5년차 개발자<br />
-        정규직 + 프리랜서 경험 보유<br />
-      </p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {[
-          { label: 'PROJECT SHOP', desc: '멀티 셀러 쇼핑몰 · 권한 설계와 작업 과정', href: '/projectshop', color: 'var(--accent2)' },
-          { label: 'HOW I WORK', desc: '규칙을 기계가 지키게 만든 작업 방식', href: '/workflow', color: 'var(--accent)' },
-        ].map(item => (
-          <a key={item.href} href={item.href} style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '16px 20px',
+        {TILES.map(t => (
+          <a key={t.href} href={t.href} style={{
+            display: 'block',
+            padding: '18px 20px',
             background: 'var(--surface2)',
             border: '1px solid var(--border)',
+            borderLeft: `4px solid ${t.color}`,
             borderRadius: '8px',
             textDecoration: 'none',
-            transition: 'border-color 0.15s',
+            transition: 'border-color 0.15s, transform 0.15s',
           }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = item.color)}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = t.color; e.currentTarget.style.transform = 'translateY(-2px)' }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = t.color; e.currentTarget.style.transform = 'none' }}
           >
-            <div>
-              <div style={{ fontWeight: 700, color: item.color, marginBottom: '4px' }}>{item.label}</div>
-              <div className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>{item.desc}</div>
+            <div className="mono" style={{ fontSize: '12px', letterSpacing: '3px', color: t.color, marginBottom: '8px' }}>
+              {t.label} →
             </div>
-            <span style={{ color: item.color, fontSize: '20px' }}>→</span>
+            <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '4px' }}>{t.hook}</div>
+            <div className="mono" style={{ fontSize: '12px', color: 'var(--muted)' }}>{t.desc}</div>
           </a>
         ))}
       </div>
+
+      {/* ── 스택: 뭘 얼마나 썼나 ── */}
+      <StackChips />
+
+      {/* ── 경력: 어디서 ── */}
+      <div id="career" className="mono" style={{
+        fontSize: '12px',
+        color: 'var(--accent)',
+        letterSpacing: '4px',
+        margin: '36px 0 8px',
+      }}>
+        CAREER
+      </div>
+      <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.8, margin: '0 0 14px' }}>
+        행을 누르면 역할·기여도·담당 업무 표시.<br />
+        전 프로젝트 폐쇄망으로 코드·화면 반출 불가.
+      </p>
+      <Career />
     </div>
   )
 }
