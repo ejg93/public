@@ -230,7 +230,7 @@ export default function AIBattle() {
     color: disabled ? 'var(--muted)' : '#000',
     border: 'none', borderRadius: '6px',
     cursor: disabled ? 'not-allowed' : 'pointer',
-    fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace',
+    fontWeight: 700, fontFamily: 'var(--font-mono), monospace',
     fontSize: '12px', transition: 'all 0.15s',
     opacity: disabled ? 0.5 : 1,
   })
@@ -240,7 +240,7 @@ export default function AIBattle() {
     border: '1px solid var(--border)', borderRadius: '6px',
     color: 'var(--text)', fontSize: '13px',
     padding: '10px 12px', resize: 'none', outline: 'none',
-    fontFamily: 'Noto Sans KR, sans-serif', lineHeight: 1.6,
+    fontFamily: 'var(--font-sans), sans-serif', lineHeight: 1.6,
   }
 
   const ai1Messages = log.filter(m => m.from === 'ai1')
@@ -275,7 +275,7 @@ export default function AIBattle() {
               borderRadius: '6px',
               color: 'var(--muted)',
               cursor: 'pointer',
-              fontFamily: 'IBM Plex Mono, monospace',
+              fontFamily: 'var(--font-mono), monospace',
               fontSize: '12px',
             }}>CLEAR ALL</button>
           </div>

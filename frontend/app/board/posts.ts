@@ -466,7 +466,7 @@ ESC 또는 닫기 버튼으로 나가면 게시판으로 돌아간다.`,
   },
   {
     id: 'bad-ux-button',
-    title: '일상에서 겪는 불편함',
+    title: '체크박스 기본값이 매출이 되는 순간 — 일상 UI 의 다크 패턴',
     category: 'UI/UX',
     date: '2026-03-20',
     summary: '체크박스 이론과 비즈니스',
@@ -745,10 +745,10 @@ AI에게 제대로 된 질문을 던지려면 결국 스스로 질문을 던져�
   },
   {
     id: 'inBang',
-    title: '인터넷 방송을 추억하며',
+    title: 'P2P 그리드와 ActiveX — 초기 인터넷 방송이 대역폭을 떠넘긴 방법',
     category: '개발',
     date: '2026-04-20',
-    summary: 'P2P, a, b',
+    summary: '시청자 PC 를 중계 노드로 쓰던 구조와 그 대가',
     tags: ['P2P', 'ActiveX', '스트리밍', '아프리카TV'],
     blocks: [
       {

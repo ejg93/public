@@ -62,7 +62,7 @@ function SlideBlock({ block }: { block: Block }) {
       <pre style={{
         background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: '10px',
         padding: '20px', margin: 0, overflowX: 'auto', textAlign: 'left',
-        fontSize: '13px', lineHeight: 1.8, color: 'var(--text)', fontFamily: 'IBM Plex Mono, monospace',
+        fontSize: '13px', lineHeight: 1.8, color: 'var(--text)', fontFamily: 'var(--font-mono), monospace',
       }}>{block.code}</pre>
     )
   }

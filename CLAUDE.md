@@ -13,11 +13,12 @@
 | `frontend/public/game/` | 게임 확률 계산기 HTML. 개인용 | 요청받은 파일만 수정한다 |
 | `frontend/public/study/` | 아키텍처 노트 HTML 1장. 숨은 경로 | 요청받은 파일만 수정한다 |
 | `frontend/public/docrules/` | 한글·엑셀 문서 배포 규칙 HTML. 폐쇄망 반입 대상 | 요청받은 파일만 수정한다 |
+| `frontend/public/jobhunt/` | 지원 회사 평판·통근을 한 표에서 거르는 HTML. 개인용, 데이터는 localStorage | 요청받은 파일만 수정한다 |
 | `doc/` | 외부 API 스펙·배포 설정처럼 코드가 답 못 하는 것만. 색인은 [doc/README.md](doc/README.md) | 각 구역 CLAUDE.md의 트리거에 걸릴 때만 읽는다 |
 | `scripts/` | `verify.sh`(바뀐 구역 골라 검증)·`doc-lint.sh`(존댓말·줄바꿈·경로 검사)·`linebreak-lint.js`·`href-lint.js`·`hook-doc-lint.sh`·`hook-push-gate.sh`(hook 입구) | `.claude/settings.json` 의 hook 이 부른다 |
 | `doc/design-standards/` | 행안부 공공 DB 표준화 지침 등 외부 PDF 원본. 표준단어·도메인·코드 설계 근거 | 읽기 전용. 색인은 [design-standards/README.md](doc/design-standards/README.md), 트리거는 toolbox/CLAUDE.md |
 
-`public/` 아래 notes·game·study·docrules는 앱 코드가 아니라 정적 보관물이다. 근처 작업 중이라도 요청 없이 손대지 않는다.
+`public/` 아래 notes·game·study·docrules·jobhunt는 앱 코드가 아니라 정적 보관물이다. 근처 작업 중이라도 요청 없이 손대지 않는다.
 
 ## 검증
 

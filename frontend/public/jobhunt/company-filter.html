@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>지원 회사 거르기</title>
+<style>
+:root {
+  --bg: #1e1e1e; --surface: #252526; --surface2: #2d2d30; --border: #3c3c3c;
+  --text: #d4d4d4; --muted: #858585; --accent: #569cd6;
+  --ok: #4ec9b0; --warn: #dcdcaa; --bad: #f48771;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f5f5; --surface: #ffffff; --surface2: #eeeeee; --border: #cccccc;
+    --text: #1f1f1f; --muted: #6a6a6a; --accent: #0066b8;
+    --ok: #0a7c66; --warn: #8a6d00; --bad: #b5310f;
+  }
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 16px; background: var(--bg); color: var(--text);
+  font-family: 'Consolas', 'D2Coding', monospace; font-size: 13px; line-height: 1.6;
+}
+h1 { font-size: 16px; margin: 0 0 4px; color: var(--accent); }
+h2 { font-size: 13px; margin: 0 0 8px; color: var(--accent); }
+.sub { color: var(--muted); font-size: 12px; margin: 0 0 16px; }
+.panel {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 4px; padding: 12px; margin-bottom: 12px;
+}
+.grid { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+label { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+input, select, textarea {
+  background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 3px; padding: 4px 6px; font-family: inherit; font-size: 12px;
+}
+input:focus, select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+input[type=number] { text-align: right; }
+button {
+  background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 3px; padding: 5px 10px; font-family: inherit; font-size: 12px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); color: var(--accent); }
+button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+button.primary:hover { color: var(--bg); opacity: 0.85; }
+.scroll { overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 12px; }
+th, td { border-bottom: 1px solid var(--border); padding: 4px 6px; text-align: left; white-space: nowrap; }
+th {
+  background: var(--surface2); color: var(--muted); font-size: 11px;
+  font-weight: 400; cursor: pointer; user-select: none; position: sticky; top: 0; z-index: 2;
+}
+th:hover { color: var(--accent); }
+th .dir { color: var(--accent); }
+tr.out td { opacity: 0.45; }
+tr.out td.keep { opacity: 1; }
+td input, td select { width: 100%; border-color: transparent; background: transparent; }
+td input:hover, td select:hover { border-color: var(--border); }
+.w-name { width: 130px; } .w-addr { width: 190px; } .w-pos { width: 130px; }
+.w-num { width: 58px; } .w-memo { width: 170px; } .w-st { width: 82px; }
+.score { font-weight: 700; text-align: right; }
+.s-hi { color: var(--ok); } .s-mid { color: var(--warn); } .s-lo { color: var(--bad); }
+.flags { font-size: 11px; color: var(--bad); white-space: normal; min-width: 160px; }
+.flags .dim { color: var(--muted); }
+.linkbtn { padding: 2px 6px; font-size: 11px; }
+details { margin-bottom: 12px; }
+summary { cursor: pointer; color: var(--accent); font-size: 12px; }
+details table { width: auto; margin-top: 8px; }
+details th, details td { white-space: normal; cursor: default; position: static; }
+details th { color: var(--text); }
+.help-l { color: var(--muted); }
+.count { color: var(--muted); font-size: 12px; margin: 8px 0; }
+.warnbox {
+  border-left: 3px solid var(--warn); padding: 8px 10px; margin-bottom: 12px;
+  background: var(--surface); font-size: 12px; color: var(--muted);
+}
+.modal-back {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  display: flex; align-items: center; justify-content: center; z-index: 500;
+}
+.modal {
+  background: var(--surface); border: 1px solid var(--accent); border-radius: 4px;
+  max-width: min(520px, 92vw); max-height: 70vh; overflow-y: auto; padding: 8px;
+}
+.modal-h { color: var(--accent); font-size: 12px; padding: 6px 8px 10px; }
+.modal-row {
+  display: block; width: 100%; text-align: left; margin-bottom: 4px;
+  background: var(--bg); border: 1px solid var(--border); padding: 7px 9px;
+}
+.modal-row:hover { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<h1>지원 회사 거르기</h1>
+<p class="sub">
+  회사별 평판·통근을 한 표에 모아 거를 곳을 먼저 떨어뜨린다.<br>
+  평점은 잡플래닛 화면을 보고 손으로 적는다.<br>
+  통근 시간은 길찾기 버튼이 연 지도에서 읽어 적는다.<br>
+  회사명으로 「연금조회」를 누르면 국민연금 사업장 인원·퇴사자·추정연봉이 들어온다.<br>
+  주소를 넣으면 카카오 로컬 API가 좌표를 찾아 집에서의 직선거리를 채운다.<br>
+  판정·점수·정렬은 그렇게 모인 값으로 자동 계산한다.
+</p>
+
+<div class="warnbox">
+  입력한 값은 이 브라우저 localStorage 에만 남는다 —<br>
+  서버로 보내지 않고 다른 기기에서도 안 보인다.<br>
+  브라우저 데이터를 지우면 같이 사라지니 「CSV 내보내기」로 가끔 백업한다.<br>
+  카카오·공공데이터포털 키도 같은 자리에 따로 담는다.<br>
+  소스와 CSV 어디에도 안 들어가고, 조회할 때만 카카오·공공데이터포털로 나간다.
+</div>
+
+<details>
+  <summary>거르는 기준과 보는 순서</summary>
+  <table>
+    <tr><th>순서</th><th>어디서</th><th>뭘 보나</th></tr>
+    <tr><td>1</td><td>국민연금</td><td class="help-l">「연금조회」가 인원·퇴사자·추정연봉을 채운다.<br>평점과 달리 못 꾸미는 숫자라 여기서 먼저 턴다</td></tr>
+    <tr><td>2</td><td>잡플래닛</td><td class="help-l">리뷰 수 30건 이상인 곳만 평점을 믿는다.<br>추천율·CEO 지지율이 총점보다 변별력이 크다</td></tr>
+    <tr><td>3</td><td>직선km</td><td class="help-l">주소만 넣으면 자동으로 뜬다.<br>여기서 먼 곳을 털어 길찾기 누를 횟수를 줄인다</td></tr>
+    <tr><td>4</td><td>지도</td><td class="help-l">1~3 을 통과한 곳만 길찾기를 눌러 대중교통 시간을 재고 통근 칸에 적는다</td></tr>
+  </table>
+  <table>
+    <tr><th>칸</th><th>기본 탈락선</th><th>왜</th></tr>
+    <tr><td>리뷰수</td><td>30건 미만</td><td class="help-l">표본이 적으면 평점 네 칸을 판정에서 뺀다. 5건짜리 4.5 는 숫자가 아니다</td></tr>
+    <tr><td>추천율</td><td>60% 미만</td><td class="help-l">총점보다 사람을 잘 가른다</td></tr>
+    <tr><td>CEO</td><td>50% 미만</td><td class="help-l">경영진 문제는 들어가서 못 고친다</td></tr>
+    <tr><td>워라밸·문화</td><td>3.0 미만</td><td class="help-l">승진기회·복지보다 매일 겪는 쪽이다</td></tr>
+    <tr><td>퇴사율</td><td>25% 초과</td><td class="help-l">인원 대비 작년 퇴사자. 평점이 높아도 이 숫자가 크면 끝난 얘기다</td></tr>
+    <tr><td>통근</td><td>60분 초과</td><td class="help-l">편도 기준. 왕복으로 하루 두 시간이 넘어가는 선이다</td></tr>
+    <tr><td>직선km</td><td>25km 초과</td><td class="help-l">통근 분을 아직 안 적은 줄만 이 선으로 본다.<br>분을 적으면 그쪽이 이긴다</td></tr>
+  </table>
+  <p class="help-l" style="margin-top:8px">
+    리뷰 본문에서 찾을 단어 — 야근 · 사수 · 레거시 · SI · 돌려막기 · 인원 충원.<br>
+    별점보다 이 단어가 몇 번 나오는지가 정확하다. 걸린 게 있으면 메모 칸에 적는다.
+  </p>
+  <p class="help-l">
+    추정연봉은 당월고지금액을 가입자수와 보험료율 9%로 나눠 되돌린 값이다.<br>
+    기준소득월액에 상한이 있어서 <strong>고액 연봉일수록 실제보다 낮게 나온다</strong>.<br>
+    자리 비교용으로만 본다.<br>
+    작년퇴사는 최근 12개월 상실가입자 합이다.<br>
+    정년·계약만료·해고가 다 섞여 있어 자발 퇴사만은 아니다.
+  </p>
+</details>
+
+<div class="panel">
+  <div class="grid">
+    <div>
+      <label for="home">집 주소 — 길찾기 출발지로 쓴다</label>
+      <input id="home" type="text" style="width:300px" placeholder="예: 서울 강남구 테헤란로 1">
+    </div>
+    <div>
+      <label for="maxCommute">통근 상한(분)</label>
+      <input id="maxCommute" type="number" class="w-num" min="0" step="5">
+    </div>
+    <div>
+      <label for="maxKm">직선 상한(km)</label>
+      <input id="maxKm" type="number" class="w-num" min="0" step="1">
+    </div>
+    <div>
+      <label for="minReviews">리뷰수 하한</label>
+      <input id="minReviews" type="number" class="w-num" min="0" step="5">
+    </div>
+    <div>
+      <label for="minRecommend">추천율 하한(%)</label>
+      <input id="minRecommend" type="number" class="w-num" min="0" max="100" step="5">
+    </div>
+    <div>
+      <label for="minCeo">CEO 하한(%)</label>
+      <input id="minCeo" type="number" class="w-num" min="0" max="100" step="5">
+    </div>
+    <div>
+      <label for="minSub">워라밸·문화 하한</label>
+      <input id="minSub" type="number" class="w-num" min="0" max="5" step="0.1">
+    </div>
+    <div>
+      <label for="maxTurnover">퇴사율 상한(%)</label>
+      <input id="maxTurnover" type="number" class="w-num" min="0" max="100" step="5">
+    </div>
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div>
+      <label for="kakaoKey">카카오 REST API 키 — 주소를 좌표로 바꾸는 데만 쓴다</label>
+      <input id="kakaoKey" type="password" style="width:300px" placeholder="developers.kakao.com 내 애플리케이션 · REST API 키" autocomplete="off">
+    </div>
+    <button id="geoAll">주소 좌표 일괄 채우기</button>
+    <span id="geoState" class="help-l"></span>
+  </div>
+  <div class="grid" style="margin-top:12px">
+    <div>
+      <label for="npsKey">공공데이터포털 인증키 — 국민연금 사업장 인원·퇴사자를 받는 데만 쓴다</label>
+      <input id="npsKey" type="password" style="width:300px" placeholder="data.go.kr 마이페이지 · 일반 인증키(Decoding)" autocomplete="off">
+    </div>
+    <span id="npsState" class="help-l"></span>
+  </div>
+</div>
+
+<div class="panel">
+  <div class="grid">
+    <button class="primary" id="add">+ 회사 추가</button>
+    <button id="hide">탈락 숨기기</button>
+    <select id="stFilter" title="상태로 걸러 본다">
+      <option value="">상태 전체</option>
+    </select>
+    <button id="export">CSV 내보내기</button>
+    <button id="importBtn">CSV 가져오기</button>
+    <input id="importFile" type="file" accept=".csv,text/csv" style="display:none">
+    <button id="clear">전체 지우기</button>
+  </div>
+</div>
+
+<p class="count" id="count"></p>
+
+<div class="scroll">
+  <table>
+    <thead><tr id="head"></tr></thead>
+    <tbody id="body"></tbody>
+  </table>
+</div>
+
+<p class="count">
+  종합점수 = 통근 30% · 평판 40% · 퇴사율 30% 의 가중 평균.<br>
+  통근 축은 분이 있으면 분으로, 없으면 직선거리로 매긴다 —<br>
+  30분·5km 이하가 만점, 90분·30km 가 0점.<br>
+  값을 안 넣은 축은 빼고 남은 축끼리 다시 나눈다 — 빈칸이 점수를 깎지는 않는다.
+</p>
+
+<script>
+'use strict';
+
+var KEY = 'jobhunt.v1';
+// 키는 표 데이터와 다른 칸에 담는다 — CSV 내보내기·상태 백업에 섞이면 안 된다
+var KEY_KAKAO = 'jobhunt.kakaoRestKey';
+var KEY_NPS = 'jobhunt.npsServiceKey';
+
+// 국민연금 가입 사업장 내역. 크레딧잡이 쓰던 원본 데이터고, 크레딧잡이 없어진 뒤에도 이건 열려 있다
+var NPS_BASE = 'https://apis.data.go.kr/B552015/NpsBplcInfoInqireServiceV2/';
+var NPS_OP = {
+  search: 'getBassInfoSearchV2',
+  detail: 'getDetailInfoSearchV2',
+  period: 'getPdAcctoSttusInfoSearchV2'
+};
+// 국민연금 보험료율. 고지금액을 가입자수로 나눈 뒤 이 값으로 되돌리면 월 기준소득이 나온다
+var NPS_RATE = 0.09;
+var STATUSES = ['후보', '지원', '서류통과', '면접', '합격', '탈락', '보류'];
+
+var DEFAULT_RULES = {
+  maxCommute: 60, maxKm: 25, minReviews: 30, minRecommend: 60,
+  minCeo: 50, minSub: 3.0, maxTurnover: 25
+};
+
+var COLS = [
+  { k: 'name',      t: '회사',     w: 'w-name', type: 'text' },
+  { k: 'position',  t: '포지션',   w: 'w-pos',  type: 'text' },
+  { k: 'addr',      t: '주소',     w: 'w-addr', type: 'text' },
+  { k: 'commute',   t: '통근(분)', w: 'w-num',  type: 'num', step: 5 },
+  { k: 'jpScore',   t: 'JP평점',   w: 'w-num',  type: 'num', step: 0.1, max: 5 },
+  { k: 'reviews',   t: '리뷰수',   w: 'w-num',  type: 'num', step: 1 },
+  { k: 'recommend', t: '추천율%',  w: 'w-num',  type: 'num', step: 1, max: 100 },
+  { k: 'ceo',       t: 'CEO%',     w: 'w-num',  type: 'num', step: 1, max: 100 },
+  { k: 'wlb',       t: '워라밸',   w: 'w-num',  type: 'num', step: 0.1, max: 5 },
+  { k: 'culture',   t: '문화',     w: 'w-num',  type: 'num', step: 0.1, max: 5 },
+  { k: 'staff',     t: '인원',     w: 'w-num',  type: 'num', step: 1 },
+  { k: 'leavers',   t: '작년퇴사', w: 'w-num',  type: 'num', step: 1 },
+  { k: 'salary',    t: '추정연봉', w: 'w-num',  type: 'num', step: 10 },
+  { k: 'memo',      t: '메모',     w: 'w-memo', type: 'text' },
+  { k: 'status',    t: '상태',     w: 'w-st',   type: 'select' }
+];
+
+var state = load();
+var sortKey = 'score';
+var sortDir = -1;
+var hideOut = false;
+var stFilter = '';
+
+function load() {
+  var base = { home: '', homeLat: null, homeLng: null, rules: copy(DEFAULT_RULES), rows: [] };
+  var raw;
+  try { raw = localStorage.getItem(KEY); } catch (e) { return base; }
+  if (!raw) return base;
+  var got;
+  try { got = JSON.parse(raw); } catch (e) { return base; }
+  if (!got || typeof got !== 'object') return base;
+  base.home = typeof got.home === 'string' ? got.home : '';
+  base.homeLat = num(got.homeLat);
+  base.homeLng = num(got.homeLng);
+  if (got.rules && typeof got.rules === 'object') {
+    for (var k in DEFAULT_RULES) {
+      if (typeof got.rules[k] === 'number' && isFinite(got.rules[k])) base.rules[k] = got.rules[k];
+    }
+  }
+  if (Object.prototype.toString.call(got.rows) === '[object Array]') {
+    for (var i = 0; i < got.rows.length; i++) {
+      if (got.rows[i] && typeof got.rows[i] === 'object') base.rows.push(normalize(got.rows[i]));
+    }
+  }
+  return base;
+}
+
+function num(v) {
+  if (typeof v === 'number' && isFinite(v)) return v;
+  if (typeof v === 'string' && v.trim() !== '') {
+    var n = Number(v);
+    if (isFinite(n)) return n;
+  }
+  return null;
+}
+
+function normalize(r) {
+  var out = { id: r.id || nextId() };
+  for (var i = 0; i < COLS.length; i++) {
+    var c = COLS[i];
+    var v = r[c.k];
+    if (c.type === 'num') out[c.k] = num(v);
+    else out[c.k] = typeof v === 'string' ? v : '';
+  }
+  if (!out.status) out.status = '후보';
+  // 좌표는 손으로 고치는 칸이 아니라 API 가 채우는 값이라 COLS 밖에 둔다
+  out.lat = num(r.lat);
+  out.lng = num(r.lng);
+  out.matched = typeof r.matched === 'string' ? r.matched : '';
+  // 어느 사업장을 골랐는지 기억해 둔다. 같은 이름이 여러 곳일 때 다시 고르지 않으려는 것이다
+  out.npsSeq = typeof r.npsSeq === 'string' ? r.npsSeq : '';
+  out.npsName = typeof r.npsName === 'string' ? r.npsName : '';
+  return out;
+}
+
+function copy(o) { var n = {}; for (var k in o) n[k] = o[k]; return n; }
+function nextId() { return 'r' + Date.now() + Math.floor(Math.random() * 10000); }
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* 용량 초과·차단이면 화면만 유지한다 */ }
+}
+
+function kakaoKey() {
+  try { return (localStorage.getItem(KEY_KAKAO) || '').trim(); } catch (e) { return ''; }
+}
+
+function setGeoState(msg) {
+  document.getElementById('geoState').textContent = msg || '';
+}
+
+function setNpsState(msg) {
+  document.getElementById('npsState').textContent = msg || '';
+}
+
+// 주소 검색을 먼저 치고, 도로명·지번으로 안 잡히면 장소 이름으로 다시 친다.
+// 회사명만 적어 둔 줄도 좌표가 나오게 하려는 것이다.
+function geocode(query) {
+  var key = kakaoKey();
+  var q = (query || '').trim();
+  if (!key) return Promise.reject(new Error('카카오 REST 키가 없다'));
+  if (!q) return Promise.reject(new Error('주소가 비었다'));
+
+  var call = function (path, param) {
+    return fetch('https://dapi.kakao.com/v2/local/search/' + path + '?' + param + '=' + encodeURIComponent(q), {
+      headers: { Authorization: 'KakaoAK ' + key }
+    }).then(function (res) {
+      if (res.ok) return res.json();
+      // 카카오는 거절 사유를 본문 message 에 담는다. 그게 없으면 상태 코드만 보고도 못 고친다
+      return res.json().catch(function () { return {}; }).then(function (j) {
+        var why = (j && j.message) ? ' — ' + j.message : '';
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('키가 거부됐다 (' + res.status + ')' + why);
+        }
+        throw new Error('응답 ' + res.status + why);
+      });
+    });
+  };
+
+  return call('address.json', 'query').then(function (j) {
+    var d = j.documents && j.documents[0];
+    if (d) return { lat: Number(d.y), lng: Number(d.x), matched: d.address_name || q };
+    return call('keyword.json', 'query').then(function (j2) {
+      var k = j2.documents && j2.documents[0];
+      if (!k) return null;
+      return { lat: Number(k.y), lng: Number(k.x), matched: k.road_address_name || k.address_name || k.place_name || q };
+    });
+  });
+}
+
+function npsKey() {
+  try { return (localStorage.getItem(KEY_NPS) || '').trim(); } catch (e) { return ''; }
+}
+
+// 응답 태그 이름을 하나로 못 박지 않는다. 후보를 차례로 보고 먼저 잡히는 값을 쓴다
+function pick(node, names) {
+  for (var i = 0; i < names.length; i++) {
+    var got = node.getElementsByTagName(names[i]);
+    if (got.length && got[0].textContent.trim() !== '') return got[0].textContent.trim();
+  }
+  return '';
+}
+
+function npsCall(op, params) {
+  var key = npsKey();
+  if (!key) return Promise.reject(new Error('공공데이터포털 인증키가 없다'));
+  var qs = 'serviceKey=' + encodeURIComponent(key);
+  for (var k in params) {
+    if (params[k] !== '' && params[k] !== null && params[k] !== undefined) {
+      qs += '&' + k + '=' + encodeURIComponent(params[k]);
+    }
+  }
+  return fetch(NPS_BASE + op + '?' + qs).then(function (res) {
+    return res.text();
+  }).then(function (text) {
+    var doc = new DOMParser().parseFromString(text, 'text/xml');
+    // 게이트웨이가 막으면 errMsg·returnAuthMsg 로 오고, 서비스가 답하면 resultCode 로 온다
+    var authErr = pick(doc, ['returnAuthMsg', 'errMsg']);
+    if (authErr) throw new Error(authErr);
+    var code = pick(doc, ['resultCode']);
+    if (code && code !== '00' && code !== '0') {
+      throw new Error(pick(doc, ['resultMsg']) || ('응답 코드 ' + code));
+    }
+    return doc;
+  });
+}
+
+function npsItems(doc) {
+  var items = doc.getElementsByTagName('item');
+  var out = [];
+  for (var i = 0; i < items.length; i++) out.push(items[i]);
+  return out;
+}
+
+// 회사명으로 사업장 후보를 찾는다. 같은 이름의 지점이 여럿이면 그만큼 나온다
+function npsSearch(name) {
+  return npsCall(NPS_OP.search, { wkpl_nm: name, pageNo: 1, numOfRows: 30 }).then(function (doc) {
+    return npsItems(doc).map(function (it) {
+      return {
+        seq: pick(it, ['seq', 'SEQ']),
+        name: pick(it, ['wkplNm', 'WKPL_NM']),
+        addr: pick(it, ['wkplRoadNmDtlAddr', 'wkplJnngStcd', 'ldongAddrMgplDgCd', 'WKPL_ROAD_NM_DTL_ADDR']),
+        staff: num(pick(it, ['jnngpCnt', 'JNNGP_CNT']))
+      };
+    }).filter(function (x) { return x.seq; });
+  });
+}
+
+// 고른 사업장의 가입자수와 고지금액을 가져온다
+function npsDetail(seq) {
+  return npsCall(NPS_OP.detail, { seq: seq }).then(function (doc) {
+    var it = npsItems(doc)[0] || doc;
+    return {
+      staff: num(pick(it, ['jnngpCnt', 'JNNGP_CNT'])),
+      notice: num(pick(it, ['crrmmNtcAmt', 'CRRMM_NTC_AMT'])),
+      acq: num(pick(it, ['nwAcqzrCnt', 'NW_ACQZR_CNT'])),
+      lss: num(pick(it, ['lssJnngpCnt', 'LSS_JNNGP_CNT']))
+    };
+  });
+}
+
+// 월별 현황에서 최근 12개월치 상실자(퇴사)와 신규취득자(입사)를 더한다
+function npsPeriod(seq) {
+  return npsCall(NPS_OP.period, { seq: seq, pageNo: 1, numOfRows: 12 }).then(function (doc) {
+    var rows = npsItems(doc).map(function (it) {
+      return {
+        ym: pick(it, ['dataCrtYm', 'DATA_CRT_YM']),
+        acq: num(pick(it, ['nwAcqzrCnt', 'NW_ACQZR_CNT'])) || 0,
+        lss: num(pick(it, ['lssJnngpCnt', 'LSS_JNNGP_CNT'])) || 0
+      };
+    });
+    rows.sort(function (a, b) { return a.ym < b.ym ? 1 : -1; });
+    var use = rows.slice(0, 12);
+    var acq = 0, lss = 0;
+    use.forEach(function (r) { acq += r.acq; lss += r.lss; });
+    return { acq: acq, lss: lss, months: use.length, from: use.length ? use[use.length - 1].ym : '', to: use.length ? use[0].ym : '' };
+  });
+}
+
+// 고지금액 ÷ 가입자수 ÷ 보험료율 = 월 기준소득. 열두 달 곱해 만원 단위로 만든다
+function estimateSalary(notice, staff) {
+  if (!notice || !staff) return null;
+  var monthly = notice / staff / NPS_RATE;
+  return Math.round(monthly * 12 / 10000);
+}
+
+// 하버사인. 도로가 아니라 직선이라 실제 통근보다 늘 짧게 나온다
+function haversine(aLat, aLng, bLat, bLng) {
+  var R = 6371;
+  var rad = Math.PI / 180;
+  var dLat = (bLat - aLat) * rad;
+  var dLng = (bLng - aLng) * rad;
+  var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(aLat * rad) * Math.cos(bLat * rad) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+function km(r) {
+  if (state.homeLat === null || state.homeLng === null) return null;
+  if (r.lat === null || r.lng === null) return null;
+  return haversine(state.homeLat, state.homeLng, r.lat, r.lng);
+}
+
+// 퇴사율은 입력이 아니라 인원과 작년 퇴사자에서 나온다
+function turnover(r) {
+  if (!r.staff || r.staff <= 0 || r.leavers === null) return null;
+  return r.leavers / r.staff * 100;
+}
+
+// 평점 네 칸은 리뷰 수가 하한을 넘을 때만 믿는다
+function trusted(r) {
+  return r.reviews !== null && r.reviews >= state.rules.minReviews;
+}
+
+function judge(r) {
+  var ru = state.rules;
+  var flags = [];
+  if (r.commute !== null) {
+    if (r.commute > ru.maxCommute) flags.push('통근 ' + r.commute + '분');
+  } else {
+    // 실제 통근 분이 적혀 있으면 그게 우선이다. 직선거리는 분이 빈 줄만 대신 본다
+    var d = km(r);
+    if (d !== null && d > ru.maxKm) flags.push('직선 ' + d.toFixed(1) + 'km');
+  }
+  var t = turnover(r);
+  if (t !== null && t > ru.maxTurnover) flags.push('퇴사율 ' + t.toFixed(0) + '%');
+  if (trusted(r)) {
+    if (r.recommend !== null && r.recommend < ru.minRecommend) flags.push('추천율 ' + r.recommend + '%');
+    if (r.ceo !== null && r.ceo < ru.minCeo) flags.push('CEO ' + r.ceo + '%');
+    if (r.wlb !== null && r.wlb < ru.minSub) flags.push('워라밸 ' + r.wlb);
+    if (r.culture !== null && r.culture < ru.minSub) flags.push('문화 ' + r.culture);
+  }
+  return flags;
+}
+
+function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+// 30분 이하를 100점, 90분을 0점으로 놓고 사이를 선형으로 나눈다.
+// 분이 비어 있으면 직선거리로 대신 매긴다 — 5km 이하 100점, 30km 0점
+function commuteScore(r) {
+  if (r.commute !== null) return clamp(100 - (r.commute - 30) * (100 / 60), 0, 100);
+  var d = km(r);
+  if (d === null) return null;
+  return clamp(100 - (d - 5) * 4, 0, 100);
+}
+
+// 추천율·CEO·워라밸·문화를 100점 환산해 평균낸다. 리뷰 수가 모자라면 안 센다
+function repScore(r) {
+  if (!trusted(r)) return null;
+  var vals = [];
+  if (r.recommend !== null) vals.push(clamp(r.recommend, 0, 100));
+  if (r.ceo !== null) vals.push(clamp(r.ceo, 0, 100));
+  if (r.wlb !== null) vals.push(clamp(r.wlb * 20, 0, 100));
+  if (r.culture !== null) vals.push(clamp(r.culture * 20, 0, 100));
+  if (!vals.length) return null;
+  var s = 0;
+  for (var i = 0; i < vals.length; i++) s += vals[i];
+  return s / vals.length;
+}
+
+// 퇴사율 0%를 100점, 33%를 0점으로 환산한다
+function stayScore(r) {
+  var t = turnover(r);
+  if (t === null) return null;
+  return clamp(100 - t * 3, 0, 100);
+}
+
+function totalScore(r) {
+  var parts = [
+    { v: commuteScore(r), w: 0.3 },
+    { v: repScore(r), w: 0.4 },
+    { v: stayScore(r), w: 0.3 }
+  ];
+  var sum = 0, wsum = 0;
+  for (var i = 0; i < parts.length; i++) {
+    if (parts[i].v === null) continue;
+    sum += parts[i].v * parts[i].w;
+    wsum += parts[i].w;
+  }
+  if (!wsum) return null;
+  return sum / wsum;
+}
+
+function mapUrl(addr) {
+  var home = state.home.trim();
+  var to = (addr || '').trim();
+  if (!to) return null;
+  if (!home) return 'https://map.kakao.com/?q=' + encodeURIComponent(to);
+  return 'https://map.kakao.com/?sName=' + encodeURIComponent(home) + '&eName=' + encodeURIComponent(to);
+}
+
+function el(tag, cls) { var e = document.createElement(tag); if (cls) e.className = cls; return e; }
+
+var geoTimers = {};
+
+// 주소를 치는 동안 글자마다 부르지 않는다. 손을 뗀 뒤 한 번만 나간다
+function scheduleGeo(r, tr) {
+  r.lat = null;
+  r.lng = null;
+  r.matched = '';
+  r.geoErr = '';
+  if (geoTimers[r.id]) clearTimeout(geoTimers[r.id]);
+  if (!kakaoKey() || !r.addr.trim()) { save(); refresh(r, tr); return; }
+  geoTimers[r.id] = setTimeout(function () { geocodeRow(r, tr); }, 800);
+}
+
+function geocodeRow(r, tr) {
+  return geocode(r.addr).then(function (hit) {
+    if (!hit) {
+      r.geoErr = '주소를 못 찾았다';
+    } else {
+      r.lat = hit.lat;
+      r.lng = hit.lng;
+      r.matched = hit.matched;
+      r.geoErr = '';
+    }
+    save();
+    if (tr && tr.parentNode) refresh(r, tr);
+    return !!hit;
+  }).catch(function (e) {
+    r.geoErr = e.message;
+    if (tr && tr.parentNode) refresh(r, tr);
+    return false;
+  });
+}
+
+// 후보가 여럿이면 고르게 한다. 지점·계열사가 같은 이름을 쓰는 일이 흔하다
+function pickWorkplace(list) {
+  return new Promise(function (resolve) {
+    var back = el('div', 'modal-back');
+    var box = el('div', 'modal');
+    var h = el('div', 'modal-h');
+    h.textContent = '사업장 고르기 — ' + list.length + '곳 찾음';
+    box.appendChild(h);
+
+    list.forEach(function (w) {
+      var b = el('button', 'modal-row');
+      var t1 = el('div');
+      t1.textContent = w.name;
+      var t2 = el('div', 'help-l');
+      t2.style.fontSize = '11px';
+      t2.textContent = (w.addr || '주소 없음') + (w.staff ? ' · 가입자 ' + w.staff + '명' : '');
+      b.appendChild(t1);
+      b.appendChild(t2);
+      b.onclick = function () { document.body.removeChild(back); resolve(w); };
+      box.appendChild(b);
+    });
+
+    var cancel = el('button', 'modal-row');
+    cancel.textContent = '취소';
+    cancel.onclick = function () { document.body.removeChild(back); resolve(null); };
+    box.appendChild(cancel);
+
+    back.appendChild(box);
+    back.onclick = function (e) {
+      if (e.target === back) { document.body.removeChild(back); resolve(null); }
+    };
+    document.body.appendChild(back);
+  });
+}
+
+function npsFill(r, tr, btn) {
+  var name = (r.name || '').trim();
+  if (!npsKey()) { setNpsState('공공데이터포털 인증키부터 넣는다'); return; }
+  if (!name) { setNpsState('회사명을 먼저 적는다'); return; }
+
+  btn.disabled = true;
+  btn.textContent = '조회 중';
+  setNpsState(name + ' 찾는 중');
+
+  var chosen = null;
+  npsSearch(name).then(function (list) {
+    if (!list.length) throw new Error('국민연금에 그 이름의 사업장이 없다');
+    if (list.length === 1) return list[0];
+    return pickWorkplace(list);
+  }).then(function (w) {
+    if (!w) throw new Error('취소');
+    chosen = w;
+    r.npsSeq = w.seq;
+    r.npsName = w.name;
+    if (w.staff) r.staff = w.staff;
+    return Promise.all([npsDetail(w.seq), npsPeriod(w.seq).catch(function () { return null; })]);
+  }).then(function (res) {
+    var d = res[0], pd = res[1];
+    if (d.staff) r.staff = d.staff;
+    var pay = estimateSalary(d.notice, r.staff);
+    if (pay) r.salary = pay;
+    if (pd && pd.months) {
+      r.leavers = pd.lss;
+      setNpsState(chosen.name + ' — 가입자 ' + (r.staff || '?') + '명 · ' +
+        pd.from + '~' + pd.to + ' 입사 ' + pd.acq + ' 퇴사 ' + pd.lss +
+        (pay ? ' · 추정연봉 ' + pay + '만원' : ''));
+    } else {
+      if (d.lss !== null) r.leavers = d.lss;
+      setNpsState(chosen.name + ' — 가입자 ' + (r.staff || '?') + '명' +
+        (pay ? ' · 추정연봉 ' + pay + '만원' : '') + ' (월별 현황은 못 받았다)');
+    }
+    save();
+    render();
+  }).catch(function (e) {
+    if (e.message !== '취소') setNpsState(name + ' — ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '연금조회';
+  });
+}
+
+function geocodeHome() {
+  if (!kakaoKey() || !state.home.trim()) {
+    state.homeLat = null;
+    state.homeLng = null;
+    save();
+    render();
+    return Promise.resolve(false);
+  }
+  return geocode(state.home).then(function (hit) {
+    state.homeLat = hit ? hit.lat : null;
+    state.homeLng = hit ? hit.lng : null;
+    setGeoState(hit ? '집 좌표: ' + hit.matched : '집 주소를 못 찾았다');
+    save();
+    render();
+    return !!hit;
+  }).catch(function (e) {
+    setGeoState('집 주소 — ' + e.message);
+    return false;
+  });
+}
+
+// 가져온 CSV 처럼 좌표가 빈 줄만 골라 차례로 부른다. 한꺼번에 던지면 호출이 막힌다
+function geocodeAll() {
+  if (!kakaoKey()) { setGeoState('카카오 REST 키부터 넣는다'); return; }
+  var todo = state.rows.filter(function (r) {
+    return r.addr.trim() && (r.lat === null || r.lng === null);
+  });
+  var step = function (i, hit) {
+    if (i >= todo.length) {
+      setGeoState('좌표 ' + hit + '/' + todo.length + '건 채웠다');
+      render();
+      return;
+    }
+    setGeoState('좌표 찾는 중 ' + (i + 1) + '/' + todo.length);
+    geocodeRow(todo[i], null).then(function (ok) {
+      setTimeout(function () { step(i + 1, hit + (ok ? 1 : 0)); }, 120);
+    });
+  };
+  if (!state.home.trim() || state.homeLat === null) geocodeHome();
+  if (!todo.length) { setGeoState('좌표가 빈 줄이 없다'); return; }
+  step(0, 0);
+}
+
+function renderHead() {
+  var tr = document.getElementById('head');
+  tr.innerHTML = '';
+  var defs = [{ k: 'score', t: '종합' }, { k: '_km', t: '직선km' }, { k: '_turnover', t: '퇴사율%' }]
+    .concat(COLS.map(function (c) { return { k: c.k, t: c.t }; }))
+    .concat([{ k: null, t: '국민연금' }, { k: null, t: '길찾기' }, { k: null, t: '판정' }, { k: null, t: '' }]);
+  defs.forEach(function (d) {
+    var th = el('th');
+    th.textContent = d.t;
+    if (d.k) {
+      if (sortKey === d.k) {
+        var s = el('span', 'dir');
+        s.textContent = sortDir > 0 ? ' ▲' : ' ▼';
+        th.appendChild(s);
+      }
+      th.onclick = function () {
+        if (sortKey === d.k) sortDir = -sortDir;
+        else { sortKey = d.k; sortDir = -1; }
+        render();
+      };
+    } else {
+      th.style.cursor = 'default';
+    }
+    tr.appendChild(th);
+  });
+}
+
+function sortVal(r, k) {
+  if (k === 'score') return totalScore(r);
+  if (k === '_km') return km(r);
+  if (k === '_turnover') return turnover(r);
+  var v = r[k];
+  if (typeof v === 'number') return v;
+  return (v || '').toLowerCase();
+}
+
+function visibleRows() {
+  var list = state.rows.filter(function (r) {
+    if (stFilter && r.status !== stFilter) return false;
+    if (hideOut && judge(r).length) return false;
+    return true;
+  });
+  list.sort(function (a, b) {
+    var x = sortVal(a, sortKey), y = sortVal(b, sortKey);
+    var xn = (x === null || x === undefined || x === ''), yn = (y === null || y === undefined || y === '');
+    if (xn && yn) return 0;
+    if (xn) return 1;
+    if (yn) return -1;
+    if (x < y) return -sortDir;
+    if (x > y) return sortDir;
+    return 0;
+  });
+  return list;
+}
+
+function refresh(r, tr) {
+  var flags = judge(r);
+  tr.className = flags.length ? 'out' : '';
+
+  var sc = tr.querySelector('.score');
+  var s = totalScore(r);
+  sc.textContent = s === null ? '–' : s.toFixed(0);
+  sc.className = 'score keep ' + (s === null ? '' : (s >= 70 ? 's-hi' : (s >= 50 ? 's-mid' : 's-lo')));
+
+  var kv = tr.querySelector('.km');
+  var d = km(r);
+  kv.textContent = d === null ? '–' : d.toFixed(1);
+  kv.title = r.matched ? '찾은 주소: ' + r.matched : '';
+
+  var tv = tr.querySelector('.turn');
+  var t = turnover(r);
+  tv.textContent = t === null ? '–' : t.toFixed(0);
+
+  var fl = tr.querySelector('.flags');
+  fl.innerHTML = '';
+  var notes = [];
+  if (!trusted(r) && r.reviews !== null) notes.push('리뷰 ' + r.reviews + '건 — 평점 판정 제외');
+  if (r.geoErr) notes.push(r.geoErr);
+  if (flags.length) {
+    fl.textContent = flags.join(' · ');
+    if (notes.length) {
+      fl.appendChild(el('br'));
+      var n1 = el('span', 'dim');
+      n1.textContent = notes.join(' · ');
+      fl.appendChild(n1);
+    }
+  } else if (notes.length) {
+    var n2 = el('span', 'dim');
+    n2.textContent = notes.join(' · ');
+    fl.appendChild(n2);
+  }
+
+  var a = tr.querySelector('.go');
+  var url = mapUrl(r.addr);
+  if (url) { a.href = url; a.style.display = ''; } else { a.style.display = 'none'; }
+}
+
+function rowEl(r) {
+  var tr = el('tr');
+
+  var tdS = el('td', 'score keep');
+  tr.appendChild(tdS);
+
+  var tdK = el('td', 'km');
+  tdK.style.textAlign = 'right';
+  tr.appendChild(tdK);
+
+  var tdT = el('td', 'turn');
+  tr.appendChild(tdT);
+
+  COLS.forEach(function (c) {
+    var td = el('td');
+    var input;
+    if (c.type === 'select') {
+      input = el('select');
+      STATUSES.forEach(function (s) {
+        var o = el('option');
+        o.value = s; o.textContent = s;
+        input.appendChild(o);
+      });
+      input.value = r.status || '후보';
+    } else {
+      input = el('input');
+      input.type = c.type === 'num' ? 'number' : 'text';
+      if (c.step) input.step = c.step;
+      if (c.max) input.max = c.max;
+      if (c.type === 'num') input.min = 0;
+      input.value = r[c.k] === null ? '' : r[c.k];
+    }
+    input.className = c.w;
+    input.oninput = function () {
+      if (c.type === 'num') {
+        var v = input.value.trim();
+        r[c.k] = v === '' ? null : Number(v);
+        if (r[c.k] !== null && !isFinite(r[c.k])) r[c.k] = null;
+      } else {
+        r[c.k] = input.value;
+      }
+      save();
+      refresh(r, tr);
+      if (c.k === 'addr') scheduleGeo(r, tr);
+    };
+    input.onchange = input.oninput;
+    td.appendChild(input);
+    tr.appendChild(td);
+  });
+
+  var tdNps = el('td');
+  var nb = el('button', 'linkbtn');
+  nb.textContent = '연금조회';
+  nb.title = '회사명으로 국민연금 사업장을 찾아 인원·퇴사자·추정연봉을 채운다';
+  nb.onclick = function () { npsFill(r, tr, nb); };
+  tdNps.appendChild(nb);
+  tr.appendChild(tdNps);
+
+  var tdGo = el('td');
+  var a = el('a', 'go');
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  var gb = el('button', 'linkbtn');
+  gb.textContent = '길찾기';
+  a.appendChild(gb);
+  tdGo.appendChild(a);
+  tr.appendChild(tdGo);
+
+  var tdF = el('td', 'flags keep');
+  tr.appendChild(tdF);
+
+  var tdD = el('td');
+  var del = el('button', 'linkbtn');
+  del.textContent = '삭제';
+  del.onclick = function () {
+    if (!confirm((r.name || '이름 없는 줄') + ' 을 지운다. 되돌릴 수 없다.')) return;
+    var i = state.rows.indexOf(r);
+    if (i >= 0) state.rows.splice(i, 1);
+    save();
+    render();
+  };
+  tdD.appendChild(del);
+  tr.appendChild(tdD);
+
+  refresh(r, tr);
+  return tr;
+}
+
+function render() {
+  renderHead();
+  var body = document.getElementById('body');
+  body.innerHTML = '';
+  var list = visibleRows();
+  list.forEach(function (r) { body.appendChild(rowEl(r)); });
+
+  var out = 0;
+  state.rows.forEach(function (r) { if (judge(r).length) out++; });
+  document.getElementById('count').textContent =
+    '전체 ' + state.rows.length + '곳 · 탈락선에 걸린 곳 ' + out + ' · 지금 보이는 줄 ' + list.length;
+}
+
+function rebuildStatusFilter() {
+  var sel = document.getElementById('stFilter');
+  var cur = sel.value;
+  sel.innerHTML = '';
+  var o0 = el('option'); o0.value = ''; o0.textContent = '상태 전체';
+  sel.appendChild(o0);
+  STATUSES.forEach(function (s) {
+    var o = el('option'); o.value = s; o.textContent = s;
+    sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+function csvCell(v) {
+  var s = v === null || v === undefined ? '' : String(v);
+  if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function exportCsv() {
+  var head = ['종합', '직선km', '퇴사율'].concat(COLS.map(function (c) { return c.t; })).concat(['위도', '경도']);
+  var lines = [head.map(csvCell).join(',')];
+  visibleRows().forEach(function (r) {
+    var s = totalScore(r), t = turnover(r), d = km(r);
+    var cells = [s === null ? '' : s.toFixed(0), d === null ? '' : d.toFixed(1), t === null ? '' : t.toFixed(0)];
+    COLS.forEach(function (c) { cells.push(r[c.k] === null ? '' : r[c.k]); });
+    cells.push(r.lat === null ? '' : r.lat, r.lng === null ? '' : r.lng);
+    lines.push(cells.map(csvCell).join(','));
+  });
+  // 엑셀이 UTF-8 로 열도록 BOM 을 붙인다
+  var blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  var a = el('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'jobhunt-' + new Date().toISOString().slice(0, 10) + '.csv';
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+}
+
+function parseCsv(text) {
+  var rows = [], cur = [], field = '', q = false;
+  if (text.charAt(0) === '﻿') text = text.slice(1);
+  for (var i = 0; i < text.length; i++) {
+    var ch = text.charAt(i);
+    if (q) {
+      if (ch === '"') {
+        if (text.charAt(i + 1) === '"') { field += '"'; i++; }
+        else q = false;
+      } else field += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ',') { cur.push(field); field = ''; }
+    else if (ch === '\n') { cur.push(field); rows.push(cur); cur = []; field = ''; }
+    else if (ch !== '\r') field += ch;
+  }
+  if (field !== '' || cur.length) { cur.push(field); rows.push(cur); }
+  return rows;
+}
+
+function importCsv(text) {
+  var rows = parseCsv(text);
+  if (rows.length < 2) { alert('읽을 줄이 없다. 첫 줄은 머리글이어야 한다.'); return; }
+  var head = rows[0];
+  var idx = {};
+  COLS.forEach(function (c) { idx[c.k] = head.indexOf(c.t); });
+  if (idx.name < 0) { alert('「회사」 열이 없다. 내보낸 CSV 의 머리글을 그대로 쓴다.'); return; }
+  var added = 0;
+  for (var i = 1; i < rows.length; i++) {
+    var line = rows[i];
+    if (!line.length) continue;
+    var raw = {};
+    COLS.forEach(function (c) {
+      var j = idx[c.k];
+      var v = j >= 0 ? (line[j] || '').trim() : '';
+      if (c.type === 'num') raw[c.k] = v === '' ? null : Number(v);
+      else raw[c.k] = v;
+    });
+    if (!raw.name && !raw.addr) continue;
+    var iLat = head.indexOf('위도'), iLng = head.indexOf('경도');
+    raw.lat = iLat >= 0 ? (line[iLat] || '').trim() : '';
+    raw.lng = iLng >= 0 ? (line[iLng] || '').trim() : '';
+    state.rows.push(normalize(raw));
+    added++;
+  }
+  save();
+  render();
+  alert(added + '줄을 더했다.');
+}
+
+function bindRule(id, key) {
+  var input = document.getElementById(id);
+  input.value = state.rules[key];
+  input.oninput = function () {
+    var v = Number(input.value);
+    if (input.value.trim() === '' || !isFinite(v)) return;
+    state.rules[key] = v;
+    save();
+    render();
+  };
+}
+
+function init() {
+  var home = document.getElementById('home');
+  var homeTimer = null;
+  home.value = state.home;
+  home.oninput = function () {
+    state.home = home.value;
+    state.homeLat = null;
+    state.homeLng = null;
+    save();
+    render();
+    if (homeTimer) clearTimeout(homeTimer);
+    homeTimer = setTimeout(geocodeHome, 800);
+  };
+
+  var kk = document.getElementById('kakaoKey');
+  kk.value = kakaoKey();
+  setGeoState(kk.value ? '키 있음' : '키 없음 — 직선거리는 비워 둔다');
+  kk.oninput = function () {
+    try { localStorage.setItem(KEY_KAKAO, kk.value.trim()); } catch (e) { /* 차단이면 이 세션에만 남는다 */ }
+    setGeoState(kk.value.trim() ? '키 있음 — 「주소 좌표 일괄 채우기」를 누른다' : '키 없음 — 직선거리는 비워 둔다');
+  };
+
+  document.getElementById('geoAll').onclick = geocodeAll;
+
+  var nk = document.getElementById('npsKey');
+  nk.value = npsKey();
+  setNpsState(nk.value ? '키 있음 — 줄마다 「연금조회」를 누른다' : '키 없음 — 인원·퇴사자는 손으로 적는다');
+  nk.oninput = function () {
+    try { localStorage.setItem(KEY_NPS, nk.value.trim()); } catch (e) { /* 차단이면 이 세션에만 남는다 */ }
+    setNpsState(nk.value.trim() ? '키 있음 — 줄마다 「연금조회」를 누른다' : '키 없음 — 인원·퇴사자는 손으로 적는다');
+  };
+
+  bindRule('maxCommute', 'maxCommute');
+  bindRule('maxKm', 'maxKm');
+  bindRule('minReviews', 'minReviews');
+  bindRule('minRecommend', 'minRecommend');
+  bindRule('minCeo', 'minCeo');
+  bindRule('minSub', 'minSub');
+  bindRule('maxTurnover', 'maxTurnover');
+
+  document.getElementById('add').onclick = function () {
+    state.rows.push(normalize({ status: '후보' }));
+    save();
+    render();
+    var inputs = document.querySelectorAll('#body tr:last-child input');
+    if (inputs.length) inputs[0].focus();
+  };
+
+  var hb = document.getElementById('hide');
+  hb.onclick = function () {
+    hideOut = !hideOut;
+    hb.textContent = hideOut ? '탈락 보이기' : '탈락 숨기기';
+    render();
+  };
+
+  var sf = document.getElementById('stFilter');
+  rebuildStatusFilter();
+  sf.onchange = function () { stFilter = sf.value; render(); };
+
+  document.getElementById('export').onclick = exportCsv;
+
+  var file = document.getElementById('importFile');
+  document.getElementById('importBtn').onclick = function () { file.click(); };
+  file.onchange = function () {
+    var f = file.files && file.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function () { importCsv(String(fr.result)); file.value = ''; };
+    fr.readAsText(f, 'utf-8');
+  };
+
+  document.getElementById('clear').onclick = function () {
+    if (!confirm('회사 ' + state.rows.length + '줄을 전부 지운다. 되돌릴 수 없다.')) return;
+    state.rows = [];
+    save();
+    render();
+  };
+
+  render();
+}
+
+init();
+</script>
+</body>
+</html>

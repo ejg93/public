@@ -90,7 +90,7 @@ const quoteBox = {
   margin: '0 0 8px',
   whiteSpace: 'pre-wrap' as const,
   wordBreak: 'break-word' as const,
-  fontFamily: 'IBM Plex Mono, monospace',
+  fontFamily: 'var(--font-mono), monospace',
 }
 
 const linkStyle = {
@@ -105,18 +105,33 @@ export default function Workflow() {
     <div style={{ paddingTop: '20px', maxWidth: '860px' }}>
 
       {/* ── 헤더 ───────────────────────────────────── */}
-      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '14px' }}>
-        METHOD
+      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '2px', marginBottom: '14px' }}>
+        작업 방식
       </div>
 
-      <h1 className="display" style={{ fontSize: '64px', lineHeight: 0.95, marginBottom: '24px' }}>
+      <h1 className="display display-xl" style={{ lineHeight: 0.95, marginBottom: '24px' }}>
         <span style={{ color: 'var(--text)' }}>AI</span><br />
         <span style={{ color: 'var(--accent)' }}>WORKFLOW</span>
       </h1>
 
       <p style={{ ...S.body, fontSize: '15px', marginBottom: '56px' }}>
-        규칙은 문서에 적는 것으로 끝나지 않는다 — 어기면 기계가 막는다.
+        문서의 규칙을 코드화하기 (+검증하기)
       </p>
+
+      {/* ── 경계 ────────────────────────────────────── */}
+      <Section label="00 · 무엇을 도구가 하고 무엇을 내가 하나">
+        <div style={S.card}>
+          <p style={{ ...S.body, fontSize: '14px', margin: 0 }}>
+            이 사이트와 ProjectShop 의 코드는 Claude Code 가 짠다.<br />
+            내가 하는 일은 셋이다.<br />
+            무엇을 만들지 요구사항으로 적고, 갈림길에서 결정하고, 나온 것을 검증한다.<br />
+            도구가 빨라질수록 병목은 검증으로 옮겨 간다.<br />
+            그래서 검증을 사람 눈에 맡기지 않고 hook·lint·CI 로 옮겼다. 아래가 그 목록이다.<br />
+            폐쇄망 환경에서는 담당 프로젝트와 최대한 유사한 환경을 만들어 방향성을 본다.<br />
+            여기서 세운 규칙은 거기서도 같은 순서로 쓴다 — 요구 정의, 결정, 검증.
+          </p>
+        </div>
+      </Section>
 
       {/* ── 세션의 뼈대 ─────────────────────────────── */}
       <Section label="01 · 세션의 뼈대">
@@ -136,7 +151,7 @@ export default function Workflow() {
       </Section>
 
       {/* ── 강제 지점 ──────────────────────────────── */}
-      <Section label="02 · 기계가 막는 것">
+      <Section label="02 · 자동 검사가 막는 것">
         <p style={{ ...S.body, marginBottom: '18px' }}>
           아래는 배선도가 아니라 알람이 울린 기록이다.<br />
           막힐 때 화면에 실제로 찍히는 메시지를 그대로 옮겼다.

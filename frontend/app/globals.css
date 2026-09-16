@@ -2,34 +2,37 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+/* 웹폰트는 layout.tsx 가 next/font 로 자체 호스팅한다. --font-sans·--font-mono·--font-display 를 거기서 세운다 */
 
 :root {
-  --bg: #080c10;
-  --surface: #0d1117;
-  --surface2: #161b22;
-  --border: #21262d;
-  --accent: #00ff88;
-  --accent2: #ff6b35;
-  --accent3: #4d9fff;
-  --text: #e6edf3;
-  --muted: #adbac7;
-  --sidebar-w: 220px;
-  /* 지금 사이드바 폭. Sidebar 가 접힘 여부에 따라 60px 과 --sidebar-w 사이로 바꾼다 */
-  --sidebar-cur: 220px;
-}
-
-/* 라이트 팔레트. AppShell 이 <html data-theme="light"> 를 걸면 이 값이 이긴다 */
-:root[data-theme="light"] {
   --bg: #f4f6f8;
   --surface: #ffffff;
   --surface2: #eef1f4;
   --border: #d0d7de;
+  --accent: #0a7c4e;
+  --accent2: #b5451a;
+  --accent3: #1a6bb5;
   --text: #1a1f2e;
   --muted: #444c56;
-  --accent: #0a7c4e;
-  --accent2: #c94f1a;
-  --accent3: #1a6bb5;
+  --sidebar-w: 220px;
+  /* 지금 사이드바 폭. Sidebar 가 접힘 여부에 따라 60px 과 --sidebar-w 사이로 바꾼다 */
+  --sidebar-cur: 220px;
+  /* 본문 데이터 문자열의 \n 처리. 폰에서는 normal 로 바꿔 브라우저가 알아서 접게 한다 */
+  --ws-body: pre-line;
+}
+
+/* 다크 팔레트. AppShell 이 <html data-theme="dark"> 를 걸면 이 값이 이긴다.
+   기본은 라이트다 — 인쇄·스크린샷 첨부 때 검정 덩어리가 되지 않게 */
+:root[data-theme="dark"] {
+  --bg: #080c10;
+  --surface: #0d1117;
+  --surface2: #161b22;
+  --border: #21262d;
+  --text: #e6edf3;
+  --muted: #adbac7;
+  --accent: #00ff88;
+  --accent2: #ff6b35;
+  --accent3: #4d9fff;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,7 +41,7 @@ html, body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Noto Sans KR', sans-serif;
+  font-family: var(--font-sans), 'Noto Sans KR', sans-serif;
   /* 한글을 어절 단위로 끊는다. 기본값은 글자 단위라 「변\n환」처럼 갈린다.
      긴 영문 토큰이 넘치면 break-word 가 받는다 */
   word-break: keep-all;
@@ -55,8 +58,40 @@ html[data-sidebar-ready="1"] .sidebar-push > div:first-child {
   transition: margin-left 0.25s ease, left 0.25s ease;
 }
 
-.mono { font-family: 'IBM Plex Mono', monospace; }
-.display { font-family: 'Bebas Neue', sans-serif; }
+.mono { font-family: var(--font-mono), 'IBM Plex Mono', monospace; }
+.display { font-family: var(--font-display), 'Bebas Neue', sans-serif; }
+
+/* 제목 크기. 인라인이 아니라 클래스에 두는 이유 — 폰에서 미디어쿼리로 줄여야 한다 */
+.display-xl { font-size: 64px; }
+.display-lg { font-size: 44px; }
+
+/* 본문 껍데기 여백. AppShell 이 붙인다 */
+.main-body { padding: 80px 48px 40px; }
+
+/* 경력 행 머리의 기간 칸 */
+.career-period { min-width: 126px; }
+
+/* ── 폰 (767px 이하) ──────────────────────────────
+   사이드바는 Sidebar 가 서랍으로 바꾼다. 본문 여백은 여기서 처음부터 0 으로 못 박는다 —
+   서버가 그린 첫 화면은 220px 인데 클라이언트가 폰을 알아채고 0 으로 밀면 본문이 통째로 움직인다(CLS 1.1).
+   !important 라 Sidebar 가 인라인으로 세우는 값도 못 이긴다 */
+@media (max-width: 767px) {
+  :root { --ws-body: normal; --sidebar-cur: 0px !important; }
+  /* 서랍도 첫 화면부터 밖에 둔다. Sidebar 의 인라인 transform 보다 이 규칙이 이겨야 하고,
+     열 때는 Sidebar 가 html 에 data-drawer="open" 을 건다 */
+  .sidebar-rail { width: 240px !important; transform: translateX(-100%) !important; }
+  html[data-drawer="open"] .sidebar-rail { transform: none !important; }
+  .main-body { padding: 64px 16px 32px; }
+  .display-xl { font-size: 38px; }
+  .display-lg { font-size: 30px; }
+  .career-period { min-width: 0; }
+  /* 데스크톱 폭 기준으로 박은 문단 안 <br> 을 끈다. 제목(h1)의 <br> 은 남긴다 */
+  main p br { display: none; }
+  /* 서랍이 열렸을 때 뒤 화면 */
+  .drawer-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 99;
+  }
+}
 
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
@@ -82,17 +117,3 @@ html[data-sidebar-ready="1"] .sidebar-push > div:first-child {
 
 .fade-in { animation: fadeInUp 0.3s ease forwards; }
 
-/* 스캔라인 효과 */
-.scanline {
-  background: repeating-linear-gradient(
-    0deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 255, 136, 0.015) 2px,
-    rgba(0, 255, 136, 0.015) 4px
-  );
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-}

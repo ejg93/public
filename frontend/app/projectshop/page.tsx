@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { S, Section } from '@/components/CaseStudy'
 import { getShopStats } from '@/lib/github'
 
@@ -39,10 +40,19 @@ const TRACE = [
   },
 ]
 
-const DECISIONS = [
+// 그림은 public/images 의 svg. 1200×675 고정, 다크 배경이라 라이트 테마에서는 테두리로 구분한다
+function Figure({ src, alt }: { src: string; alt: string }) {
+  return (
+    <Image src={src} alt={alt} width={1200} height={675} unoptimized
+      style={{ width: '100%', height: 'auto', border: '1px solid var(--border)', borderRadius: '8px', display: 'block' }} />
+  )
+}
+
+const DECISIONS: { id: string; title: string; body: string; image?: { src: string; alt: string } }[] = [
   {
     id: 'ADR-0003',
     title: '스코프는 role_permission 행에 둔다',
+    image: { src: '/images/ps-role-rows.svg', alt: '같은 권한이 seller 스코프 allow 와 own 스코프 deny 두 행으로 잡힌 표' },
     body: '역할과 권한을 테이블로 분리하고, 그 연결 행에 own·seller·all 같은 행 단위 조건을 같이 싣는다.\n권한 판정이 코드 곳곳의 if 문이 아니라 한 테이블 조회로 끝난다.',
   },
   {
@@ -103,11 +113,11 @@ export default async function ProjectShop() {
     <div style={{ paddingTop: '20px', maxWidth: '860px' }}>
 
       {/* ── 헤더 ───────────────────────────────────── */}
-      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '14px' }}>
-        CASE_STUDY · 작업 중
+      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '2px', marginBottom: '14px' }}>
+        설계 기록 · 작업 중
       </div>
 
-      <h1 className="display" style={{ fontSize: '64px', lineHeight: 0.95, marginBottom: '24px' }}>
+      <h1 className="display display-xl" style={{ lineHeight: 0.95, marginBottom: '24px' }}>
         <span style={{ color: 'var(--text)' }}>PROJECT</span><br />
         <span style={{ color: 'var(--accent)' }}>SHOP</span>
       </h1>
@@ -116,8 +126,9 @@ export default async function ProjectShop() {
         멀티 셀러 쇼핑몰. 판매자가 여럿 입점하고, 고객이 사고, 관리자가 관리한다.
       </p>
       <p style={{ ...S.body, fontSize: '15px', marginBottom: '32px' }}>
-        만드는 목적은 물건을 파는 게 아니라 <span style={{ color: 'var(--text)', fontWeight: 700 }}>권한 체계를 정갈하게 짜는 법을 익히는 것</span>이다.<br />
-        그래서 이 페이지도 완성된 화면이 아니라 결정과 검증이 어떻게 쌓였는지를 보여준다.
+        <span style={{ color: 'var(--text)', fontWeight: 700 }}>목표는 SI 현장에서는 못 해 본 설계 결정을 끝까지 끌고 가 검증하는 것</span>이다.<br />
+        권한을 코드가 아니라 데이터로 두기, 세션 쿠키와 JWT 사이에서 고르기,<br />
+        스키마를 코드처럼 이력 관리하기 등의 이력이 적혀있다.
       </p>
 
       <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '56px' }}>
@@ -126,7 +137,7 @@ export default async function ProjectShop() {
           padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
           background: 'var(--accent)', color: 'var(--bg)',
           fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
-          fontFamily: 'IBM Plex Mono, monospace',
+          fontFamily: 'var(--font-mono), monospace',
         }}>
           ⌥ GITHUB 저장소 →
         </a>
@@ -136,7 +147,7 @@ export default async function ProjectShop() {
           background: 'transparent', color: 'var(--accent3)',
           border: '1px solid var(--border)',
           fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
-          fontFamily: 'IBM Plex Mono, monospace',
+          fontFamily: 'var(--font-mono), monospace',
         }}>
           ◧ 설계 기록 {metrics?.adr ?? 11}건 →
         </a>
@@ -181,6 +192,9 @@ export default async function ProjectShop() {
         <p style={{ ...S.body, marginBottom: '18px' }}>
           요건 하나가 법 조항에서 DB 제약·테스트·CI 까지 어떻게 이어지는지 따라간다.
         </p>
+        <div style={{ marginBottom: '18px' }}>
+          <Figure src="/images/ps-law-chain.svg" alt="법 조문 하나가 요건표를 거쳐 DB check 제약으로 내려가는 흐름" />
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {TRACE.map((t, i) => (
             <div key={t.step}>
@@ -238,6 +252,11 @@ export default async function ProjectShop() {
               <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '8px' }}>{d.id}</div>
               <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '10px' }}>{d.title}</div>
               <p style={{ ...S.body, margin: 0 }}>{d.body}</p>
+              {d.image && (
+                <div style={{ marginTop: '14px' }}>
+                  <Figure src={d.image.src} alt={d.image.alt} />
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -249,9 +268,12 @@ export default async function ProjectShop() {
           <p style={{ ...S.body, marginBottom: '14px' }}>
             세션이 끊기는 걸 전제로 진행 상태를 전부 파일에 두고, 청크 하나를 커밋 하나로 친다.
           </p>
-          <p style={{ ...S.body, marginBottom: '18px' }}>
+          <p style={{ ...S.body, marginBottom: '14px' }}>
             값 하나를 타입·스키마·DB 제약·앱 검증 중 어느 층에서 막을지를 코드보다 먼저 정한다.
           </p>
+          <div style={{ marginBottom: '18px' }}>
+            <Figure src="/images/ps-layers.svg" alt="문서·테스트·앱 검증·DB 제약·타입 다섯 층을 아래로 갈수록 일찍 막히는 순으로 늘어놓은 그림" />
+          </div>
           <a href="/study/ai-workflow-notes" className="mono" style={{ fontSize: '12px', color: 'var(--accent)', letterSpacing: '1px', textDecoration: 'none' }}>
             작업 틀 여섯 갈래는 학습 노트에 →
           </a>
@@ -260,6 +282,9 @@ export default async function ProjectShop() {
 
       {/* ── 검증 ───────────────────────────────────── */}
       <Section label="04 · 무엇이 자동으로 잡나">
+        <div style={{ marginBottom: '14px' }}>
+          <Figure src="/images/ps-pipeline.svg" alt="청크 하나가 PR 하나가 되고 검사 넷을 지나 합쳐지는 파이프라인" />
+        </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', background: 'var(--border)', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden' }}>
           {CI.map(c => (
             <div key={c.file} style={{ background: 'var(--surface2)', padding: '16px 20px' }}>
@@ -312,7 +337,7 @@ export default async function ProjectShop() {
         </div>
         <a href={REPO_SHOP} target="_blank" rel="noopener noreferrer" style={{
           color: 'var(--accent)', fontSize: '13px', fontWeight: 700,
-          textDecoration: 'none', fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
+          textDecoration: 'none', fontFamily: 'var(--font-mono), monospace', letterSpacing: '1px',
         }}>
           ejg93/ProjectShop →
         </a>

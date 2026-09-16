@@ -1,4 +1,4 @@
-// projectshop·workflow·toolbox 세 케이스 스터디 페이지가 같이 쓰는 카드·섹션 스타일.
+// projectshop·workflow·toolbox 세 설계 기록 페이지가 같이 쓰는 카드·섹션 스타일.
 // 상호작용이 없어 'use client' 를 붙이지 않는다 — 서버 컴포넌트에서도 그대로 쓴다.
 
 export const S = {
@@ -8,7 +8,7 @@ export const S = {
     letterSpacing: '3px',
     color: 'var(--accent)',
     marginBottom: '20px',
-    fontFamily: 'IBM Plex Mono, monospace',
+    fontFamily: 'var(--font-mono), monospace',
   },
   card: {
     background: 'var(--surface2)',
@@ -20,7 +20,8 @@ export const S = {
     fontSize: '14px',
     lineHeight: 1.85,
     color: 'var(--muted)',
-    whiteSpace: 'pre-line' as const,
+    // 폰에서는 globals.css 가 이 변수를 normal 로 바꿔 줄바꿈 문자를 공백으로 만든다
+    whiteSpace: 'var(--ws-body)' as React.CSSProperties['whiteSpace'],
   },
 }
 

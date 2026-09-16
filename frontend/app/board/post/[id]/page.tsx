@@ -39,7 +39,7 @@ export default function PostPage() {
       <Link href="/board" style={{
         display: 'inline-flex', alignItems: 'center', gap: '6px',
         color: 'var(--muted)', textDecoration: 'none', fontSize: '13px',
-        fontFamily: 'IBM Plex Mono, monospace', marginBottom: '32px',
+        fontFamily: 'var(--font-mono), monospace', marginBottom: '32px',
         transition: 'color 0.15s',
       }}
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
@@ -53,7 +53,7 @@ export default function PostPage() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
           <span style={{
             padding: '3px 10px', borderRadius: '999px', fontSize: '11px',
-            fontWeight: 700, fontFamily: 'IBM Plex Mono, monospace',
+            fontWeight: 700, fontFamily: 'var(--font-mono), monospace',
             background: `${color}22`, color, border: `1px solid ${color}44`,
           }}>
             {post.category}
@@ -76,7 +76,7 @@ export default function PostPage() {
             <span key={tag} style={{
               padding: '2px 8px', borderRadius: '4px', fontSize: '11px',
               background: 'var(--surface2)', color: 'var(--muted)',
-              fontFamily: 'IBM Plex Mono, monospace',
+              fontFamily: 'var(--font-mono), monospace',
             }}>#{tag}</span>
           ))}
         </div>
@@ -128,7 +128,7 @@ export default function PostPage() {
                           display: 'inline-flex', alignItems: 'center', height: '24px',
                           marginLeft: '4px', padding: '0 12px 0 8px', borderRadius: '999px',
                           fontSize: '11px', fontWeight: 700, gap: '6px',
-                          fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
+                          fontFamily: 'var(--font-mono), monospace', letterSpacing: '1px',
                           background: 'rgba(255,0,0,0.12)', color: '#ff4444',
                           border: '1px solid rgba(255,0,0,0.3)', textDecoration: 'none',
                           verticalAlign: 'middle',
@@ -147,7 +147,7 @@ export default function PostPage() {
                           display: 'inline-flex', alignItems: 'center', height: '24px',
                           marginLeft: '4px', padding: '0 10px', borderRadius: '999px',
                           fontSize: '11px', fontWeight: 700,
-                          fontFamily: 'IBM Plex Mono, monospace', letterSpacing: '1px',
+                          fontFamily: 'var(--font-mono), monospace', letterSpacing: '1px',
                           background: 'rgba(77,159,255,0.12)', color: 'var(--accent3)',
                           border: '1px solid rgba(77,159,255,0.3)', textDecoration: 'none',
                           verticalAlign: 'middle',
@@ -197,7 +197,7 @@ export default function PostPage() {
                   <pre style={{
                     padding: '20px', margin: 0, overflowX: 'auto',
                     fontSize: '13px', lineHeight: 1.8,
-                    color: 'var(--text)', fontFamily: 'IBM Plex Mono, monospace',
+                    color: 'var(--text)', fontFamily: 'var(--font-mono), monospace',
                   }}>
                     {block.code}
                   </pre>
@@ -274,7 +274,7 @@ export default function PostPage() {
         <Link href="/board" style={{
           display: 'inline-flex', alignItems: 'center', gap: '6px',
           color: 'var(--muted)', textDecoration: 'none', fontSize: '13px',
-          fontFamily: 'IBM Plex Mono, monospace',
+          fontFamily: 'var(--font-mono), monospace',
         }}>
           ← 목록으로 돌아가기
         </Link>

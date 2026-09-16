@@ -43,19 +43,14 @@ export default function Study() {
     <div style={{ paddingTop: '20px', maxWidth: '860px' }}>
 
       {/* ── 헤더 ───────────────────────────────────── */}
-      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '14px' }}>
-        NOTES
+      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '2px', marginBottom: '14px' }}>
+        학습 노트
       </div>
 
-      <h1 className="display" style={{ fontSize: '64px', lineHeight: 0.95, marginBottom: '24px' }}>
+      <h1 className="display display-xl" style={{ lineHeight: 0.95, marginBottom: '24px' }}>
         <span style={{ color: 'var(--text)' }}>STUDY</span><br />
         <span style={{ color: 'var(--accent)' }}>NOTES</span>
       </h1>
-
-      <p style={{ ...S.body, fontSize: '15px', marginBottom: '56px' }}>
-        강의와 프로젝트에서 배운 것을 주제별로 끊어 적은 노트.<br />
-        목록은 노트 HTML 의 메타에서 빌드 때 만든다.
-      </p>
 
       <Section label={`노트 ${notes.length}장 · 최신순`}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>

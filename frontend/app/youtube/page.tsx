@@ -200,7 +200,7 @@ export default function YoutubePage() {
     color: active ? color : 'var(--muted)',
     cursor: 'pointer',
     fontSize: '12px',
-    fontFamily: 'IBM Plex Mono, monospace',
+    fontFamily: 'var(--font-mono), monospace',
     fontWeight: active ? 700 : 400,
     transition: 'all 0.15s',
   })
@@ -213,7 +213,7 @@ export default function YoutubePage() {
     fontSize: '13px',
     padding: '8px 12px',
     outline: 'none',
-    fontFamily: 'IBM Plex Mono, monospace',
+    fontFamily: 'var(--font-mono), monospace',
     width: '100px',
   }
 
@@ -247,7 +247,7 @@ export default function YoutubePage() {
             flex: 1, padding: '12px 16px',
             background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: '8px', color: 'var(--text)', fontSize: '14px', outline: 'none',
-            fontFamily: 'Noto Sans KR, sans-serif',
+            fontFamily: 'var(--font-sans), sans-serif',
           }}
         />
         <button onClick={fetchComments} disabled={loading} style={{
@@ -256,7 +256,7 @@ export default function YoutubePage() {
           color: '#fff', border: 'none', borderRadius: '8px',
           cursor: loading ? 'not-allowed' : 'pointer',
           fontWeight: 700, fontSize: '14px',
-          fontFamily: 'IBM Plex Mono, monospace',
+          fontFamily: 'var(--font-mono), monospace',
           transition: 'all 0.15s',
         }}>
           {loading ? '로딩 중...' : '▶ 불러오기'}
@@ -344,7 +344,7 @@ export default function YoutubePage() {
                 padding: '10px 12px',
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 borderRadius: '8px', color: 'var(--text)', fontSize: '13px', outline: 'none',
-                fontFamily: 'IBM Plex Mono, monospace', cursor: 'pointer',
+                fontFamily: 'var(--font-mono), monospace', cursor: 'pointer',
                 flexShrink: 0,
               }}
             >
@@ -360,7 +360,7 @@ export default function YoutubePage() {
                 flex: 1, padding: '10px 14px',
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 borderRadius: '8px', color: 'var(--text)', fontSize: '13px', outline: 'none',
-                fontFamily: 'Noto Sans KR, sans-serif',
+                fontFamily: 'var(--font-sans), sans-serif',
               }}
             />
           </div>
@@ -376,7 +376,7 @@ export default function YoutubePage() {
                 padding: '8px 12px',
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 borderRadius: '8px', color: 'var(--text)', fontSize: '13px', outline: 'none',
-                fontFamily: 'IBM Plex Mono, monospace',
+                fontFamily: 'var(--font-mono), monospace',
                 colorScheme: 'dark',
               }}
             />
@@ -389,7 +389,7 @@ export default function YoutubePage() {
                 padding: '8px 12px',
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 borderRadius: '8px', color: 'var(--text)', fontSize: '13px', outline: 'none',
-                fontFamily: 'IBM Plex Mono, monospace',
+                fontFamily: 'var(--font-mono), monospace',
                 colorScheme: 'dark',
               }}
             />
@@ -424,7 +424,7 @@ export default function YoutubePage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{
                       fontSize: '12px', color: '#ff4444',
-                      fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700,
+                      fontFamily: 'var(--font-mono), monospace', fontWeight: 700,
                     }}>
                       ♥ {c.likeCount.toLocaleString()}
                     </span>
@@ -470,7 +470,7 @@ export default function YoutubePage() {
                         cursor: c.repliesLoading ? 'wait' : 'pointer',
                         fontSize: '11px',
                         padding: '4px 12px',
-                        fontFamily: 'IBM Plex Mono, monospace',
+                        fontFamily: 'var(--font-mono), monospace',
                         transition: 'all 0.15s',
                       }}
                     >
@@ -507,7 +507,7 @@ export default function YoutubePage() {
                               <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{r.author}</span>
                               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                 {r.likeCount > 0 && (
-                                  <span style={{ fontSize: '11px', color: '#ff4444', fontFamily: 'IBM Plex Mono, monospace' }}>
+                                  <span style={{ fontSize: '11px', color: '#ff4444', fontFamily: 'var(--font-mono), monospace' }}>
                                     ♥ {r.likeCount.toLocaleString()}
                                   </span>
                                 )}

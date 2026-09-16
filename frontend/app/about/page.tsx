@@ -13,7 +13,7 @@ const tagBtnBase: React.CSSProperties = {
   fontSize: '11px',
   fontWeight: 700,
   cursor: 'pointer',
-  fontFamily: 'IBM Plex Mono, monospace',
+  fontFamily: 'var(--font-mono), monospace',
   letterSpacing: '1px',
   lineHeight: 1,
   verticalAlign: 'middle',
@@ -388,7 +388,7 @@ export default function About() {
           <span style={{ color: 'var(--accent)' }}> ME</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.8 }}>
-          개발자 EJG의 생각
+          개발자 EJK의 생각
         </p>
       </div>
 

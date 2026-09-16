@@ -10,7 +10,7 @@ App Router 기반 포트폴리오 화면. Vercel이 이 폴더를 루트로 잡�
 app/          라우트별 page.tsx (App Router)
 components/   AppShell.tsx — 테마 토글·사이드바를 쥔 껍데기(클라이언트)
               Sidebar.tsx — 전 페이지 공통 좌측 내비
-              CaseStudy.tsx — 케이스 스터디 페이지 공통 카드·섹션 스타일
+              CaseStudy.tsx — 설계 기록 페이지 공통 카드·섹션 스타일
 lib/api.ts    백엔드 베이스 URL·공개 키 상수 중앙 관리
 lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받아온다
 ```

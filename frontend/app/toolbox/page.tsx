@@ -79,18 +79,22 @@ export default function Toolbox() {
     <div style={{ paddingTop: '20px', maxWidth: '860px' }}>
 
       {/* ── 헤더 ───────────────────────────────────── */}
-      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '4px', marginBottom: '14px' }}>
-        CLOSED_NET
+      <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '2px', marginBottom: '14px' }}>
+        폐쇄망 도구
       </div>
 
-      <h1 className="display" style={{ fontSize: '64px', lineHeight: 0.95, marginBottom: '24px' }}>
+      <h1 className="display display-xl" style={{ lineHeight: 0.95, marginBottom: '24px' }}>
         <span style={{ color: 'var(--text)' }}>TOOL</span><br />
         <span style={{ color: 'var(--accent)' }}>BOX</span>
       </h1>
 
-      <p style={{ ...S.body, fontSize: '15px', marginBottom: '20px' }}>
-        사내 폐쇄망 PC 에 HTML 파일 하나만 복사해서 여는 개발 보조 도구.<br />
-        빌드도 서버도 없다.
+      <p style={{ ...S.body, fontSize: '15px', marginBottom: '12px' }}>
+        사내 폐쇄망 PC 에 HTML 파일 하나만 복사해서 여는 개발 보조 도구
+      </p>
+      <p style={{ ...S.body, fontSize: '14px', marginBottom: '20px' }}>
+        디지털돌봄 운영 단계에서 산출물 문서 작업에 필요한 기능과<br />
+        그때그때 떠오른 기능을 한 묶음으로 모아 계속 패치하여 만들어졌다.<br />
+        논리명 변환기는 Erd 문서 작성을 지원할 때 추가했다.<br />
       </p>
 
       <div style={{ marginBottom: '56px' }}>

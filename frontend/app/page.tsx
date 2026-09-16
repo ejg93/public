@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import Link from 'next/link'
 import Career from './Career'
 import StackChips from './StackChips'
 
@@ -7,6 +8,15 @@ const GITHUB = 'https://github.com/ejg93'
 const EMAIL = 'ejg933@gmail.com'
 
 const TILES = [
+  {
+    // 실무 카드. 눌러도 다른 페이지가 아니라 아래 CAREER 표로 내려간다. 디돌 행은 기본으로 펼쳐져 있다
+    label: 'FIELD WORK',
+    hook: '실무 설계 사례 · 디지털돌봄',
+    desc: '요구 5건 → 12건 재정의 · 테이블 3개 신규 설계',
+    stack: ['Java', 'eGovFrame', 'Tibero', 'JSP'],
+    href: '/#career',
+    color: 'var(--accent)',
+  },
   {
     label: 'PROJECT SHOP',
     hook: '멀티 셀러 쇼핑몰',
@@ -25,8 +35,8 @@ const TILES = [
   },
   {
     label: 'AI WORKFLOW',
-    hook: 'Claude Code 로 일하는 틀',
-    desc: 'hook · skill · 검증 도장',
+    hook: '검증 6개로 닫는 작업 방식',
+    desc: '검증 없으면 push 차단 · 문서 lint · CI 6종',
     stack: ['Claude Code', 'bash hook', 'GitHub Actions'],
     href: '/workflow',
     color: 'var(--accent)',
@@ -70,7 +80,7 @@ export default function Home() {
       {/* ── 히어로: 누구인가 ── */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
         <div>
-          <h1 className="display" style={{ fontSize: '44px', lineHeight: 1, margin: '0 0 12px' }}>
+          <h1 className="display display-lg" style={{ lineHeight: 1, margin: '0 0 12px' }}>
             <span style={{ color: 'var(--text)' }}>JAVA </span>
             <span style={{ color: 'var(--accent)' }}>DEVELOPER </span>
             <span style={{ color: 'var(--muted)' }}>EJK</span>
@@ -99,12 +109,13 @@ export default function Home() {
       {/* ── 타일: 어디를 누르나 ── */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+        // 타일 4장. 300px 하한이면 880px 폭에서 2×2, 폰에서 1열. 240px 이면 3+1 로 한 장이 떨어진다
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         gap: '12px',
         margin: '28px 0 20px',
       }}>
         {TILES.map(t => (
-          <a key={t.href} href={t.href} style={{
+          <Link key={t.href} href={t.href} style={{
             display: 'block',
             padding: '18px 20px',
             background: 'var(--surface2)',
@@ -114,6 +125,8 @@ export default function Home() {
             textDecoration: 'none',
             transition: 'border-color 0.15s, transform 0.15s',
           }}
+            // CAREER 로 내려가는 타일은 디돌 행(0번)을 펼치라고 Career 에 알린다. 접혀 있어도 도착하면 열려 있다
+            onClick={() => { if (t.href === '/#career') window.dispatchEvent(new CustomEvent('career-open', { detail: 0 })) }}
             onMouseEnter={e => { e.currentTarget.style.borderColor = t.color; e.currentTarget.style.transform = 'translateY(-2px)' }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.borderLeftColor = t.color; e.currentTarget.style.transform = 'none' }}
           >
@@ -125,7 +138,7 @@ export default function Home() {
             <div className="mono" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '10px' }}>
               {t.stack.map(s => <span key={s} style={chip}>{s}</span>)}
             </div>
-          </a>
+          </Link>
         ))}
       </div>
 
@@ -134,6 +147,7 @@ export default function Home() {
 
       {/* ── 경력: 어디서 ── */}
       <div id="career" className="mono" style={{
+        scrollMarginTop: '64px',
         fontSize: '12px',
         color: 'var(--accent)',
         letterSpacing: '4px',

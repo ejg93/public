@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CAREERS } from './career-data'
 
 const label: React.CSSProperties = {
@@ -13,11 +13,18 @@ const body: React.CSSProperties = {
   fontSize: '14px',
   lineHeight: 1.8,
   color: 'var(--text)',
-  whiteSpace: 'pre-line',
+  whiteSpace: 'var(--ws-body)' as React.CSSProperties['whiteSpace'],
 }
 
 export default function Career() {
   const [open, setOpen] = useState<number | null>(0)
+
+  // 홈 FIELD WORK 타일이 이 이벤트를 보낸다. 닫혀 있던 행을 펼친 채로 내려가게 한다
+  useEffect(() => {
+    const onOpen = (e: Event) => setOpen((e as CustomEvent<number>).detail)
+    window.addEventListener('career-open', onOpen)
+    return () => window.removeEventListener('career-open', onOpen)
+  }, [])
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -48,7 +55,7 @@ export default function Career() {
                 fontFamily: 'inherit',
               }}
             >
-              <span className="mono" style={{ fontSize: '12px', color: 'var(--muted)', minWidth: '126px' }}>
+              <span className="mono career-period" style={{ fontSize: '12px', color: 'var(--muted)' }}>
                 {c.period}
               </span>
               <span style={{ flex: 1, fontWeight: 700, fontSize: '15px' }}>{c.name}</span>

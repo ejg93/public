@@ -6,7 +6,7 @@ export function BadButtonsDemo() {
   const [msg, setMsg] = useState('')
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ color: 'var(--muted)', fontSize: '12px', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '4px' }}>아래 버튼들을 눌러보세요</div>
+      <div style={{ color: 'var(--muted)', fontSize: '12px', fontFamily: 'var(--font-mono), monospace', marginBottom: '4px' }}>아래 버튼들을 눌러보세요</div>
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>① 배경과 구분 안 되는 버튼</div>
         <button onClick={() => setMsg('찾았군요...')} style={{ padding: '10px 20px', background: 'var(--surface2)', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '4px', cursor: 'pointer', fontSize: '13px' }}>제출</button>
@@ -49,7 +49,7 @@ export function GoodButtonsDemo() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-      <div style={{ color: 'var(--muted)', fontSize: '12px', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '4px' }}>같은 기능, 다른 버튼</div>
+      <div style={{ color: 'var(--muted)', fontSize: '12px', fontFamily: 'var(--font-mono), monospace', marginBottom: '4px' }}>같은 기능, 다른 버튼</div>
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>① 명확한 색상과 텍스트</div>
         <button onClick={() => setMsg('제출됐습니다')} style={{ padding: '10px 24px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>양식 제출하기</button>
@@ -116,7 +116,7 @@ export function KakaoDarkPatternDemo() {
         background: 'transparent', border: '1px solid var(--border)',
         borderRadius: '6px', color: 'var(--muted)', cursor: 'pointer',
         fontSize: '11px', padding: '4px 10px',
-        fontFamily: 'IBM Plex Mono, monospace',
+        fontFamily: 'var(--font-mono), monospace',
       }}>↺ 다시 체험</button>
 
       <div style={{
@@ -238,7 +238,7 @@ export function KakaoDarkPatternDemo() {
         )}
       </div>
 
-      <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'IBM Plex Mono, monospace' }}>
+      <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'var(--font-mono), monospace' }}>
         생일인 친구가 있는 채팅방에 뜨는 폭죽 버튼, 원치 않아도 눌리기 쉬운 위치에 있다
       </div>
     </div>
@@ -351,7 +351,7 @@ export function KakaoEmojiDemo() {
         )}
       </div>
 
-      <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'IBM Plex Mono, monospace' }}>
+      <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'var(--font-mono), monospace' }}>
         😊 버튼을 눌러보세요
       </div>
     </div>
@@ -413,7 +413,7 @@ export function ButtonFeedbackDemo() {
             </div>
           )}
         </div>
-        <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', fontFamily: 'IBM Plex Mono, monospace' }}>
+        <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '8px', fontFamily: 'var(--font-mono), monospace' }}>
           → 눌러도 아무 반응 없다가 갑자기 완료 알림만 뜸
         </div>
       </div>
@@ -536,7 +536,7 @@ export function CapsLockDemo() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: '10px', padding: '18px',
       }}>
-        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
+        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'var(--font-mono), monospace', marginBottom: '14px' }}>
           ✗ 포커스 없음 · 붙여넣기 차단 · 공백 허용
         </div>
 
@@ -583,7 +583,7 @@ export function CapsLockDemo() {
           )}
         </div>
 
-        <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: '10px', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1.6 }}>
+        <div style={{ fontSize: '10px', color: 'var(--muted)', marginBottom: '10px', fontFamily: 'var(--font-mono), monospace', lineHeight: 1.6 }}>
           * 한글 입력 후 엔터 → 로그인 2회 시도
         </div>
 
@@ -615,7 +615,7 @@ export function CapsLockDemo() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: '10px', padding: '18px',
       }}>
-        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
+        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'var(--font-mono), monospace', marginBottom: '14px' }}>
           ✗ 4자리 자동이동 — 이전 칸 수정 불가
         </div>
 
@@ -649,7 +649,7 @@ export function CapsLockDemo() {
             />
           </div>
           {phone2.length === 4 && (
-            <div style={{ fontSize: '10px', color: '#ff6666', marginTop: '6px', fontFamily: 'IBM Plex Mono, monospace', lineHeight: 1.5 }}>
+            <div style={{ fontSize: '10px', color: '#ff6666', marginTop: '6px', fontFamily: 'var(--font-mono), monospace', lineHeight: 1.5 }}>
               ← 가운데 칸 다시 클릭하거나 Shift+Tab 눌러보세요
             </div>
           )}
@@ -753,7 +753,7 @@ export function InstallCheckboxDemo() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: '10px', padding: '18px',
       }}>
-        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
+        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'var(--font-mono), monospace', marginBottom: '14px' }}>
           전체동의 = 선택항목까지 자동 체크
         </div>
 
@@ -816,7 +816,7 @@ export function InstallCheckboxDemo() {
         background: 'var(--surface)', border: '1px solid var(--border)',
         borderRadius: '10px', padding: '18px',
       }}>
-        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '14px' }}>
+        <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'var(--font-mono), monospace', marginBottom: '14px' }}>
           설치 프로그램 — 원치 않는 항목 미리 체크
         </div>
 
@@ -843,7 +843,7 @@ export function InstallCheckboxDemo() {
               ))}
             </div>
 
-            <div style={{ fontSize: '10px', color: '#ff6666', marginBottom: '12px', lineHeight: 1.6, fontFamily: 'IBM Plex Mono, monospace' }}>
+            <div style={{ fontSize: '10px', color: '#ff6666', marginBottom: '12px', lineHeight: 1.6, fontFamily: 'var(--font-mono), monospace' }}>
               * 주황색 항목은 기본 체크된 상태로 표시됩니다
             </div>
 
@@ -900,15 +900,15 @@ export function MobileGameUIDemo() {
         <div style={{ background: 'rgba(0,0,0,0.5)', padding: '8px 10px', display: 'flex', gap: '6px', alignItems: 'center' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', padding: '3px 8px' }}>
             <span style={{ fontSize: '12px' }}>💎</span>
-            <span style={{ fontSize: '11px', color: '#fff', fontFamily: 'IBM Plex Mono, monospace' }}>3,300</span>
+            <span style={{ fontSize: '11px', color: '#fff', fontFamily: 'var(--font-mono), monospace' }}>3,300</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', padding: '3px 8px' }}>
             <span style={{ fontSize: '12px' }}>❤️</span>
-            <span style={{ fontSize: '11px', color: '#fff', fontFamily: 'IBM Plex Mono, monospace' }}>317</span>
+            <span style={{ fontSize: '11px', color: '#fff', fontFamily: 'var(--font-mono), monospace' }}>317</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '3px', background: 'rgba(255,255,255,0.1)', borderRadius: '10px', padding: '3px 8px' }}>
             <span style={{ fontSize: '12px' }}>⚡</span>
-            <span style={{ fontSize: '11px', color: '#fff', fontFamily: 'IBM Plex Mono, monospace' }}>1,122</span>
+            <span style={{ fontSize: '11px', color: '#fff', fontFamily: 'var(--font-mono), monospace' }}>1,122</span>
           </div>
           <div style={{ marginLeft: 'auto', fontSize: '16px', cursor: 'pointer' }} onClick={() => setShowShop(true)}>🛒</div>
         </div>
@@ -1029,7 +1029,7 @@ export function MobileGameUIDemo() {
         )}
       </div>
 
-      <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'IBM Plex Mono, monospace' }}>
+      <div style={{ marginTop: '10px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'var(--font-mono), monospace' }}>
         🛒 버튼 또는 본부를 눌러보세요
       </div>
     </div>
@@ -1101,7 +1101,7 @@ export function KioskDemo() {
         background: 'transparent', border: '1px solid var(--border)',
         borderRadius: '6px', color: 'var(--muted)', cursor: 'pointer',
         fontSize: '11px', padding: '4px 10px',
-        fontFamily: 'IBM Plex Mono, monospace',
+        fontFamily: 'var(--font-mono), monospace',
       }}>↺ 다시 체험</button>
 
       {/* 키오스크 본체 */}
@@ -1155,7 +1155,7 @@ export function KioskDemo() {
                 <div key={i} style={{ fontSize: '13px', color: '#333', lineHeight: 1.8 }}>• {item}</div>
               ))}
             </div>
-            <div style={{ marginTop: '10px', fontSize: '11px', color: '#888', textAlign: 'center', fontFamily: 'IBM Plex Mono, monospace' }}>
+            <div style={{ marginTop: '10px', fontSize: '11px', color: '#888', textAlign: 'center', fontFamily: 'var(--font-mono), monospace' }}>
               {refuseCount}번 거절한 뒤 주문이 완료됐습니다
             </div>
           </div>
@@ -1238,7 +1238,7 @@ export function KioskDemo() {
         )}
       </div>
 
-      <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'IBM Plex Mono, monospace' }}>
+      <div style={{ marginTop: '12px', fontSize: '12px', color: 'var(--muted)', textAlign: 'center', fontFamily: 'var(--font-mono), monospace' }}>
         불고기버거 세트를 눌러보세요
       </div>
     </div>
@@ -1292,7 +1292,7 @@ export function InvertedIndexDemo() {
         {steps.map((s, i) => (
           <button key={i} onClick={() => setStep(i)} style={{
             padding: '6px 14px', borderRadius: '999px', fontSize: '11px',
-            fontFamily: 'IBM Plex Mono, monospace',
+            fontFamily: 'var(--font-mono), monospace',
             background: step === i ? 'var(--accent3)' : step > i ? 'rgba(77,159,255,0.15)' : 'var(--surface2)',
             color: step === i ? '#000' : step > i ? 'var(--accent3)' : 'var(--muted)',
             border: `1px solid ${step >= i ? 'var(--accent3)' : 'var(--border)'}`,
@@ -1303,7 +1303,7 @@ export function InvertedIndexDemo() {
         ))}
       </div>
 
-      <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px', fontFamily: 'IBM Plex Mono, monospace' }}>
+      <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '16px', fontFamily: 'var(--font-mono), monospace' }}>
         → {steps[step].desc}
       </div>
 
@@ -1326,7 +1326,7 @@ export function InvertedIndexDemo() {
                       padding: '3px 10px', borderRadius: '4px',
                       background: `${docColors[di]}22`, color: docColors[di],
                       border: `1px solid ${docColors[di]}44`,
-                      fontSize: '13px', fontFamily: 'IBM Plex Mono, monospace',
+                      fontSize: '13px', fontFamily: 'var(--font-mono), monospace',
                     }}>{tok}</span>
                   ))}
                 </div>
@@ -1339,15 +1339,15 @@ export function InvertedIndexDemo() {
       {/* STEP 2: 역인덱스 */}
       {step === 2 && (
         <div style={{ display: 'grid', gridTemplateColumns: '130px 1fr', gap: '2px' }}>
-          <div style={{ padding: '6px 10px', background: 'var(--surface2)', borderRadius: '4px 0 0 0', fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', color: 'var(--muted)' }}>단어</div>
-          <div style={{ padding: '6px 10px', background: 'var(--surface2)', borderRadius: '0 4px 0 0', fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', color: 'var(--muted)' }}>문서 목록</div>
+          <div style={{ padding: '6px 10px', background: 'var(--surface2)', borderRadius: '4px 0 0 0', fontFamily: 'var(--font-mono), monospace', fontSize: '11px', color: 'var(--muted)' }}>단어</div>
+          <div style={{ padding: '6px 10px', background: 'var(--surface2)', borderRadius: '0 4px 0 0', fontFamily: 'var(--font-mono), monospace', fontSize: '11px', color: 'var(--muted)' }}>문서 목록</div>
           {Object.entries(invertedIndex).map(([term, docIds], i) => (
             <React.Fragment key={i}>
               <div className="index-slide" style={{
                 animationDelay: `${i * 0.08}s`, opacity: 0,
                 padding: '8px 10px', background: 'var(--surface)',
                 borderBottom: '1px solid var(--border)',
-                fontFamily: 'IBM Plex Mono, monospace', fontSize: '13px', color: 'var(--accent3)',
+                fontFamily: 'var(--font-mono), monospace', fontSize: '13px', color: 'var(--accent3)',
               }}>{term}</div>
               <div className="index-slide" style={{
                 animationDelay: `${i * 0.08 + 0.05}s`, opacity: 0,
@@ -1361,7 +1361,7 @@ export function InvertedIndexDemo() {
                     <span key={j} style={{
                       padding: '1px 8px', borderRadius: '4px',
                       background: `${docColors[ci]}22`, color: docColors[ci],
-                      fontSize: '11px', fontFamily: 'IBM Plex Mono, monospace',
+                      fontSize: '11px', fontFamily: 'var(--font-mono), monospace',
                     }}>{did}</span>
                   )
                 })}
@@ -1380,13 +1380,13 @@ export function InvertedIndexDemo() {
             border: '1px solid var(--accent3)', borderRadius: '8px', marginBottom: '16px',
           }}>
             <span style={{ fontSize: '13px', color: 'var(--muted)' }}>검색어:</span>
-            <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '14px', color: 'var(--accent3)' }}>"검색 엔진"</span>
+            <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '14px', color: 'var(--accent3)' }}>"검색 엔진"</span>
             <span style={{ fontSize: '11px', color: 'var(--muted)' }}>→ 토큰: [검색] [엔진]</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {['검색', '엔진'].map((term, ti) => (
               <div key={ti} className="index-slide" style={{ animationDelay: `${ti * 0.3}s`, opacity: 0 }}>
-                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '4px', fontFamily: 'IBM Plex Mono, monospace' }}>
+                <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '4px', fontFamily: 'var(--font-mono), monospace' }}>
                   역인덱스 조회: <span style={{ color: 'var(--accent3)' }}>{term}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '6px' }}>
@@ -1396,7 +1396,7 @@ export function InvertedIndexDemo() {
                       <div key={j} style={{
                         padding: '6px 14px', borderRadius: '6px',
                         background: `${docColors[ci]}15`, border: `1px solid ${docColors[ci]}44`,
-                        color: docColors[ci], fontSize: '12px', fontFamily: 'IBM Plex Mono, monospace',
+                        color: docColors[ci], fontSize: '12px', fontFamily: 'var(--font-mono), monospace',
                       }}>{did}</div>
                     )
                   })}
@@ -1458,7 +1458,7 @@ export function TFIDFDemo() {
             background: selectedDoc === i ? 'var(--accent3)' : 'var(--surface2)',
             color: selectedDoc === i ? '#000' : 'var(--muted)',
             border: `1px solid ${selectedDoc === i ? 'var(--accent3)' : 'var(--border)'}`,
-            cursor: 'pointer', fontSize: '12px', fontFamily: 'IBM Plex Mono, monospace',
+            cursor: 'pointer', fontSize: '12px', fontFamily: 'var(--font-mono), monospace',
           }}>{d.id}</button>
         ))}
       </div>
@@ -1472,8 +1472,8 @@ export function TFIDFDemo() {
         {scores.map((s, i) => (
           <div key={i} onClick={() => setSelectedTerm(selectedTerm === s.term ? null : s.term)} style={{ cursor: 'pointer' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px', color: selectedTerm === s.term ? 'var(--accent3)' : 'var(--text)' }}>{s.term}</span>
-              <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '11px', color: 'var(--muted)' }}>{s.score.toFixed(3)}</span>
+              <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '12px', color: selectedTerm === s.term ? 'var(--accent3)' : 'var(--text)' }}>{s.term}</span>
+              <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '11px', color: 'var(--muted)' }}>{s.score.toFixed(3)}</span>
             </div>
             <div style={{ height: '8px', background: 'var(--surface2)', borderRadius: '4px', overflow: 'hidden' }}>
               <div style={{
@@ -1496,17 +1496,17 @@ export function TFIDFDemo() {
             <div style={{ display: 'flex', gap: '24px', flexWrap: 'wrap' }}>
               <div>
                 <div style={{ color: 'var(--muted)', marginBottom: '2px' }}>TF (문서 내 빈도)</div>
-                <div style={{ color: 'var(--text)', fontFamily: 'IBM Plex Mono, monospace' }}>{s.tf.toFixed(3)}</div>
+                <div style={{ color: 'var(--text)', fontFamily: 'var(--font-mono), monospace' }}>{s.tf.toFixed(3)}</div>
                 <div style={{ color: 'var(--muted)', fontSize: '11px' }}>{doc.tokens.filter(t => t === selectedTerm).length}/{doc.tokens.length}회</div>
               </div>
               <div>
                 <div style={{ color: 'var(--muted)', marginBottom: '2px' }}>IDF (희귀도)</div>
-                <div style={{ color: 'var(--text)', fontFamily: 'IBM Plex Mono, monospace' }}>{s.idf.toFixed(3)}</div>
+                <div style={{ color: 'var(--text)', fontFamily: 'var(--font-mono), monospace' }}>{s.idf.toFixed(3)}</div>
                 <div style={{ color: 'var(--muted)', fontSize: '11px' }}>log({N}/{docs.filter(d => d.tokens.includes(selectedTerm)).length})</div>
               </div>
               <div>
                 <div style={{ color: 'var(--muted)', marginBottom: '2px' }}>TF-IDF</div>
-                <div style={{ color: 'var(--accent3)', fontFamily: 'IBM Plex Mono, monospace', fontWeight: 700 }}>{s.score.toFixed(3)}</div>
+                <div style={{ color: 'var(--accent3)', fontFamily: 'var(--font-mono), monospace', fontWeight: 700 }}>{s.score.toFixed(3)}</div>
                 <div style={{ color: 'var(--muted)', fontSize: '11px' }}>중요도 점수</div>
               </div>
             </div>
@@ -1514,7 +1514,7 @@ export function TFIDFDemo() {
         )
       })()}
 
-      <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+      <div style={{ marginTop: '12px', fontSize: '11px', color: 'var(--muted)', fontFamily: 'var(--font-mono), monospace' }}>
         * 단어 클릭 시 TF·IDF 상세 확인 / 문서마다 같은 단어의 점수가 달라집니다
       </div>
     </div>
@@ -1598,7 +1598,7 @@ export function SearchCompareDemo() {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
           {/* LIKE */}
           <div>
-            <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '10px' }}>
+            <div style={{ fontSize: '12px', color: '#ff6666', fontFamily: 'var(--font-mono), monospace', marginBottom: '10px' }}>
               ✗ SQL LIKE '%{keyword}%' — {likeResults.length}건
             </div>
             {likeResults.length === 0 ? (
@@ -1618,7 +1618,7 @@ export function SearchCompareDemo() {
 
           {/* ES */}
           <div>
-            <div style={{ fontSize: '12px', color: 'var(--accent)', fontFamily: 'IBM Plex Mono, monospace', marginBottom: '10px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--accent)', fontFamily: 'var(--font-mono), monospace', marginBottom: '10px' }}>
               ✓ Elasticsearch — {esResults.length}건 (관련도순)
             </div>
             {esResults.length === 0 ? (
@@ -1635,7 +1635,7 @@ export function SearchCompareDemo() {
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   }}>
                     <span>{r.text}</span>
-                    <span style={{ fontFamily: 'IBM Plex Mono, monospace', fontSize: '10px', color: 'var(--accent)', marginLeft: '8px', flexShrink: 0 }}>
+                    <span style={{ fontFamily: 'var(--font-mono), monospace', fontSize: '10px', color: 'var(--accent)', marginLeft: '8px', flexShrink: 0 }}>
                       {r.score.toFixed(1)}점
                     </span>
                   </div>
@@ -1647,7 +1647,7 @@ export function SearchCompareDemo() {
       )}
 
       {!searched && (
-        <div style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+        <div style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: 'var(--font-mono), monospace' }}>
           * "갤럭시 폰", "삼성폰", "삼선 갤락시"(오타) 등으로 차이를 확인해보세요
         </div>
       )}
@@ -1749,7 +1749,7 @@ export function AutoCompleteDemo() {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 <span style={{ fontSize: '14px', color: 'var(--text)' }}>{highlight(r.text)}</span>
-                <span style={{ fontSize: '10px', color: 'var(--muted)', fontFamily: 'IBM Plex Mono, monospace' }}>
+                <span style={{ fontSize: '10px', color: 'var(--muted)', fontFamily: 'var(--font-mono), monospace' }}>
                   {r.score >= 10 ? 'prefix' : r.score >= 7 ? 'contains' : 'n-gram'}
                 </span>
               </div>
@@ -1762,7 +1762,7 @@ export function AutoCompleteDemo() {
       <button onClick={() => setShowDetail(!showDetail)} style={{
         background: 'transparent', border: '1px solid var(--border)', borderRadius: '6px',
         color: 'var(--muted)', cursor: 'pointer', fontSize: '11px',
-        padding: '4px 12px', fontFamily: 'IBM Plex Mono, monospace',
+        padding: '4px 12px', fontFamily: 'var(--font-mono), monospace',
         marginBottom: '12px',
       }}>
         {showDetail ? '▲ n-gram 숨기기' : '▼ n-gram 분석 보기'}
@@ -1778,7 +1778,7 @@ export function AutoCompleteDemo() {
                 <span key={i} style={{
                   padding: '2px 8px', borderRadius: '4px',
                   background: 'rgba(77,159,255,0.15)', color: 'var(--accent3)',
-                  fontFamily: 'IBM Plex Mono, monospace', fontSize: '12px',
+                  fontFamily: 'var(--font-mono), monospace', fontSize: '12px',
                 }}>{g}</span>
               ))}
             </span>

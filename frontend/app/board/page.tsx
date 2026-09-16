@@ -96,7 +96,7 @@ export default function BoardPage() {
                 <span style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  fontFamily: 'IBM Plex Mono, monospace',
+                  fontFamily: 'var(--font-mono), monospace',
                   color,
                 }}>
                   {post.category}
