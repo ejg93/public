@@ -49,8 +49,8 @@ export const CAREERS: Career[] = [
     proof: '',
   },
   {
-    period: '2023.03 ~ 2023.10',
-    months: '8개월',
+    period: '2023.02 ~ 2023.11',
+    months: '9개월',
     name: 'KB라이프 보험 시스템 개발',
     company: '블루컴',
     client: 'KB라이프',
