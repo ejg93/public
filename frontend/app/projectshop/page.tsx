@@ -329,7 +329,7 @@ export default async function ProjectShop() {
       }}>
         <div>
           <div style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text)', marginBottom: '6px' }}>
-            코드와 결정 기록 전부 공개돼 있다
+            ProjectShop Github
           </div>
           <div className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
             Apache-2.0 · 로컬 실행 전용 · 배포본 없음
