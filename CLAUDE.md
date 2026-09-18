@@ -57,7 +57,7 @@ hook 은 이 기계에서만 돈다. 다른 기계나 웹에서 올라온 커밋
 | 서비스 | 플랫폼 | 트리거 |
 |---|---|---|
 | frontend | [Vercel](https://vercel.com/ejg93s-projects/ejgsproject) | `frontend/` 루트, `main` push 시 자동 |
-| backend | [Railway](https://railway.com/dashboard) | `backend/` 루트 |
+| backend | [Railway](https://railway.com/dashboard) | `backend/` 루트. verify 가 `main` 에서 초록일 때 `deploy-backend.yml` 이 올린다 |
 
 `public/` 아래 정적 파일도 Vercel 배포에 그대로 실린다. 개인 메모·게임 파일을 커밋하면 공개 URL로 접근 가능해진다.
 

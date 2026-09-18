@@ -1,0 +1,55 @@
+name: deploy backend
+
+# Railway 서비스에는 GitHub 저장소가 붙어 있지 않다(source.repo = null). 그래서 main 에
+# 무엇을 올려도 배포가 안 걸렸고, 2026-09-18 에 프로덕션이 엿새 전 빌드에 멈춰 있는 것이
+# 발견됐다 — /api/jobs 가 404 였다.
+#
+# 대시보드에서 저장소를 붙이면 push 즉시 배포되지만 CI 결과와 무관하게 나간다.
+# 여기서는 verify 워크플로가 main 에서 초록일 때만 배포한다. 검증이 배포의 조건이 된다.
+on:
+  workflow_run:
+    workflows: [verify]
+    types: [completed]
+    branches: [main]
+  # 검증과 무관하게 손으로 올려야 할 때를 위해 남겨 둔다
+  workflow_dispatch:
+
+# 배포가 겹치면 나중 것이 이긴다. 앞 배포는 취소한다
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Railway 로 올린다
+    runs-on: ubuntu-latest
+    # 손으로 돌릴 때는 conclusion 이 없다. verify 가 돌아서 온 경우에만 초록을 따진다
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # verify 가 본 그 커밋을 그대로 올린다. 그 사이 main 이 더 나갔다면 다음 verify 가 다시 배포한다
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      # 백엔드가 안 바뀐 push 에도 올린다. 배포본과 main 이 어긋나는 상태를 안 만드는 쪽을 택했다 —
+      # 이번 장애가 바로 그 어긋남이었다. Dockerfile 이 의존성 층을 캐시로 써서 다시 올리는 값이 싸다.
+      - name: railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "RAILWAY_TOKEN 이 없다. 저장소 Settings → Secrets → Actions 에 넣는다"
+            exit 1
+          fi
+          # 서비스 루트가 backend 로 잡혀 있어서 저장소 루트에서 올린다.
+          # backend 안에서 올리면 Railway 가 그 안에서 backend 를 또 찾아 빌드가 깨진다.
+          npx --yes @railway/cli up --ci --service public
+
+      - name: 배포된 API 를 두들겨 본다
+        run: |
+          base=https://public-production-d010.up.railway.app
+          for path in /api/battle/health /api/jobs; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$base$path" --max-time 30)
+            echo "$code  $path"
+            [ "$code" = "200" ] || exit 1
+          done
