@@ -27,7 +27,11 @@ public class BattleService {
     @Value("${anthropic.api.key}")
     private String apiKey;
 
-    private static final String ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+    // 테스트가 가짜 서버로 갈아끼운다. 평소에는 이 기본값을 쓴다
+    @Value("${anthropic.api.url:https://api.anthropic.com/v1/messages}")
+    private String anthropicUrl;
+
+
     private static final String ANTHROPIC_VERSION = "2023-06-01";
     private static final int MAX_TOKENS = 400;
 
@@ -93,7 +97,7 @@ public class BattleService {
         log.debug("Claude API 요청 - model: {}, userMsg: {}", modelId, req.getUserMsg());
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
-                .uri(URI.create(ANTHROPIC_URL))
+                .uri(URI.create(anthropicUrl))
                 .timeout(READ_TIMEOUT)
                 .header("Content-Type", "application/json")
                 .header("x-api-key", apiKey)

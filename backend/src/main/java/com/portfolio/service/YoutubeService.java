@@ -27,9 +27,13 @@ public class YoutubeService {
     @Value("${youtube.api.key}")
     private String apiKey;
 
+    // 테스트가 가짜 서버로 갈아끼운다. 평소에는 이 기본값을 쓴다
+    @Value("${youtube.api.base-url:https://www.googleapis.com/youtube/v3}")
+    private String baseUrl;
+
     private static final int MAX_COMMENTS = 1000;
     private static final int PAGE_SIZE    = 100;
-    private static final String BASE_URL  = "https://www.googleapis.com/youtube/v3";
+
 
     // 타임아웃이 없으면 업스트림이 안 끊을 때 톰캣 스레드가 그대로 물린다
     private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
@@ -48,7 +52,7 @@ public class YoutubeService {
         int totalCount = 0;
 
         do {
-            String url = BASE_URL + "/commentThreads"
+            String url = baseUrl + "/commentThreads"
                     + "?part=snippet"
                     + "&videoId=" + enc(videoId)
                     + "&maxResults=" + PAGE_SIZE
@@ -93,7 +97,7 @@ public class YoutubeService {
 
     // ── 답글 수집 (클릭 시 호출) ──────────────────────────
     public ObjectNode fetchReplies(String commentId) throws Exception {
-        String url = BASE_URL + "/comments"
+        String url = baseUrl + "/comments"
                 + "?part=snippet"
                 + "&parentId=" + enc(commentId)
                 + "&maxResults=100"
@@ -123,7 +127,7 @@ public class YoutubeService {
     // ── 영상 제목 ─────────────────────────────────────────
     private String fetchVideoTitle(String videoId) {
         try {
-            String url = BASE_URL + "/videos"
+            String url = baseUrl + "/videos"
                     + "?part=snippet"
                     + "&id=" + enc(videoId)
                     + "&key=" + enc(apiKey);
