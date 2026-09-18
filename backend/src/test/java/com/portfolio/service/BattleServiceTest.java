@@ -53,9 +53,9 @@ class BattleServiceTest {
     private static final String OK_BODY = """
             {"content":[{"type":"text","text":"그건 근거가 없다"}],"usage":{"output_tokens":42}}""";
 
-    private BattleRequest request(String model, String userMsg) {
+    private BattleRequest request(String persona, String userMsg) {
         BattleRequest req = new BattleRequest();
-        req.setModel(model);
+        req.setPersona(persona);
         req.setUserMsg(userMsg);
         return req;
     }
@@ -65,7 +65,7 @@ class BattleServiceTest {
     void parsesReply() throws Exception {
         answer(200, OK_BODY);
 
-        BattleResponse res = service.chat(request("opus", "고양이가 최고다"));
+        BattleResponse res = service.chat(request("logic", "고양이가 최고다"));
 
         assertThat(res.getReply()).isEqualTo("그건 근거가 없다");
         assertThat(res.getTokens()).isEqualTo(42);
@@ -76,7 +76,7 @@ class BattleServiceTest {
     void appendsHistory() throws Exception {
         answer(200, OK_BODY);
 
-        BattleRequest req = request("opus", "이번 말");
+        BattleRequest req = request("logic", "이번 말");
         List<BattleRequest.Message> history = new ArrayList<>();
         BattleRequest.Message m = new BattleRequest.Message();
         m.setRole("assistant");
@@ -96,21 +96,21 @@ class BattleServiceTest {
     }
 
     @Test
-    @DisplayName("model 값에 따라 시스템 프롬프트가 갈린다")
+    @DisplayName("성향 값에 따라 시스템 프롬프트가 갈린다")
     void picksSystemPrompt() throws Exception {
         answer(200, OK_BODY);
 
-        service.chat(request("sonnet", "한 마디"));
-        String sonnet = mapper.readTree(sentBody.get()).path("system").asText();
+        service.chat(request("empathy", "한 마디"));
+        String empathy = mapper.readTree(sentBody.get()).path("system").asText();
 
-        service.chat(request("opus", "한 마디"));
-        String opus = mapper.readTree(sentBody.get()).path("system").asText();
+        service.chat(request("logic", "한 마디"));
+        String logic = mapper.readTree(sentBody.get()).path("system").asText();
 
-        assertThat(sonnet).contains("창의적이고 감성적인");
-        assertThat(opus).contains("논리적이고 냉철한");
-        // model 을 안 주면 opus 쪽으로 간다
+        assertThat(empathy).contains("창의적이고 감성적인");
+        assertThat(logic).contains("논리적이고 냉철한");
+        // 성향을 안 주면 논리형으로 간다
         service.chat(request(null, "한 마디"));
-        assertThat(mapper.readTree(sentBody.get()).path("system").asText()).isEqualTo(opus);
+        assertThat(mapper.readTree(sentBody.get()).path("system").asText()).isEqualTo(logic);
     }
 
     @Test
@@ -118,7 +118,7 @@ class BattleServiceTest {
     void sendsMaxTokens() throws Exception {
         answer(200, OK_BODY);
 
-        service.chat(request("opus", "한 마디"));
+        service.chat(request("logic", "한 마디"));
 
         assertThat(mapper.readTree(sentBody.get()).path("max_tokens").asInt()).isEqualTo(400);
     }
@@ -128,7 +128,7 @@ class BattleServiceTest {
     void quota() {
         answer(429, "{\"error\":{\"message\":\"rate limit for org abc123\"}}");
 
-        assertThatThrownBy(() -> service.chat(request("opus", "한 마디")))
+        assertThatThrownBy(() -> service.chat(request("logic", "한 마디")))
                 .isInstanceOfSatisfying(UpstreamException.class, e -> {
                     assertThat(e.getStatus()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
                     assertThat(e.getCode()).isEqualTo("QUOTA_EXCEEDED");
@@ -141,7 +141,7 @@ class BattleServiceTest {
     void otherFailure() {
         answer(500, "{\"error\":{\"message\":\"internal\"}}");
 
-        assertThatThrownBy(() -> service.chat(request("opus", "한 마디")))
+        assertThatThrownBy(() -> service.chat(request("logic", "한 마디")))
                 .isInstanceOfSatisfying(UpstreamException.class, e -> {
                     assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY);
                     assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR");

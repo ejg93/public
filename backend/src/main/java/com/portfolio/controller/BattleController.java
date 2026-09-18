@@ -59,7 +59,7 @@ public class BattleController {
 
         try {
             // 입력 본문은 길이만 남긴다. 통째로 찍으면 로그에 사용자 입력이 그대로 쌓인다
-            log.info("배틀 요청 - model: {}, 길이: {}자", request.getModel(), userMsg.length());
+            log.info("배틀 요청 - persona: {}, 길이: {}자", request.getPersona(), userMsg.length());
             BattleResponse response = battleService.chat(request);
             return ResponseEntity.ok(response);
         } catch (UpstreamException e) {

@@ -34,7 +34,7 @@ class BattleDisabledTest {
     void disabledByDefault() throws Exception {
         mvc.perform(post("/api/battle/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"model\":\"opus\",\"userMsg\":\"한 마디\"}"))
+                        .content("{\"persona\":\"logic\",\"userMsg\":\"한 마디\"}"))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.code").value("BATTLE_DISABLED"));
 

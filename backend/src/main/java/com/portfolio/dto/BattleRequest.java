@@ -7,7 +7,8 @@ import java.util.List;
 @Data
 public class BattleRequest {
 
-    private String model;       // "opus" | "sonnet"
+    // 토론자 성향. 양쪽 다 같은 모델을 쓰고 이 값으로 시스템 프롬프트만 갈린다
+    private String persona;     // "logic" | "empathy"
     private String userMsg;     // 이번 메시지
     private List<Message> history;  // 이전 대화 내역 (최근 10턴)
 

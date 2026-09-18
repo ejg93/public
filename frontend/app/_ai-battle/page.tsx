@@ -120,11 +120,12 @@ export default function AIBattle() {
     setTimeout(() => setHighlightGroupId(null), 3000)
   }, [])
 
-  async function callAI(model: 'opus' | 'sonnet', history: Message[], userMsg: string) {
+  // 양쪽 다 같은 모델을 부른다. persona 는 서버가 시스템 프롬프트를 고르는 값이다
+  async function callAI(persona: 'logic' | 'empathy', history: Message[], userMsg: string) {
     const res = await fetch(`${SPRING}/api/battle/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model, history, userMsg }),
+      body: JSON.stringify({ persona, history, userMsg }),
     })
     if (!res.ok) throw new Error(`서버 오류: ${res.status}`)
     return res.json() as Promise<{ reply: string; tokens: number }>
@@ -136,7 +137,7 @@ export default function AIBattle() {
     setAi1Input(''); setAi1Busy(true); setCanSend1to2(false)
     ai1History.current.push({ role: 'user', content: msg })
     try {
-      const { reply, tokens } = await callAI('opus', ai1History.current.slice(-10, -1), msg)
+      const { reply, tokens } = await callAI('logic', ai1History.current.slice(-10, -1), msg)
       ai1History.current.push({ role: 'assistant', content: reply })
       lastAi1Reply.current = reply
       setLog(prev => { const next = [...prev, { from: 'ai1' as const, text: reply, tokens }]; saveHistory(next); return next })
@@ -152,7 +153,7 @@ export default function AIBattle() {
     setAi2Input(''); setAi2Busy(true); setCanSend2to1(false)
     ai2History.current.push({ role: 'user', content: msg })
     try {
-      const { reply, tokens } = await callAI('sonnet', ai2History.current.slice(-10, -1), msg)
+      const { reply, tokens } = await callAI('empathy', ai2History.current.slice(-10, -1), msg)
       ai2History.current.push({ role: 'assistant', content: reply })
       lastAi2Reply.current = reply
       setLog(prev => { const next = [...prev, { from: 'ai2' as const, text: reply, tokens }]; saveHistory(next); return next })
@@ -183,8 +184,8 @@ export default function AIBattle() {
     ai2History.current.push({ role: 'user', content: msg })
     try {
       const [r1, r2] = await Promise.all([
-        callAI('opus', ai1History.current.slice(-10, -1), msg),
-        callAI('sonnet', ai2History.current.slice(-10, -1), msg),
+        callAI('logic', ai1History.current.slice(-10, -1), msg),
+        callAI('empathy', ai2History.current.slice(-10, -1), msg),
       ])
       ai1History.current.push({ role: 'assistant', content: r1.reply })
       ai2History.current.push({ role: 'assistant', content: r2.reply })
@@ -287,7 +288,7 @@ export default function AIBattle() {
           {/* AI 1 */}
           <div style={panelBase}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(0,255,136,0.04)' }}>
-              <div className="mono" style={{ fontSize: '10px', color: AI1_COLOR, letterSpacing: '3px' }}>AI_01 / CLAUDE OPUS</div>
+              <div className="mono" style={{ fontSize: '10px', color: AI1_COLOR, letterSpacing: '3px' }}>AI_01 / 논리형</div>
               <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>논리 · 분석형</div>
             </div>
             <div ref={ai1ScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -358,7 +359,7 @@ export default function AIBattle() {
           {/* AI 2 */}
           <div style={panelBase}>
             <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)', background: 'rgba(255,107,53,0.04)', textAlign: 'right' }}>
-              <div className="mono" style={{ fontSize: '10px', color: AI2_COLOR, letterSpacing: '3px' }}>AI_02 / CLAUDE SONNET</div>
+              <div className="mono" style={{ fontSize: '10px', color: AI2_COLOR, letterSpacing: '3px' }}>AI_02 / 감성형</div>
               <div style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>창의 · 감성형</div>
             </div>
             <div ref={ai2ScrollRef} style={{ flex: 1, overflowY: 'auto', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
