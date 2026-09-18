@@ -1,4 +1,5 @@
 import { test, expect, type ConsoleMessage } from '@playwright/test'
+import { isDeployNoise, isGenericResourceError } from './routes'
 
 // public/ 아래 정적 HTML 은 앱 코드가 아니라서 typecheck·lint·build 가 한 줄도 안 본다.
 // 그래서 여기서만 잡히는 것이 있다 — 2026-09-18 에 selfstudy 노트가 없는 엘리먼트를 잡으려다
@@ -21,11 +22,14 @@ for (const path of PAGES) {
     const failed: string[] = []
 
     page.on('console', (m: ConsoleMessage) => {
-      if (m.type() === 'error') errors.push(m.text().slice(0, 160))
+      if (m.type() !== 'error') return
+      const text = m.text()
+      if (isDeployNoise(text) || isGenericResourceError(text)) return
+      errors.push(text.slice(0, 160))
     })
     page.on('pageerror', (e) => errors.push('예외: ' + e.message.slice(0, 160)))
     page.on('response', (r) => {
-      if (r.status() >= 400 && !r.url().includes('favicon')) failed.push(`${r.status()} ${r.url().slice(0, 80)}`)
+      if (r.status() >= 400 && !r.url().includes('favicon') && !isDeployNoise(r.url())) failed.push(`${r.status()} ${r.url().slice(0, 80)}`)
     })
 
     const res = await page.goto(path, { waitUntil: 'load' })

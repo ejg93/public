@@ -91,6 +91,10 @@ Next 16 부터 `next build` 가 ESLint 를 안 돌린다. `next lint` 명령 자
 
 화면이 실제로 그려지는지는 typecheck·lint·build 가 못 잡는다. 콘솔 에러·죽은 내부 링크·접근성 위반·폰 폭 넘침까지는 `npm run e2e` 가 잡는다 — 테스트는 `frontend/e2e/`, 설정은 `playwright.config.ts` 다. 빌드본을 3100 포트에 직접 띄우므로 dev 서버(3000)와 안 부딪친다.
 
+**배포본을 그대로 겨눌 수 있다.** `E2E_BASE_URL=https://... npm run e2e` 로 돌리면 서버를 안 띄우고 그 주소를 검사한다 — 빌드는 통과하는데 배포가 깨진 경우는 로컬 검사로 안 잡힌다. 2026-09-18 에 이것으로 라이브 `/public-data` 가 Railway 에서 `/api/jobs` 404 를 받는 것을 찾았다.
+
+Vercel **프리뷰** 배포는 보호가 걸려 있어 이 방식이 안 먹는다. 브라우저 탭은 통과하지만 `request.get` 은 로그인 HTML 을 받는다. 공개된 프로덕션 주소로 겨눈다.
+
 차트가 눈에 맞게 그려졌는지, 지도 마커가 제 자리인지는 기계가 못 센다. 그건 chrome-devtools MCP 로 페이지를 열어 본다.
 
 `/youtube`·`/public-data` 는 백엔드가 `localhost:8080` 에 떠 있어야 데이터가 온다. 백엔드가 없을 때 나는 연결 실패는 e2e 가 결함으로 안 센다(`e2e/routes.ts` 의 `isBackendNoise`). 대신 백엔드를 띄우고 돌리면 `e2e/backend.spec.ts` 가 붙어서 프론트→스프링→외부 API 까지 한 줄로 확인한다. 백엔드가 없으면 그 파일만 통째로 건너뛴다. 띄우는 법은 [backend/CLAUDE.md](../backend/CLAUDE.md) 「로컬 실행」이고, 백엔드의 `cors.allowed-origins` 에 `http://localhost:3100` 이 들어 있어야 브라우저가 호출을 막지 않는다.

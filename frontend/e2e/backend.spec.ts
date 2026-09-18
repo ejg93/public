@@ -22,6 +22,8 @@ test.beforeAll(async ({ request }) => {
 })
 
 test.beforeEach(() => {
+  // 배포본을 겨눌 때는 그쪽이 부르는 백엔드가 따로 있다. 로컬 8080 을 섞어 보지 않는다
+  test.skip(!!process.env.E2E_BASE_URL, '배포본 대상 실행이라 로컬 백엔드 검사는 건너뛴다')
   test.skip(!backendUp, `백엔드가 ${BACKEND_HOST} 에 없다`)
 })
 
