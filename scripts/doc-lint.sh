@@ -28,6 +28,16 @@ in_scope() {
   return 1
 }
 
+# 존댓말 검사만 면제하는 자리. 줄바꿈·경로 검사는 그대로 받는다.
+# demos.tsx 는 다크 패턴을 보여 주려고 다른 앱이 뱉는 말을 그대로 옮겨 둔 데이터다 —
+# 내가 쓰는 글이 아니라 인용이고, md 에서 백틱으로 감싸 면제하는 것과 같은 성격이다.
+quotes_ui() {
+  case "$1" in
+    frontend/app/board/demos.tsx) return 0 ;;
+  esac
+  return 1
+}
+
 # md 만 인용을 걷어낸다. `sed 's/「[^」]*」//'` 는 멀티바이트를 바이트로 갈라서 조용히 안 먹는다 — perl 을 쓴다.
 strip() {
   case "$1" in
@@ -55,7 +65,7 @@ if [ $# -gt 0 ]; then
     else
       lines=$(cat "$f")
     fi
-    hits=$(printf '%s\n' "$lines" | strip "$f" | grep -E "$PAT" || true)
+    if quotes_ui "$f"; then hits=""; else hits=$(printf '%s\n' "$lines" | strip "$f" | grep -E "$PAT" || true); fi
     if [ -n "$hits" ]; then
       echo "[존댓말] $f — 고친 줄에 있다. 평서형으로 쓴다(CLAUDE.md 「글 작성 규칙」 4). 남의 말을 옮긴 것이면 md 는 백틱이나 「」로 감싼다:"
       printf '%s\n' "$hits" | sed 's/^/    /'
