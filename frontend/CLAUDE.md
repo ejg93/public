@@ -32,6 +32,12 @@ lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받�
 | (없음) | `POST /api/battle/chat` | AI 배틀 화면은 `app/_ai-battle/` 로 내려 라우트에서 뺐다. `_` 로 시작하는 폴더는 Next 가 라우팅하지 않는다. 되살리려면 폴더명에서 `_` 를 뗀다 |
 | `/board` | - | 게시판. 정적 데모를 `demos.tsx`/`demoMap.tsx`로 등록 |
 
+## Next 가 건드리는 파일
+
+`next build`·`next dev` 는 `AGENTS.md` 에 자기 규칙 블록을 써 넣는다. 그 파일이 없으면 `CLAUDE.md` 를 대신 고친다 — 그래서 `AGENTS.md` 를 두고 블록을 그쪽으로 몰아 뒀다. 우리 규칙과 도구가 관리하는 글을 한 파일에 섞지 않는다.
+
+`next-env.d.ts` 와 `tsconfig.json` 의 include 도 빌드가 손댄다. diff 에 뜨면 되돌리지 말고 그대로 커밋한다.
+
 ## 번들러
 
 Next 16 은 Turbopack 으로 빌드한다. postcss 플러그인을 이름 문자열로 적으면 Turbopack 워커가 못 찾아서 `Cannot find module 'tailwindcss'` 로 빌드가 깨진다. `postcss.config.js` 에서 `require` 로 직접 넘겨 해석을 그 파일 기준으로 고정해 뒀다.
@@ -107,13 +113,3 @@ Vercel **프리뷰** 배포는 보호가 걸려 있어 이 방식이 안 먹는�
 |---|---|
 | `/public-data` 지도 마커·좌표·SDK 로딩 변경 | [doc/frontend/kakao-maps-sdk.md](../doc/frontend/kakao-maps-sdk.md) |
 | 라이브러리 버전 확인이 필요할 때 | `package.json` 직접 확인 |
-
-<!-- BEGIN:nextjs-agent-rules -->
-
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
