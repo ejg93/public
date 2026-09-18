@@ -145,7 +145,7 @@ function parseAnswer(text: string, details: DetailItem[], onSelect: (d: DetailIt
             style={{
               ...tagBtnBase,
               background: isActive ? 'var(--accent)' : 'rgba(0,255,136,0.12)',
-              color: isActive ? '#000' : 'var(--accent)',
+              color: isActive ? 'var(--on-accent)' : 'var(--accent)',
               border: `1px solid ${isActive ? 'var(--accent)' : 'rgba(0,255,136,0.3)'}`,
             }}
           >

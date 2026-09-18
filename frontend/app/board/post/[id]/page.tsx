@@ -129,7 +129,7 @@ export default function PostPage() {
                           marginLeft: '4px', padding: '0 12px 0 8px', borderRadius: '999px',
                           fontSize: '11px', fontWeight: 700, gap: '6px',
                           fontFamily: 'var(--font-mono), monospace', letterSpacing: '1px',
-                          background: 'rgba(255,0,0,0.12)', color: '#ff4444',
+                          background: 'rgba(255,0,0,0.12)', color: 'var(--yt)',
                           border: '1px solid rgba(255,0,0,0.3)', textDecoration: 'none',
                           verticalAlign: 'middle',
                         }}>
