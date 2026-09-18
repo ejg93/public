@@ -1,5 +1,5 @@
 import { test, expect, type ConsoleMessage, type Response } from '@playwright/test'
-import { ROUTES, isBackendNoise } from './routes'
+import { ROUTES, isBackendNoise, isDeployNoise, isGenericResourceError } from './routes'
 
 // 라우트마다 한 번씩 열어 보고, 화면이 그려졌는지와 콘솔·네트워크가 조용한지 본다.
 // typecheck·build 는 통과하면서 런타임에만 터지는 자리를 여기서 잡는다.
@@ -12,13 +12,13 @@ for (const route of ROUTES) {
     page.on('console', (msg: ConsoleMessage) => {
       if (msg.type() !== 'error') return
       const text = msg.text()
-      if (isBackendNoise(text)) return
+      if (isBackendNoise(text) || isDeployNoise(text) || isGenericResourceError(text)) return
       consoleErrors.push(text)
     })
     page.on('pageerror', (err) => pageErrors.push(err.message))
     page.on('response', (res: Response) => {
       if (res.status() < 400) return
-      if (isBackendNoise(res.url())) return
+      if (isBackendNoise(res.url()) || isDeployNoise(res.url())) return
       badResponses.push(`${res.status()} ${res.url()}`)
     })
 

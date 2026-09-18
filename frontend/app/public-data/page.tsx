@@ -104,7 +104,7 @@ export default function JobRadar() {
   // jobs 로드 완료 시
   useEffect(() => {
     if (!loading && scriptLoaded.current) initMap(jobs)
-  }, [loading, jobs]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [loading, jobs])
 
   const sorted = [...jobs].sort((a, b) => {
     if (sort === 'distance') return (a.distance ?? 999) - (b.distance ?? 999)

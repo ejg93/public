@@ -32,6 +32,16 @@ lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받�
 | (없음) | `POST /api/battle/chat` | AI 배틀 화면은 `app/_ai-battle/` 로 내려 라우트에서 뺐다. `_` 로 시작하는 폴더는 Next 가 라우팅하지 않는다. 되살리려면 폴더명에서 `_` 를 뗀다 |
 | `/board` | - | 게시판. 정적 데모를 `demos.tsx`/`demoMap.tsx`로 등록 |
 
+## Next 가 건드리는 파일
+
+`next build`·`next dev` 는 `AGENTS.md` 에 자기 규칙 블록을 써 넣는다. 그 파일이 없으면 `CLAUDE.md` 를 대신 고친다 — 그래서 `AGENTS.md` 를 두고 블록을 그쪽으로 몰아 뒀다. 우리 규칙과 도구가 관리하는 글을 한 파일에 섞지 않는다.
+
+`next-env.d.ts` 와 `tsconfig.json` 의 include 도 빌드가 손댄다. diff 에 뜨면 되돌리지 말고 그대로 커밋한다.
+
+## 번들러
+
+Next 16 은 Turbopack 으로 빌드한다. postcss 플러그인을 이름 문자열로 적으면 Turbopack 워커가 못 찾아서 `Cannot find module 'tailwindcss'` 로 빌드가 깨진다. `postcss.config.js` 에서 `require` 로 직접 넘겨 해석을 그 파일 기준으로 고정해 뒀다.
+
 ## 스타일
 
 Tailwind가 설치돼 있고 `tailwind.config.js`도 있지만, **화면 스타일은 대부분 `style={{ }}` 인라인으로 작성돼 있다.** 페이지당 인라인 수십 건, className 10건 안팎. 기존 페이지를 고칠 때는 그 페이지가 이미 쓰는 방식을 따라가고, 인라인을 Tailwind 클래스로 바꾸는 일괄 변환은 요청 없이 하지 않는다.
@@ -72,8 +82,8 @@ npm run dev               # localhost:3000
 | 명령 | 무엇을 잡나 | 언제 |
 |---|---|---|
 | `npm run typecheck` | 타입 불일치, null 가능성, 없는 속성 접근 | `.ts`·`.tsx` 수정 후 |
-| `npm run lint` | `useEffect` 의존성 누락 등 실수 패턴 | 컴포넌트·훅 수정 후 |
-| `npm run build` | 위 둘 + 정적 생성·설정 오류 | **커밋 전 최소 1회** |
+| `npm run lint` | `useEffect` 의존성 누락, 이펙트 안 setState 등 실수 패턴 | 컴포넌트·훅 수정 후 |
+| `npm run build` | 정적 생성·설정 오류. **lint 는 안 돈다**(Next 16) | **커밋 전 최소 1회** |
 | `npm audit --omit=dev` | 배포본에 실리는 의존성의 취약점 | 의존성 추가·변경 후 |
 | `npm run e2e` | 라우트 9개와 public/ 정적 HTML 9장을 크로미엄으로 열어 콘솔 에러·죽은 내부 링크·접근성 위반·폰 폭 가로 넘침 | 화면 문구·색·레이아웃을 고친 뒤 |
 
@@ -81,9 +91,15 @@ npm run dev               # localhost:3000
 
 `npm run build`가 Vercel이 실제로 돌리는 명령이다. 여기서 실패하면 배포도 실패한다. **빌드가 깨진 상태로 작업을 끝내지 않는다.**
 
-`.eslintrc.json`이 있으므로 빌드 중 lint가 자동으로 돌고, lint 에러 하나로 빌드 전체가 중단된다. 스타일 룰이 새 코드를 막으면 룰을 끄는 쪽이 맞는지 먼저 판단한다.
+Next 16 부터 `next build` 가 ESLint 를 안 돌린다. `next lint` 명령 자체도 없어졌다. 그래서 `npm run lint` 는 `eslint .` 를 직접 부르고, 설정은 flat 형식인 `eslint.config.mjs` 에 있다. `verify.sh` 와 CI 가 build 와 따로 부른다.
+
+스타일 룰이 새 코드를 막으면 룰을 끄는 쪽이 맞는지 먼저 판단한다. React 19 의 `react-hooks/set-state-in-effect` 는 끄지 않았다 — 걸린 네 자리가 전부 고칠 값이 있었다. 저장값·미디어쿼리는 `lib/clientStore.ts` 의 `useSyncExternalStore` 훅으로 읽고, 다른 값에서 따라오는 상태는 렌더 중에 고친다.
 
 화면이 실제로 그려지는지는 typecheck·lint·build 가 못 잡는다. 콘솔 에러·죽은 내부 링크·접근성 위반·폰 폭 넘침까지는 `npm run e2e` 가 잡는다 — 테스트는 `frontend/e2e/`, 설정은 `playwright.config.ts` 다. 빌드본을 3100 포트에 직접 띄우므로 dev 서버(3000)와 안 부딪친다.
+
+**배포본을 그대로 겨눌 수 있다.** `E2E_BASE_URL=https://... npm run e2e` 로 돌리면 서버를 안 띄우고 그 주소를 검사한다 — 빌드는 통과하는데 배포가 깨진 경우는 로컬 검사로 안 잡힌다. 2026-09-18 에 이것으로 라이브 `/public-data` 가 Railway 에서 `/api/jobs` 404 를 받는 것을 찾았다.
+
+Vercel **프리뷰** 배포는 보호가 걸려 있어 이 방식이 안 먹는다. 브라우저 탭은 통과하지만 `request.get` 은 로그인 HTML 을 받는다. 공개된 프로덕션 주소로 겨눈다.
 
 차트가 눈에 맞게 그려졌는지, 지도 마커가 제 자리인지는 기계가 못 센다. 그건 chrome-devtools MCP 로 페이지를 열어 본다.
 

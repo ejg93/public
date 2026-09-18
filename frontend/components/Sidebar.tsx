@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import { useHydrated, useMediaQuery, useStoredFlag } from '@/lib/clientStore'
 
 const menus = [
   { label: 'HOME',         href: '/',            icon: '⌂', desc: '소개' },
@@ -23,36 +24,21 @@ const MOBILE_QUERY = '(max-width: 767px)'
 
 export default function Sidebar() {
   const path = usePathname()
-  const [collapsed, setCollapsed] = useState(false)
-  // 되살리기 전에는 전환 효과를 끈다. 접힌 채로 들어왔는데 220px 에서 밀려오면 눈에 띈다
-  const [restored, setRestored] = useState(false)
+  // 마지막 접힘 상태를 이 브라우저에만 남긴다. 개인정보가 아니고 서버로도 안 간다
+  const [collapsed, setCollapsed] = useStoredFlag('sidebar-collapsed', '1', '0')
+  // 수화 전에는 전환 효과를 끈다. 접힌 채로 들어왔는데 220px 에서 밀려오면 눈에 띈다
+  const restored = useHydrated()
   // 폰에서는 레일 대신 서랍이다. 본문을 밀지 않고 위에 덮인다
-  const [mobile, setMobile] = useState(false)
+  const mobile = useMediaQuery(MOBILE_QUERY)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
-  // 마지막 접힘 상태를 이 브라우저에만 남긴다. 개인정보가 아니고 서버로도 안 간다
-  useEffect(() => {
-    try {
-      setCollapsed(localStorage.getItem('sidebar-collapsed') === '1')
-    } catch {
-      // 사생활 보호 모드 등에서 접근이 막히면 펼친 기본값으로 간다
-    }
-    setRestored(true)
-  }, [])
-
-  // 화면 폭을 보고 레일·서랍을 고른다. 창 크기가 바뀌면 따라간다
-  useEffect(() => {
-    const mq = window.matchMedia(MOBILE_QUERY)
-    const apply = () => setMobile(mq.matches)
-    apply()
-    mq.addEventListener('change', apply)
-    return () => mq.removeEventListener('change', apply)
-  }, [])
-
-  // 페이지를 옮기면 서랍을 닫는다
-  useEffect(() => {
+  // 페이지를 옮기면 서랍을 닫는다. 이펙트가 아니라 렌더 중에 고친다 —
+  // 이펙트로 닫으면 서랍이 열린 채로 한 번 그려진 뒤 닫힌다
+  const [pathAtOpen, setPathAtOpen] = useState(path)
+  if (pathAtOpen !== path) {
+    setPathAtOpen(path)
     setDrawerOpen(false)
-  }, [path])
+  }
 
   // 서랍 열림을 html 속성으로도 알린다. 폰에서 서랍을 숨기는 쪽은 globals.css 의 미디어쿼리라
   // (서버가 그린 첫 화면부터 밖에 있어야 한다) 열 때도 CSS 가 그 속성을 보고 들여온다
@@ -68,11 +54,6 @@ export default function Sidebar() {
     document.documentElement.style.setProperty('--sidebar-cur', cur)
     if (!restored) return
     document.documentElement.setAttribute('data-sidebar-ready', '1')
-    try {
-      localStorage.setItem('sidebar-collapsed', collapsed ? '1' : '0')
-    } catch {
-      // 저장이 막혀도 이번 세션 동작에는 지장이 없다
-    }
   }, [collapsed, restored, mobile])
 
   // 폰에서는 항상 펼친 모양으로 그린다

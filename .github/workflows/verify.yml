@@ -23,7 +23,9 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
       - run: npm run typecheck
-      # build 가 lint 까지 돈다(.eslintrc.json). Vercel 이 실제로 부르는 명령이 이것이다
+      # Next 16 부터 build 가 ESLint 를 안 돌린다. 따로 부른다
+      - run: npm run lint
+      # Vercel 이 실제로 부르는 명령이 이것이다
       - run: npm run build
 
   e2e:

@@ -37,10 +37,13 @@ export default function GlossaryTerm({ term, desc }: { term: string; desc: strin
     }
   }, [pinned])
 
-  // 고정이 풀리면 복사 표시도 처음 상태로 돌린다
-  useEffect(() => {
+  // 고정이 풀리면 복사 표시도 처음 상태로 돌린다.
+  // 이펙트가 아니라 렌더 중에 고친다 — 이펙트로 돌리면 「복사됨」이 한 프레임 더 남는다
+  const [pinnedBefore, setPinnedBefore] = useState(pinned)
+  if (pinnedBefore !== pinned) {
+    setPinnedBefore(pinned)
     if (!pinned) setCopied(false)
-  }, [pinned])
+  }
 
   // 말풍선을 닫는다. hover 도 같이 내린다 — 마우스가 아직 낱말 위에 있으면
   // pinned 만 풀어서는 hover 로 다시 떠 버린다.
