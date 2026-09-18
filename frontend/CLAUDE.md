@@ -36,7 +36,9 @@ lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받�
 
 `next build`·`next dev` 는 `AGENTS.md` 에 자기 규칙 블록을 써 넣는다. 그 파일이 없으면 `CLAUDE.md` 를 대신 고친다 — 그래서 `AGENTS.md` 를 두고 블록을 그쪽으로 몰아 뒀다. 우리 규칙과 도구가 관리하는 글을 한 파일에 섞지 않는다.
 
-`next-env.d.ts` 와 `tsconfig.json` 의 include 도 빌드가 손댄다. diff 에 뜨면 되돌리지 말고 그대로 커밋한다.
+`tsconfig.json` 의 include 도 빌드가 손댄다 — 새 distDir 이 생기면 한 줄 늘어난다. 그건 커밋한다.
+
+`next-env.d.ts` 는 다르다. **마지막으로 돌린 빌드의 distDir 을 가리켜서** verify 빌드와 e2e 빌드 사이를 계속 오간다. diff 에 뜨면 되돌린다 — 커밋하면 빌드할 때마다 뒤집힌다.
 
 ## 번들러
 
