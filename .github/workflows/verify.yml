@@ -1,0 +1,106 @@
+name: verify
+
+# 로컬 hook 은 이 기계에서만 돈다. 다른 기계에서 올라온 커밋이나 웹에서 고친 파일은 hook 을 안 거친다.
+# 여기서 같은 검사를 한 번 더 돌려 저장소 쪽에서도 막는다.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  frontend:
+    name: frontend typecheck · build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      # build 가 lint 까지 돈다(.eslintrc.json). Vercel 이 실제로 부르는 명령이 이것이다
+      - run: npm run build
+
+  e2e:
+    name: e2e 스모크 · 접근성 · 링크
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      # playwright.config.ts 의 webServer 가 build 와 start 를 직접 띄운다
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
+
+  docs:
+    name: 글 규칙 · 줄바꿈 · 경로
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      # doc-lint.sh 는 「HEAD 대비 고친 줄」만 본다. 파일 전체를 보면 남의 말을 옮긴 자리 40여 건이 걸려
+      # 그 파일을 아예 못 고치게 된다. CI 에는 그 HEAD 가 없으니 여기서 만든다 —
+      # HEAD 를 비교 기준 커밋에 두고 작업트리만 이번 변경분으로 덮으면, 고친 줄이 그대로 미커밋 diff 가 된다.
+      - name: 비교 기준을 HEAD 로 세운다
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base='${{ github.event.pull_request.base.sha }}'
+            head='${{ github.event.pull_request.head.sha }}'
+          else
+            base='${{ github.event.before }}'
+            head='${{ github.sha }}'
+          fi
+          # 첫 push 나 강제 push 면 before 가 0 뿐이다. 그때는 직전 커밋을 기준으로 둔다
+          if [ -z "$base" ] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            base=$(git rev-parse "$head^") || base=$head
+          fi
+          echo "base=$base head=$head"
+          git checkout --detach "$base"
+          git checkout "$head" -- .
+      - name: doc-lint
+        run: |
+          files=$(git diff HEAD --name-only)
+          if [ -z "$files" ]; then
+            echo "바뀐 파일이 없다"
+            exit 0
+          fi
+          echo "$files"
+          bash scripts/doc-lint.sh $files
+
+  backend:
+    name: backend test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: maven
+      - run: chmod +x mvnw
+      - run: ./mvnw -B -q test
