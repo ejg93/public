@@ -97,8 +97,31 @@ function sortComments(comments: Comment[], sort: SortKey): Comment[] {
   }
 }
 
+// 백엔드가 실패를 { code, message } 로 준다. code 마다 화면에 쓸 문구를 여기서 고른다.
+// 할당량은 아래 전용 안내 상자로 빠지므로 코드 이름을 그대로 넘긴다
+const ERROR_TEXT: Record<string, string> = {
+  QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
+  VIDEO_NOT_FOUND: '그 ID 로 영상을 못 찾았다. 주소나 ID 를 다시 확인한다.',
+  COMMENTS_DISABLED: '그 영상은 댓글이 꺼져 있다.',
+  UPSTREAM_ERROR: '유튜브 쪽 응답이 정상이 아니다. 잠시 뒤 다시 시도한다.',
+}
+
+// 옛 배포본은 맨 문자열을 주므로 JSON 이 아니면 받은 문자열을 그대로 쓴다
+async function apiError(res: Response): Promise<Error> {
+  const raw = await res.text()
+  try {
+    const body = JSON.parse(raw)
+    if (body?.code) return new Error(ERROR_TEXT[body.code] ?? body.message ?? `서버 오류: ${res.status}`)
+  } catch {
+    // JSON 이 아니면 아래로 떨어진다
+  }
+  return new Error(raw || `서버 오류: ${res.status}`)
+}
+
 function isQuotaError(msg: string): boolean {
-  return msg.toLowerCase().includes('quota') || msg.toLowerCase().includes('exceeded')
+  return msg === 'QUOTA_EXCEEDED'
+    || msg.toLowerCase().includes('quota')
+    || msg.toLowerCase().includes('exceeded')
 }
 
 export default function YoutubePage() {
@@ -121,11 +144,8 @@ export default function YoutubePage() {
     if (!videoId) { setError('유효한 유튜브 URL 또는 영상 ID를 입력하세요.'); return }
     setLoading(true); setError(''); setComments([]); setVideoTitle('')
     try {
-      const res = await fetch(`${SPRING}/api/youtube/comments?videoId=${videoId}`)
-      if (!res.ok) {
-        const msg = await res.text()
-        throw new Error(msg || `서버 오류: ${res.status}`)
-      }
+      const res = await fetch(`${SPRING}/api/youtube/comments?videoId=${encodeURIComponent(videoId)}`)
+      if (!res.ok) throw await apiError(res)
       const data = await res.json()
       const parsed = data.comments.map((c: Comment) => ({ ...c, text: parseHtml(c.text) }))
       setComments(parsed)
@@ -142,11 +162,8 @@ export default function YoutubePage() {
       c.id === commentId ? { ...c, repliesLoading: true, repliesError: undefined } : c
     ))
     try {
-      const res = await fetch(`${SPRING}/api/youtube/replies?commentId=${commentId}`)
-      if (!res.ok) {
-        const msg = await res.text()
-        throw new Error(msg || `서버 오류: ${res.status}`)
-      }
+      const res = await fetch(`${SPRING}/api/youtube/replies?commentId=${encodeURIComponent(commentId)}`)
+      if (!res.ok) throw await apiError(res)
       const data = await res.json()
       const replies: Reply[] = data.replies.map((r: Reply) => ({ ...r, text: parseHtml(r.text) }))
       setComments(prev => prev.map(c =>
@@ -221,11 +238,11 @@ export default function YoutubePage() {
     <div style={{ maxWidth: '860px' }}>
       {/* 헤더 */}
       <div style={{ marginBottom: '32px' }}>
-        <div className="mono" style={{ fontSize: '11px', color: '#ff4444', letterSpacing: '4px', marginBottom: '8px' }}>
+        <div className="mono" style={{ fontSize: '11px', color: 'var(--yt)', letterSpacing: '4px', marginBottom: '8px' }}>
           EXPERIMENT_04
         </div>
         <h1 className="display" style={{ fontSize: '52px', lineHeight: 1, marginBottom: '8px' }}>
-          <span style={{ color: '#ff4444' }}>YT</span>
+          <span style={{ color: 'var(--yt)' }}>YT</span>
           <span style={{ color: 'var(--text)' }}> COMMENTS</span>
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.8 }}>
@@ -252,7 +269,7 @@ export default function YoutubePage() {
         />
         <button onClick={fetchComments} disabled={loading} style={{
           padding: '12px 24px',
-          background: loading ? 'var(--border)' : '#ff4444',
+          background: loading ? 'var(--border)' : 'var(--yt-btn)',
           color: '#fff', border: 'none', borderRadius: '8px',
           cursor: loading ? 'not-allowed' : 'pointer',
           fontWeight: 700, fontSize: '14px',
@@ -423,7 +440,7 @@ export default function YoutubePage() {
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                     <span style={{
-                      fontSize: '12px', color: '#ff4444',
+                      fontSize: '12px', color: 'var(--yt)',
                       fontFamily: 'var(--font-mono), monospace', fontWeight: 700,
                     }}>
                       ♥ {c.likeCount.toLocaleString()}
@@ -507,7 +524,7 @@ export default function YoutubePage() {
                               <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)' }}>{r.author}</span>
                               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                                 {r.likeCount > 0 && (
-                                  <span style={{ fontSize: '11px', color: '#ff4444', fontFamily: 'var(--font-mono), monospace' }}>
+                                  <span style={{ fontSize: '11px', color: 'var(--yt)', fontFamily: 'var(--font-mono), monospace' }}>
                                     ♥ {r.likeCount.toLocaleString()}
                                   </span>
                                 )}

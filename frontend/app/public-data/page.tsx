@@ -44,7 +44,12 @@ export default function JobRadar() {
 
   useEffect(() => {
     fetch(`${SPRING}/api/jobs`)
-      .then(r => r.json())
+      .then(async r => {
+        const data = await r.json().catch(() => ({}))
+        // 업스트림이 죽으면 502 에 { code, message } 가 온다. 200 일 때의 error 필드는 키 미설정이다
+        if (!r.ok) throw new Error(data.message ?? `서버 오류: ${r.status}`)
+        return data
+      })
       .then(data => {
         if (data.error) setError(data.error)
         setJobs(data.jobs ?? [])
@@ -135,7 +140,7 @@ export default function JobRadar() {
             style={{
               padding: '6px 16px',
               background: sort === k ? 'var(--accent)' : 'var(--surface2)',
-              color: sort === k ? '#000' : 'var(--muted)',
+              color: sort === k ? 'var(--on-accent)' : 'var(--muted)',
               border: '1px solid ' + (sort === k ? 'var(--accent)' : 'var(--border)'),
               borderRadius: '4px',
               cursor: 'pointer',
