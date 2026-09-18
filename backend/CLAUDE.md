@@ -48,6 +48,10 @@ mvn spring-boot:run       # localhost:8080
 
 테스트는 `src/test/java/com/portfolio/` 에 있다. 컨트롤러는 `@WebMvcTest` 로 서비스를 가짜로 바꿔 띄우므로 API 키 없이 돈다. `PortfolioApplicationTests` 는 컨텍스트만 세워 빈 주입·설정 오류를 잡고, `WebConfigCorsTest` 는 프리플라이트로 허용 오리진을 확인한다.
 
+서비스 계층은 가짜 HTTP 서버로 돌린다(`src/test/java/com/portfolio/service/StubServer.java`, JDK 의 `HttpServer` 라 의존성이 안 는다). 진짜 유튜브·사람인·모델 API 를 부르면 키가 있어야 하고 할당량과 상대 쪽 사정에 결과가 흔들린다. 그래서 각 서비스의 주소를 속성으로 뺐다 — `youtube.api.base-url`·`saramin.api.url`·`kakao.keyword.url`·`anthropic.api.url` 이고, 안 주면 진짜 주소가 기본값이다.
+
+여기서만 잡히는 것: 페이지 토큰을 따라가는 수집 루프, 실패 이유별 상태코드 분류, 급여 문자열 파싱, 지역명 정리, 반복공고 세기, 거리 계산, 모델 요청 본문 모양.
+
 `cors.allowed-origins` 는 쉼표로 여러 개를 적는다. 로컬은 `http://localhost:3000`(dev)과 `http://localhost:3100`(프론트 e2e) 둘 다 필요하다.
 
 
@@ -69,11 +73,11 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-17.0.19'; .\mvnw.cmd -B test
 | 명령 | 무엇을 확인하나 |
 |---|---|
 | `./mvnw -B compile` | 컴파일 통과 여부. 가장 싸다 |
-| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약 16건. **자바 코드 수정 후 필수** |
+| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약·서비스 로직 47건. **자바 코드 수정 후 필수** |
 | `./mvnw -B package` | jar 생성까지. 배포 형태 확인 |
 | `./mvnw -B spring-boot:run` | 실제 기동. `application.properties`에 키가 채워져 있어야 한다 |
 
-테스트는 컨트롤러 계층과 CORS 까지만 본다. 서비스가 외부 API 와 실제로 주고받는 부분은 안 본다 — 그건 기동해서 직접 부르거나, 프론트 `e2e/backend.spec.ts` 로 확인한다.
+테스트가 안 보는 것은 진짜 외부 API 와의 계약이다. 스펙이 바뀌어 응답 모양이 달라지면 가짜 서버는 옛 모양 그대로라 초록으로 남는다. 그건 기동해서 직접 부르거나, 백엔드를 띄운 채 프론트 `e2e/backend.spec.ts` 로 확인한다.
 
 기동은 안 했으면, 확인한 범위와 못 한 범위를 나눠서 보고한다.
 

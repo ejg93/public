@@ -47,9 +47,9 @@ class BattleControllerTest {
     @MockBean
     private BattleService battleService;
 
-    private String body(String model, String userMsg) throws Exception {
+    private String body(String persona, String userMsg) throws Exception {
         BattleRequest req = new BattleRequest();
-        req.setModel(model);
+        req.setPersona(persona);
         req.setUserMsg(userMsg);
         return mapper.writeValueAsString(req);
     }
@@ -70,7 +70,7 @@ class BattleControllerTest {
 
         mvc.perform(post("/api/battle/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("opus", "고양이가 최고다")))
+                        .content(body("logic", "고양이가 최고다")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.reply").value("그건 근거가 없다"))
                 .andExpect(jsonPath("$.tokens").value(42));
@@ -84,7 +84,7 @@ class BattleControllerTest {
 
         mvc.perform(post("/api/battle/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("opus", "한 마디")))
+                        .content(body("logic", "한 마디")))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.code").value("QUOTA_EXCEEDED"));
     }
@@ -97,7 +97,7 @@ class BattleControllerTest {
 
         mvc.perform(post("/api/battle/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("opus", "한 마디")))
+                        .content(body("logic", "한 마디")))
                 .andExpect(status().isBadGateway())
                 .andExpect(jsonPath("$.code").value("UPSTREAM_ERROR"))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("x-api-key"))));
@@ -117,7 +117,7 @@ class BattleControllerTest {
     void chatEmptyMessage() throws Exception {
         mvc.perform(post("/api/battle/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("opus", "   ")))
+                        .content(body("logic", "   ")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
     }
@@ -127,7 +127,7 @@ class BattleControllerTest {
     void chatTooLong() throws Exception {
         mvc.perform(post("/api/battle/chat")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("opus", "가".repeat(2001))))
+                        .content(body("logic", "가".repeat(2001))))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("MESSAGE_TOO_LONG"));
     }
@@ -136,7 +136,7 @@ class BattleControllerTest {
     @DisplayName("history 가 상한을 넘으면 400 HISTORY_TOO_LONG 이다")
     void chatHistoryTooLong() throws Exception {
         BattleRequest req = new BattleRequest();
-        req.setModel("opus");
+        req.setPersona("logic");
         req.setUserMsg("한 마디");
         List<BattleRequest.Message> history = new ArrayList<>();
         for (int i = 0; i < 11; i++) {

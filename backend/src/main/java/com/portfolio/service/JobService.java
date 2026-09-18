@@ -32,12 +32,19 @@ public class JobService {
     @Value("${kakao.rest.key:}")
     private String kakaoKey;
 
+    // 테스트가 가짜 서버로 갈아끼운다. 평소에는 이 기본값을 쓴다
+    @Value("${saramin.api.url:https://oapi.saramin.co.kr/job-search}")
+    private String saraminUrl;
+
+    @Value("${kakao.keyword.url:https://dapi.kakao.com/v2/local/search/keyword.json}")
+    private String kakaoKeywordUrl;
+
     // 서울시 중랑구 동일로 143길 70-10
     private static final double USER_LAT = 37.5966;
     private static final double USER_LNG = 127.0869;
 
-    private static final String SARAMIN_URL      = "https://oapi.saramin.co.kr/job-search";
-    private static final String KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
+
+
 
     private final ObjectMapper mapper     = new ObjectMapper();
     // 타임아웃이 없으면 업스트림이 안 끊을 때 톰캣 스레드가 그대로 물린다
@@ -56,7 +63,7 @@ public class JobService {
             return err;
         }
 
-        String url = SARAMIN_URL
+        String url = saraminUrl
                 + "?access-key=" + saraminKey
                 + "&job_mid_cd=2&loc_mcd=101000&count=30&sort=pd";
 
@@ -144,7 +151,7 @@ public class JobService {
     }
 
     private double[] geocode(String query) throws Exception {
-        String url = KAKAO_KEYWORD_URL
+        String url = kakaoKeywordUrl
                 + "?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8)
                 + "&size=1";
         HttpRequest req = HttpRequest.newBuilder()
