@@ -14,14 +14,14 @@ export function BadButtonsDemo() {
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>② 뭘 하는지 모르는 버튼</div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => setMsg('확인을 눌렀습니다')} style={{ padding: '10px 20px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>확인</button>
-          <button onClick={() => setMsg('취소를 눌렀습니다')} style={{ padding: '10px 20px', background: 'var(--accent2)', color: '#000', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>취소</button>
+          <button onClick={() => setMsg('확인을 눌렀습니다')} style={{ padding: '10px 20px', background: 'var(--accent)', color: 'var(--on-accent)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>확인</button>
+          <button onClick={() => setMsg('취소를 눌렀습니다')} style={{ padding: '10px 20px', background: 'var(--accent2)', color: 'var(--on-accent)', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>취소</button>
         </div>
         <div style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px' }}>→ 확인하면 저장? 취소하면 삭제? 뭘 확인하는 건지 모름</div>
       </div>
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>③ 클릭 영역이 너무 작은 버튼</div>
-        <button onClick={() => setMsg('겨우 클릭했군요')} style={{ padding: '2px 6px', background: 'var(--accent3)', color: '#000', border: 'none', borderRadius: '2px', cursor: 'pointer', fontSize: '10px' }}>저장</button>
+        <button onClick={() => setMsg('겨우 클릭했군요')} style={{ padding: '2px 6px', background: 'var(--accent3)', color: 'var(--on-accent)', border: 'none', borderRadius: '2px', cursor: 'pointer', fontSize: '10px' }}>저장</button>
       </div>
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>④ 삭제 버튼이 더 크고 눈에 띔</div>
@@ -52,12 +52,12 @@ export function GoodButtonsDemo() {
       <div style={{ color: 'var(--muted)', fontSize: '12px', fontFamily: 'var(--font-mono), monospace', marginBottom: '4px' }}>같은 기능, 다른 버튼</div>
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>① 명확한 색상과 텍스트</div>
-        <button onClick={() => setMsg('제출됐습니다')} style={{ padding: '10px 24px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>양식 제출하기</button>
+        <button onClick={() => setMsg('제출됐습니다')} style={{ padding: '10px 24px', background: 'var(--accent)', color: 'var(--on-accent)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>양식 제출하기</button>
       </div>
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>② 뭘 하는지 명확한 버튼</div>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => setMsg('변경사항을 저장했습니다')} style={{ padding: '10px 20px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>변경사항 저장</button>
+          <button onClick={() => setMsg('변경사항을 저장했습니다')} style={{ padding: '10px 20px', background: 'var(--accent)', color: 'var(--on-accent)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: 700 }}>변경사항 저장</button>
           <button onClick={() => setMsg('취소하고 돌아갑니다')} style={{ padding: '10px 20px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>취소하고 돌아가기</button>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function GoodButtonsDemo() {
       <div>
         <div style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>④ 위험한 액션은 눈에 안 띄게</div>
         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <button onClick={() => setMsg('저장했습니다')} style={{ padding: '10px 24px', background: 'var(--accent)', color: '#000', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>저장</button>
+          <button onClick={() => setMsg('저장했습니다')} style={{ padding: '10px 24px', background: 'var(--accent)', color: 'var(--on-accent)', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 700 }}>저장</button>
           <button onClick={() => setMsg('정말 삭제하시겠습니까? (한 번 더 확인)')} style={{ padding: '8px 14px', background: 'transparent', color: 'var(--muted)', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>삭제...</button>
         </div>
       </div>
@@ -849,7 +849,7 @@ export function InstallCheckboxDemo() {
 
             <button onClick={() => setInstallStep('done')} style={{
               width: '100%', padding: '9px', borderRadius: '6px',
-              background: 'var(--accent3)', color: '#000', border: 'none',
+              background: 'var(--accent3)', color: 'var(--on-accent)', border: 'none',
               fontSize: '13px', fontWeight: 700, cursor: 'pointer',
             }}>다음 →</button>
           </>
@@ -1589,7 +1589,7 @@ export function SearchCompareDemo() {
         />
         <button onClick={() => setSearched(true)} style={{
           padding: '10px 20px', borderRadius: '8px',
-          background: 'var(--accent3)', color: '#000',
+          background: 'var(--accent3)', color: 'var(--on-accent)',
           border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: '13px',
         }}>검색</button>
       </div>
