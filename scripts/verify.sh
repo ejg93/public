@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 건드린 구역이 무엇을 돌릴지 정한다. HEAD 대비 바뀐 파일(미추적 포함)을 보고
-# frontend/ 코드가 바뀌었으면 typecheck·build(lint 포함), 화면·정적 HTML 이 바뀌었으면 e2e,
+# frontend/ 코드가 바뀌었으면 typecheck·lint·build, 화면·정적 HTML 이 바뀌었으면 e2e,
 # backend/ 가 바뀌었으면 mvnw test 를 고른다.
 # 출력은 실패했을 때만 보여 준다 — 통과한 빌드 로그는 읽을 것이 없다.
 #
@@ -12,7 +12,7 @@ cd "$(dirname "$0")/.."
 changed=$( { git diff HEAD --name-only 2>/dev/null; git ls-files --others --exclude-standard; } | sort -u )
 hit() { [ "${1:-}" = "--all" ] || printf '%s\n' "$changed" | grep -qE "$2"; }
 fe=0; be=0; e2=0
-hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/(package\.json|package-lock\.json|next\.config\.js|tsconfig\.json|tailwind\.config\.js|\.eslintrc\.json)$' && fe=1
+hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/(package\.json|package-lock\.json|next\.config\.js|tsconfig\.json|tailwind\.config\.js|postcss\.config\.js|eslint\.config\.mjs)$' && fe=1
 hit "${1:-}" '^backend/(src/|pom\.xml$)' && be=1
 # 앱 화면과 public/ 정적 HTML 을 둘 다 e2e 가 든다. 정적 HTML 은 typecheck·lint·build 가 한 줄도 안 본다
 hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/public/(study|game|docrules|jobhunt|toolbox)/|^frontend/e2e/|^frontend/playwright\.config\.ts$' && e2=1
@@ -29,8 +29,8 @@ stamp() {
 log=$(mktemp); trap 'rm -f "$log"' EXIT
 ok=1
 if [ $fe = 1 ]; then
-  echo "== frontend 바뀜 → npm run typecheck · npm run build(lint 포함)"
-  (cd frontend && npm run typecheck && NEXT_DIST_DIR=.next-verify npm run build) >"$log" 2>&1 || { tail -40 "$log"; ok=0; }
+  echo "== frontend 바뀜 → npm run typecheck · npm run lint · npm run build"
+  (cd frontend && npm run typecheck && npm run lint && NEXT_DIST_DIR=.next-verify npm run build) >"$log" 2>&1 || { tail -40 "$log"; ok=0; }
 fi
 if [ $e2 = 1 ] && [ $ok = 1 ]; then
   echo "== 화면 바뀜 → npm run e2e"
