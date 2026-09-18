@@ -85,7 +85,7 @@ const STACK = [
   { k: '백엔드', v: 'Spring Boot 4.1 · Java 25 · Spring Security · JdbcClient' },
   { k: '프론트', v: 'Next.js · TypeScript · Vitest · Playwright' },
   { k: 'DB', v: 'PostgreSQL 17 · Redis 7 · Flyway · pg_stat_statements' },
-  { k: '인프라', v: 'Docker Compose · Testcontainers · GitHub Actions' },
+  { k: '인프라', v: 'Docker Compose · Testcontainers · Kafka · MinIO · GitHub Actions' },
 ]
 
 // ISR 15분. 빌드 때 한 번 받고, 이후 15분마다 백그라운드로 다시 받는다
