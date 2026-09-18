@@ -6,3 +6,9 @@ node_modules/
 
 # 외부 공식문서 원본 다운로드 (74MB, 462파일 — 저장소에 넣지 않음)
 /public/toolbox/db_docs/
+
+# e2e 산출물
+.next-e2e/
+test-results/
+playwright-report/
+/e2e/.auth/
