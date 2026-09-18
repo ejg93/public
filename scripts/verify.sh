@@ -13,7 +13,7 @@ changed=$( { git diff HEAD --name-only 2>/dev/null; git ls-files --others --excl
 hit() { [ "${1:-}" = "--all" ] || printf '%s\n' "$changed" | grep -qE "$2"; }
 fe=0; be=0; e2=0
 hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/(package\.json|package-lock\.json|next\.config\.js|tsconfig\.json|tailwind\.config\.js|postcss\.config\.js|eslint\.config\.mjs)$' && fe=1
-hit "${1:-}" '^backend/(src/|pom\.xml$)' && be=1
+hit "${1:-}" '^backend/(src/|pom\.xml$|Dockerfile$)' && be=1
 # 앱 화면과 public/ 정적 HTML 을 둘 다 e2e 가 든다. 정적 HTML 은 typecheck·lint·build 가 한 줄도 안 본다
 hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/public/(study|game|docrules|jobhunt|toolbox)/|^frontend/e2e/|^frontend/playwright\.config\.ts$' && e2=1
 

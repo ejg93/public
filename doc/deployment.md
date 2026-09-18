@@ -1,6 +1,15 @@
 # 배포 — Vercel & Railway
 
-모노레포(폴더 하나에 frontend/backend 공존)를 플랫폼 두 곳에 나눠 배포한다. 둘 다 `main` 브랜치 push 시 자동 배포(GitHub 연동).
+모노레포(폴더 하나에 frontend/backend 공존)를 플랫폼 두 곳에 나눠 배포한다.
+
+| 대상 | 무엇이 배포를 거나 |
+|---|---|
+| frontend | Vercel 이 GitHub 연동으로 `main` push 때 직접 올린다 |
+| backend | `.github/workflows/deploy-backend.yml` 이 verify 4잡이 `main` 에서 초록일 때 `railway up` 을 부른다 |
+
+Railway 서비스에는 GitHub 저장소가 붙어 있지 않다(`source.repo = null`). 그래서 2026-09-18 까지 `main` 에 무엇을 올려도 배포가 안 걸렸고, 프로덕션이 엿새 전 빌드에 멈춰 `/api/jobs` 가 404 였다. 대시보드에서 저장소를 붙이는 대신 워크플로로 옮긴 이유는 **검증을 배포의 조건으로 두기 위해서**다 — 저장소를 붙이면 CI 가 빨간 커밋도 그대로 나간다.
+
+워크플로는 `RAILWAY_TOKEN`(프로젝트 토큰)을 저장소 시크릿에서 읽는다. 없으면 배포 잡이 그 자리에서 실패한다.
 
 ```
 GitHub(main push)
