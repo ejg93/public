@@ -4,14 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.portfolio.error.UpstreamException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,8 +31,14 @@ public class YoutubeService {
     private static final int PAGE_SIZE    = 100;
     private static final String BASE_URL  = "https://www.googleapis.com/youtube/v3";
 
-    private final ObjectMapper mapper     = new ObjectMapper();
-    private final HttpClient   httpClient = HttpClient.newHttpClient();
+    // 타임아웃이 없으면 업스트림이 안 끊을 때 톰캣 스레드가 그대로 물린다
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration READ_TIMEOUT    = Duration.ofSeconds(20);
+
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(CONNECT_TIMEOUT)
+            .build();
 
     // ── 댓글 수집 ─────────────────────────────────────────
     public ObjectNode fetchComments(String videoId) throws Exception {
@@ -39,11 +50,11 @@ public class YoutubeService {
         do {
             String url = BASE_URL + "/commentThreads"
                     + "?part=snippet"
-                    + "&videoId=" + videoId
+                    + "&videoId=" + enc(videoId)
                     + "&maxResults=" + PAGE_SIZE
                     + "&order=relevance"
-                    + "&key=" + apiKey
-                    + (pageToken != null ? "&pageToken=" + pageToken : "");
+                    + "&key=" + enc(apiKey)
+                    + (pageToken != null ? "&pageToken=" + enc(pageToken) : "");
 
             JsonNode res = get(url);
 
@@ -84,9 +95,9 @@ public class YoutubeService {
     public ObjectNode fetchReplies(String commentId) throws Exception {
         String url = BASE_URL + "/comments"
                 + "?part=snippet"
-                + "&parentId=" + commentId
+                + "&parentId=" + enc(commentId)
                 + "&maxResults=100"
-                + "&key=" + apiKey;
+                + "&key=" + enc(apiKey);
 
         JsonNode res = get(url);
         List<ObjectNode> replies = new ArrayList<>();
@@ -114,8 +125,8 @@ public class YoutubeService {
         try {
             String url = BASE_URL + "/videos"
                     + "?part=snippet"
-                    + "&id=" + videoId
-                    + "&key=" + apiKey;
+                    + "&id=" + enc(videoId)
+                    + "&key=" + enc(apiKey);
             JsonNode res = get(url);
             JsonNode items = res.path("items");
             if (items.size() == 0) return "";
@@ -126,18 +137,51 @@ public class YoutubeService {
         }
     }
 
+    // 쿼리 문자열에 그대로 이어 붙이면 값 안의 & 나 = 가 파라미터 경계로 읽힌다
+    private String enc(String v) {
+        return URLEncoder.encode(v == null ? "" : v, StandardCharsets.UTF_8);
+    }
+
     // ── HTTP GET ──────────────────────────────────────────
     private JsonNode get(String url) throws Exception {
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(READ_TIMEOUT)
                 .GET()
                 .build();
         HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         if (res.statusCode() != 200) {
-            JsonNode err = mapper.readTree(res.body());
-            String msg = err.path("error").path("message").asText("YouTube API 오류: " + res.statusCode());
-            throw new RuntimeException(msg);
+            throw classify(res.statusCode(), res.body());
         }
         return mapper.readTree(res.body());
+    }
+
+    // YouTube 가 준 reason 으로 갈라 우리 코드로 바꾼다. 원문은 로그로만 남긴다 —
+    // 응답 본문에 HTML 태그와 내부 사정이 섞여 있어서 그대로 내보내면 화면에 그게 뜬다.
+    private UpstreamException classify(int status, String body) {
+        String reason = "";
+        String upstreamMessage = "";
+        try {
+            JsonNode err = mapper.readTree(body).path("error");
+            reason = err.path("errors").path(0).path("reason").asText("");
+            upstreamMessage = err.path("message").asText("");
+        } catch (Exception ignored) {
+            // 본문이 JSON 이 아니면 상태코드만 보고 가른다
+        }
+        log.warn("YouTube API {} reason={} message={}", status, reason, upstreamMessage);
+
+        return switch (reason) {
+            case "quotaExceeded", "dailyLimitExceeded", "rateLimitExceeded", "userRateLimitExceeded" ->
+                    new UpstreamException(HttpStatus.TOO_MANY_REQUESTS, "QUOTA_EXCEEDED",
+                            "YouTube API 하루 할당량을 다 썼다");
+            case "videoNotFound", "commentThreadNotFound", "parentNotFound" ->
+                    new UpstreamException(HttpStatus.NOT_FOUND, "VIDEO_NOT_FOUND",
+                            "그 ID 로 영상이나 댓글을 못 찾았다");
+            case "commentsDisabled" ->
+                    new UpstreamException(HttpStatus.CONFLICT, "COMMENTS_DISABLED",
+                            "그 영상은 댓글이 꺼져 있다");
+            default -> new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR",
+                    "YouTube API 응답이 정상이 아니다");
+        };
     }
 }

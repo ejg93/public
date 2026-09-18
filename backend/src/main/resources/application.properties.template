@@ -1,5 +1,5 @@
 server.port=8080
-cors.allowed-origins=http://localhost:3000
+cors.allowed-origins=http://localhost:3000,http://localhost:3100
 logging.level.com.portfolio=DEBUG
 
 # --- 필수 ---
@@ -9,3 +9,8 @@ youtube.api.key=YOUR_YOUTUBE_API_KEY
 # --- 선택 (미설정 시 해당 기능만 비활성) ---
 kakao.rest.key=
 saramin.access.key=
+
+# AI 배틀 API. 인증이 없어서 켜 두면 아무나 호출해 모델 요금이 나간다
+battle.enabled=false
+battle.max-user-msg=2000
+battle.max-history=10

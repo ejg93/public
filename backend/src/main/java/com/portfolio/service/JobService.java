@@ -4,8 +4,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.portfolio.error.UpstreamException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -14,6 +16,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +40,13 @@ public class JobService {
     private static final String KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json";
 
     private final ObjectMapper mapper     = new ObjectMapper();
-    private final HttpClient   httpClient = HttpClient.newHttpClient();
+    // 타임아웃이 없으면 업스트림이 안 끊을 때 톰캣 스레드가 그대로 물린다
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration READ_TIMEOUT    = Duration.ofSeconds(20);
+
+    private final HttpClient   httpClient = HttpClient.newBuilder()
+            .connectTimeout(CONNECT_TIMEOUT)
+            .build();
 
     public ObjectNode fetchJobs() throws Exception {
         if (saraminKey == null || saraminKey.isBlank()) {
@@ -52,13 +61,15 @@ public class JobService {
                 + "&job_mid_cd=2&loc_mcd=101000&count=30&sort=pd";
 
         HttpRequest req = HttpRequest.newBuilder()
+                .timeout(READ_TIMEOUT)
                 .uri(URI.create(url))
                 .header("Accept", "application/json")
                 .GET()
                 .build();
         HttpResponse<String> res = httpClient.send(req, HttpResponse.BodyHandlers.ofString());
         if (res.statusCode() != 200) {
-            throw new RuntimeException("Saramin API " + res.statusCode());
+            log.warn("Saramin API {} - {}", res.statusCode(), res.body());
+            throw new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR", "채용정보 API 응답이 정상이 아니다");
         }
 
         JsonNode data    = mapper.readTree(res.body());
@@ -137,6 +148,7 @@ public class JobService {
                 + "?query=" + URLEncoder.encode(query, StandardCharsets.UTF_8)
                 + "&size=1";
         HttpRequest req = HttpRequest.newBuilder()
+                .timeout(READ_TIMEOUT)
                 .uri(URI.create(url))
                 .header("Authorization", "KakaoAK " + kakaoKey)
                 .GET()

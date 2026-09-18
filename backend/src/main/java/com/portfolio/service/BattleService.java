@@ -5,16 +5,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.portfolio.dto.BattleRequest;
+import com.portfolio.error.UpstreamException;
 import com.portfolio.dto.BattleResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 @Slf4j
 @Service
@@ -53,8 +56,14 @@ public class BattleService {
                     "문장이 중간에 잘리는 것은 절대 허용되지 않는다." +
                     "문장이 길어지지않도록 반말을 쓰고 축약어를 써라.";
 
+    // 모델 응답은 몇십 초가 걸린다. 그래도 상한이 없으면 업스트림이 안 끊을 때 스레드가 그대로 물린다
+    private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(5);
+    private static final Duration READ_TIMEOUT    = Duration.ofSeconds(60);
+
     private final ObjectMapper mapper = new ObjectMapper();
-    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(CONNECT_TIMEOUT)
+            .build();
 
     public BattleResponse chat(BattleRequest req) throws Exception {
         String modelId = resolveModel(req.getModel());
@@ -85,6 +94,7 @@ public class BattleService {
 
         HttpRequest httpRequest = HttpRequest.newBuilder()
                 .uri(URI.create(ANTHROPIC_URL))
+                .timeout(READ_TIMEOUT)
                 .header("Content-Type", "application/json")
                 .header("x-api-key", apiKey)
                 .header("anthropic-version", ANTHROPIC_VERSION)
@@ -94,8 +104,11 @@ public class BattleService {
         HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
 
         if (response.statusCode() != 200) {
+            // 본문에는 키·조직 정보가 섞여 나올 수 있다. 로그로만 남긴다
             log.error("Claude API 오류: {} - {}", response.statusCode(), response.body());
-            throw new RuntimeException("Claude API 오류: " + response.statusCode());
+            HttpStatus status = response.statusCode() == 429 ? HttpStatus.TOO_MANY_REQUESTS : HttpStatus.BAD_GATEWAY;
+            String code = response.statusCode() == 429 ? "QUOTA_EXCEEDED" : "UPSTREAM_ERROR";
+            throw new UpstreamException(status, code, "모델 API 응답이 정상이 아니다");
         }
 
         JsonNode result = mapper.readTree(response.body());
