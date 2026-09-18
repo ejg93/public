@@ -82,6 +82,16 @@ if [ $# -gt 0 ]; then
         fi
       fi
     ;; esac
+    # toolbox 단일 파일은 폐쇄망 반입물이라 외부 로드가 하나만 섞여도 현장에서 안 뜬다.
+    # 고친 줄이 아니라 파일 전체를 본다 — 지금 0 건이라 쌓인 빚이 없다.
+    case "$f" in frontend/public/toolbox/*.html)
+      tb=$(node scripts/toolbox-lint.js "$f" || true)
+      if [ -n "$tb" ]; then
+        echo "[toolbox] $f — 폐쇄망 규칙에 걸린다(toolbox/CLAUDE.md 「절대 규칙」):"
+        printf '%s\n' "$tb" | sed 's/^/    /'
+        fail=1
+      fi
+    ;; esac
   done
   exit $fail
 fi

@@ -46,30 +46,36 @@ mvn spring-boot:run       # localhost:8080
 
 ## 검증
 
+테스트는 `src/test/java/com/portfolio/` 에 있다. 컨트롤러는 `@WebMvcTest` 로 서비스를 가짜로 바꿔 띄우므로 API 키 없이 돈다. `PortfolioApplicationTests` 는 컨텍스트만 세워 빈 주입·설정 오류를 잡고, `WebConfigCorsTest` 는 프리플라이트로 허용 오리진을 확인한다.
+
+`cors.allowed-origins` 는 쉼표로 여러 개를 적는다. 로컬은 `http://localhost:3000`(dev)과 `http://localhost:3100`(프론트 e2e) 둘 다 필요하다.
+
+
 Maven Wrapper로 빌드한다. `mvn`은 이 PC에 설치돼 있지 않지만 `./mvnw`가 Maven 3.9.9를 `~/.m2/wrapper/`에 자동으로 받아 쓴다.
 
 **JAVA_HOME을 매번 지정해야 한다.** 시스템 `JAVA_HOME`은 JDK 11을 가리키고 PATH의 `java`는 JDK 25인데, 이 프로젝트는 Java 17 타깃이다. 둘 다 그대로 쓰면 안 된다.
 
 ```bash
 # Bash
-JAVA_HOME="C:/Program Files/Java/jdk-17.0.19" ./mvnw -B compile
+JAVA_HOME="C:/Program Files/Java/jdk-17.0.19" ./mvnw -B test
 ```
 ```powershell
 # PowerShell
-$env:JAVA_HOME='C:\Program Files\Java\jdk-17.0.19'; .\mvnw.cmd -B compile
+$env:JAVA_HOME='C:\Program Files\Java\jdk-17.0.19'; .\mvnw.cmd -B test
 ```
 
-저장소 루트의 `bash scripts/verify.sh` 가 위 JAVA_HOME 을 붙여 `compile` 을 돌린다. 아래 표는 손으로 돌릴 때다.
+저장소 루트의 `bash scripts/verify.sh` 가 위 JAVA_HOME 을 붙여 `test` 를 돌린다. 아래 표는 손으로 돌릴 때다.
 
 | 명령 | 무엇을 확인하나 |
 |---|---|
-| `./mvnw -B compile` | 컴파일 통과 여부. 자바 코드 수정 후 필수 |
+| `./mvnw -B compile` | 컴파일 통과 여부. 가장 싸다 |
+| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약 16건. **자바 코드 수정 후 필수** |
 | `./mvnw -B package` | jar 생성까지. 배포 형태 확인 |
 | `./mvnw -B spring-boot:run` | 실제 기동. `application.properties`에 키가 채워져 있어야 한다 |
 
-**테스트 코드는 없다** (`src/test` 없음). `./mvnw test`는 통과하지만 검증력이 0이다. 통과했다고 동작을 보증하지 말 것 — API 회귀 확인은 기동해서 직접 호출하는 방법뿐이다.
+테스트는 컨트롤러 계층과 CORS 까지만 본다. 서비스가 외부 API 와 실제로 주고받는 부분은 안 본다 — 그건 기동해서 직접 부르거나, 프론트 `e2e/backend.spec.ts` 로 확인한다.
 
-컴파일만 확인하고 기동은 안 했으면, 확인한 범위와 못 한 범위를 나눠서 보고한다.
+기동은 안 했으면, 확인한 범위와 못 한 범위를 나눠서 보고한다.
 
 ## doc 참조 트리거
 

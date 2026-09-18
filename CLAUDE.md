@@ -15,18 +15,30 @@
 | `frontend/public/docrules/` | 한글·엑셀 문서 배포 규칙 HTML. 폐쇄망 반입 대상 | 요청받은 파일만 수정한다 |
 | `frontend/public/jobhunt/` | 지원 회사 평판·통근을 한 표에서 거르는 HTML. 개인용, 데이터는 localStorage | 요청받은 파일만 수정한다 |
 | `doc/` | 외부 API 스펙·배포 설정처럼 코드가 답 못 하는 것만. 색인은 [doc/README.md](doc/README.md) | 각 구역 CLAUDE.md의 트리거에 걸릴 때만 읽는다 |
-| `scripts/` | `verify.sh`(바뀐 구역 골라 검증)·`doc-lint.sh`(존댓말·줄바꿈·경로 검사)·`linebreak-lint.js`·`href-lint.js`·`hook-doc-lint.sh`·`hook-push-gate.sh`(hook 입구) | `.claude/settings.json` 의 hook 이 부른다 |
+| `scripts/` | `verify.sh`(바뀐 구역 골라 검증)·`dev-up.sh`(백엔드·프론트 띄우기)·`doc-lint.sh`(존댓말·줄바꿈·경로 검사)·`linebreak-lint.js`·`href-lint.js`·`toolbox-lint.js`(폐쇄망 규칙)·`hook-doc-lint.sh`·`hook-push-gate.sh`(hook 입구) | `.claude/settings.json` 의 hook 이 부른다 |
 | `doc/design-standards/` | 행안부 공공 DB 표준화 지침 등 외부 PDF 원본. 표준단어·도메인·코드 설계 근거 | 읽기 전용. 색인은 [design-standards/README.md](doc/design-standards/README.md), 트리거는 toolbox/CLAUDE.md |
 
 `public/` 아래 notes·game·study·docrules·jobhunt는 앱 코드가 아니라 정적 보관물이다. 근처 작업 중이라도 요청 없이 손대지 않는다.
 
 ## 검증
 
-작업을 끝내기 전에 `bash scripts/verify.sh` 를 돌린다. HEAD 대비 바뀐 파일을 보고 `frontend/` 코드면 typecheck·build(lint 포함), `backend/` 면 JDK 17 로 `mvnw compile` 을 고른다. 출력은 실패했을 때만 나온다.
+작업을 끝내기 전에 `bash scripts/verify.sh` 를 돌린다. HEAD 대비 바뀐 파일을 보고 무엇을 돌릴지 고른다. 출력은 실패했을 때만 나온다.
 
-스크립트가 안 보는 것은 **그 구역 CLAUDE.md 「검증」 절**이 든다 — 화면이 실제로 그려지는지, 백엔드 기동, `public/` 아래 정적 HTML.
+| 무엇이 바뀌면 | 무엇을 돌리나 |
+|---|---|
+| `frontend/app`·`components`·`lib`, 빌드 설정 | `npm run typecheck` · `npm run build`(lint 포함) |
+| 위에 더해 `frontend/public/` 의 study·game·docrules·jobhunt·toolbox, `frontend/e2e/` | `npm run e2e` — 라우트 9개와 정적 HTML 9장을 크로미엄으로 연다 |
+| `backend/src`·`pom.xml` | JDK 17 로 `./mvnw test` |
+
+e2e 는 방금 만든 `.next-verify` 빌드를 그대로 띄워서 같은 산출물을 두 번 만들지 않는다.
+
+스크립트가 안 보는 것은 **그 구역 CLAUDE.md 「검증」 절**이 든다 — 차트·지도가 눈에 맞게 그려졌는지, 그리고 백엔드를 띄워야 보이는 데이터 경로.
+
+백엔드가 `localhost:8080` 에 없으면 `e2e/backend.spec.ts` 는 **조용히 건너뛴다**. verify.sh 가 그때 한 줄로 밝히니 그 줄을 보고 판단한다. 띄우려면 `bash scripts/dev-up.sh` 다.
 
 `verify.sh` 가 초록이면 작업트리 지문을 `.git/verify-stamp` 에 남긴다. **`git push` 는 그 도장이 지금 트리와 같아야 나간다** — 다르면 hook 이 막는다(`hook-push-gate.sh`). 도장을 찍는 쪽이 검증이고, push 는 확인만 한다.
+
+hook 은 이 기계에서만 돈다. 다른 기계나 웹에서 올라온 커밋은 hook 을 안 거치므로 `.github/workflows/verify.yml` 이 push·PR 마다 같은 검사를 다시 돌린다 — frontend typecheck·build, e2e(라우트 9개 실사용 검사), 글 규칙·줄바꿈·경로 lint, backend compile.
 
 돌리지 못했으면 못 돌렸다고 밝힌다. 안 돌려보고 "동작한다"·"빌드 통과"라고 쓰지 않는다. 일부만 확인했으면 확인한 범위와 못 한 범위를 나눠서 적는다.
 

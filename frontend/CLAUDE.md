@@ -67,7 +67,7 @@ npm run dev               # localhost:3000
 
 ## 검증
 
-저장소 루트의 `bash scripts/verify.sh` 가 아래 표에서 typecheck 와 build 를 골라 돌린다. 표는 하나만 손으로 돌릴 때 고르는 기준이다. 아래로 갈수록 비용이 크다.
+저장소 루트의 `bash scripts/verify.sh` 가 아래 표에서 typecheck·build·e2e 를 골라 돌린다. 표는 하나만 손으로 돌릴 때 고르는 기준이다. 아래로 갈수록 비용이 크다.
 
 | 명령 | 무엇을 잡나 | 언제 |
 |---|---|---|
@@ -75,6 +75,7 @@ npm run dev               # localhost:3000
 | `npm run lint` | `useEffect` 의존성 누락 등 실수 패턴 | 컴포넌트·훅 수정 후 |
 | `npm run build` | 위 둘 + 정적 생성·설정 오류 | **커밋 전 최소 1회** |
 | `npm audit --omit=dev` | 배포본에 실리는 의존성의 취약점 | 의존성 추가·변경 후 |
+| `npm run e2e` | 라우트 9개와 public/ 정적 HTML 9장을 크로미엄으로 열어 콘솔 에러·죽은 내부 링크·접근성 위반·폰 폭 가로 넘침 | 화면 문구·색·레이아웃을 고친 뒤 |
 
 `verify.sh` 의 빌드는 `NEXT_DIST_DIR=.next-verify` 로 딴 폴더에 쓴다 — dev 서버가 쓰는 `.next` 를 갈아엎으면 `GET / 500` 이 난다. 손으로 돌릴 때도 dev 가 떠 있으면 그 변수를 붙인다.
 
@@ -82,7 +83,11 @@ npm run dev               # localhost:3000
 
 `.eslintrc.json`이 있으므로 빌드 중 lint가 자동으로 돌고, lint 에러 하나로 빌드 전체가 중단된다. 스타일 룰이 새 코드를 막으면 룰을 끄는 쪽이 맞는지 먼저 판단한다.
 
-화면이 실제로 그려지는지(차트 렌더, 지도 표시, 콘솔 에러)는 위 넷이 못 잡는다. 그건 chrome-devtools MCP로 페이지를 열어 확인한다. 단 `/youtube`·`/public-data`는 백엔드가 `localhost:8080`에 떠 있어야 의미가 있다. 안 떠 있으면 확인 못 한 범위를 밝힌다.
+화면이 실제로 그려지는지는 typecheck·lint·build 가 못 잡는다. 콘솔 에러·죽은 내부 링크·접근성 위반·폰 폭 넘침까지는 `npm run e2e` 가 잡는다 — 테스트는 `frontend/e2e/`, 설정은 `playwright.config.ts` 다. 빌드본을 3100 포트에 직접 띄우므로 dev 서버(3000)와 안 부딪친다.
+
+차트가 눈에 맞게 그려졌는지, 지도 마커가 제 자리인지는 기계가 못 센다. 그건 chrome-devtools MCP 로 페이지를 열어 본다.
+
+`/youtube`·`/public-data` 는 백엔드가 `localhost:8080` 에 떠 있어야 데이터가 온다. 백엔드가 없을 때 나는 연결 실패는 e2e 가 결함으로 안 센다(`e2e/routes.ts` 의 `isBackendNoise`). 대신 백엔드를 띄우고 돌리면 `e2e/backend.spec.ts` 가 붙어서 프론트→스프링→외부 API 까지 한 줄로 확인한다. 백엔드가 없으면 그 파일만 통째로 건너뛴다. 띄우는 법은 [backend/CLAUDE.md](../backend/CLAUDE.md) 「로컬 실행」이고, 백엔드의 `cors.allowed-origins` 에 `http://localhost:3100` 이 들어 있어야 브라우저가 호출을 막지 않는다.
 
 ## doc 참조 트리거
 
