@@ -35,7 +35,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <div style={{ display: 'flex', minHeight: '100vh' }}>
         <Sidebar />
-        <div className="sidebar-push" style={{ marginLeft: 'var(--sidebar-cur)', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        {/* minWidth 0 이 없으면 이 칸이 본문의 min-content 아래로 안 줄어든다.
+            글꼴이 넓은 환경에서는 그 폭이 화면을 넘겨 모든 라우트에 가로 스크롤이 생긴다 */}
+        <div className="sidebar-push" style={{ marginLeft: 'var(--sidebar-cur)', flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
           <div style={{
             position: 'fixed',
             top: 0,

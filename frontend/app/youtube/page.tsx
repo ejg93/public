@@ -261,7 +261,9 @@ export default function YoutubePage() {
           onKeyDown={e => e.key === 'Enter' && fetchComments()}
           placeholder="유튜브 URL 또는 영상 ID 입력..."
           style={{
-            flex: 1, padding: '12px 16px',
+            // flex 아이템의 min-width 기본값은 auto 라 입력칸이 제 내용 폭 아래로 안 줄어든다.
+            // 글꼴이 넓은 환경에서는 그 폭이 화면을 넘겨 가로 스크롤이 생긴다
+            flex: 1, minWidth: 0, padding: '12px 16px',
             background: 'var(--surface)', border: '1px solid var(--border)',
             borderRadius: '8px', color: 'var(--text)', fontSize: '14px', outline: 'none',
             fontFamily: 'var(--font-sans), sans-serif',
