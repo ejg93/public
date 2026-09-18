@@ -75,7 +75,7 @@ const DECISIONS: { id: string; title: string; body: string; image?: { src: strin
 const CI = [
   { file: 'ci.yml', desc: '푸시마다 Gradle 빌드와 백엔드·프론트 테스트를 돌려 깨진 커밋을 막는다' },
   { file: 'codeql.yml', desc: 'Java·TypeScript 소스를 정적 분석해 주입·역직렬화 같은 취약 패턴을 경보로 올린다.\n싱크 목록에 JdbcClient.sql을 더해 SQL 문자열 조립 자리를 잡는다' },
-  { file: 'e2e.yml', desc: '실제 브라우저로 로그인부터 주문까지 화면 흐름을 끝까지 밟아 본다' },
+  { file: 'e2e.yml', desc: '실제 브라우저로 로그인부터 장바구니 담기까지 화면 흐름을 밟아 본다' },
   { file: 'dependabot-automerge.yml', desc: '검사를 통과한 의존성 갱신 PR을 사람 손 없이 합친다' },
   { file: 'dependency-submission.yml', desc: 'Gradle·npm 의존성 좌표를 main에서 GitHub 의존성 그래프에 올려 취약점 경보가 붙을 대상을 만든다' },
   { file: 'claude-review.yml', desc: 'PR 디프를 모델에 넣어 지적 목록을 코멘트로 남긴다' },
