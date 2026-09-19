@@ -20,7 +20,6 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -52,14 +51,6 @@ class BattleControllerTest {
         req.setPersona(persona);
         req.setUserMsg(userMsg);
         return mapper.writeValueAsString(req);
-    }
-
-    @Test
-    @DisplayName("헬스체크는 꺼져 있든 켜져 있든 OK 를 돌려준다")
-    void health() throws Exception {
-        mvc.perform(get("/api/battle/health"))
-                .andExpect(status().isOk())
-                .andExpect(content().string("OK"));
     }
 
     @Test

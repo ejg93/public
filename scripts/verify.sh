@@ -35,7 +35,7 @@ fi
 if [ $e2 = 1 ] && [ $ok = 1 ]; then
   echo "== 화면 바뀜 → npm run e2e"
   # 백엔드가 없으면 backend.spec 은 조용히 건너뛴다. 「안 돌아서 통과」를 통과로 읽지 않게 여기서 밝힌다
-  if curl -sf -m 2 http://localhost:8080/api/battle/health >/dev/null 2>&1; then
+  if curl -sf -m 2 http://localhost:8080/api/jobs >/dev/null 2>&1; then
     echo "   백엔드 8080 떠 있다 — 데이터 경로까지 본다"
   else
     echo "   백엔드 8080 없다 — backend.spec 은 건너뛴다(bash scripts/dev-up.sh 로 띄운다)"

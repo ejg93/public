@@ -17,9 +17,11 @@ com/portfolio/
 
 | API | 담당 클래스 | 외부 의존 |
 |---|---|---|
-| `POST /api/battle/chat`, `GET /api/battle/health` | `BattleController` / `BattleService` | Anthropic Claude API |
+| `POST /api/battle/chat` | `BattleController` / `BattleService` | Anthropic Claude API |
 | `GET /api/youtube/{comments,replies}` | `YoutubeController` / `YoutubeService` | YouTube Data API v3 |
 | `GET /api/jobs` | `JobController` / `JobService` | 사람인 오픈 API + Kakao Local(주소→좌표) |
+
+**생사 판정용 엔드포인트는 없다.** 2026-09-19 에 `GET /api/battle/health` 를 지웠다 — 꺼져 있는 기능 밑에 앱 전체 판정이 들어가 있었다. 떠 있는지 봐야 하는 자리(`verify.sh`·`dev-up.sh`·`e2e/backend.spec.ts`·배포 워크플로)는 `GET /api/jobs` 를 두들긴다. 사람인 키가 없으면 외부를 안 부르고 바로 `200` 에 `error` 필드를 실어 주므로 값이 싸다. **키를 넣으면 이 호출이 사람인·카카오까지 가서 느려진다** — 그때는 판정 대상을 다시 고른다.
 
 영속화하는 데이터가 없다. 전부 매 요청 외부 호출이다.
 
@@ -75,7 +77,7 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-17.0.19'; .\mvnw.cmd -B test
 | 명령 | 무엇을 확인하나 |
 |---|---|
 | `./mvnw -B compile` | 컴파일 통과 여부. 가장 싸다 |
-| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약·서비스 로직 60건. **자바 코드 수정 후 필수** |
+| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약·서비스 로직 58건. **자바 코드 수정 후 필수** |
 | `./mvnw -B package` | jar 생성까지. 배포 형태 확인 |
 | `./mvnw -B spring-boot:run` | 실제 기동. `application.properties`에 키가 채워져 있어야 한다 |
 
