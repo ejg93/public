@@ -977,9 +977,10 @@ function copyTextFallback(text, okMsg) {
   ta.style.position = 'fixed'; ta.style.opacity = '0';
   document.body.appendChild(ta);
   ta.select();
-  try { document.execCommand('copy'); toast(okMsg); }
-  catch(e) { toast('복사 실패 — 수동 선택 필요'); }
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) { ok = false; }
   document.body.removeChild(ta);
+  toast(ok ? okMsg : '복사 실패 — 쿼리를 직접 선택해 복사할 것');
 }
 function copyQ(id) {
   var el = document.getElementById('q_' + id);

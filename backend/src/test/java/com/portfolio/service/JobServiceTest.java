@@ -154,6 +154,44 @@ class JobServiceTest {
     }
 
     @Test
+    @DisplayName("사람인이 200 인데 본문이 JSON 이 아니면 502 UPSTREAM_ERROR 로 바꾼다")
+    void brokenSuccessBody() {
+        // 점검 안내 페이지가 200 으로 오는 경우. 파서 예외를 그대로 올리면 502 가 아니라 500 처럼 보인다
+        stub.on("/job-search", q -> new Object[]{200, "<html>점검 중</html>"});
+
+        assertThatThrownBy(() -> service.fetchJobs())
+                .isInstanceOfSatisfying(UpstreamException.class, e -> {
+                    assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY);
+                    assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR");
+                    assertThat(e.getMessage()).doesNotContain("점검 중");
+                });
+    }
+
+    @Test
+    @DisplayName("공고가 한 건도 없으면 빈 배열을 돌려준다")
+    void emptyResult() throws Exception {
+        stub.on("/job-search", q -> new Object[]{200, "{\"jobs\":{\"count\":0}}"});
+
+        ObjectNode out = service.fetchJobs();
+
+        assertThat(out.path("jobs")).isEmpty();
+        assertThat(out.has("error")).isFalse();
+    }
+
+    @Test
+    @DisplayName("지오코딩 응답이 JSON 이 아니어도 목록은 나오고 거리 칸만 빈다")
+    void brokenGeocodeBody() throws Exception {
+        stub.on("/keyword.json", q -> new Object[]{200, "not json"});
+        saramin(job("1", "가회사", "서울", "협의", 0));
+
+        JsonNode jobs = service.fetchJobs().path("jobs");
+
+        assertThat(jobs).hasSize(1);
+        assertThat(jobs.get(0).path("lat").isNull()).isTrue();
+        assertThat(jobs.get(0).path("distance").isNull()).isTrue();
+    }
+
+    @Test
     @DisplayName("사람인이 200 이 아니면 502 UPSTREAM_ERROR 로 바꾼다")
     void upstreamFailure() {
         stub.on("/job-search", q -> new Object[]{500, "{\"msg\":\"서버 사정\"}"});

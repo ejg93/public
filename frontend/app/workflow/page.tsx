@@ -13,7 +13,7 @@ const REPO_CHUNKFRAME = 'https://github.com/ejg93/chunkframe'
 const SKELETON = [
   {
     word: '예열',
-    body: '규칙 뼈대 두 절과 진행 상태를 읽고\n오늘 청크에 걸릴 축을 고른다.\n코드는 안 건드린다.',
+    body: 'CLAUDE.md 규칙과 PROGRESS.md 진행 상태를 읽고\n오늘 청크에 걸릴 축을 고른다.\n코드는 안 건드린다.',
   },
   {
     word: '청크',
@@ -25,7 +25,7 @@ const SKELETON = [
   },
   {
     word: '점검',
-    body: '저장소 전체를 한 축으로 훑는다.\n아무도 안 건드린 자리는 마무리에 안 걸린다.',
+    body: '저장소 전체를 한 축으로 훑는다.\n이번에 안 건드린 파일에서 나오는 것을 잡는다.',
   },
 ]
 
@@ -64,7 +64,7 @@ const GATES = [
     links: [{ label: 'scripts/req-coverage.sh', href: `${REPO_SHOP}/blob/main/scripts/req-coverage.sh` }],
   },
   {
-    title: '이 포트폴리오도 같은 방식이다 — 글 규칙을 고친 줄에서 잡는다',
+    title: '이 포트폴리오 저장소는 글 규칙을 어긴 줄에서 막는다',
     when: '파일을 고친 직후',
     quotes: [QUOTE_LINEBREAK],
     links: [{ label: 'scripts/linebreak-lint.js', href: `${REPO_PORTFOLIO}/blob/main/scripts/linebreak-lint.js` }],
@@ -76,7 +76,7 @@ const TEMPLATE = [
   { file: 'CLAUDE.md', desc: '세션 생명주기 4단계, 라우팅 표, 규칙 우선순위' },
   { file: 'PLAN.md · PROGRESS.md', desc: '청크 분할표와 진행 로그의 빈 틀' },
   { file: 'doc/reference/document-map.md', desc: 'D-번호 문서 카탈로그 틀' },
-  { file: 'scripts/doc-lint.sh', desc: '문서가 구조적으로 부서졌는지 훑는 검사기' },
+  { file: 'scripts/doc-lint.sh', desc: 'CLAUDE.md·doc/reference 문서에서 제목 손상과 중복 문장을 찾아 찍는 검사기' },
 ]
 
 const quoteBox = {
@@ -115,7 +115,7 @@ export default function Workflow() {
       </h1>
 
       <p style={{ ...S.body, fontSize: '15px', marginBottom: '56px' }}>
-        문서의 규칙을 코드화하기 (+검증하기)
+        문서에 적은 규칙을 검사기로 옮기고, 검사기가 어긴 줄에서 막게 한다
       </p>
 
       {/* ── 경계 ────────────────────────────────────── */}
@@ -125,10 +125,9 @@ export default function Workflow() {
             이 사이트와 ProjectShop 의 코드는 Claude Code 가 짠다.<br />
             내가 하는 일은 셋이다.<br />
             무엇을 만들지 요구사항으로 적고, 갈림길에서 결정하고, 나온 것을 검증한다.<br />
-            도구가 빨라질수록 병목은 검증으로 옮겨 간다.<br />
-            그래서 검증을 사람 눈에 맡기지 않고 hook·lint·CI 로 옮겼다. 아래가 그 목록이다.<br />
-            폐쇄망 환경에서는 담당 프로젝트와 최대한 유사한 환경을 만들어 방향성을 본다.<br />
-            여기서 세운 규칙은 거기서도 같은 순서로 쓴다 — 요구 정의, 결정, 검증.
+            셋 중 검증은 사람 눈에 안 맡기고 hook·lint·CI 로 넘겼다.<br />
+            아래가 그 목록이다.<br />
+            폐쇄망 회사 환경에서는 담당 프로젝트와 비슷한 구성을 만들어 같은 순서로 돌린다.
           </p>
         </div>
       </Section>
@@ -153,8 +152,7 @@ export default function Workflow() {
       {/* ── 강제 지점 ──────────────────────────────── */}
       <Section label="02 · 자동 검사가 막는 것">
         <p style={{ ...S.body, marginBottom: '18px' }}>
-          아래는 배선도가 아니라 알람이 울린 기록이다.<br />
-          막힐 때 화면에 실제로 찍히는 메시지를 그대로 옮겼다.
+          아래 여섯은 막힐 때 화면에 실제로 찍히는 메시지를 그대로 옮긴 것이다.
         </p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {GATES.map(g => (
@@ -187,8 +185,7 @@ export default function Workflow() {
           <p style={{ ...S.body, margin: 0 }}>
             「뷰가 컬럼을 굳힌다」는 함정을 진행 로그에만 적었더니<br />
             다음 날 같은 자리를 다시 밟았다.<br />
-            같은 내용을 대조 테스트로 내리자 그다음 마이그레이션에서 바로 잡혔다.<br />
-            기록은 재발을 못 막고 강제 지점은 막는다.
+            같은 내용을 대조 테스트로 내리자 그다음 마이그레이션에서 바로 잡혔다.
           </p>
         </div>
       </Section>

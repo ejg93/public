@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -174,5 +176,52 @@ class YoutubeServiceTest {
 
         assertThat(result.path("replies")).hasSize(1);
         assertThat(result.path("replies").get(0).path("likeCount").asInt()).isEqualTo(5);
+    }
+
+    @Test
+    @DisplayName("같은 페이지 토큰이 다시 오면 수집을 멈춘다")
+    void stopsOnRepeatedPageToken() throws Exception {
+        videoTitle("테스트 영상");
+        // 댓글은 안 주면서 같은 토큰만 돌려주는 응답. 댓글 수만 세면 이 호출이 안 끝난다
+        stub.on("/commentThreads", q -> new Object[]{200, """
+                {"pageInfo":{"totalResults":0},"items":[],"nextPageToken":"SAME"}"""});
+
+        ObjectNode result = service.fetchComments("vid");
+
+        assertThat(result.path("comments")).isEmpty();
+        assertThat(commentThreadCalls()).isEqualTo(2);
+    }
+
+    @Test
+    @DisplayName("다음 장이 끝없이 이어지면 50장에서 멈춘다")
+    void stopsAtPageCap() throws Exception {
+        videoTitle("테스트 영상");
+        AtomicInteger page = new AtomicInteger();
+        // 매번 다른 토큰을 주면 토큰 중복으로는 못 잡는다. 장수 상한이 받는 자리다
+        stub.on("/commentThreads", q -> new Object[]{200, """
+                {"pageInfo":{"totalResults":0},"items":[],"nextPageToken":"T%d"}"""
+                .formatted(page.incrementAndGet())});
+
+        service.fetchComments("vid");
+
+        assertThat(commentThreadCalls()).isEqualTo(50);
+    }
+
+    @Test
+    @DisplayName("200 인데 본문이 JSON 이 아니면 502 로 바꾼다")
+    void brokenSuccessBody() {
+        videoTitle("테스트 영상");
+        stub.on("/commentThreads", q -> new Object[]{200, "<html>점검 중</html>"});
+
+        assertThatThrownBy(() -> service.fetchComments("vid"))
+                .isInstanceOfSatisfying(UpstreamException.class, e -> {
+                    assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY);
+                    assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR");
+                    assertThat(e.getMessage()).doesNotContain("점검 중");
+                });
+    }
+
+    private long commentThreadCalls() {
+        return stub.requests().stream().filter(r -> r.startsWith("/commentThreads")).count();
     }
 }

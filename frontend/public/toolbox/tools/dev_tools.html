@@ -1341,8 +1341,9 @@ function b64CopyImgTag(){
 function b64CopyImgTagFallback(tag){
   var ta=document.createElement('textarea');
   ta.value=tag; document.body.appendChild(ta);
-  ta.select(); document.execCommand('copy');
-  document.body.removeChild(ta); showToast('<img> 태그 복사됨');
+  ta.select(); var ok=execCopy();
+  document.body.removeChild(ta);
+  showToast(ok?'<img> 태그 복사됨':'복사 실패 — 브라우저가 클립보드를 막았다');
 }
 
 function matchParen(s,i){
@@ -1616,12 +1617,17 @@ function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').rep
 function copyEl(id){
   var el=document.getElementById(id); if(!el||!el.value) return;
   if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(el.value).then(function(){ showToast('복사됨'); }).catch(function(){
-      el.select(); document.execCommand('copy'); showToast('복사됨');
-    });
+    navigator.clipboard.writeText(el.value).then(function(){ showToast('복사됨'); }).catch(function(){ copyElLegacy(el); });
   } else {
-    el.select(); document.execCommand('copy'); showToast('복사됨');
+    copyElLegacy(el);
   }
+}
+function copyElLegacy(el){
+  el.select();
+  showToast(execCopy()?'복사됨':'복사 실패 — 칸을 직접 선택해 복사할 것');
+}
+function execCopy(){
+  try{ return document.execCommand('copy'); }catch(e){ return false; }
 }
 function showToast(msg){
   var t=document.getElementById('toast'); t.textContent=msg; t.style.opacity='1';

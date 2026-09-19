@@ -1,5 +1,6 @@
 package com.portfolio.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -79,7 +80,15 @@ public class JobService {
             throw new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR", "채용정보 API 응답이 정상이 아니다");
         }
 
-        JsonNode data    = mapper.readTree(res.body());
+        JsonNode data;
+        try {
+            data = mapper.readTree(res.body());
+        } catch (JsonProcessingException e) {
+            // 점검 안내 HTML 이 200 으로 오는 경우다. 200 이 아닐 때와 같은 자리로 모은다
+            log.warn("Saramin API 200 인데 본문이 JSON 이 아니다 - {}자", res.body().length());
+            throw new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR",
+                    "채용정보 API 응답이 정상이 아니다");
+        }
         JsonNode rawJobs = data.path("jobs").path("job");
 
         // 1차: 모든 공고 수집

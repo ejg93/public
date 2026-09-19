@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -115,5 +116,50 @@ class YoutubeControllerTest {
     void repliesWithoutCommentId() throws Exception {
         mvc.perform(get("/api/youtube/replies"))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("videoId 가 공백뿐이면 400 이고 유튜브를 안 부른다")
+    void commentsBlankVideoId() throws Exception {
+        // 빈 값을 그대로 넘기면 하루 할당량만 깎이고 업스트림이 404 를 돌려준다
+        mvc.perform(get("/api/youtube/comments").param("videoId", "   "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+
+        verifyNoInteractions(youtubeService);
+    }
+
+    @Test
+    @DisplayName("commentId 가 공백뿐이면 400 이고 유튜브를 안 부른다")
+    void repliesBlankCommentId() throws Exception {
+        mvc.perform(get("/api/youtube/replies").param("commentId", "   "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
+
+        verifyNoInteractions(youtubeService);
+    }
+
+    @Test
+    @DisplayName("답글 쪽 업스트림 실패도 502 고 원문은 안 실린다")
+    void repliesUpstreamFailure() throws Exception {
+        given(youtubeService.fetchReplies(anyString()))
+                .willThrow(new RuntimeException("<code>parentId</code> 어쩌고"));
+
+        mvc.perform(get("/api/youtube/replies").param("commentId", "c1"))
+                .andExpect(status().isBadGateway())
+                .andExpect(jsonPath("$.code").value("UPSTREAM_ERROR"))
+                .andExpect(content().string(not(containsString("<code>"))));
+    }
+
+    @Test
+    @DisplayName("답글 할당량이 떨어지면 429 에 QUOTA_EXCEEDED 로 나간다")
+    void repliesQuota() throws Exception {
+        given(youtubeService.fetchReplies(anyString()))
+                .willThrow(new UpstreamException(HttpStatus.TOO_MANY_REQUESTS, "QUOTA_EXCEEDED",
+                        "YouTube API 하루 할당량을 다 썼다"));
+
+        mvc.perform(get("/api/youtube/replies").param("commentId", "c1"))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(jsonPath("$.code").value("QUOTA_EXCEEDED"));
     }
 }

@@ -859,9 +859,10 @@ function copyOut() {
 function legacyCopy(ta) {
 	ta.removeAttribute('readonly');
 	ta.select();
-	document.execCommand('copy');
+	var ok = false;
+	try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
 	ta.setAttribute('readonly', '');
-	toast('복사됨');
+	toast(ok ? '복사됨' : '복사 실패 — 출력 칸을 직접 선택해 복사할 것');
 }
 var toastTimer = null;
 function toast(msg) {
