@@ -2023,12 +2023,15 @@ function copyQuery() {
 function copyFallback(text) {
   var ta = document.createElement('textarea');
   ta.value = text; document.body.appendChild(ta);
-  ta.select(); document.execCommand('copy');
-  document.body.removeChild(ta); showToast();
+  ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+  document.body.removeChild(ta);
+  showToast(ok ? '복사됨' : '복사 실패 — 쿼리를 직접 선택해 복사할 것');
 }
-function showToast() {
+function showToast(msg) {
   var t = document.getElementById('toast');
-  t.textContent = '복사됨'; t.style.opacity = '1';
+  t.textContent = msg || '복사됨'; t.style.opacity = '1';
   clearTimeout(t._t); t._t = setTimeout(function() { t.style.opacity = '0'; }, 1500);
 }
 

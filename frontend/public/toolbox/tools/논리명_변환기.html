@@ -1737,7 +1737,12 @@ function saveSQL(){
 function copyOut(){
   const t=document.getElementById('out');
   const done=()=>toast('클립보드 복사됨');
-  const legacy=()=>{ t.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('복사 실패','출력 칸을 직접 선택해 복사할 것'); } };
+  const legacy=()=>{
+    t.select();
+    let ok=false;
+    try{ ok=document.execCommand('copy'); }catch(e){ ok=false; }
+    if(ok) done(); else toast('복사 실패','출력 칸을 직접 선택해 복사할 것');
+  };
   if(navigator.clipboard && navigator.clipboard.writeText){
     navigator.clipboard.writeText(t.value).then(done, legacy);
   } else legacy();

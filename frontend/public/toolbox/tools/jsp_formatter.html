@@ -570,7 +570,9 @@ function legacyCopy(v) {
 	var o = document.getElementById("out");
 	showPane("out");   
 	o.removeAttribute("readonly"); o.select();
-	try { document.execCommand("copy"); toast("복사됨"); } catch (e) { toast("복사 실패"); }
+	var ok = false;
+	try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+	toast(ok ? "복사됨" : "복사 실패 — 출력 칸을 직접 선택해 복사할 것");
 	o.setAttribute("readonly", "");
 }
 function swap() {
