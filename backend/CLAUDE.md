@@ -52,6 +52,8 @@ mvn spring-boot:run       # localhost:8080
 
 여기서만 잡히는 것: 페이지 토큰을 따라가는 수집 루프, 실패 이유별 상태코드 분류, 급여 문자열 파싱, 지역명 정리, 반복공고 세기, 거리 계산, 모델 요청 본문 모양.
 
+200 인데 본문이 JSON 이 아닌 응답(점검 안내 HTML)도 세 서비스 모두 여기서 502 `UPSTREAM_ERROR` 로 바꾼다. 댓글 수집은 같은 페이지 토큰이 다시 오거나 50장을 넘으면 멈춘다 — 빈 페이지가 이어지면 댓글 수 상한만으로는 안 끝난다.
+
 `cors.allowed-origins` 는 쉼표로 여러 개를 적는다. 로컬은 `http://localhost:3000`(dev)과 `http://localhost:3100`(프론트 e2e) 둘 다 필요하다.
 
 
@@ -73,7 +75,7 @@ $env:JAVA_HOME='C:\Program Files\Java\jdk-17.0.19'; .\mvnw.cmd -B test
 | 명령 | 무엇을 확인하나 |
 |---|---|
 | `./mvnw -B compile` | 컴파일 통과 여부. 가장 싸다 |
-| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약·서비스 로직 47건. **자바 코드 수정 후 필수** |
+| `./mvnw -B test` | 컴파일 + 컨텍스트 기동 + API 계약·서비스 로직 60건. **자바 코드 수정 후 필수** |
 | `./mvnw -B package` | jar 생성까지. 배포 형태 확인 |
 | `./mvnw -B spring-boot:run` | 실제 기동. `application.properties`에 키가 채워져 있어야 한다 |
 

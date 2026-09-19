@@ -1,5 +1,6 @@
 package com.portfolio.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -18,7 +19,9 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -33,6 +36,8 @@ public class YoutubeService {
 
     private static final int MAX_COMMENTS = 1000;
     private static final int PAGE_SIZE    = 100;
+    // 댓글 수만 세면 빈 페이지가 이어질 때 수집이 안 끝난다. 장수도 같이 센다
+    private static final int MAX_PAGES    = 50;
 
 
     // 타임아웃이 없으면 업스트림이 안 끊을 때 톰캣 스레드가 그대로 물린다
@@ -49,7 +54,9 @@ public class YoutubeService {
         String videoTitle = fetchVideoTitle(videoId);
         List<ObjectNode> comments = new ArrayList<>();
         String pageToken = null;
+        Set<String> seenTokens = new HashSet<>();
         int totalCount = 0;
+        int pages = 0;
 
         do {
             String url = baseUrl + "/commentThreads"
@@ -81,6 +88,17 @@ public class YoutubeService {
 
             pageToken = res.path("nextPageToken").isMissingNode()
                     ? null : res.path("nextPageToken").asText();
+            pages++;
+
+            // 같은 토큰을 다시 주면 다음 장이 없다는 뜻이다. 그대로 따라가면 같은 요청을 끝없이 반복한다
+            if (pageToken != null && !seenTokens.add(pageToken)) {
+                log.warn("같은 페이지 토큰이 다시 왔다 - {}개에서 멈춘다", comments.size());
+                pageToken = null;
+            }
+            if (pageToken != null && pages >= MAX_PAGES) {
+                log.warn("페이지 {}장에 걸렸다 - {}개에서 멈춘다", MAX_PAGES, comments.size());
+                pageToken = null;
+            }
 
             log.debug("댓글 수집 중: {}개", comments.size());
 
@@ -157,7 +175,14 @@ public class YoutubeService {
         if (res.statusCode() != 200) {
             throw classify(res.statusCode(), res.body());
         }
-        return mapper.readTree(res.body());
+        try {
+            return mapper.readTree(res.body());
+        } catch (JsonProcessingException e) {
+            // 점검 안내 HTML 이 200 으로 오는 경우다. 그대로 두면 파서 예외가 500 처럼 보인다
+            log.warn("YouTube API 200 인데 본문이 JSON 이 아니다 - {}자", res.body().length());
+            throw new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR",
+                    "YouTube API 응답이 정상이 아니다");
+        }
     }
 
     // YouTube 가 준 reason 으로 갈라 우리 코드로 바꾼다. 원문은 로그로만 남긴다 —

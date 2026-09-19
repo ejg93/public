@@ -19,6 +19,11 @@ public class YoutubeController {
 
     @GetMapping("/comments")
     public ResponseEntity<?> getComments(@RequestParam String videoId) {
+        // 빈 값으로 부르면 하루 할당량만 깎이고 업스트림이 404 를 돌려준다
+        if (videoId.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiError("INVALID_REQUEST", "videoId 가 비어 있다"));
+        }
         try {
             log.info("유튜브 댓글 요청 - videoId: {}", videoId);
             return ResponseEntity.ok(youtubeService.fetchComments(videoId));
@@ -34,6 +39,10 @@ public class YoutubeController {
 
     @GetMapping("/replies")
     public ResponseEntity<?> getReplies(@RequestParam String commentId) {
+        if (commentId.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(new ApiError("INVALID_REQUEST", "commentId 가 비어 있다"));
+        }
         try {
             log.info("답글 요청 - commentId: {}", commentId);
             return ResponseEntity.ok(youtubeService.fetchReplies(commentId));

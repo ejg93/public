@@ -147,4 +147,40 @@ class BattleServiceTest {
                     assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR");
                 });
     }
+
+    @Test
+    @DisplayName("200 인데 답 칸이 비어 있으면 502 로 바꾼다")
+    void emptyContent() {
+        // content 가 빈 배열이면 예전에는 get(0) 이 null 이라 NPE 가 났다
+        answer(200, "{\"content\":[],\"usage\":{\"output_tokens\":0}}");
+
+        assertThatThrownBy(() -> service.chat(request("logic", "한 마디")))
+                .isInstanceOfSatisfying(UpstreamException.class, e -> {
+                    assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY);
+                    assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR");
+                });
+    }
+
+    @Test
+    @DisplayName("200 인데 답 칸에 text 가 없으면 502 로 바꾼다")
+    void contentWithoutText() {
+        answer(200, "{\"content\":[{\"type\":\"tool_use\",\"id\":\"t1\"}],\"usage\":{\"output_tokens\":3}}");
+
+        assertThatThrownBy(() -> service.chat(request("logic", "한 마디")))
+                .isInstanceOfSatisfying(UpstreamException.class, e ->
+                        assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR"));
+    }
+
+    @Test
+    @DisplayName("200 인데 본문이 JSON 이 아니면 502 로 바꾼다")
+    void brokenSuccessBody() {
+        answer(200, "<html>점검 중</html>");
+
+        assertThatThrownBy(() -> service.chat(request("logic", "한 마디")))
+                .isInstanceOfSatisfying(UpstreamException.class, e -> {
+                    assertThat(e.getStatus()).isEqualTo(HttpStatus.BAD_GATEWAY);
+                    assertThat(e.getCode()).isEqualTo("UPSTREAM_ERROR");
+                    assertThat(e.getMessage()).doesNotContain("점검 중");
+                });
+    }
 }

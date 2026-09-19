@@ -1,5 +1,6 @@
 package com.portfolio.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -110,8 +111,24 @@ public class BattleService {
             throw new UpstreamException(status, code, "모델 API 응답이 정상이 아니다");
         }
 
-        JsonNode result = mapper.readTree(response.body());
-        String reply = result.path("content").get(0).path("text").asText();
+        JsonNode result;
+        try {
+            result = mapper.readTree(response.body());
+        } catch (JsonProcessingException e) {
+            log.error("Claude API 200 인데 본문이 JSON 이 아니다 - {}자", response.body().length());
+            throw new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR",
+                    "모델 API 응답이 정상이 아니다");
+        }
+
+        // content 가 비어 오면 get(0) 이 null 이라 여기서 NPE 가 났다. 업스트림 실패로 모은다
+        JsonNode first = result.path("content").path(0);
+        if (first.path("text").isMissingNode()) {
+            log.error("Claude API 응답에 답이 없다 - content {}칸", result.path("content").size());
+            throw new UpstreamException(HttpStatus.BAD_GATEWAY, "UPSTREAM_ERROR",
+                    "모델 API 응답이 정상이 아니다");
+        }
+
+        String reply = first.path("text").asText();
         int tokens = result.path("usage").path("output_tokens").asInt();
 
         log.debug("Claude API 응답 - tokens: {}, reply: {}", tokens, reply);
