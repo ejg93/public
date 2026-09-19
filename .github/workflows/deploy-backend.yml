@@ -33,17 +33,29 @@ jobs:
 
       # 백엔드가 안 바뀐 push 에도 올린다. 배포본과 main 이 어긋나는 상태를 안 만드는 쪽을 택했다 —
       # 이번 장애가 바로 그 어긋남이었다. Dockerfile 이 의존성 층을 캐시로 써서 다시 올리는 값이 싸다.
+      # 토큰은 두 종류다. 프로젝트 토큰은 RAILWAY_TOKEN 으로 읽히고 프로젝트·환경이 박혀 있다.
+      # 계정·워크스페이스 토큰은 RAILWAY_API_TOKEN 이고 범위가 넓어서 어느 프로젝트인지 따로 준다.
+      # 대시보드에서 프로젝트 토큰 화면을 못 찾는 경우가 있어 둘 다 받는다.
       - name: railway up
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_API_TOKEN: ${{ secrets.RAILWAY_API_TOKEN }}
+          PROJECT_ID: 4420cf3f-ae25-4889-b19f-39ead1a429d3
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
-            echo "RAILWAY_TOKEN 이 없다. 저장소 Settings → Secrets → Actions 에 넣는다"
+          if [ -n "$RAILWAY_TOKEN" ]; then
+            echo "프로젝트 토큰으로 올린다"
+            scope=""
+          elif [ -n "$RAILWAY_API_TOKEN" ]; then
+            echo "계정 토큰으로 올린다 — 프로젝트와 환경을 지정한다"
+            scope="--project $PROJECT_ID --environment production"
+          else
+            echo "토큰이 없다. 저장소 Settings → Secrets → Actions 에"
+            echo "RAILWAY_TOKEN(프로젝트 토큰) 또는 RAILWAY_API_TOKEN(계정 토큰)을 넣는다"
             exit 1
           fi
           # 서비스 루트가 backend 로 잡혀 있어서 저장소 루트에서 올린다.
           # backend 안에서 올리면 Railway 가 그 안에서 backend 를 또 찾아 빌드가 깨진다.
-          npx --yes @railway/cli up --ci --service public
+          npx --yes @railway/cli up --ci --service public $scope
 
       - name: 배포된 API 를 두들겨 본다
         run: |
