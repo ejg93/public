@@ -57,11 +57,18 @@ jobs:
           # backend 안에서 올리면 Railway 가 그 안에서 backend 를 또 찾아 빌드가 깨진다.
           npx --yes @railway/cli up --ci --service public $scope
 
+      # railway up 이 돌아온 시점은 「짐을 올렸다」까지다. 새 컨테이너가 뜨고 트래픽이 옮겨갈
+      # 때까지 엣지는 붙일 데가 없어 502 를 낸다. 2026-09-19 에 그 순간을 찍어 배포가 성공했는데도
+      # 잡이 빨갛게 떴다. 그래서 200 이 나올 때까지 기다린 뒤에 판정한다.
       - name: 배포된 API 를 두들겨 본다
         run: |
           base=https://public-production-d010.up.railway.app
-          for path in /api/battle/health /api/jobs; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' "$base$path" --max-time 30)
-            echo "$code  $path"
-            [ "$code" = "200" ] || exit 1
+          for i in $(seq 1 24); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "$base/api/jobs" --max-time 10 || true)
+            [ "$code" = "200" ] && break
+            echo "$code  /api/jobs — 아직 교체 중이다. 5초 뒤 다시 ($i/24)"
+            sleep 5
           done
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$base/api/jobs" --max-time 30)
+          echo "$code  /api/jobs"
+          [ "$code" = "200" ] || exit 1

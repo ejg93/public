@@ -4,7 +4,8 @@ import { BACKEND_HOST } from './routes'
 // 백엔드가 떠 있을 때만 도는 검사. 다른 스펙은 8080 연결 실패를 무시하도록 해 뒀으니
 // 프론트에서 스프링을 거쳐 외부 API 까지 가는 길은 여기서만 본다.
 // CI 에는 백엔드가 없어서 통째로 건너뛴다.
-const HEALTH = `http://${BACKEND_HOST}/api/battle/health`
+// 생사 판정용 문은 따로 없다. 사람인 키가 없어도 200 에 빈 목록을 주는 /api/jobs 로 본다
+const ALIVE = `http://${BACKEND_HOST}/api/jobs`
 
 // 이 파일만 진짜 외부 API 를 부른다. 유튜브 쪽 지연·할당량은 우리가 못 고르는 값이라
 // 여기서만 재시도를 켠다. 다른 스펙은 재시도 없이 한 번에 판정한다.
@@ -14,7 +15,7 @@ let backendUp = false
 
 test.beforeAll(async ({ request }) => {
   try {
-    const res = await request.get(HEALTH, { timeout: 3000 })
+    const res = await request.get(ALIVE, { timeout: 3000 })
     backendUp = res.ok()
   } catch {
     backendUp = false
@@ -25,12 +26,6 @@ test.beforeEach(() => {
   // 배포본을 겨눌 때는 그쪽이 부르는 백엔드가 따로 있다. 로컬 8080 을 섞어 보지 않는다
   test.skip(!!process.env.E2E_BASE_URL, '배포본 대상 실행이라 로컬 백엔드 검사는 건너뛴다')
   test.skip(!backendUp, `백엔드가 ${BACKEND_HOST} 에 없다`)
-})
-
-test('헬스체크가 OK 를 준다', async ({ request }) => {
-  const res = await request.get(HEALTH)
-  expect(res.status()).toBe(200)
-  expect(await res.text()).toBe('OK')
 })
 
 test('/public-data 가 백엔드 응답으로 화면을 그린다', async ({ page }) => {

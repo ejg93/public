@@ -70,13 +70,4 @@ public class BattleController {
                     .body(new ApiError("UPSTREAM_ERROR", "모델 API 를 부르는 중에 실패했다"));
         }
     }
-
-    /**
-     * 헬스체크
-     * GET /api/battle/health
-     */
-    @GetMapping("/health")
-    public ResponseEntity<String> health() {
-        return ResponseEntity.ok("OK");
-    }
 }

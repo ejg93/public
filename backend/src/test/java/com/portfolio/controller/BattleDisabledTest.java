@@ -13,7 +13,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -39,11 +38,5 @@ class BattleDisabledTest {
                 .andExpect(jsonPath("$.code").value("BATTLE_DISABLED"));
 
         verify(battleService, never()).chat(any());
-    }
-
-    @Test
-    @DisplayName("꺼져 있어도 헬스체크는 산다")
-    void healthStaysUp() throws Exception {
-        mvc.perform(get("/api/battle/health")).andExpect(status().isOk());
     }
 }

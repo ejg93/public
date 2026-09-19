@@ -48,12 +48,12 @@ if [ "${1:-}" = "--down" ]; then
 fi
 
 echo "== backend 8080"
-if curl -sf -m 2 http://localhost:8080/api/battle/health >/dev/null 2>&1; then
+if curl -sf -m 2 http://localhost:8080/api/jobs >/dev/null 2>&1; then
   echo "   이미 떠 있다"
 else
   case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) export JAVA_HOME="$JDK17" ;; esac
   (cd backend && ./mvnw -B -q spring-boot:run) >"$BACK_LOG" 2>&1 &
-  wait_for http://localhost:8080/api/battle/health 90 "backend" || { tail -20 "$BACK_LOG"; exit 1; }
+  wait_for http://localhost:8080/api/jobs 90 "backend" || { tail -20 "$BACK_LOG"; exit 1; }
 fi
 
 if [ "${1:-}" = "--front" ]; then
