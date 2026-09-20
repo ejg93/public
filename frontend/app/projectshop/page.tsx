@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { S, Section } from '@/components/CaseStudy'
+import Shot from '@/components/Shot'
 import { getShopStats } from '@/lib/github'
 
 export const metadata = { title: 'PROJECT SHOP' }
@@ -47,18 +48,6 @@ function Figure({ src, alt }: { src: string; alt: string }) {
   return (
     <Image src={src} alt={alt} width={1200} height={675} unoptimized
       style={{ width: '100%', height: 'auto', border: '1px solid var(--border)', borderRadius: '8px', display: 'block' }} />
-  )
-}
-
-// 배포본 스크린샷. 파일마다 세로가 달라서 크기를 개별로 받는다.
-// w·h 는 실제 파일 크기와 같아야 한다 — 어긋나면 이미지가 뜨기 전 자리가 틀어진다
-function Shot({ src, alt, w, h, cap }: { src: string; alt: string; w: number; h: number; cap: string }) {
-  return (
-    <figure style={{ margin: 0 }}>
-      <Image src={src} alt={alt} width={w} height={h} unoptimized
-        style={{ width: '100%', height: 'auto', border: '1px solid var(--border)', borderRadius: '8px', display: 'block' }} />
-      <figcaption style={{ ...S.body, fontSize: '12px', marginTop: '8px' }}>{cap}</figcaption>
-    </figure>
   )
 }
 

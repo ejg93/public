@@ -127,3 +127,17 @@ html[data-sidebar-ready="1"] .sidebar-push > div:first-child {
 
 .fade-in { animation: fadeInUp 0.3s ease forwards; }
 
+
+/* 스크린샷 확대(components/Shot.tsx). dialog 기본 테두리·여백을 걷고 백드롭만 어둡게 한다 */
+.shot-dialog {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  max-width: 94vw;
+  max-height: 92vh;
+  overflow: visible;
+}
+
+.shot-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
