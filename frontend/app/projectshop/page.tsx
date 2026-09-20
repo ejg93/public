@@ -5,6 +5,8 @@ import { getShopStats } from '@/lib/github'
 export const metadata = { title: 'PROJECT SHOP' }
 
 const REPO_SHOP = 'https://github.com/ejg93/ProjectShop'
+// Railway 에 올린 ProjectShop 프론트. 상품 목록 화면으로 바로 들어간다
+const DEMO_SHOP = 'https://frontend-production-b83c.up.railway.app/products'
 
 // GitHub 호출이 실패했을 때만 쓰는 반올림 값. 기준 2026-09
 const FALLBACK = [
@@ -140,6 +142,16 @@ export default async function ProjectShop() {
           fontFamily: 'var(--font-mono), monospace',
         }}>
           ⌥ GITHUB 저장소 →
+        </a>
+        <a href={DEMO_SHOP} target="_blank" rel="noopener noreferrer" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '8px',
+          padding: '11px 20px', borderRadius: '6px', textDecoration: 'none',
+          background: 'transparent', color: 'var(--accent)',
+          border: '1px solid var(--accent)',
+          fontSize: '13px', fontWeight: 700, letterSpacing: '1px',
+          fontFamily: 'var(--font-mono), monospace',
+        }}>
+          ▶ 배포본 상품 목록 →
         </a>
         <a href={`${REPO_SHOP}/tree/main/doc/adr`} target="_blank" rel="noopener noreferrer" style={{
           display: 'inline-flex', alignItems: 'center', gap: '8px',
@@ -332,7 +344,7 @@ export default async function ProjectShop() {
             ProjectShop Github
           </div>
           <div className="mono" style={{ fontSize: '11px', color: 'var(--muted)' }}>
-            Apache-2.0 · 로컬 실행 전용 · 배포본 없음
+            Apache-2.0
           </div>
         </div>
         <a href={REPO_SHOP} target="_blank" rel="noopener noreferrer" style={{
