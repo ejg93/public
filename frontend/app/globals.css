@@ -127,3 +127,43 @@ html[data-sidebar-ready="1"] .sidebar-push > div:first-child {
 
 .fade-in { animation: fadeInUp 0.3s ease forwards; }
 
+
+/* 스크린샷 확대(components/Shot.tsx). 원본 폭으로 띄우고 긴 화면은 dialog 안에서 스크롤한다 */
+.shot-dialog {
+  /* Tailwind preflight 가 margin 을 0 으로 깎아서 dialog 기본 가운데 정렬이 죽는다 */
+  margin: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  width: min(1440px, 96vw);
+  max-width: min(1440px, 96vw);
+  max-height: 92vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.shot-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.72);
+}
+
+/* 확대창이 열린 동안 뒤 페이지가 같이 굴러가지 않게 막는다 */
+body:has(.shot-dialog[open]) {
+  overflow: hidden;
+}
+
+.shot-close {
+  position: sticky;
+  top: 8px;
+  float: right;
+  margin-right: 8px;
+  z-index: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
