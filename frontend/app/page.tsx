@@ -20,7 +20,7 @@ const TILES = [
   {
     label: 'PROJECT SHOP',
     hook: '멀티 셀러 쇼핑몰',
-    desc: '권한 체계 · CI 6종 · 개발 중',
+    desc: '권한 체계 · CI 6종 · 배포본 공개',
     stack: ['Spring Boot', 'Java', 'Next.js', 'PostgreSQL', 'Flyway', 'Playwright'],
     href: '/projectshop',
     color: 'var(--accent2)',
