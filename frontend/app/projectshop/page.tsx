@@ -116,7 +116,7 @@ export default async function ProjectShop() {
 
       {/* ── 헤더 ───────────────────────────────────── */}
       <div className="mono" style={{ fontSize: '11px', color: 'var(--accent)', letterSpacing: '2px', marginBottom: '14px' }}>
-        설계 기록 · 작업 중
+        설계 기록 · 배포본 공개
       </div>
 
       <h1 className="display display-xl" style={{ lineHeight: 0.95, marginBottom: '24px' }}>
