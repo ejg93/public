@@ -50,6 +50,61 @@ function Figure({ src, alt }: { src: string; alt: string }) {
   )
 }
 
+// 배포본 스크린샷. 파일마다 세로가 달라서 크기를 개별로 받는다.
+// w·h 는 실제 파일 크기와 같아야 한다 — 어긋나면 이미지가 뜨기 전 자리가 틀어진다
+function Shot({ src, alt, w, h, cap }: { src: string; alt: string; w: number; h: number; cap: string }) {
+  return (
+    <figure style={{ margin: 0 }}>
+      <Image src={src} alt={alt} width={w} height={h} unoptimized
+        style={{ width: '100%', height: 'auto', border: '1px solid var(--border)', borderRadius: '8px', display: 'block' }} />
+      <figcaption style={{ ...S.body, fontSize: '12px', marginTop: '8px' }}>{cap}</figcaption>
+    </figure>
+  )
+}
+
+// 배포본에서 찍은 화면. w·h 는 png 실측값이라 파일을 갈면 같이 고친다
+const SHOTS = [
+  {
+    src: '/images/shop/shop-products.png', w: 1440, h: 1125,
+    alt: '판매자 둘의 상품이 한 목록에 섞여 있고 카드마다 배송비가 따로 적힌 화면',
+    cap: '판매자 둘이 올린 상품을 한 목록에 섞고, 배송비를 판매자마다 따로 적는다.',
+  },
+  {
+    src: '/images/shop/shop-product-detail.png', w: 1440, h: 1694,
+    alt: '색상·크기 옵션과 발송 기한, 통신판매중개자 고지, 판매자 신원이 차례로 놓인 상품 상세 화면',
+    cap: '옵션 두 축과 발송 기한 아래에 통신판매중개자 고지와 판매자 신원을 같이 싣는다.',
+  },
+  {
+    src: '/images/shop/shop-seller-form.png', w: 1440, h: 1100,
+    alt: '상품명·판매가·재고 칸 아래에 표시·광고 근거 문구와 출처 주소 칸이 붙은 등록 화면',
+    cap: '판매자가 상품을 올리는 화면. 「국내 1위」 같은 문구에는 근거와 출처를 같이 받는다.',
+  },
+  {
+    src: '/images/shop/shop-checkout.png', w: 1440, h: 900,
+    alt: '판매자별로 묶인 장바구니. 묶음마다 배송비가 따로 붙고 합계가 아래에 있다',
+    cap: '담은 상품을 판매자별로 묶고, 배송비를 묶음마다 더해 결제 금액을 낸다.',
+  },
+]
+
+// 같은 주소를 역할만 바꿔 연 화면. 앞 둘은 머리만 잘라 메뉴 차이를 맞대 놓는다
+const ROLE_SHOTS = [
+  {
+    src: '/images/shop/shop-role-seller.png', w: 1440, h: 220,
+    alt: '판매자로 로그인한 상태의 상단 메뉴. 받은 주문·내 상품·받은 문의·정산서가 보인다',
+    cap: '판매자로 연 상품 목록의 머리. 받은 주문·내 상품·받은 문의·정산서가 붙는다.',
+  },
+  {
+    src: '/images/shop/shop-role-customer.png', w: 1440, h: 220,
+    alt: '구매자로 로그인한 상태의 상단 메뉴. 상품·장바구니·내 주문 셋만 보인다',
+    cap: '구매자로 연 같은 주소. 메뉴가 상품·장바구니·내 주문 셋에서 끝난다.',
+  },
+  {
+    src: '/images/shop/shop-role-denied.png', w: 1440, h: 900,
+    alt: '구매자 계정으로 판매자 전용 주소를 열었을 때 나오는 차단 화면',
+    cap: '구매자가 판매자 전용 주소를 주소창에 직접 쳐도 화면이 막힌다.',
+  },
+]
+
 const DECISIONS: { id: string; title: string; body: string; image?: { src: string; alt: string } }[] = [
   {
     id: 'ADR-0003',
@@ -199,8 +254,20 @@ export default async function ProjectShop() {
         </Section>
       )}
 
+      {/* ── 화면 ───────────────────────────────────── */}
+      <Section label="00 · 무엇이 돌아가나">
+        <p style={{ ...S.body, marginBottom: '18px' }}>
+          배포본에서 찍은 화면이다. 위 버튼으로 같은 주소를 직접 연다.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '18px' }}>
+          {SHOTS.map(shot => (
+            <Shot key={shot.src} src={shot.src} alt={shot.alt} w={shot.w} h={shot.h} cap={shot.cap} />
+          ))}
+        </div>
+      </Section>
+
       {/* ── 한 줄기 ───────────────────────────────── */}
-      <Section label="00 · 한 줄기로 따라가기">
+      <Section label="01 · 한 줄기로 따라가기">
         <p style={{ ...S.body, marginBottom: '18px' }}>
           요건 하나가 법 조항에서 DB 제약·테스트·CI 까지 어떻게 이어지는지 따라간다.
         </p>
@@ -232,12 +299,12 @@ export default async function ProjectShop() {
         </div>
         <p style={{ ...S.body, fontSize: '13px', marginTop: '16px' }}>
           요건 40개가 전부 이 모양으로 이어지지는 않는다 —<br />
-          아래 04 의 숫자가 그 구멍이다.
+          아래 05 의 숫자가 그 구멍이다.
         </p>
       </Section>
 
       {/* ── 주제 선정 ───────────────────────────────── */}
-      <Section label="01 · 왜 이 주제를 골랐나">
+      <Section label="02 · 왜 이 주제를 골랐나">
         <div style={S.card}>
           <p style={{ ...S.body, marginBottom: '14px' }}>
             실무에서 관리자와 사용자 구분이 코드 여기저기 흩어져 유지보수가 힘들어지는 걸 겪었다.<br />
@@ -253,7 +320,7 @@ export default async function ProjectShop() {
       </Section>
 
       {/* ── 설계 결정 ───────────────────────────────── */}
-      <Section label="02 · 무엇을 저울질해서 정했나">
+      <Section label="03 · 무엇을 저울질해서 정했나">
         <p style={{ ...S.body, marginBottom: '18px' }}>
           갈림길마다 고른 쪽과 버린 쪽, 그 근거를 ADR 파일로 저장소에 남긴다.<br />
           아래는 그중 넷이다.
@@ -272,10 +339,25 @@ export default async function ProjectShop() {
             </div>
           ))}
         </div>
+
+        <div style={{ marginTop: '18px' }}>
+          <div className="mono" style={{ fontSize: '10px', color: 'var(--accent2)', letterSpacing: '2px', marginBottom: '10px' }}>
+            ADR-0003 이 화면에서 갈리는 자리
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            {ROLE_SHOTS.map(shot => (
+              <Shot key={shot.src} src={shot.src} alt={shot.alt} w={shot.w} h={shot.h} cap={shot.cap} />
+            ))}
+          </div>
+          <p style={{ ...S.body, fontSize: '13px', marginTop: '14px' }}>
+            메뉴가 줄어드는 것은 눈에 보이는 쪽이고,<br />
+            주소를 직접 쳤을 때 막는 판정은 role_permission 행이 낸다.
+          </p>
+        </div>
       </Section>
 
       {/* ── 작업 방식 ───────────────────────────────── */}
-      <Section label="03 · 어떻게 굴리나">
+      <Section label="04 · 어떻게 굴리나">
         <div style={S.card}>
           <p style={{ ...S.body, marginBottom: '14px' }}>
             세션이 끊기는 걸 전제로 진행 상태를 전부 파일에 두고, 청크 하나를 커밋 하나로 친다.
@@ -293,7 +375,7 @@ export default async function ProjectShop() {
       </Section>
 
       {/* ── 검증 ───────────────────────────────────── */}
-      <Section label="04 · 무엇이 자동으로 잡나">
+      <Section label="05 · 무엇이 자동으로 잡나">
         <div style={{ marginBottom: '14px' }}>
           <Figure src="/images/ps-pipeline.svg" alt="청크 하나가 PR 하나가 되고 검사 넷을 지나 합쳐지는 파이프라인" />
         </div>
@@ -318,7 +400,7 @@ export default async function ProjectShop() {
       </Section>
 
       {/* ── 스택 ───────────────────────────────────── */}
-      <Section label="05 · 스택">
+      <Section label="06 · 스택">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {STACK.map(s => (
             <div key={s.k} style={{ ...S.card, display: 'flex', gap: '18px', alignItems: 'baseline', flexWrap: 'wrap' }}>
