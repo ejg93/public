@@ -20,7 +20,8 @@
 <article class="doc" id="d1" data-stage="개요">
   <p class="doc-kicker">개요</p>
   <h1>파일 지도 — Spring 자리에 무엇이 오나</h1>
-  <p class="doc-lead">Next 프로젝트를 처음 열었을 때 <strong>어느 파일이 Spring의 무엇 자리인지</strong>부터 잡는다. 대응이 안 맞는 것 두 개가 특히 헷갈린다.</p>
+  <p class="doc-lead">Next 프로젝트를 처음 열었을 때 <strong>어느 파일이 Spring의 무엇 자리인지</strong>부터 잡는다.<br>
+  대응이 안 맞는 것 두 개가 특히 헷갈린다.</p>
 
   <figure>
     <svg viewBox="0 0 700 300" role="img" aria-label="Spring 파일과 Next 파일의 대응 관계">
@@ -160,7 +161,8 @@ async rewrites() {
       <line x1="16" y1="206" x2="660" y2="206" stroke="var(--border)" stroke-dasharray="2 4"/>
       <text x="16" y="228" fill="var(--muted)" font-size="11">JSP는 <tspan fill="var(--accent3)" font-weight="700">SSR 한 칸뿐</tspan>이다. 톰캣이 매 요청 렌더한다.</text>
     </svg>
-    <figcaption>세로 점선이 빌드와 요청의 경계. <b>왼쪽에서 일을 끝낼수록 빠르고, 대신 사용자마다 다른 내용을 못 낸다.</b></figcaption>
+    <figcaption>세로 점선이 빌드와 요청의 경계.<br>
+    <b>왼쪽에서 일을 끝낼수록 빠르고, 대신 사용자마다 다른 내용을 못 낸다.</b></figcaption>
   </figure>
 
   <div class="table-wrap">
@@ -250,11 +252,13 @@ export default async function Page() {
 
       <text x="16" y="262" fill="var(--muted)" font-size="10.5">차이는 <tspan fill="var(--accent2)" font-weight="700">「그 다음에 JS도 보내느냐」</tspan> 하나뿐. 서버 렌더링은 둘 다 일어난다.</text>
     </svg>
-    <figcaption><b>클라이언트 컴포넌트도 서버에서 HTML이 만들어진다.</b> 자바스크립트를 꺼도 글자는 보이고, 버튼만 안 먹는다.</figcaption>
+    <figcaption><b>클라이언트 컴포넌트도 서버에서 HTML이 만들어진다.</b><br>
+    자바스크립트를 꺼도 글자는 보이고, 버튼만 안 먹는다.</figcaption>
   </figure>
 
   <h2>판단 기준 — 질문 두 개</h2>
-  <p>절을 다 읽기 전에 이것부터 잡아 두면 나머지가 전부 따라온다. 컴포넌트 하나를 앞에 두고 두 질문을 던진다.</p>
+  <p>절을 다 읽기 전에 이것부터 잡아 두면 나머지가 전부 따라온다.<br>
+  컴포넌트 하나를 앞에 두고 두 질문을 던진다.</p>
 
   <figure>
     <svg viewBox="0 0 700 230" role="img" aria-label="서버 컴포넌트와 클라이언트 컴포넌트를 가르는 두 질문">
@@ -280,7 +284,8 @@ export default async function Page() {
       <text x="34" y="202" fill="var(--accent)" font-size="12" font-weight="700">그냥 둔다. 기본값이 서버 컴포넌트고, 그쪽이 더 싸다.</text>
       <text x="470" y="202" fill="var(--muted)" font-size="10.5">필요할 때만 손대는 구조다</text>
     </svg>
-    <figcaption>두 질문이 서로 배타적이지 않다. <b>한 화면 안에서 조각마다 답이 다르다</b> — 표는 서버, 그 위 정렬 버튼은 클라이언트인 식이다.</figcaption>
+    <figcaption>두 질문이 서로 배타적이지 않다.<br>
+    <b>한 화면 안에서 조각마다 답이 다르다</b> — 표는 서버, 그 위 정렬 버튼은 클라이언트인 식이다.</figcaption>
   </figure>
 
   <div class="table-wrap">
@@ -303,7 +308,8 @@ export default async function Page() {
 
   <h2>먼저 — 청크가 무엇인가</h2>
   <p>새로운 개념이 아니다. <strong>번들러가 코드를 쪼개 만든 <code>.js</code> 파일 한 덩어리</strong>를 청크라고 부를 뿐이다.</p>
-  <p>왜 쪼개나 — 전부 한 파일이면 화면 하나 열 때 다른 화면 코드까지 전부 받아간다. 그래서 화면별로 가르고, 두 화면 이상이 쓰는 것은 공용으로 뽑는다.</p>
+  <p>왜 쪼개나 — 전부 한 파일이면 화면 하나 열 때 다른 화면 코드까지 전부 받아간다.<br>
+  그래서 화면별로 가르고, 두 화면 이상이 쓰는 것은 공용으로 뽑는다.</p>
 
   <div class="table-wrap">
     <table>
@@ -328,7 +334,9 @@ export default async function Page() {
   </div>
 
   <h2>하이드레이션 — 마른 HTML에 동작을 붓는다</h2>
-  <p>이름 그대로다. 건조식품에 물을 붓는 것(hydration). <strong>모양만 있는 HTML에 JS를 부어 움직이게 만드는 단계</strong>다.</p>
+  <p>이름 그대로다.<br>
+  건조식품에 물을 붓는 것(hydration).<br>
+  <strong>모양만 있는 HTML에 JS를 부어 움직이게 만드는 단계</strong>다.</p>
 
   <figure>
     <svg viewBox="0 0 700 250" role="img" aria-label="하이드레이션 3단계 — 서버 렌더, 브라우저 그림, 청크 도착 후 동작">
@@ -385,7 +393,8 @@ export default async function Page() {
       <text x="16" y="220" fill="var(--muted)" font-size="10.5">서버가 보낸 것은 HTML뿐이라 <tspan fill="var(--accent2)">「어느 요소에 어느 핸들러가 붙는지」</tspan>가 빠져 있다.</text>
       <text x="16" y="240" fill="var(--muted)" font-size="10.5">그 대응관계는 코드 안에만 있으므로, 브라우저가 같은 함수를 한 번 더 돌려 복원한다.</text>
     </svg>
-    <figcaption>2단계가 실제로 존재한다. <b>화면은 다 보이는데 버튼이 안 먹는 짧은 구간</b>이고, 청크가 클수록 길어진다.</figcaption>
+    <figcaption>2단계가 실제로 존재한다.<br>
+    <b>화면은 다 보이는데 버튼이 안 먹는 짧은 구간</b>이고, 청크가 클수록 길어진다.</figcaption>
   </figure>
 
   <h3>useState 가 이때 붙는 이유</h3>
@@ -402,7 +411,8 @@ export default async function Page() {
   </div>
 
   <div class="note warn">
-    <b>하이드레이션 불일치 — 여기서 제일 많이 터진다.</b> 서버가 그린 HTML과 브라우저가 다시 실행한 결과가 다르면 React가 경고를 뱉고 다시 그린다.
+    <b>하이드레이션 불일치 — 여기서 제일 많이 터진다.</b><br>
+    서버가 그린 HTML과 브라우저가 다시 실행한 결과가 다르면 React가 경고를 뱉고 다시 그린다.
     <pre><code>"use client"
 const [t] = useState(new Date().toLocaleTimeString())  // 서버 시각 ≠ 브라우저 시각
 const w   = window.innerWidth                          // 서버엔 window 가 없다 → 터짐</code></pre>
@@ -461,9 +471,14 @@ export default function Page() {
     <li>값을 담아둘 <strong>살아 있는 메모리</strong></li>
     <li>값이 바뀌면 <strong>다시 그릴 주체</strong></li>
   </ol>
-  <p>서버 컴포넌트는 한 번 돌고 응답을 보내면 끝이다. 함수도 변수도 사라진다. 그리고 HTTP는 응답을 보낸 뒤에 서버가 그 화면을 고칠 방법이 없다.</p>
+  <p>서버 컴포넌트는 한 번 돌고 응답을 보내면 끝이다.<br>
+  함수도 변수도 사라진다.<br>
+  그리고 HTTP는 응답을 보낸 뒤에 서버가 그 화면을 고칠 방법이 없다.</p>
   <pre><code>&lt;% int count = 0; %&gt;   &lt;%-- 버튼 누를 때마다 올라가는 카운터가 되나 --%&gt;</code></pre>
-  <p>안 된다. 응답이 끝나면 없어진다. 상태가 아니라 렌더 중 임시값이다. 그래서 JSP 화면의 상태는 전부 JS 쪽에 있었다.</p>
+  <p>안 된다.<br>
+  응답이 끝나면 없어진다.<br>
+  상태가 아니라 렌더 중 임시값이다.<br>
+  그래서 JSP 화면의 상태는 전부 JS 쪽에 있었다.</p>
   <pre><code>var gradeCd = "";   // ← 브라우저 메모리. 탭이 열려 있는 동안 살아 있다</code></pre>
 
   <h3>제약 셋이 같은 뿌리에서 나온다</h3>
@@ -479,7 +494,9 @@ export default function Page() {
   </div>
 
   <div class="note key">
-    <b>한 문장으로</b> — 코드가 <b>서버에만</b> 있으면 DB는 되고 이벤트·상태는 안 된다. 코드가 <b>브라우저에도</b> 가면 이벤트·상태는 되고 DB는 안 된다. 하이드레이션은 그 결과지 원인이 아니다.
+    <b>한 문장으로</b> — 코드가 <b>서버에만</b> 있으면 DB는 되고 이벤트·상태는 안 된다.<br>
+    코드가 <b>브라우저에도</b> 가면 이벤트·상태는 되고 DB는 안 된다.<br>
+    하이드레이션은 그 결과지 원인이 아니다.
   </div>
 
   <h3>그래서 실무에서는 섞는다</h3>
@@ -495,7 +512,8 @@ export default async function Page() {
     &lt;/div&gt;
   )
 }</code></pre>
-  <p>표는 밥, 버튼만 라면이다. <strong>둘 다 필요한 화면이라고 전체를 라면으로 만들 이유가 없다.</strong></p>
+  <p>표는 밥, 버튼만 라면이다.<br>
+  <strong>둘 다 필요한 화면이라고 전체를 라면으로 만들 이유가 없다.</strong></p>
 
   <div class="note">
     <b>예외 하나</b> — <code>&lt;form action={서버함수}&gt;</code> 는 서버 컴포넌트에서도 동작한다. 폼 제출이 브라우저 기본 동작이라 JS 없이도 되고, 함수를 보낼 필요가 없기 때문이다.
@@ -534,7 +552,8 @@ return(0,s.jsxs)("aside",{style:{width:t?"60px":"var(--sidebar-w)",background…
   <pre><code>app/page.tsx                      서버
  └ &lt;DatePick/&gt;   ← "use client"    클라이언트
       └ import { fmt } from "./util"   util.ts 도 자동으로 클라이언트행</code></pre>
-  <p>그래서 파일마다 붙이는 것이 아니라 <strong>상태·이벤트가 필요한 말단에만</strong> 붙이고 위쪽은 서버로 둔다. 페이지 최상단에 붙이면 서버 컴포넌트 이점이 통째로 사라진다.</p>
+  <p>그래서 파일마다 붙이는 것이 아니라 <strong>상태·이벤트가 필요한 말단에만</strong> 붙이고 위쪽은 서버로 둔다.<br>
+  페이지 최상단에 붙이면 서버 컴포넌트 이점이 통째로 사라진다.</p>
   <p>방향 규칙 하나 — <strong>서버가 클라이언트를 품는 것은 되고 반대는 안 된다.</strong> 다만 클라이언트 컴포넌트가 <code>children</code> 으로 서버 렌더 결과를 받아 자리에 꽂는 것은 된다.</p>
 </article>
 
@@ -546,7 +565,8 @@ return(0,s.jsxs)("aside",{style:{width:t?"60px":"var(--sidebar-w)",background…
   <p class="doc-lead">Next는 <strong>URL이 바뀐다.</strong> 안 바뀌는 것은 URL이 아니라 <strong>문서 전체 리로드</strong>다.</p>
 
   <h2>판정 질문 — 세 방식을 가르는 자리</h2>
-  <p>화면 이동 하나를 앞에 두고 두 질문을 던진다. 답 조합이 아래 셋 중 하나로 떨어진다.</p>
+  <p>화면 이동 하나를 앞에 두고 두 질문을 던진다.<br>
+  답 조합이 아래 셋 중 하나로 떨어진다.</p>
 
   <div class="table-wrap">
     <table>
@@ -609,7 +629,8 @@ return(0,s.jsxs)("aside",{style:{width:t?"60px":"var(--sidebar-w)",background…
       <text x="320" y="256" fill="var(--accent)" font-size="10.5">본문만 갈림 · 머리 유지</text>
       <text x="320" y="272" fill="var(--accent)" font-size="10.5">URL 바뀜 · 뒤로가기 됨</text>
     </svg>
-    <figcaption>2010년대 초 SPA가 가운데 방식이었다. <b>Next는 위쪽의 주소 체계를 유지하면서 가운데의 부드러움을 얻는다.</b></figcaption>
+    <figcaption>2010년대 초 SPA가 가운데 방식이었다.<br>
+    <b>Next는 위쪽의 주소 체계를 유지하면서 가운데의 부드러움을 얻는다.</b></figcaption>
   </figure>
 
   <div class="table-wrap">
@@ -626,7 +647,9 @@ return(0,s.jsxs)("aside",{style:{width:t?"60px":"var(--sidebar-w)",background…
   <h2>사내 시스템에 가운데 방식이 그대로 있다</h2>
   <pre><code>postData["searchDate"] = $("#searchDate").val().replace(/-/gi, '');
 fnAjaxCall("/biz/orderEventSelectList.do", postData, renderEventList);</code></pre>
-  <p>날짜를 바꿔 조회하면 표만 갈리고 URL은 그대로다. 그래서 조회 결과를 링크로 못 보내고, 뒤로가기를 누르면 조회 이전이 아니라 <strong>이전 화면으로 튀고</strong>, 새로고침하면 결과가 날아간다.</p>
+  <p>날짜를 바꿔 조회하면 표만 갈리고 URL은 그대로다.<br>
+  그래서 조회 결과를 링크로 못 보내고,<br>
+  뒤로가기를 누르면 조회 이전이 아니라 <strong>이전 화면으로 튀고</strong>, 새로고침하면 결과가 날아간다.</p>
   <p>반면 <code>orderList.do?tab=T02</code> 는 URL에 상태가 있어 전부 된다. <strong>한 시스템 안에 두 방식이 섞여 있는 것</strong>이고, Next는 이 구분 자체가 없다.</p>
 
   <div class="note">
@@ -639,7 +662,8 @@ fnAjaxCall("/biz/orderEventSelectList.do", postData, renderEventList);</code></p
 <article class="doc" id="d5" data-stage="구조">
   <p class="doc-kicker">구조</p>
   <h1>레이아웃 — 누가 누구를 감싸나</h1>
-  <p class="doc-lead">JSP include · Tiles · Sitemesh · Thymeleaf · Next 다섯 방식의 차이는 딱 두 가지다. <strong>누가 조립하나, 언제 조립하나.</strong></p>
+  <p class="doc-lead">JSP include · Tiles · Sitemesh · Thymeleaf · Next 다섯 방식의 차이는 딱 두 가지다.<br>
+  <strong>누가 조립하나, 언제 조립하나.</strong></p>
 
   <h2>판정 질문 — 두 개</h2>
   <p>레이아웃 방식 하나를 앞에 두고 묻는다.<br>
@@ -726,7 +750,8 @@ fnAjaxCall("/biz/orderEventSelectList.do", postData, renderEventList);</code></p
       <text x="372" y="284" fill="var(--accent)" font-size="10.5" font-weight="700">폴더 위치가 곧 definition</text>
       <text x="372" y="300" fill="var(--muted)" font-size="10.5">중첩이 공짜로 따라온다</text>
     </svg>
-    <figcaption>화살표 방향이 전부다. <b>페이지가 조각을 끌어오면 복붙이 늘고, 레이아웃이 페이지를 감싸면 한 곳만 고치면 된다.</b></figcaption>
+    <figcaption>화살표 방향이 전부다.<br>
+    <b>페이지가 조각을 끌어오면 복붙이 늘고, 레이아웃이 페이지를 감싸면 한 곳만 고치면 된다.</b></figcaption>
   </figure>
 
   <div class="table-wrap">
@@ -886,7 +911,10 @@ export default function EventTable({ rows }) {
   return &lt;table&gt;{rows.map(…)}&lt;/table&gt;
 }</code></pre>
   <div class="note warn">
-    <b>개인정보 SR과 직결되는 함정.</b> props로 넘긴 것은 화면에 안 그려도 <b>브라우저에 전부 간다.</b> row를 통째로 넘기고 이름만 찍으면 주민번호·연락처가 HTML 안에 실려 크롬 소스보기로 읽힌다. 서버에서 <b>필요한 컬럼만 골라</b> 넘겨야 한다.
+    <b>개인정보 SR과 직결되는 함정.</b><br>
+    props로 넘긴 것은 화면에 안 그려도 <b>브라우저에 전부 간다.</b><br>
+    row를 통째로 넘기고 이름만 찍으면 주민번호·연락처가 HTML 안에 실려 크롬 소스보기로 읽힌다.<br>
+    서버에서 <b>필요한 컬럼만 골라</b> 넘겨야 한다.
   </div>
 
   <h2>② route.ts + fetch — 기존 AJAX 방식 그대로</h2>
@@ -925,7 +953,9 @@ const rows = await getOrderEvent(date)   // 함수 호출처럼 생겼지만 실
 
   <h2>판단 기준 한 줄</h2>
   <div class="note key">
-    <b>「이 값이 크롬 개발자도구에 노출돼도 되나」</b> — 안 되면 서버에 남기고 화면에 필요한 것만 골라 내려보낸다. 클라이언트 컴포넌트는 <b>받은 것을 그리고 이벤트를 처리하는 자리</b>지 데이터를 캐 오는 자리가 아니다.
+    <b>「이 값이 크롬 개발자도구에 노출돼도 되나」</b> —<br>
+    안 되면 서버에 남기고 화면에 필요한 것만 골라 내려보낸다.<br>
+    클라이언트 컴포넌트는 <b>받은 것을 그리고 이벤트를 처리하는 자리</b>지 데이터를 캐 오는 자리가 아니다.
   </div>
 
   <h2>ProjectShop 은 무엇을 골랐나</h2>
@@ -955,7 +985,8 @@ const rows = await getOrderEvent(date)   // 함수 호출처럼 생겼지만 실
 <article class="doc" id="d7" data-stage="빌드">
   <p class="doc-kicker">빌드</p>
   <h1>번들 — 어디에 어떤 형태로 놓이나</h1>
-  <p class="doc-lead">두 곳을 구분해야 한다. <strong>빌드 산출물이 놓이는 폴더</strong>(서버)와 <strong>브라우저가 받아 두는 곳</strong>(클라이언트)은 다른 것이다.</p>
+  <p class="doc-lead">두 곳을 구분해야 한다.<br>
+  <strong>빌드 산출물이 놓이는 폴더</strong>(서버)와 <strong>브라우저가 받아 두는 곳</strong>(클라이언트)은 다른 것이다.</p>
 
   <h2>판정 질문 — 이 코드가 어디에 놓이나</h2>
   <p>빌드 결과물 하나를 앞에 두고 묻는다. 두 질문이 배타적이지 않다 —<br>
@@ -1047,11 +1078,15 @@ const rows = await getOrderEvent(date)   // 함수 호출처럼 생겼지만 실
   <p>브라우저는 이것을 <code>/_next/static/chunks/app/layout-e080afc8f72bff8f.js</code> 로 받아간다. <code>&lt;script src="/js/common.js"&gt;</code> 와 완전히 같은 경로다.</p>
 
   <h2>클라이언트 쪽은 폴더가 아니다</h2>
-  <p>사용자 PC의 어떤 프로젝트 폴더에 저장되지 않는다. 그냥 일반 정적 리소스라 브라우저 HTTP 캐시로 들어간다. 크롬·윈도우 기준 물리 위치는 대략 이렇다.</p>
+  <p>사용자 PC의 어떤 프로젝트 폴더에 저장되지 않는다.<br>
+  그냥 일반 정적 리소스라 브라우저 HTTP 캐시로 들어간다.<br>
+  크롬·윈도우 기준 물리 위치는 대략 이렇다.</p>
   <pre><code>%LOCALAPPDATA%\Google\Chrome\User Data\Default\Cache\Cache_Data\</code></pre>
   <p>열어 봐도 <code>layout-xxx.js</code> 같은 파일은 없다. <strong>여러 응답이 뭉쳐진 불투명 바이너리</strong>이고 <code>Ctrl+Shift+Del</code> 로 날아간다. 개발자가 관리하는 대상이 아니고, 볼 때는 개발자도구 Network·Sources 탭에서 본다.</p>
   <div class="note">
-    <b>확인하는 법</b> — 크롤러로 사이트를 긁어 보면 브라우저가 실제로 받아간 JS·CSS가 그대로 파일로 떨어진다. Next 사이트를 긁으면 저 청크들이 쌓인다.
+    <b>확인하는 법</b> —<br>
+    크롤러로 사이트를 긁어 보면 브라우저가 실제로 받아간 JS·CSS가 그대로 파일로 떨어진다.<br>
+    Next 사이트를 긁으면 저 청크들이 쌓인다.
   </div>
 
   <h2>파일명 해시가 하는 일</h2>
@@ -1064,7 +1099,8 @@ const rows = await getOrderEvent(date)   // 함수 호출처럼 생겼지만 실
 <article class="doc" id="d8" data-stage="빌드">
   <p class="doc-kicker">빌드</p>
   <h1>직접 확인하는 법</h1>
-  <p class="doc-lead">개념을 외우는 것보다 <strong>내 프로젝트가 지금 어느 쪽인지 눈으로 보는 것</strong>이 빠르다. 명령 네 개면 세 축이 전부 보인다.</p>
+  <p class="doc-lead">개념을 외우는 것보다 <strong>내 프로젝트가 지금 어느 쪽인지 눈으로 보는 것</strong>이 빠르다.<br>
+  명령 네 개면 세 축이 전부 보인다.</p>
 
   <figure>
     <svg viewBox="0 0 700 200" role="img" aria-label="세 축을 확인하는 명령어 대응">
@@ -1104,7 +1140,9 @@ _not-found.html  about.html  ai-battle.html  board.html  index.html</code></pre>
   <pre><code>layout.tsx → &lt;SiteHeader/&gt; → apiSessionOptional() → cookies() 읽음</code></pre>
   <p><code>src/lib/api-session.ts</code> 가 <code>next/headers</code> 의 <code>cookies()</code> 를 쓰고 <code>cache: "no-store"</code> 도 쓴다. <strong>쿠키를 읽는 순간 빌드 때 못 만든다.</strong> 레이아웃에 들어갔으니 약관 페이지처럼 로그인과 무관한 화면까지 전부 SSR이 됐다.</p>
   <div class="note">
-    지금 규모에서는 문제가 아니다. 고치려면 머리의 로그인 표시 부분만 떼어 따로 처리하는 식이 된다. <b>알고만 있으면 되는 항목이다.</b>
+    지금 규모에서는 문제가 아니다.<br>
+    고치려면 머리의 로그인 표시 부분만 떼어 따로 처리하는 식이 된다.<br>
+    <b>알고만 있으면 되는 항목이다.</b>
   </div>
 
   <h2>축 2 — 무엇이 브라우저로 갔나</h2>
@@ -1127,7 +1165,8 @@ $ grep -rl "EXPERIMENT_04" .next/server/app/*.html
       </tbody>
     </table>
   </div>
-  <p>둘 다 지금은 문제 없다. 다만 <strong>layout에 무엇을 넣는지가 전 화면 고정비용</strong>이라는 것을 서로 반대 방향으로 보여 준다.</p>
+  <p>둘 다 지금은 문제 없다.<br>
+  다만 <strong>layout에 무엇을 넣는지가 전 화면 고정비용</strong>이라는 것을 서로 반대 방향으로 보여 준다.</p>
 
   <h2>판단 순서</h2>
   <pre><code>1. 이 화면이 사용자마다 다른가?
@@ -1141,7 +1180,8 @@ $ grep -rl "EXPERIMENT_04" .next/server/app/*.html
 3. 화면 이동은?
      &lt;Link&gt; 쓰면 끝</code></pre>
   <div class="note key">
-    <b>둘 다 「아무것도 안 하는 쪽」이 기본값이고 더 좋은 쪽이다.</b> 필요할 때만 손대는 구조라, 헷갈리면 그냥 두면 된다.
+    <b>둘 다 「아무것도 안 하는 쪽」이 기본값이고 더 좋은 쪽이다.</b><br>
+    필요할 때만 손대는 구조라, 헷갈리면 그냥 두면 된다.
   </div>
 
   <h2>한 장 요약</h2>
