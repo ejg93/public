@@ -5,7 +5,7 @@ import { isDeployNoise, isGenericResourceError } from './routes'
 // 그래서 여기서만 잡히는 것이 있다 — 2026-09-18 에 selfstudy 노트가 없는 엘리먼트를 잡으려다
 // 매 이동마다 예외를 던지고 있었고, 화면은 멀쩡해 보였다.
 const PAGES = [
-  '/study/ai-workflow-notes',
+  '/study/ai-native-notes',
   '/study/architecture-notes',
   '/study/nextjs-notes',
   '/study/projectshop-notes',

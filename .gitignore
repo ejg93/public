@@ -46,3 +46,6 @@ Thumbs.db
 .claude/settings.local.json*
 
 .vercel
+
+# EnterWorktree 가 만드는 작업트리. 미추적으로 두면 verify 도장이 다른 세션 작업마다 깨진다
+/.claude/worktrees/
