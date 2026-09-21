@@ -10,8 +10,8 @@
 # 파일 전체를 막으면 그 파일을 아예 못 고친다.
 #
 # 대상: md(CLAUDE·README·doc), frontend/app·components 의 ts·tsx(화면 문구), toolbox 의 html·md.
-# public/notes·game·study·docrules 는 뺀다 — 요청받은 파일만 고치는 구역이라 여기서 규칙을 안 건다.
-# md 는 백틱·「」 안을 걷어낸다(인용). tsx·html 은 문자열이 곧 화면 문구라 안 걷는다.
+# public/notes·game·docrules 는 뺀다 — 요청받은 파일만 고치는 구역이라 여기서 규칙을 안 건다. study 는 2026-09-22 부터 든다.
+# md 와 study 는 백틱·「」 안을 걷어낸다(인용). 그 밖의 tsx·html 은 문자열이 곧 화면 문구라 안 걷는다.
 #
 # tsx·html 은 줄바꿈 규칙(7번)도 본다 — scripts/linebreak-lint.js 가 고친 줄만 센다.
 set -uo pipefail
@@ -22,8 +22,8 @@ PAT='(습니다|합니다|하세요|입니다)'
 in_scope() {
   case "$1" in
     */node_modules/*|*/.next/*|doc/design-standards/*|frontend/public/toolbox/db_docs/*) return 1 ;;
-    frontend/public/notes/*|frontend/public/game/*|frontend/public/study/*|frontend/public/docrules/*) return 1 ;;
-    *.md|frontend/app/*.ts|frontend/app/*.tsx|frontend/components/*.tsx|frontend/public/toolbox/*.html) return 0 ;;
+    frontend/public/notes/*|frontend/public/game/*|frontend/public/docrules/*) return 1 ;;
+    *.md|frontend/app/*.ts|frontend/app/*.tsx|frontend/components/*.tsx|frontend/public/toolbox/*.html|frontend/public/study/*.html) return 0 ;;
   esac
   return 1
 }
@@ -38,10 +38,11 @@ quotes_ui() {
   return 1
 }
 
-# md 만 인용을 걷어낸다. `sed 's/「[^」]*」//'` 는 멀티바이트를 바이트로 갈라서 조용히 안 먹는다 — perl 을 쓴다.
+# md 와 학습 노트(study)는 인용을 걷어낸다 — 노트는 강의 제목을 「」로 옮긴 자리가 있다.
+# `sed 's/「[^」]*」//'` 는 멀티바이트를 바이트로 갈라서 조용히 안 먹는다 — perl 을 쓴다.
 strip() {
   case "$1" in
-    *.md) perl -CSD -pe 's/`[^`]*`//g; s/\x{300C}.*?\x{300D}//g' ;;
+    *.md|frontend/public/study/*.html) perl -CSD -pe 's/`[^`]*`//g; s/\x{300C}.*?\x{300D}//g' ;;
     *) cat ;;
   esac
 }

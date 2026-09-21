@@ -47,16 +47,22 @@ const out = [];
 // html 의 <script>·<style> 안은 코드, <!-- --> 안은 주석이다. 규칙 7 이 코드 블록을 빼므로 안 잰다.
 // 둘을 따로 세는 이유: JS 안의 `i-->0` 같은 `-->` 가 주석 닫힘으로 읽히면 스크립트 상태가 풀린다.
 // script 와 style 도 따로다: JS 문자열 안의 `'<style>…</style>'`(srcdoc) 이 script 상태를 풀면 안 된다.
-let inScript = false, inStyle = false, inComment = false;
+// <svg> 안의 <text> 는 <br> 이 안 먹는 자리라 규칙 7 의 대상이 아니다. 도해 글자는 좌표로 놓는다.
+// <pre> 안은 여러 줄짜리 코드·도해라 첫 줄만이 아니라 닫힐 때까지 뺀다.
+let inScript = false, inStyle = false, inComment = false, inSvg = false, inPre = false;
 lines.forEach((rawLine, i) => {
   const n = i + 1;
   if (!inStyle && /<script[\s>]/i.test(rawLine)) inScript = true;
   if (!inScript && /<style[\s>]/i.test(rawLine)) inStyle = true;
   if (!inScript && !inStyle && /<!--/.test(rawLine)) inComment = true;
-  const wasCode = inScript || inStyle || inComment;
+  if (!inScript && !inStyle && /<svg[\s>]/i.test(rawLine)) inSvg = true;
+  if (!inScript && !inStyle && /<pre[\s>]/i.test(rawLine)) inPre = true;
+  const wasCode = inScript || inStyle || inComment || inSvg || inPre;
   if (inScript && /<\/script>/i.test(rawLine)) inScript = false;
   if (inStyle && /<\/style>/i.test(rawLine)) inStyle = false;
   if (!inScript && !inStyle && /-->/.test(rawLine)) inComment = false;
+  if (inSvg && /<\/svg>/i.test(rawLine)) inSvg = false;
+  if (inPre && /<\/pre>/i.test(rawLine)) inPre = false;
   if (only && !only.has(n)) return;
   const raw = rawLine.replace(/\son\w+=("[^"]*"|'[^']*')/g, "");   // onclick="…" 안은 코드다
   if (wasCode || !hangul.test(raw) || isComment(raw) || isInlineHint(raw) || /title=/.test(raw) || /<(pre|code)[\s>]/.test(raw)) return;
