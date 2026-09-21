@@ -19,10 +19,12 @@
 <article class="doc" id="d1" data-stage="개요">
   <p class="doc-kicker">개요</p>
   <h1>한눈에 — 무엇을 만들고 있나</h1>
-  <p class="doc-lead">판매자가 여럿인 쇼핑몰. 공부용이면서 <strong>실제 시스템이 가진 확장 형태</strong>로 만드는 것이 목표다.</p>
+  <p class="doc-lead">판매자가 여럿인 쇼핑몰.<br>
+  공부용이면서 <strong>실제 시스템이 가진 확장 형태</strong>로 만드는 것이 목표다.</p>
 
   <h2>왜 「멀티 셀러」가 핵심인가</h2>
-  <p>판매자가 하나면 안 생기는 문제가 셋 생긴다. 이 프로젝트 설계의 대부분이 여기서 나온다.</p>
+  <p>판매자가 하나면 안 생기는 문제가 셋 생긴다.<br>
+  이 프로젝트 설계의 대부분이 여기서 나온다.</p>
   <div class="table-wrap"><table>
     <thead><tr><th>판매자 하나면</th><th>여럿이면</th><th>그래서 만든 것</th></tr></thead>
     <tbody>
@@ -51,7 +53,8 @@
         <text x="226" y="145" font-size="12" fill="var(--muted)">2,736</text>
       </g>
     </svg>
-    <figcaption><b>테스트가 본 코드보다 많다.</b> 이 비율이 우연이 아니라는 것은 「테스트 층」 절에서 다룬다.</figcaption>
+    <figcaption><b>테스트가 본 코드보다 많다.</b><br>
+    이 비율이 우연이 아니라는 것은 「테스트 층」 절에서 다룬다.</figcaption>
   </figure>
 
   <h2>지금 어디까지 왔나</h2>
@@ -67,8 +70,9 @@
     </tbody>
   </table></div>
 
-  <div class="note key"><b>이 저장소의 특이한 점</b> — 주간 토큰이 남을 때 <b>청크 하나씩</b> 굴린다.
-  세션이 중간에 끊기는 것을 전제로 만들어서, 진행 상태가 전부 파일에 있고 대화 기억에 의존하지 않는다.
+  <div class="note key"><b>이 저장소의 특이한 점</b> — 주간 토큰이 남을 때 <b>청크 하나씩</b> 굴린다.<br>
+  세션이 중간에 끊기는 것을 전제로 만들어서,<br>
+  진행 상태가 전부 파일에 있고 대화 기억에 의존하지 않는다.<br>
   그래서 <b>문서가 코드보다 먼저</b> 나온다.</div>
 </article>
 
@@ -79,7 +83,8 @@
   <p class="doc-lead">요청 하나가 어디를 지나는가. 각 층이 <strong>무엇을 알고 무엇을 모르는지</strong>가 규칙이다.</p>
 
   <h2>판정 질문 — 새로 짠 코드를 어느 층에 놓나</h2>
-  <p>메서드 하나를 앞에 두고 위에서부터 묻는다. 처음 「예」가 나오는 줄이 그 코드의 자리다.</p>
+  <p>메서드 하나를 앞에 두고 위에서부터 묻는다.<br>
+  처음 「예」가 나오는 줄이 그 코드의 자리다.</p>
   <div class="table-wrap"><table>
     <thead><tr><th>층</th><th>질문</th><th>예 → 놓는 이유</th></tr></thead>
     <tbody>
@@ -170,7 +175,8 @@
   </table></div>
 
   <div class="note"><b>예외가 하나 있고 문서에 적혀 있다.</b> 헬스체크 컨트롤러는 <code>JdbcClient</code> 를
-  직접 쓴다 — DB 에 질의가 <b>실제로 나가는지</b>가 그 엔드포인트의 목적이라, 서비스를 거치면 검사할 것이 사라진다.</div>
+  직접 쓴다 —<br>
+  DB 에 질의가 <b>실제로 나가는지</b>가 그 엔드포인트의 목적이라, 서비스를 거치면 검사할 것이 사라진다.</div>
 
   <h2>프론트의 두 입구</h2>
   <div class="table-wrap"><table>
@@ -183,7 +189,7 @@
   <p>인증이 필요한 화면도 <strong>서버 컴포넌트로 그린다</strong>. 「내 주문」은 캐시가 안 걸려서,
   클라이언트에서 부르면 들어갈 때마다 빈 뼈대를 먼저 보게 된다.</p>
   <div class="note warn"><b>프론트가 세션을 해석하는 것이 아니다.</b> 서버 메모리 세션이라
-  쿠키에 든 것은 뜻 없는 식별자고, 프록시가 이미 그 값을 Next 서버로 통과시킨다.
+  쿠키에 든 것은 뜻 없는 식별자고, 프록시가 이미 그 값을 Next 서버로 통과시킨다.<br>
   바뀌는 것은 <b>운반을 프레임워크가 하느냐 우리 코드가 하느냐</b>뿐이라 입구 하나에 가둔다.</div>
   <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다.<br>
     기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
@@ -265,7 +271,8 @@
       <text x="398" y="206" font-size="10.5" fill="var(--danger)">버전이 갈리면 테스트가 통과해도</text>
       <text x="398" y="221" font-size="10.5" fill="var(--danger)">운영에서 깨진다</text>
     </svg>
-    <figcaption>테스트가 <b>손으로 띄운 DB 에 안 붙는다.</b> 붙이면 Docker 를 끈 날 전부 실패하고, 앞 테스트가 남긴 데이터에 결과가 좌우된다.</figcaption>
+    <figcaption>테스트가 <b>손으로 띄운 DB 에 안 붙는다.</b><br>
+    붙이면 Docker 를 끈 날 전부 실패하고, 앞 테스트가 남긴 데이터에 결과가 좌우된다.</figcaption>
   </figure>
 
   <h2>왜 그렇게 골랐나</h2>
@@ -273,11 +280,16 @@
     <thead><tr><th>고른 것</th><th>안 고른 것</th><th>이유</th></tr></thead>
     <tbody>
       <tr><td><strong><code>JdbcClient</code> + SQL 직접</strong></td><td>JPA 엔티티</td><td>무엇이 도는지가 코드에 그대로 보인다. 스타터는 들어 있는데 <strong>엔티티는 0개</strong>다</td></tr>
-      <tr><td><strong>서버 메모리 세션</strong></td><td>JWT · JDBC 세션</td><td>강제 로그아웃이 필요했다. 서버가 1대라 아직 이걸로 된다 — <strong>2대가 되면 다시 본다</strong></td></tr>
-      <tr><td><strong>Caffeine</strong>(권한 규칙)</td><td>Redis 로 통일</td><td>프로세스 안에서 60초만 살면 되는 값이다. 네트워크 왕복이 손해</td></tr>
-      <tr><td><strong>Redis</strong>(로그인 실패)</td><td>Caffeine 으로 통일</td><td>재기동을 넘겨야 하는 값이다. <strong>다만 Redis 가 죽으면 프로세스 로컬로 강등해서 계속 센다</strong></td></tr>
-      <tr><td><strong>Flyway</strong></td><td>스키마 자동 생성</td><td>스키마가 코드에서 파생되면 <strong>제약을 손으로 못 쓴다</strong> — 이 프로젝트는 제약이 방벽이다</td></tr>
-      <tr><td><strong>Next 서버 컴포넌트</strong></td><td>SPA + 클라이언트 렌더</td><td>첫 그림이 비지 않는다. 공개 목록은 검색엔진도 읽는다</td></tr>
+      <tr><td><strong>서버 메모리 세션</strong></td><td>JWT · JDBC 세션</td><td>강제 로그아웃이 필요했다.<br>
+      서버가 1대라 아직 이걸로 된다 — <strong>2대가 되면 다시 본다</strong></td></tr>
+      <tr><td><strong>Caffeine</strong>(권한 규칙)</td><td>Redis 로 통일</td><td>프로세스 안에서 60초만 살면 되는 값이다.<br>
+      네트워크 왕복이 손해</td></tr>
+      <tr><td><strong>Redis</strong>(로그인 실패)</td><td>Caffeine 으로 통일</td><td>재기동을 넘겨야 하는 값이다.<br>
+      <strong>다만 Redis 가 죽으면 프로세스 로컬로 강등해서 계속 센다</strong></td></tr>
+      <tr><td><strong>Flyway</strong></td><td>스키마 자동 생성</td><td>스키마가 코드에서 파생되면 <strong>제약을 손으로 못 쓴다</strong> —<br>
+      이 프로젝트는 제약이 방벽이다</td></tr>
+      <tr><td><strong>Next 서버 컴포넌트</strong></td><td>SPA + 클라이언트 렌더</td><td>첫 그림이 비지 않는다.<br>
+      공개 목록은 검색엔진도 읽는다</td></tr>
     </tbody>
   </table></div>
 
@@ -289,13 +301,15 @@
     <thead><tr><th></th><th>대가</th></tr></thead>
     <tbody>
       <tr><td>고친 뒤에</td><td><code>docker compose down -v</code> 로 <strong>DB 를 다시 만든다</strong>. Flyway 체크섬이 깨져서 다른 방법이 없다</td></tr>
-      <tr><td>이 방식을 못 쓰는 순간</td><td><strong>배포가 한 번이라도 나가면 끝</strong>이다. 남이 이미 돌린 마이그레이션은 되돌릴 수 없다</td></tr>
+      <tr><td>이 방식을 못 쓰는 순간</td><td><strong>배포가 한 번이라도 나가면 끝</strong>이다.<br>
+      남이 이미 돌린 마이그레이션은 되돌릴 수 없다</td></tr>
       <tr><td>그래서 생긴 위험</td><td>제약 한 줄이 그러다 <strong>조용히 빠질 수 있다</strong> → 점검 B 가 그것을 확인하는 축이다</td></tr>
     </tbody>
   </table></div>
 
   <h2>검증 명령 — 「돌려 봤다」의 정의</h2>
-  <p>문서에 명령과 <strong>통과 기준</strong>을 같이 적어 둔다. 안 적으면 「빌드 통과」가 사람마다 다른 뜻이 된다.</p>
+  <p>문서에 명령과 <strong>통과 기준</strong>을 같이 적어 둔다.<br>
+  안 적으면 「빌드 통과」가 사람마다 다른 뜻이 된다.</p>
   <div class="table-wrap"><table>
     <thead><tr><th>구역</th><th>명령</th><th>통과 기준</th></tr></thead>
     <tbody>
@@ -309,7 +323,8 @@
       <tr><td>프록시</td><td><code>npm run dev</code> 후 <code>:3000/api/health</code></td><td>8080 을 직접 부른 것과 <strong>같은 JSON</strong>. 다르면 rewrite 가 안 걸린 것</td></tr>
     </tbody>
   </table></div>
-  <div class="note warn"><b>돌리지 못했으면 못 돌렸다고 밝힌다.</b> 안 돌려보고 「동작한다」·「빌드 통과」라고 쓰지 않는다 —
+  <div class="note warn"><b>돌리지 못했으면 못 돌렸다고 밝힌다.</b><br>
+  안 돌려보고 「동작한다」·「빌드 통과」라고 쓰지 않는다 —
   이것도 저장소 규칙으로 적혀 있다.</div>
 
   <h2>의존성 라이선스</h2>
@@ -322,7 +337,7 @@
       <tr><td>MIT</td><td>Testcontainers · Next.js · React · Tailwind CSS</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>「판단한 적 없는 것」과 「판단해서 괜찮은 것」은 다르다.</b>
+  <div class="note"><b>「판단한 적 없는 것」과 「판단해서 괜찮은 것」은 다르다.</b><br>
   위 표가 그 판단을 기록한 것이다 — 로컬 전용이라 지금 위험은 없지만,
   <b>공개하기로 하면 인용 자료의 파생물 조항부터 다시 본다.</b></div>
   <div class="note"><b>근거 ADR</b><br>
@@ -335,7 +350,8 @@
 <article class="doc" id="d3" data-stage="설계 기준">
   <p class="doc-kicker">설계 기준</p>
   <h1>법이 어떻게 코드가 되는가</h1>
-  <p class="doc-lead">「법령 얘기」가 실제로 뜻하는 것. 조문을 옮겨 적는 게 아니라 <strong>어길 방법을 없애는 것</strong>이다.</p>
+  <p class="doc-lead">「법령 얘기」가 실제로 뜻하는 것.<br>
+  조문을 옮겨 적는 게 아니라 <strong>어길 방법을 없애는 것</strong>이다.</p>
 
   <div class="note warn"><b>문제는 이것 하나다.</b> 법은 어겨도 컴파일이 통과하고 테스트도 초록이다.
   <b>사람이 보는 것 말고 걸릴 자리가 없다.</b><br>
@@ -374,7 +390,8 @@
 
       <text x="0" y="256" font-size="10.5" fill="var(--muted)">못 내린 것만 문서에 남긴다 — 그리고 「왜 못 내렸는지」를 같이 적는다</text>
     </svg>
-    <figcaption>이 사다리가 이 프로젝트에서 <b>법·표준·규약을 다루는 공통 방법</b>이다. 법에만 쓰는 게 아니다.</figcaption>
+    <figcaption>이 사다리가 이 프로젝트에서 <b>법·표준·규약을 다루는 공통 방법</b>이다.<br>
+    법에만 쓰는 게 아니다.</figcaption>
   </figure>
 
   <h2>실제로 내려간 예 셋</h2>
@@ -411,7 +428,8 @@
   <b>못 내리는 것과 안 내린 것은 다르다.</b></div>
 
   <h2>대장 — 검사할 수 있는 이름을 적어 둔다</h2>
-  <p>요건마다 제약명·클래스명·테스트명을 적는다. 산문으로 「상품 속성에 걸린다」라고 쓰면
+  <p>요건마다 제약명·클래스명·테스트명을 적는다.<br>
+  산문으로 「상품 속성에 걸린다」라고 쓰면
   <strong>「그게 아직 거기 있나」를 물어볼 대상이 없다.</strong></p>
   <div class="table-wrap"><table>
     <thead><tr><th>R4 청약철회 제한 사유</th><th>종류</th></tr></thead>
@@ -445,7 +463,8 @@
     <figcaption>그래서 점검 방향이 반대다 — 법은 <b>요건표에서 코드로 내려가며</b> 훑는다.</figcaption>
   </figure>
   <div class="note"><b>실제로 걸렸다.</b> 셀러 신원 표시(제10조·제13조)가 코드에 흔적이 0이었다.
-  DB 컬럼은 다 있는데 내리는 경로가 없었다. 요건표를 읽고 <b>「이걸 누가 채웠나」</b>를 물어야 나왔다.</div>
+  DB 컬럼은 다 있는데 내리는 경로가 없었다.<br>
+  요건표를 읽고 <b>「이걸 누가 채웠나」</b>를 물어야 나왔다.</div>
   <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0005-doc-and-compliance-axis.md" target="_blank" rel="noopener">0005 문서와 법 요건을 청크로 세운다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0007-compliance-design-choices.md" target="_blank" rel="noopener">0007 법 요건이 부딪치는 자리의 설계를 정한다</a>
@@ -456,7 +475,8 @@
 <article class="doc" id="d4" data-stage="설계 기준">
   <p class="doc-kicker">설계 기준</p>
   <h1>결정을 무엇이 정하는가</h1>
-  <p class="doc-lead">규칙이 서로 부딪힐 때, 그리고 할 일이 여럿일 때 무엇을 먼저 하나. <strong>축이 셋이고 섞으면 안 된다.</strong></p>
+  <p class="doc-lead">규칙이 서로 부딪힐 때, 그리고 할 일이 여럿일 때 무엇을 먼저 하나.<br>
+  <strong>축이 셋이고 섞으면 안 된다.</strong></p>
   <div class="note key"><b>축 셋의 일반론</b>은 학습 노트 <a href="/study/ai-native-notes#s4-13">LLM · AI-Native 「두 축 — 무엇을 만드나와 어떻게 만드나」</a>에 있다.<br>
     여기는 이 제품에서 그 축이 실제로 어떻게 적용됐나만 남긴다.</div>
 
@@ -496,7 +516,7 @@
   <b>취향 문제가 아니라 근거를 잃은 것</b>이라 15자로 올렸다.</div>
 
   <h3>플랫폼 사실은 이 표에 안 들어온다</h3>
-  <p>「Postgres 가 마이크로초 아래를 올린다」 같은 것은 법도 표준도 규약도 아니다.
+  <p>「Postgres 가 마이크로초 아래를 올린다」 같은 것은 법도 표준도 규약도 아니다.<br>
   순위표에 자리가 없는 이유는 <strong>어길 수가 없어서</strong>다 — 어기는 게 아니라 <strong>모르면 틀리는 것</strong>이다.</p>
   <div class="table-wrap"><table>
     <thead><tr><th></th><th>출처 넷</th><th>플랫폼 사실</th></tr></thead>
@@ -507,7 +527,8 @@
   </table></div>
 
   <h2>축 2 — 어디에 걸어야 실제로 막히나</h2>
-  <p>앞 절의 사다리가 이 축이다. <strong>출처가 위일수록 반드시 지키고, 지키는 자리는 가능한 한 아래로 내린다.</strong></p>
+  <p>앞 절의 사다리가 이 축이다.<br>
+  <strong>출처가 위일수록 반드시 지키고, 지키는 자리는 가능한 한 아래로 내린다.</strong></p>
   <figure>
     <svg viewBox="0 0 700 118" role="img" aria-label="법 조문이 문서를 거쳐 DB 제약으로 내려간다">
       <defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
@@ -536,13 +557,15 @@
   <h2>축 3 — 무엇을 먼저 하나</h2>
   <div class="note warn"><b>흔한 착각.</b> 축 1 을 순서로 쓰는 것. 그건 「부딪히면 무엇이 이기나」지
   「무엇을 먼저 고치나」가 아니다.<br>
-  <b>「법부터 고치자」는 실행이 안 된다</b> — 남은 법 요건 대부분이 화면을 기다리고 있어서 <b>지금 칠 수가 없다.</b></div>
+  <b>「법부터 고치자」는 실행이 안 된다</b> —<br>
+  남은 법 요건 대부분이 화면을 기다리고 있어서 <b>지금 칠 수가 없다.</b></div>
   <p>순서는 <strong>「나중에 하면 비싸지나」</strong>로 정한다.</p>
   <div class="table-wrap"><table>
     <thead><tr><th>순위</th><th>무엇</th><th>왜</th></tr></thead>
     <tbody>
       <tr><td><strong>1</strong></td><td>지금 깨져 있는 것</td><td>빨간 테스트는 <strong>다른 모든 검증의 신호를 가린다</strong></td></tr>
-      <tr><td><strong>2</strong></td><td>쓰는 곳이 늘면 비싸지는 것</td><td>응답 계약 · 스키마 · 화면 규칙. <strong>소비자 수에 비례해 값이 오른다</strong></td></tr>
+      <tr><td><strong>2</strong></td><td>쓰는 곳이 늘면 비싸지는 것</td><td>응답 계약 · 스키마 · 화면 규칙.<br>
+      <strong>소비자 수에 비례해 값이 오른다</strong></td></tr>
       <tr><td><strong>3</strong></td><td>결정이 막고 있는 것</td><td>먼저 물어 두면 나머지가 안 멈춘다</td></tr>
       <tr><td>4</td><td>나머지</td><td>지금 해도 나중에 해도 값이 같다</td></tr>
     </tbody>
@@ -551,9 +574,10 @@
   화면이 그 필드를 쓰기 전에는 백엔드 한 곳이고, 쓰기 시작하면 화면까지 같이 고친다.</p>
 
   <h2>규약과 다르게 짜야 하면</h2>
-  <div class="note key"><b>코드를 먼저 바꾸지 않는다. 문서를 고친다.</b>
+  <div class="note key"><b>코드를 먼저 바꾸지 않는다. 문서를 고친다.</b><br>
   문서에 없는 방식이 코드에 먼저 들어가면 다음 사람이 그것을 <b>관례로 본다.</b></div>
-  <p>그리고 지금 어긋나 있는 것은 규약 문서에 <strong>표로</strong> 적혀 있다 — 무엇이 어긋났고 어느 작업이 치울지가 같이 있다.
+  <p>그리고 지금 어긋나 있는 것은 규약 문서에 <strong>표로</strong> 적혀 있다 —<br>
+  무엇이 어긋났고 어느 작업이 치울지가 같이 있다.
   「나중에 본다」는 처분이 아니라는 게 이 저장소의 규칙이다.</p>
   <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0008-document-baseline.md" target="_blank" rel="noopener">0008 기준 문서를 청크의 선행으로 세운다</a> ·<br>
@@ -639,7 +663,7 @@
       <tr><td><strong>상태</strong></td><td>같은 사람도 <strong>지금 상태</strong>에 따라 갈린다</td><td>셀러가 배송완료를 되돌려 <strong>청약철회 기산점을 조작</strong>한다</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>마지막 축이 특이하다.</b> 역할이 아니라 <b>시간·상태가 권한을 깎는</b> 사례다.
+  <div class="note"><b>마지막 축이 특이하다.</b> 역할이 아니라 <b>시간·상태가 권한을 깎는</b> 사례다.<br>
   새 조건이 올 때마다 「이건 권한 축인가 도메인 규칙인가」를 먼저 가르고, 축으로 올리면
   캐시·권한 목록 API·매트릭스·판정 결과 모양 <b>넷을 같이 손봐야</b> 한다.</div>
 
@@ -647,14 +671,16 @@
   <div class="table-wrap"><table>
     <thead><tr><th></th><th>얻는 것</th><th>대가</th></tr></thead>
     <tbody>
-      <tr><td>규칙을 표에</td><td>관리자 화면이 행을 넣고 빼면 권한이 바뀐다. <strong>배포가 필요 없다</strong></td><td>판정 엔진이 권한 <strong>이름을 몰라야</strong> 성립한다 — 규칙을 그대로 읽어 비교만 한다</td></tr>
+      <tr><td>규칙을 표에</td><td>관리자 화면이 행을 넣고 빼면 권한이 바뀐다.<br>
+      <strong>배포가 필요 없다</strong></td><td>판정 엔진이 권한 <strong>이름을 몰라야</strong> 성립한다 — 규칙을 그대로 읽어 비교만 한다</td></tr>
       <tr><td>규칙을 코드에</td><td>컴파일러가 오타를 잡는다</td><td>권한 하나 늘릴 때마다 배포</td></tr>
     </tbody>
   </table></div>
 
   <h2>왜 진입점을 갈랐나</h2>
   <div class="note warn"><b>화면이 「이 버튼 그려도 되나」를 물어보는 것과 침입 시도가
-  감사 기록에서 같은 모양이 된다.</b> 주문 상세 한 번에 거부가 넷씩 쌓이는데 감사는 3년 보존이다.
+  감사 기록에서 같은 모양이 된다.</b><br>
+  주문 상세 한 번에 거부가 넷씩 쌓이는데 감사는 3년 보존이다.<br>
   진짜 시도가 그 안에 묻힌다.</div>
   <p>그래서 조회용 경로를 따로 냈다. 대신 <strong>그 응답은 근사치</strong>라고 코드에 못박아 뒀다 —
   실제 허용은 언제나 서버가 그 자원을 만질 때 <code>decide()</code> 로 다시 정한다.</p>
@@ -672,7 +698,8 @@
     </tbody>
   </table></div>
   <p><code>own</code>·<code>seller</code> 는 값으로 표현되는데 <code>all</code> 은 <strong>「제한이 없다」</strong>라
-  넣을 값이 없다. 타입으로 가르지 않으면 그 뜻이 주석에만 남는다 — 가장 약한 강제 지점이다.</p>
+  넣을 값이 없다.<br>
+  타입으로 가르지 않으면 그 뜻이 주석에만 남는다 — 가장 약한 강제 지점이다.</p>
   <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0003-scope-on-role-permission.md" target="_blank" rel="noopener">0003 스코프는 role_permission 행에 둔다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0004-permission-axes.md" target="_blank" rel="noopener">0004 권한 축을 넷으로 늘린다</a> ·<br>
@@ -775,13 +802,13 @@
   <div class="table-wrap"><table>
     <thead><tr><th>전이</th><th>같이 일어나는 것</th><th>밖에서 옮기면</th></tr></thead>
     <tbody>
-      <tr><td>배송완료</td><td>청약철회 만료일 · 자동확정일 <strong>박제</strong></td><td>나중에 계산하면 임시공휴일이 추가됐을 때 <strong>지난 기한까지 흔들린다</strong></td></tr>
+      <tr><td>배송완료</td><td>청약철회 만료일 · 자동확정일 <strong>박제</strong></td><td>나중에 계산하면 임시공휴일이 추가됐을 때<br><strong>지난 기한까지 흔들린다</strong></td></tr>
       <tr><td>취소</td><td>재고 복구</td><td>팔 수 있는 물건이 사라진다</td></tr>
       <tr><td>확정 · 취소 · 반품완료</td><td>거래 종료 시각</td><td>5년이 지나도 <strong>파기 대상으로 안 잡힌다</strong></td></tr>
       <tr><td>전부</td><td>상태 이력 한 줄</td><td>그 주문만 이력이 빈다</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>배치는 규칙을 갖지 않는다.</b> 대상을 고르고 그 서비스를 부르는 것까지다.
+  <div class="note"><b>배치는 규칙을 갖지 않는다.</b> 대상을 고르고 그 서비스를 부르는 것까지다.<br>
   자동확정 배치가 자기만의 조건을 들면 <b>사람이 누른 확정과 배치가 한 확정이 다른 규칙</b>을 타게 된다.</div>
 
   <h2>기한을 「박제」한다는 것</h2>
@@ -812,7 +839,8 @@
       <circle cx="520" cy="112" r="5" fill="var(--accent)"/>
       <text x="560" y="116" font-size="10.5" fill="var(--accent)">→ 8/19 로 한 번 더</text>
     </svg>
-    <figcaption>겹치면 <b>청약철회가 살아 있는 자정에 확정 배치가 돈다</b> — 아직 반품할 수 있는 주문이 확정돼 정산에 들어간다.</figcaption>
+    <figcaption>겹치면 <b>청약철회가 살아 있는 자정에 확정 배치가 돈다</b> —<br>
+    아직 반품할 수 있는 주문이 확정돼 정산에 들어간다.</figcaption>
   </figure>
   <p>그래서 자동확정은 <strong><code>max(8일째, 철회만료 다음날)</code></strong> 을 구하고 거기서 다시 말일 보정을 건다.
   「8일」이라는 날수가 규칙이 아니라 <strong>「청약철회 기간보다 짧으면 안 된다」</strong>가 규칙이다.</p>
@@ -829,7 +857,8 @@
       <tr><td>재고가 음수로 간다</td><td><strong>조건부 UPDATE 한 문장</strong><br><code>where stock &gt;= :qty</code></td><td>Postgres 가 잠금이 풀린 뒤 행을 다시 읽고 조건을 다시 본다 — <strong>낡은 값으로 판단하는 경로가 없다</strong></td></tr>
       <tr><td>같은 주문이 두 번 만들어진다</td><td>멱등키</td><td><strong>실패 응답도 저장</strong>해서 재전송에 같은 답을 준다</td></tr>
       <tr><td>여러 SKU 를 잠글 때 데드락</td><td>항상 <strong>id 오름차순</strong>으로 잠근다</td><td>순환이 생기지 않는다</td></tr>
-      <tr><td>그래도 나는 충돌</td><td>충돌만 골라 3회 재시도</td><td><strong>트랜잭션 바깥에서만</strong> — 안쪽은 이미 죽은 트랜잭션이라 다음 문장이 또 터진다</td></tr>
+      <tr><td>그래도 나는 충돌</td><td>충돌만 골라 3회 재시도</td><td><strong>트랜잭션 바깥에서만</strong> —<br>
+      안쪽은 이미 죽은 트랜잭션이라 다음 문장이 또 터진다</td></tr>
     </tbody>
   </table></div>
   <div class="note"><b>근거 ADR</b><br>
@@ -902,7 +931,7 @@
   실제로는 <b>아무도 가입할 수 없었는데</b>, 테스트는 우회 헬퍼를 쓰고 있어서 전부 초록이었다.</div>
 
   <h2>「진짜 잡는지」를 확인한다</h2>
-  <div class="note key"><b>테스트를 쓰고 나면 일부러 코드를 깨뜨려 본다.</b>
+  <div class="note key"><b>테스트를 쓰고 나면 일부러 코드를 깨뜨려 본다.</b><br>
   기한 정밀도를 되돌려 보고, enum 에 표에 없는 값을 넣어 보고, 최소 길이를 한 칸 낮춰 봤다.
   <b>셋 다 의도한 테스트만 깨졌다.</b><br>
   안 해 보면 「통과하지만 아무것도 안 막는 테스트」가 남는다.</div>
@@ -919,16 +948,19 @@
   짧은 한글을 쓰면 문자 집합이 아니라 길이에 걸려서 <strong>그 테스트가 무엇을 막는지 알 수 없게</strong> 된다.</p>
 
   <h2>알려진 구멍도 테스트로 고정한다</h2>
-  <p>지금은 정상이지만 고쳐야 할 동작은 <strong>그대로 통과하는 테스트</strong>로 남긴다.
-  나중에 고치면 그 테스트가 깨지고, 그때 기대값을 뒤집는다. <strong>주석으로만 남기면 잊는다.</strong></p>
+  <p>지금은 정상이지만 고쳐야 할 동작은 <strong>그대로 통과하는 테스트</strong>로 남긴다.<br>
+  나중에 고치면 그 테스트가 깨지고, 그때 기대값을 뒤집는다.<br>
+  <strong>주석으로만 남기면 잊는다.</strong></p>
 
   <h2>다른 규칙들</h2>
   <div class="table-wrap"><table>
     <thead><tr><th>규칙</th><th>왜</th></tr></thead>
     <tbody>
       <tr><td>테스트 이름은 <strong>한국어 평서형</strong></td><td>실패 목록이 그대로 명세가 된다</td></tr>
-      <tr><td>정리는 <strong>베이스 클래스</strong>에 둔다</td><td>빠뜨리면 깨지는 것이 <strong>빠뜨린 클래스가 아니라 남의 클래스</strong>다. 원인을 찾을 실마리가 없다</td></tr>
-      <tr><td>커버리지는 <strong>측정만 하고 목표를 안 둔다</strong></td><td>수치를 채우려는 테스트가 생긴다 — 커버리지는 올리고 아무것도 안 막는다</td></tr>
+      <tr><td>정리는 <strong>베이스 클래스</strong>에 둔다</td><td>빠뜨리면 깨지는 것이 <strong>빠뜨린 클래스가 아니라 남의 클래스</strong>다.<br>
+      원인을 찾을 실마리가 없다</td></tr>
+      <tr><td>커버리지는 <strong>측정만 하고 목표를 안 둔다</strong></td><td>수치를 채우려는 테스트가 생긴다 —<br>
+      커버리지는 올리고 아무것도 안 막는다</td></tr>
       <tr><td><strong>오늘 날짜에 기대지 않는다</strong></td><td>달력을 타면 특정 날에만 깨지고, 그런 실패는 몇 달 잠복한다</td></tr>
     </tbody>
   </table></div>
@@ -990,17 +1022,17 @@
   <h2>E 축만 가만히 있어도 틀려진다</h2>
   <div class="note warn">
   다른 넷은 코드를 안 건드리면 결과가 안 바뀐다. <b>이 축은 남이 문서를 고친다.</b><br><br>
-  두 달 반 만에 <b>NIST SP 800-63B 가 Rev 4</b> 로, <b>OWASP Top 10 이 2025 판</b>으로 갔다.
+  두 달 반 만에 <b>NIST SP 800-63B 가 Rev 4</b> 로, <b>OWASP Top 10 이 2025 판</b>으로 갔다.<br>
   비밀번호 최소 길이가 8 → 15 가 됐고 우리는 <b>모르는 채로 미달</b>이었다.
   </div>
   <p>그래서 이 점검은 한 번 하고 끝나는 게 아니라 <strong>주기로 도는 것</strong>이고,
   다음 회차가 언제인지를 정해 두지 않으면 안 돈다.</p>
 
   <h2>점검이 스스로에게 걸린 것</h2>
-  <p>찾은 위반 넷 중 <strong>둘이 「그 직전에 세운 규칙」에 걸렸다.</strong>
-  규칙을 코드에서 뽑아 세웠는데도 그랬다 — <strong>뽑을 때 본 범위가 좁았기</strong> 때문이다.
+  <p>찾은 위반 넷 중 <strong>둘이 「그 직전에 세운 규칙」에 걸렸다.</strong><br>
+  규칙을 코드에서 뽑아 세웠는데도 그랬다 — <strong>뽑을 때 본 범위가 좁았기</strong> 때문이다.<br>
   패키지 규칙을 폴더 하나만 보고 세웠는데, 다른 폴더가 그 규칙을 어기고 있었다.</p>
-  <div class="note key"><b>교훈.</b> 규칙을 세운 <b>직후</b>에 점검을 붙이면 값을 한다.
+  <div class="note key"><b>교훈.</b> 규칙을 세운 <b>직후</b>에 점검을 붙이면 값을 한다.<br>
   그때가 대상이 제일 작고, 어긋난 것을 고치는 값도 제일 싸다.</div>
 
   <h2>「못 잡는 것」을 같이 적는다</h2>
@@ -1014,7 +1046,7 @@
       <tr><td>E</td><td>인용한 <strong>그 줄</strong>이 문서 안에서 바뀐 경우. 목차만 봐선 안 보인다</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>안 적으면 「초록인 것」과 「안 본 것」이 구분되지 않는다.</b>
+  <div class="note"><b>안 적으면 「초록인 것」과 「안 본 것」이 구분되지 않는다.</b><br>
   점검 결과가 깨끗할수록 이 표가 중요해진다.</div>
 
   <h2>점검이 만든 일감</h2>

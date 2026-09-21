@@ -11,7 +11,7 @@
 | `frontend/public/toolbox/` | 사내 폐쇄망에 반입하는 단일 파일 HTML 도구 모음 | [toolbox/CLAUDE.md](frontend/public/toolbox/CLAUDE.md) |
 | `frontend/public/notes/` | 개인 학습 메모(마크다운) 보관 | 요청받은 파일만 수정한다. 정리·리팩터링 대상 아님 |
 | `frontend/public/game/` | 게임 확률 계산기 HTML. 개인용 | 요청받은 파일만 수정한다 |
-| `frontend/public/study/` | 아키텍처 노트 HTML 1장. 숨은 경로 | 요청받은 파일만 수정한다 |
+| `frontend/public/study/` | 학습 노트 HTML 5장 + 공통 셸(`shell.css`·`shell.js`). 숨은 경로 | 요청받은 파일만 수정한다. 노트 규격은 [frontend/CLAUDE.md](frontend/CLAUDE.md) 「/study」. 글 규칙 4·7 은 hook·CI 가 본다(「」 인용·SVG·pre 는 면제) |
 | `frontend/public/docrules/` | 한글·엑셀 문서 배포 규칙 HTML. 폐쇄망 반입 대상 | 요청받은 파일만 수정한다 |
 | `frontend/public/jobhunt/` | 지원 회사 평판·통근을 한 표에서 거르는 HTML. 개인용, 데이터는 localStorage | 요청받은 파일만 수정한다 |
 | `doc/` | 외부 API 스펙·배포 설정처럼 코드가 답 못 하는 것만. 색인은 [doc/README.md](doc/README.md) | 각 구역 CLAUDE.md의 트리거에 걸릴 때만 읽는다 |

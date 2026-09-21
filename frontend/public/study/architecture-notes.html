@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>아키텍처 — Tier·트랜잭션·캐시·MSA 강의 정리</title>
-<meta name="description" content="코딩하는기술사 강의를 절 단위로 끊어 Tier·트랜잭션·캐시·MSA 를 정리하고, 오라클이 SQL 한 문장을 처리하는 구조를 부록으로 붙였다.">
+<meta name="description" content="코딩하는기술사 강의를 절 단위로 정리한 Tier·트랜잭션·캐시·MSA 와 오라클 SQL 부록.">
 <meta name="keywords" content="Tier / Layer,트랜잭션,캐시,MSA,Oracle">
 <meta name="date" content="2026-07-12">
 <meta name="kind" content="배움">
@@ -113,7 +113,10 @@
 <p>이 문제들이 3-Tier (Server 계층 추가) 탄생의 이유</p>
 </blockquote>
 <blockquote>
-<p><strong>핵심</strong>: &quot;통제&quot;는 중간 계층이 있어야 가능. DB는 데이터 저장이 목적이지 트래픽 관리가 목적이 아님.<br>2-Tier = DB가 최전선. 커넥션 한계 초과 시 그냥 거부, 대기열/안내 없음.<br>3-Tier = App Server가 트래픽 통제 → DB엔 정해진 수만 연결 (커넥션 풀)</p>
+<p><strong>핵심</strong>: &quot;통제&quot;는 중간 계층이 있어야 가능.<br>
+DB는 데이터 저장이 목적이지 트래픽 관리가 목적이 아님.<br>2-Tier = DB가 최전선.<br>
+커넥션 한계 초과 시 그냥 거부,<br>
+대기열/안내 없음.<br>3-Tier = App Server가 트래픽 통제 → DB엔 정해진 수만 연결 (커넥션 풀)</p>
 </blockquote>
 <p><strong>Tier 역사: 3-Tier (App Server 등장, 1990년대 후반 ~ 2000년대)</strong></p>
 <pre><code>[클라이언트 (화면만)]   ← 1st Tier
@@ -238,7 +241,9 @@
 클라 보유 (렌더링용): 스킨, 모델, 이펙트, 미니맵
 → 커스텀 스킨이 본인 화면에만 적용되는 이유
 </code></pre>
-<p><strong>UDP 쓰는 이유</strong> — 위치 패킷 하나 손실돼도 다음 프레임에 새 위치 옴. 재전송 기다리는 딜레이가 더 치명적.<br><strong>보간(interpolation)</strong> 으로 손실된 위치 추정. 스킬 적중 판정은 서버가 최종 결정.<br>→ &quot;분명히 피했는데 맞음&quot; = 핑 차이 + UDP 손실 + 서버 판정 타이밍 차이</p>
+<p><strong>UDP 쓰는 이유</strong> — 위치 패킷 하나 손실돼도 다음 프레임에 새 위치 옴.<br>
+재전송 기다리는 딜레이가 더 치명적.<br><strong>보간(interpolation)</strong> 으로 손실된 위치 추정.<br>
+스킬 적중 판정은 서버가 최종 결정.<br>→ &quot;분명히 피했는데 맞음&quot; = 핑 차이 + UDP 손실 + 서버 판정 타이밍 차이</p>
 <p><strong>[심화] 브라우저 제약</strong></p>
 <p>브라우저 = 샌드박스. TCP/UDP 직접 못 씀. 실시간 연결 우회책만 허용:</p>
 <ul>
@@ -259,9 +264,9 @@
 
 <article class="doc" id="t2" data-stage="S1">
 <p class="doc-kicker">S1 · 1단계 — 아키텍처 철학 기초</p>
-<h1>2. 모놀리식이 먼저입니다</h1>
+<h1>2. 「모놀리식이 먼저입니다」</h1>
 <blockquote>
-<p>모놀리식이 먼저 입니다. 😊 (4분 3초)</p>
+<p>「모놀리식이 먼저 입니다. 😊」 (4분 3초)</p>
 </blockquote>
 <p><strong>Why MSA?</strong></p>
 <p>MSA는 모놀리식 아키텍처의 한계에서 출발한 해결책.<br>그 한계를 모르면 MSA도 이해할 수 없음.</p>
@@ -390,7 +395,7 @@
 </tbody></table>
 <p>추천 실습: Spring Boot로 CRUD + JWT 인증 + 트랜잭션 적용한 개인 프로젝트 1~2개 완성하기</p>
 <hr>
-<p><strong>STEP 2 — 개념은 미리 알아둬도 좋습니다</strong></p>
+<p><strong>STEP 2 — 「개념은 미리 알아둬도 좋습니다」</strong></p>
 <blockquote>
 <p>채용공고에서 MSA 환경은 매우 흔해짐. 구현보다 먼저 개념은 알아두는 것이 좋음.</p>
 </blockquote>
@@ -415,7 +420,8 @@
 <hr>
 <p><strong>STEP 3 — 기본기가 되면 MSA가 납득됩니다</strong></p>
 <blockquote>
-<p>모놀리식의 고통을 직접 겪은 사람은 MSA의 복잡한 설계 결정들이 왜 그렇게 됐는지 자연스럽게 납득됨</p>
+<p>모놀리식의 고통을 직접 겪은 사람은<br>
+MSA의 복잡한 설계 결정들이 왜 그렇게 됐는지 자연스럽게 납득됨</p>
 </blockquote>
 <p><strong>이때 비로소 보이는 것</strong></p>
 <ul>
@@ -529,7 +535,7 @@ MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 
 <p class="doc-kicker">S1 · 1단계 — 아키텍처 철학 기초</p>
 <h1>4. 모듈러 모놀리스</h1>
 <blockquote>
-<p>모듈러 모놀리스로 시작하세요 (5분 43초)</p>
+<p>「모듈러 모놀리스로 시작하세요」 (5분 43초)</p>
 </blockquote>
 <p><strong>판정 질문 — 세 아키텍처를 가르는 자리</strong></p>
 <table>
@@ -557,7 +563,8 @@ MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 
 </tr>
 </tbody></table>
 <blockquote>
-<p>둘째 질문이 이 절 전체다. 경계는 원하지만 네트워크 값은 아직 치르기 싫을 때 나오는 답이다.</p>
+<p>둘째 질문이 이 절 전체다.<br>
+경계는 원하지만 네트워크 값은 아직 치르기 싫을 때 나오는 답이다.</p>
 </blockquote>
 <hr>
 <p><strong>모놀리스 시절</strong></p>
@@ -695,7 +702,8 @@ MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 
 <hr>
 <p><strong>전환 전략 — 모놀리스 → 모듈러 → MSA</strong></p>
 <blockquote>
-<p>모듈러 모놀리스는 MSA의 예행연습. 경계를 코드로 강제해두면 필요할 때 쪼개기가 훨씬 수월함.</p>
+<p>모듈러 모놀리스는 MSA의 예행연습.<br>
+경계를 코드로 강제해두면 필요할 때 쪼개기가 훨씬 수월함.</p>
 </blockquote>
 <pre><code>1단계: 모놀리스 정리     → 도메인 경계 식별, 의존성 정리
 2단계: 모듈러 모놀리스   → 경계를 코드로 강제, 인터페이스 명확화
@@ -731,9 +739,12 @@ MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 
 </blockquote>
 <p><strong>자주 나오는 오해</strong></p>
 <blockquote>
-<p>&quot;모듈러 모놀리스는 MSA 가기 전 임시방편 아닌가요?&quot;<br>→ 아님. 서비스 규모와 팀 상황에 따라 <strong>최종 목적지</strong>가 될 수 있음. MSA는 필연적 목표가 아님.</p>
+<p>&quot;모듈러 모놀리스는 MSA 가기 전 임시방편 아닌가요?&quot;<br>→ 아님.<br>
+서비스 규모와 팀 상황에 따라 <strong>최종 목적지</strong>가 될 수 있음.<br>
+MSA는 필연적 목표가 아님.</p>
 </blockquote>
-<p>기억할 원칙: 복잡성을 감수할 만큼 <strong>팀과 서비스가 성장했을 때</strong> MSA를 고려. 그 전까지는 모듈러 모놀리스가 합리적인 선택.</p>
+<p>기억할 원칙: 복잡성을 감수할 만큼 <strong>팀과 서비스가 성장했을 때</strong> MSA를 고려.<br>
+그 전까지는 모듈러 모놀리스가 합리적인 선택.</p>
 <hr>
 <p><strong>[추가 메모] 모듈러 모놀리스 실제 구현</strong></p>
 <p>경계는 <strong>패키지 구조 + 접근제어자</strong>로 구현. 특별한 프레임워크 필요 없음.</p>
@@ -787,7 +798,8 @@ MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 
 <hr>
 <p><strong>트랜잭션이란?</strong></p>
 <blockquote>
-<p>여러 DB 연산을 하나의 논리적 작업 단위로 묶은 것. 전부 성공하거나 전부 없던 일이 되어야 함.</p>
+<p>여러 DB 연산을 하나의 논리적 작업 단위로 묶은 것.<br>
+전부 성공하거나 전부 없던 일이 되어야 함.</p>
 </blockquote>
 <pre><code>예: 계좌이체
 1. A 계좌 -10,000원
@@ -797,7 +809,8 @@ MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 
 <hr>
 <p><strong>A — Atomicity (원자성)</strong></p>
 <blockquote>
-<p>트랜잭션 내 모든 연산은 전부 성공(COMMIT) 또는 전부 실패(ROLLBACK). 중간 상태 없음.</p>
+<p>트랜잭션 내 모든 연산은 전부 성공(COMMIT) 또는 전부 실패(ROLLBACK).<br>
+중간 상태 없음.</p>
 </blockquote>
 <ul>
 <li>&quot;All or Nothing&quot;</li>
@@ -937,7 +950,8 @@ public void transfer(Long fromId, Long toId, int amount) {
 <hr>
 <p><strong>핵심 면접 질문</strong></p>
 <blockquote>
-<p>&quot;왜 무조건 최고 수준(SERIALIZABLE)으로 설정하지 않나요?&quot;<br>→ 격리 높을수록 락 범위 넓어짐 → 대기 트랜잭션 쌓임 → 처리량 저하. 신뢰성과 성능의 트레이드오프.</p>
+<p>&quot;왜 무조건 최고 수준(SERIALIZABLE)으로 설정하지 않나요?&quot;<br>→ 격리 높을수록 락 범위 넓어짐 → 대기 트랜잭션 쌓임 → 처리량 저하.<br>
+신뢰성과 성능의 트레이드오프.</p>
 </blockquote>
 <hr>
 <p><strong>격리가 낮을 때 생기는 문제 현상 3가지</strong></p>
@@ -1029,10 +1043,20 @@ Phantom Read:
 </tbody></table>
 <hr>
 <p><strong>각 수준 설명</strong></p>
-<p><strong>READ UNCOMMITTED</strong> — 커밋 안 된 것도 다 읽음. 실무 사용 거의 없음. Dirty Read 허용.</p>
-<p><strong>READ COMMITTED</strong> — 커밋된 것만 읽음. <strong>PostgreSQL·Oracle 기본값</strong>. 대부분 서비스에서 충분.</p>
-<p><strong>REPEATABLE READ</strong> — 트랜잭션 시작 시점 스냅샷 고정. 같은 SELECT 항상 같은 결과. <strong>MySQL InnoDB 기본값</strong>. MVCC로 구현.</p>
-<p><strong>SERIALIZABLE</strong> — 완전 직렬 실행. 모든 문제 방지. 락 경합 심해 처리량 급락. 금융 일부 배치 처리에서만 사용.</p>
+<p><strong>READ UNCOMMITTED</strong> — 커밋 안 된 것도 다 읽음.<br>
+실무 사용 거의 없음.<br>
+Dirty Read 허용.</p>
+<p><strong>READ COMMITTED</strong> — 커밋된 것만 읽음.<br>
+<strong>PostgreSQL·Oracle 기본값</strong>.<br>
+대부분 서비스에서 충분.</p>
+<p><strong>REPEATABLE READ</strong> — 트랜잭션 시작 시점 스냅샷 고정.<br>
+같은 SELECT 항상 같은 결과.<br>
+<strong>MySQL InnoDB 기본값</strong>.<br>
+MVCC로 구현.</p>
+<p><strong>SERIALIZABLE</strong> — 완전 직렬 실행.<br>
+모든 문제 방지.<br>
+락 경합 심해 처리량 급락.<br>
+금융 일부 배치 처리에서만 사용.</p>
 <hr>
 <p><strong>MVCC (Multi-Version Concurrency Control)</strong></p>
 <blockquote>
@@ -1087,7 +1111,8 @@ B 트랜잭션 종료 후 새 조회 → 7000 (최신값)
 <hr>
 <p><strong>격리수준 적용 단위 — 테이블 아니고 트랜잭션(세션)</strong></p>
 <blockquote>
-<p>격리수준은 테이블·DB 전체에 고정되는 설정이 아님. <strong>트랜잭션 단위</strong>로 그때그때 다르게 걸 수 있음.</p>
+<p>격리수준은 테이블·DB 전체에 고정되는 설정이 아님.<br>
+<strong>트랜잭션 단위</strong>로 그때그때 다르게 걸 수 있음.</p>
 </blockquote>
 <pre><code class="language-java">@Transactional(isolation = Isolation.SERIALIZABLE)
 public void monthEndInterestBatch() { ... }   // 이 트랜잭션만 SERIALIZABLE
@@ -1097,14 +1122,18 @@ public void normalTransfer() { ... }          // 평소 이체는 기본 격리�
 </code></pre>
 <ul>
 <li>같은 테이블이라도 <strong>어떤 트랜잭션이 접근하냐</strong>에 따라 그 순간 격리수준이 다를 수 있음</li>
-<li>실무 패턴: 평상시 트래픽(이체·조회)은 기본 격리로 처리, 월말 이자 계산처럼 &quot;계산 중 아무도 못 건드려야 하는&quot; 배치 작업만 그 트랜잭션에 SERIALIZABLE 적용</li>
+<li>실무 패턴:<br>
+평상시 트래픽(이체·조회)은 기본 격리로 처리,<br>
+월말 이자 계산처럼 &quot;계산 중 아무도 못 건드려야 하는&quot; 배치 작업만<br>
+그 트랜잭션에 SERIALIZABLE 적용</li>
 <li>이런 배치는 보통 트래픽 적은 새벽 시간대에 짧게 실행 → 락 경합 비용 낮음</li>
 <li>세션 레벨(<code>SET SESSION TRANSACTION ISOLATION LEVEL ...</code>)로 커넥션 전체 기본값 바꾸는 것도 가능하지만, 실무에서는 필요한 트랜잭션에만 국소적으로 지정하는 게 일반적</li>
 </ul>
 <hr>
 <p><strong>SELECT ... FOR UPDATE (비관적 락)</strong></p>
 <blockquote>
-<p>스냅샷 무시하고 실제 최신값 읽으면서 동시에 락 걸기. &quot;읽고 → 판단 → 쓰는&quot; 패턴에서 사용.</p>
+<p>스냅샷 무시하고 실제 최신값 읽으면서 동시에 락 걸기.<br>
+&quot;읽고 → 판단 → 쓰는&quot; 패턴에서 사용.</p>
 </blockquote>
 <pre><code class="language-sql">SELECT * FROM item WHERE id = 1 FOR UPDATE;
 -- 해당 행에 쓰기 락(exclusive lock)
@@ -1245,9 +1274,11 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <hr>
 <p><strong>100점짜리 모범 답안</strong></p>
 <ol>
-<li>동시성(Concurrency)은 논리적인 개념으로, 여러 작업을 아주 빠르게 번갈아 가며 처리해 동시에 실행되는 것처럼 보이게 하는 것.</li>
+<li>동시성(Concurrency)은 논리적인 개념으로,<br>
+여러 작업을 아주 빠르게 번갈아 가며 처리해 동시에 실행되는 것처럼 보이게 하는 것.</li>
 <li>병렬성(Parallelism)은 물리적인 개념으로, 멀티 코어에서 실제로 동시에 작업을 수행하는 것.</li>
-<li>동시성은 여러 작업을 겹쳐 다룰 수 있도록 구성하는 <strong>구조와 설계</strong>의 개념이고, 병렬성은 멀티 코어에서 작업이 <strong>물리적으로 동시에 실행</strong>되는 상태.
+<li>동시성은 여러 작업을 겹쳐 다룰 수 있도록 구성하는 <strong>구조와 설계</strong>의 개념이고,<br>
+병렬성은 멀티 코어에서 작업이 <strong>물리적으로 동시에 실행</strong>되는 상태.
 (동시성은 구조, 병렬성은 실행이다)</li>
 </ol>
 <hr>
@@ -1257,17 +1288,25 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <li>키워드: I/O 대기, CPU 유휴, Time Slicing, 이벤트 루프 / Node.js, 인터럽트</li>
 <li>I/O 대기: 디스크/네트워크 응답은 CPU 연산보다 수만~수십만 배 느림. <code>data = read()</code> 다음 줄은 data값 없으면 실행 불가 → 그 스레드만 멈춤(Blocked)</li>
 <li>CPU 유휴: 그 대기 시간 동안 CPU가 아무것도 안 하면 자원 낭비</li>
-<li>Time Slicing: CPU 시간을 잘게 쪼개서(수ms) 여러 작업에 번갈아 배정 → 유휴 시간에 딴 작업 끼워넣기</li>
-<li>이벤트 루프(Node.js): I/O 요청 던지고 결과 안 기다리고 바로 다음 코드로 진행. 결과 오면 콜백을 이벤트 큐에 넣고, 루프가 짬날 때 꺼내 실행 (블로킹 read()와 정반대 방식)</li>
-<li>인터럽트: I/O 완료를 CPU에 &quot;알려주는&quot; 하드웨어 신호. 폴링(계속 확인하러 감)과 반대로, 끝나면 그때 CPU 하던 일 끊고 처리 → 낭비 없이 대기 가능하게 해주는 장치</li>
+<li>Time Slicing:<br>
+CPU 시간을 잘게 쪼개서(수ms) 여러 작업에 번갈아 배정 → 유휴 시간에 딴 작업 끼워넣기</li>
+<li>이벤트 루프(Node.js): I/O 요청 던지고 결과 안 기다리고 바로 다음 코드로 진행.<br>
+결과 오면 콜백을 이벤트 큐에 넣고, 루프가 짬날 때 꺼내 실행 (블로킹 read()와 정반대 방식)</li>
+<li>인터럽트: I/O 완료를 CPU에 &quot;알려주는&quot; 하드웨어 신호.<br>
+폴링(계속 확인하러 감)과 반대로,<br>
+끝나면 그때 CPU 하던 일 끊고 처리 → 낭비 없이 대기 가능하게 해주는 장치</li>
 </ul>
 </li>
 <li>병렬성이 무조건 빠를까요?<ul>
-<li>키워드: Amdahl&#39;s Law, 순차 구간, 자원 경합(Contention), Cache Coherence, 작업 분할 오버헤드, 병목(Bottleneck)</li>
+<li>키워드:<br>
+Amdahl&#39;s Law, 순차 구간, 자원 경합(Contention),<br>
+Cache Coherence, 작업 분할 오버헤드, 병목(Bottleneck)</li>
 </ul>
 </li>
 <li>파이썬은 멀티코어 환경에서도 쓰레드 병렬 처리가 안 된다던데?<ul>
-<li>키워드: GIL(Global Interpreter Lock), CPython, 프로세스 vs 스레드, multiprocessing, 동시 실행 자체를 봉쇄(자바의 synchronized와 대조)</li>
+<li>키워드:<br>
+GIL(Global Interpreter Lock), CPython, 프로세스 vs 스레드,<br>
+multiprocessing, 동시 실행 자체를 봉쇄(자바의 synchronized와 대조)</li>
 </ul>
 </li>
 </ol>
@@ -1279,7 +1318,9 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <h1>3단계 — 캐시</h1>
 <p><strong>[개념 정리] 캐싱은 어디서든 같은 원리</strong></p>
 <blockquote>
-<p>원본(느리고 크고 멂)에서 매번 안 가져오고, 자주 쓰는 걸 더 빠르고 가까운 곳에 임시 복사본으로 두는 것. 이 원리는 계층만 다를 뿐 CPU 캐시, DB 캐시, CDN/엣지 캐시 전부 동일.</p>
+<p>원본(느리고 크고 멂)에서 매번 안 가져오고,<br>
+자주 쓰는 걸 더 빠르고 가까운 곳에 임시 복사본으로 두는 것.<br>
+이 원리는 계층만 다를 뿐 CPU 캐시, DB 캐시, CDN/엣지 캐시 전부 동일.</p>
 </blockquote>
 <table>
 <thead>
@@ -1301,13 +1342,17 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 </tr>
 </tbody></table>
 <ul>
-<li>캐시는 항상 <strong>사본이자 임시 저장소</strong> — 원본이 진짜 정답, 캐시는 사라지거나 만료돼도 원본에서 다시 채우면 됨 (그래서 안전하게 버릴 수 있음)</li>
-<li>캐싱 가능 기준은 &quot;중요하냐&quot;가 아니라 <strong>&quot;모두에게 동일하고 자주 안 바뀌냐&quot;</strong> — 중요한 정보(가격표)도 모두에게 같으면 캐싱 가능, 안 중요해도 개인화됐으면 캐싱 불가</li>
+<li>캐시는 항상 <strong>사본이자 임시 저장소</strong> —<br>
+원본이 진짜 정답,<br>
+캐시는 사라지거나 만료돼도 원본에서 다시 채우면 됨 (그래서 안전하게 버릴 수 있음)</li>
+<li>캐싱 가능 기준은 &quot;중요하냐&quot;가 아니라 <strong>&quot;모두에게 동일하고 자주 안 바뀌냐&quot;</strong> —<br>
+중요한 정보(가격표)도 모두에게 같으면 캐싱 가능, 안 중요해도 개인화됐으면 캐싱 불가</li>
 </ul>
 <p><strong>[헷갈림 주의] &quot;매체가 빠르다&quot;(하드웨어 성질) ≠ &quot;캐시다&quot;(상대적 역할)</strong></p>
 <ul>
 <li>RAM 자체가 빠른 건 물리적 특성(재료 성질)이지 캐시 아님</li>
-<li>캐시는 절대적 속성이 아니라 <strong>비교 대상에 따라 바뀌는 상대적 역할</strong> — 디스크 대비 RAM은 캐시(OS 페이지 캐시), CPU 캐시 대비 RAM은 원본</li>
+<li>캐시는 절대적 속성이 아니라 <strong>비교 대상에 따라 바뀌는 상대적 역할</strong> —<br>
+디스크 대비 RAM은 캐시(OS 페이지 캐시), CPU 캐시 대비 RAM은 원본</li>
 <li>캐시 여부 = &quot;무엇의 복사본으로 쓰이냐&quot;로 결정, &quot;그 매체가 원래 빠르냐&quot;와는 별개</li>
 </ul>
 <p><strong>[합본 영상] 캐시 계층 전략 — 브라우저부터 Redis까지</strong></p>
@@ -1374,10 +1419,14 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 </tr>
 </tbody></table>
 <ul>
-<li><strong>CPU 캐시</strong>(L1/L2/L3)는 이 흐름에 없지만 원리는 같음 — 원본(RAM)보다 빠르고 가까운 사본. 하드웨어가 수 나노초 단위로 자동 관리하고 개발자가 제어하지 않음</li>
+<li><strong>CPU 캐시</strong>(L1/L2/L3)는 이 흐름에 없지만 원리는 같음 — 원본(RAM)보다 빠르고 가까운 사본.<br>
+하드웨어가 수 나노초 단위로 자동 관리하고 개발자가 제어하지 않음</li>
 <li><strong>네이티브 앱의 로컬 캐시</strong>는 Browser Cache 자리에 해당.<br>&nbsp;&nbsp;단 HTTP 헤더가 아니라 앱이 직접 관리하고, 사용자가 앱 설정에서 지움</li>
 </ul>
-<p>핵심: 캐시는 &quot;몇 종류&quot;로 딱 나뉘는 게 아니라, &quot;어디 위치하냐&quot;(계층) × &quot;누구와 공유하고 얼마나 자주 갱신되냐&quot;(정책) 조합으로 매번 달라지는 하나의 원리.</p>
+<p>핵심:<br>
+캐시는 &quot;몇 종류&quot;로 딱 나뉘는 게 아니라,<br>
+&quot;어디 위치하냐&quot;(계층)<br>
+× &quot;누구와 공유하고 얼마나 자주 갱신되냐&quot;(정책) 조합으로 매번 달라지는 하나의 원리.</p>
 <hr>
 <p><strong>왜 계층 하나로는 안 되나 — 데이터마다 성질이 다르다</strong></p>
 <table>
@@ -1418,28 +1467,40 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <li>언제: CSS·JS·이미지 등 정적 리소스, 변경이 거의 없는 리소스, 사용자 재방문 시 네트워크 절감</li>
 <li>제어: <code>ETag</code>(변경 여부 검증 — 조건부 요청), <code>Last-Modified</code>(시간 기반 검증), <code>Cache-Control</code>(지시어별 의미는 8번 항목)</li>
 <li>강점: 서버 요청 자체가 없음 — 가장 빠름. 네트워크 비용 0</li>
-<li>주의: 개인 캐시라 다른 사용자와 공유 안 됨. 정적 리소스는 파일명 해시(versioning)로 캐시 무효화</li>
+<li>주의: 개인 캐시라 다른 사용자와 공유 안 됨.<br>
+정적 리소스는 파일명 해시(versioning)로 캐시 무효화</li>
 </ul>
 <p><strong>② CDN — 전 세계 엣지 서버에 저장</strong></p>
 <ul>
-<li>언제: 이미지·영상·정적 파일 전 세계 배포, 원본 서버 부하를 줄이고 싶을 때, 지리적으로 분산된 사용자 대상</li>
+<li>언제:<br>
+이미지·영상·정적 파일 전 세계 배포,<br>
+원본 서버 부하를 줄이고 싶을 때, 지리적으로 분산된 사용자 대상</li>
 <li>제어: <code>Cache-Control</code>(<code>max-age</code>·<code>s-maxage</code>)로 TTL 설정, Cache Purge로 콘텐츠 배포 시 무효화, CDN 콘솔/API로 직접 제어</li>
 <li>강점: 전 세계 사용자에게 빠른 응답, 원본 서버 트래픽 대폭 감소</li>
-<li>주의: Purge 없이 배포하면 구버전이 계속 서비스됨. 동적 콘텐츠 캐싱 시 개인정보 혼입 위험</li>
+<li>주의: Purge 없이 배포하면 구버전이 계속 서비스됨.<br>
+동적 콘텐츠 캐싱 시 개인정보 혼입 위험</li>
 </ul>
 <p><strong>③ In-App Local Cache — 서버 인스턴스 메모리에 저장</strong></p>
 <ul>
-<li>언제: 변경이 드물고 조회가 매우 잦은 데이터, 국가 코드·공통 코드·설정값 등, 네트워크 왕복조차 아까울 때</li>
-<li>대표 구현: Spring Cache + Caffeine(실무 표준), Caffeine(Java — 고성능 독립 사용), Guava Cache(Java)</li>
+<li>언제:<br>
+변경이 드물고 조회가 매우 잦은 데이터,<br>
+국가 코드·공통 코드·설정값 등, 네트워크 왕복조차 아까울 때</li>
+<li>대표 구현: Spring Cache + Caffeine(실무 표준), Caffeine(Java —<br>
+고성능 독립 사용), Guava Cache(Java)</li>
 <li>강점: 네트워크 없음 — 인메모리 직접 접근. Redis보다 훨씬 빠름</li>
-<li>주의: 인스턴스마다 데이터가 따로 존재해 정합성 문제. 다중 서버 환경에서 업데이트 동기화 어려움</li>
+<li>주의: 인스턴스마다 데이터가 따로 존재해 정합성 문제.<br>
+다중 서버 환경에서 업데이트 동기화 어려움</li>
 </ul>
 <p><strong>④ 공유 캐시(Redis) — 인스턴스 간 공유 캐시</strong></p>
 <ul>
-<li>언제: 여러 서버 인스턴스가 동일 데이터를 공유해야 할 때, 세션·장바구니·사용자별 상태, 로컬 캐시로 해결 안 되는 다중 서버 환경</li>
-<li>제어: TTL 만료 시간 명시(필수), Eviction Policy(LRU·LFU 등), 캐시 무효화 이벤트(예: Redis Pub/Sub)</li>
+<li>언제:<br>
+여러 서버 인스턴스가 동일 데이터를 공유해야 할 때,<br>
+세션·장바구니·사용자별 상태, 로컬 캐시로 해결 안 되는 다중 서버 환경</li>
+<li>제어: TTL 만료 시간 명시(필수), Eviction Policy(LRU·LFU 등), 캐시 무효화 이벤트(예:<br>
+Redis Pub/Sub)</li>
 <li>강점: 모든 인스턴스가 동일 데이터 접근, 다양한 자료구조 지원</li>
-<li>주의: 네트워크 왕복 비용 발생해 로컬 캐시보다 느림. TTL 없이 쓰면 메모리 증가 → Eviction → 캐시 효율 저하</li>
+<li>주의: 네트워크 왕복 비용 발생해 로컬 캐시보다 느림.<br>
+TTL 없이 쓰면 메모리 증가 → Eviction → 캐시 효율 저하</li>
 </ul>
 <hr>
 <p><strong>[상세] ① Browser Cache — 최신성은 어떻게 확보하나</strong>  </p>
@@ -1496,7 +1557,9 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <p>절대 시각 방식은 클라이언트 시계가 틀어져 있으면 같이 틀어진다. 상대시간이 그 문제를 안 겪는 게 <code>Cache-Control</code> 이 표준이 된 이유 중 하나.</p>
 <p>브라우저는 받은 사본을 메모리 캐시나 디스크 캐시에 넣는다.</p>
 <blockquote>
-<p><strong>어디에 넣을지는 서버가 못 정한다 — 브라우저가 판단한다.</strong> 지정하는 HTTP 헤더가 없다.<br>판단 근거는 리소스 크기 · 최근 사용 빈도 · 남은 RAM · 그 페이지가 아직 열려 있는지 등.<br>메모리 캐시는 탭이 살아 있는 동안만 유지되고 가장 빠르다. 디스크 캐시는 브라우저를 껐다 켜도 남아서, 재방문에서 실제로 쓰이는 쪽이다.</p>
+<p><strong>어디에 넣을지는 서버가 못 정한다 — 브라우저가 판단한다.</strong><br>
+지정하는 HTTP 헤더가 없다.<br>판단 근거는 리소스 크기 · 최근 사용 빈도 · 남은 RAM · 그 페이지가 아직 열려 있는지 등.<br>메모리 캐시는 탭이 살아 있는 동안만 유지되고 가장 빠르다.<br>
+디스크 캐시는 브라우저를 껐다 켜도 남아서, 재방문에서 실제로 쓰이는 쪽이다.</p>
 </blockquote>
 <p><strong>두 번째 요청</strong> — 만료 전과 만료 후의 동작이 완전히 다르다.</p>
 <pre><code>같은 URL 재접속
@@ -1654,7 +1717,9 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 </code></pre>
 <ul>
 <li>CDN 저장 자리에는 정적 파일뿐 아니라 <strong>동적 API 응답</strong>도 올릴 수 있음 (25번 항목)</li>
-<li>&quot;캐시 삭제하면 다음 로딩만 느리고 그 후 다시 빨라짐&quot;은 Browser·앱 캐시 얘기, 캐치테이블 CDN 예시의 히트/미스는 엣지 캐시 얘기 — 서로 다른 계층</li>
+<li>&quot;캐시 삭제하면 다음 로딩만 느리고 그 후 다시 빨라짐&quot;은 Browser·앱 캐시 얘기,<br>
+캐치테이블 CDN 예시의 히트/미스는 엣지 캐시 얘기 —<br>
+서로 다른 계층</li>
 </ul>
 <hr>
 <p><strong>실무에서는 어떻게 선택하나</strong></p>
@@ -1718,8 +1783,10 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <p><strong>실무 캐싱 전략 3원칙</strong></p>
 <ol>
 <li><strong>캐시는 하나가 아니다</strong> — 브라우저 · CDN · 로컬 · 공유 캐시, 각 계층은 역할이 다르다</li>
-<li><strong>사용자와 가까운 계층에서 끝내라</strong> — 사용자에게 가까울수록 빠르고, 비용이 낮고, 원본 서버 부하가 줄어든다</li>
-<li><strong>데이터 특성에 맞는 계층을 선택하라</strong> — 변경 빈도 · 공유 범위 · 용량/네트워크 비용 · 최신성을 함께 고려해야 한다</li>
+<li><strong>사용자와 가까운 계층에서 끝내라</strong> —<br>
+사용자에게 가까울수록 빠르고, 비용이 낮고, 원본 서버 부하가 줄어든다</li>
+<li><strong>데이터 특성에 맞는 계층을 선택하라</strong> —<br>
+변경 빈도 · 공유 범위 · 용량/네트워크 비용 · 최신성을 함께 고려해야 한다</li>
 </ol>
 </article>
 
@@ -1854,7 +1921,7 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <p class="doc-kicker">S3 · 3단계 — 캐시</p>
 <h1>11. Redis 키 설계</h1>
 <blockquote>
-<p>키 설계 잘못하면 Redis가 뻗습니다. #redis (4분 39초)</p>
+<p>「키 설계 잘못하면 Redis가 뻗습니다. #redis」 (4분 39초)</p>
 </blockquote>
 <hr>
 </article>
@@ -2008,7 +2075,7 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <p class="doc-kicker">S8 · 8단계 — 아키텍처 평가 / 원칙</p>
 <h1>28. 좋은 아키텍트의 기준</h1>
 <blockquote>
-<p>좋은 아키텍트는 명확한 기준을 가지고 있습니다. (10분 23초)</p>
+<p>「좋은 아키텍트는 명확한 기준을 가지고 있습니다.」 (10분 23초)</p>
 </blockquote>
 <hr>
 </article>
@@ -2017,7 +2084,7 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <p class="doc-kicker">S8 · 8단계 — 아키텍처 평가 / 원칙</p>
 <h1>29. ATAM 평가법</h1>
 <blockquote>
-<p>아키텍처는 이렇게 평가합니다. | SEI 공식 평가법 ATAM (32분)</p>
+<p>「아키텍처는 이렇게 평가합니다. | SEI 공식 평가법 ATAM」 (32분)</p>| SEI 공식 평가법 ATAM (32분)</p>
 </blockquote>
 <hr>
 </article>
@@ -2044,8 +2111,11 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <li>체감상 타이밍 승부처럼 보이지만, 이면엔 계층별 방어 설계가 있음</li>
 </ul>
 <hr>
-<p><strong>1. 트래픽 흡수 계층 — CDN / 엣지 캐싱</strong> (→ 10번 Cache Miss 폭발 방어, 25번 CDN 활용과 연결)</p>
-<p>정각에 몰리는 요청 대부분은 예약 로직과 무관한 &quot;화면 그리는 데 필요한 데이터&quot; (가게 사진, UI, 메뉴, 날짜 목록). 이걸 매번 origin 서버가 처리하면 예약 로직 돌기도 전에 서버가 죽음.</p>
+<p><strong>1.<br>
+트래픽 흡수 계층 — CDN / 엣지 캐싱</strong> (→ 10번 Cache Miss 폭발 방어, 25번 CDN 활용과 연결)</p>
+<p>정각에 몰리는 요청 대부분은 예약 로직과 무관한 &quot;화면 그리는 데 필요한 데이터&quot; (가게 사진,<br>
+UI, 메뉴, 날짜 목록).<br>
+이걸 매번 origin 서버가 처리하면 예약 로직 돌기도 전에 서버가 죽음.</p>
 <table>
 <thead>
 <tr>
@@ -2071,10 +2141,14 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 </tr>
 <tr>
 <td>TTL (Time To Live)</td>
-<td>캐시 유효기간. 사진·UI는 길게, &quot;잔여석 여부&quot;처럼 실시간성 있는 데이터는 짧게(또는 캐싱 안 함) — 안 그러면 마감된 날짜가 계속 &quot;예약 가능&quot;으로 보이는 오류 발생</td>
+<td>캐시 유효기간.<br>
+사진·UI는 길게, &quot;잔여석 여부&quot;처럼 실시간성 있는 데이터는 짧게(또는 캐싱 안 함) —<br>
+안 그러면 마감된 날짜가 계속 &quot;예약 가능&quot;으로 보이는 오류 발생</td>
 </tr>
 </tbody></table>
-<p>핵심: 안 바뀌는 데이터는 CDN에서 걸러내고, origin 서버는 &quot;예약 확정&quot; 같은 진짜 중요한 요청만 받게 만드는 것.</p>
+<p>핵심:<br>
+안 바뀌는 데이터는 CDN에서 걸러내고,<br>
+origin 서버는 &quot;예약 확정&quot; 같은 진짜 중요한 요청만 받게 만드는 것.</p>
 <p><strong>데이터 종류별 캐싱 정책 (앱 전체가 하나의 스위치 아님)</strong></p>
 <table>
 <thead>
@@ -2105,11 +2179,16 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
 <td>원자적 연산 필요</td>
 </tr>
 </tbody></table>
-<p>캐치테이블은 웹이 아니라 네이티브 앱이라 UI 골격(버튼 배치, 폰트, 아이콘)은 이미 설치 시점에 로컬에 있음. CDN이 필요한 건 그때그때 바뀌는 콘텐츠(사진·메뉴·예약현황)뿐 — 이 점이 매번 HTML/JS 받아야 하는 웹(Next.js 케이스)과 다름.</p>
+<p>캐치테이블은 웹이 아니라 네이티브 앱이라 UI 골격(버튼 배치,<br>
+폰트, 아이콘)은 이미 설치 시점에 로컬에 있음.<br>
+CDN이 필요한 건 그때그때 바뀌는 콘텐츠(사진·메뉴·예약현황)뿐 —<br>
+이 점이 매번 HTML/JS 받아야 하는 웹(Next.js 케이스)과 다름.</p>
 <p><strong>중요: 캐싱은 &quot;트래픽 몰릴 때만 켜는 스위치&quot;가 아니라 상시 기본 설정.</strong> 배포 시점에 헤더(<code>Cache-Control</code>)로 미리 정해두는 것이지, 실시간으로 온오프 안 함. 오히려 평소엔 꺼뒀다가 스파이크 순간에만 켜면 그 순간 다 같이 origin 몰려서 <strong>Cache Stampede</strong>(12번 항목) 터짐. 캐싱은 미리, 상시 걸어둬야 스파이크 순간에 이미 준비된 상태가 됨.</p>
 <hr>
 <p><strong>2. 진짜 승부처 — 원자적 연산 (재고 차감)</strong> (→ 6번 트랜잭션 격리수준, <code>SELECT ... FOR UPDATE</code>와 동일 원리)</p>
-<p>슬롯 1개에 수백 명이 동시에 &quot;확인 → 차감&quot; 시도하면, 확인과 차감 사이 텀에 여러 요청이 끼어들어 동시에 성공 처리되는 <strong>레이스 컨디션</strong> 발생 가능. 이게 막히지 않으면 <strong>오버부킹</strong>(정원 초과 확정) 터짐.</p>
+<p>슬롯 1개에 수백 명이 동시에 &quot;확인 → 차감&quot; 시도하면,<br>
+확인과 차감 사이 텀에 여러 요청이 끼어들어 동시에 성공 처리되는 <strong>레이스 컨디션</strong> 발생 가능.<br>
+이게 막히지 않으면 <strong>오버부킹</strong>(정원 초과 확정) 터짐.</p>
 <pre><code>잘못된 방식 (원자적이지 않음):
 1. count = SELECT stock FROM slot WHERE id=1   ← A, B 둘 다 count=1 읽음
 2. if count &gt; 0: UPDATE stock -= 1              ← A, B 둘 다 성공 처리
@@ -2120,19 +2199,27 @@ Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 
       → 다른 트랜잭션은 이 행 UPDATE 끝날 때까지 대기, 순서 보장
 - 또는 Redis: DECR 커맨드나 Lua 스크립트로 &quot;확인+차감&quot;을 단일 원자 연산 처리
 </code></pre>
-<p>즉 캐치테이블도 겉보기엔 &quot;먼저 누른 사람이 임자&quot;지만, 뒤에서는 DB 락 또는 Redis 원자 연산이 순서를 강제하고 있음. 대기열 시스템(인터파크식)이 없는 대신, 이 원자적 연산 지점에서 승부가 갈림.</p>
+<p>즉 캐치테이블도 겉보기엔 &quot;먼저 누른 사람이 임자&quot;지만,<br>
+뒤에서는 DB 락 또는 Redis 원자 연산이 순서를 강제하고 있음.<br>
+대기열 시스템(인터파크식)이 없는 대신, 이 원자적 연산 지점에서 승부가 갈림.</p>
 <hr>
 <p><strong>3. 예측 가능한 스파이크 대비 — 오토스케일 / 커넥션 풀</strong> (→ 27번 커넥션 풀)</p>
 <p>정오 오픈처럼 트래픽 몰리는 시각이 예측 가능하면, 실시간 트래픽보다 대응이 쉬움:</p>
 <ul>
 <li>오토스케일: 오픈 직전 서버 대수 미리 늘려둠</li>
-<li>DB 커넥션 풀: 동시 요청 받아낼 커넥션 수 미리 넉넉히 확보 → 커넥션 부족으로 요청이 대기열에 밀리는 것 방지</li>
+<li>DB 커넥션 풀:<br>
+동시 요청 받아낼 커넥션 수 미리 넉넉히 확보 → 커넥션 부족으로 요청이 대기열에 밀리는 것 방지</li>
 </ul>
 <hr>
 <p><strong>&quot;상시 방어&quot; vs &quot;순간 반응&quot; — 둘 다 있음, 역할이 다름</strong></p>
 <blockquote>
-<p>Q. 캐싱도 상시, 원자적 연산 구조도 상시라면, 그 순간(스파이크)에만 작동하는 위기 대응 기능은 따로 없는 건가?
-A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위에서 실시간 부하에 따라 강도가 달라지는 반응형 계층이 따로 있음.</p>
+<p>Q.<br>
+캐싱도 상시, 원자적 연산 구조도 상시라면,<br>
+그 순간(스파이크)에만 작동하는 위기 대응 기능은 따로 없는 건가?
+A.<br>
+있음.<br>
+다만 캐싱/락 &quot;구조&quot;는 상시 존재하고,<br>
+그 위에서 실시간 부하에 따라 강도가 달라지는 반응형 계층이 따로 있음.</p>
 </blockquote>
 <table>
 <thead>
@@ -2158,10 +2245,15 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 <td>화재감지기가 실제 불 감지하면 스프링클러 작동(그 순간에만 트립)</td>
 </tr>
 </tbody></table>
-<p>즉 &quot;구조&quot;는 미리 다 짜여있고 상시 대기 중이며, 그 구조 위에서 실시간 부하를 감지해 강도를 조절하는 반응형 계층(서킷브레이커, 오토스케일 트리거, 커넥션 풀 대기)이 &quot;그 순간의 위기&quot;를 넘기는 역할을 함. 즉석에서 뭔가 새로 만드는 게 아니라, 미리 준비된 도구를 그 순간에 꺼내 쓰는 것에 가까움.</p>
+<p>즉 &quot;구조&quot;는 미리 다 짜여있고 상시 대기 중이며,<br>
+그 구조 위에서 실시간 부하를 감지해 강도를 조절하는 반응형 계층(서킷브레이커,<br>
+오토스케일 트리거, 커넥션 풀 대기)이 &quot;그 순간의 위기&quot;를 넘기는 역할을 함.<br>
+즉석에서 뭔가 새로 만드는 게 아니라, 미리 준비된 도구를 그 순간에 꺼내 쓰는 것에 가까움.</p>
 <hr>
 <p><strong>왜 예전엔 예약 시스템에 문제가 잦았나</strong></p>
-<p>지금 열거한 계층들(CDN, 원자적 락, 오토스케일, 서킷브레이커)이 표준 관행으로 자리잡은 게 비교적 최근(2010년대 클라우드 대중화 이후)임. 예전엔:</p>
+<p>지금 열거한 계층들(CDN, 원자적 락, 오토스케일,<br>
+서킷브레이커)이 표준 관행으로 자리잡은 게 비교적 최근(2010년대 클라우드 대중화 이후)임.<br>
+예전엔:</p>
 <table>
 <thead>
 <tr>
@@ -2171,7 +2263,8 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 </thead>
 <tbody><tr>
 <td>클라우드 이전 = 고정 서버</td>
-<td>오토스케일 자체가 불가능. 물리 서버 증설에 며칠~몇 주 걸림 → 스파이크에 서버 대수 못 늘림</td>
+<td>오토스케일 자체가 불가능.<br>
+물리 서버 증설에 며칠~몇 주 걸림 → 스파이크에 서버 대수 못 늘림</td>
 </tr>
 <tr>
 <td>캐싱 계층 미비</td>
@@ -2190,20 +2283,34 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 <td>DB가 느려지면 그 지연이 앞단까지 그대로 전파돼 연쇄 장애(20·21번 항목)</td>
 </tr>
 </tbody></table>
-<p>정리: 예전 실패는 &quot;위기의 순간에 뭔가 특별한 대응을 못해서&quot;가 아니라, 애초에 지금은 당연한 상시 구조(캐싱·원자적 락·오토스케일·서킷브레이커)들이 아직 실무 표준이 아니었거나 구축 비용이 커서 못 갖췄기 때문. 지금 시스템이 &quot;심심하게 상시로만 돌아가는 것처럼&quot; 보이는 이유가 바로, 예전엔 위기 때마다 즉흥 대응해야 했던 걸 지금은 미리 다 준비해놔서 위기 자체가 안 생기게 만든 것.</p>
+<p>정리:<br>
+예전 실패는 &quot;위기의 순간에 뭔가 특별한 대응을 못해서&quot;가 아니라,<br>
+애초에 지금은 당연한 상시 구조(캐싱·원자적 락·오토스케일·서킷브레이커)들이<br>
+아직 실무 표준이 아니었거나 구축 비용이 커서 못 갖췄기 때문.<br>
+지금 시스템이 &quot;심심하게 상시로만 돌아가는 것처럼&quot; 보이는 이유가 바로,<br>
+예전엔 위기 때마다 즉흥 대응해야 했던 걸<br>
+지금은 미리 다 준비해놔서 위기 자체가 안 생기게 만든 것.</p>
 <hr>
 <p><strong>4. 왜 인터파크식 대기열이 없는가</strong></p>
-<p>뮤지컬 티켓팅은 유입 자체를 순서대로 통제(가상대기실)해야 할 만큼 트래픽 지속시간이 김. 캐치테이블은 슬롯 수 자체가 적고 승부가 몇 초~1분 안에 끝나 대기열 만들 실익이 적음 — 대신 1·2번 계층(캐싱 + 원자적 연산)으로 짧고 굵게 버팀.</p>
+<p>뮤지컬 티켓팅은 유입 자체를 순서대로 통제(가상대기실)해야 할 만큼 트래픽 지속시간이 김.<br>
+캐치테이블은 슬롯 수 자체가 적고 승부가 몇 초~1분 안에 끝나 대기열 만들 실익이 적음 —<br>
+대신 1·2번 계층(캐싱 + 원자적 연산)으로 짧고 굵게 버팀.</p>
 <p><strong>캐치테이블(시간대 예약) vs 좌석 예매 — 왜 후자가 더 오래 걸리나</strong></p>
 <p>캐치테이블: 확인+결제가 원자적 연산 한 방(순식간) → 중간 상태 없음.</p>
-<p>좌석 예매: 아래 이유로 한 사람이 시스템 붙잡는 시간 자체가 훨씬 김 → 순간 트래픽이 아니라 몇 분간 지속되는 트래픽이 됨 → 그래서 입장을 순서대로 흘리는 대기열이 필요해짐.</p>
+<p>좌석 예매:<br>
+아래 이유로 한 사람이 시스템 붙잡는 시간 자체가 훨씬 김 →<br>
+순간 트래픽이 아니라 몇 분간 지속되는 트래픽이 됨 →<br>
+그래서 입장을 순서대로 흘리는 대기열이 필요해짐.</p>
 <ul>
-<li>좌석맵 실시간 렌더링(빈자리/선택중/팔림) + 좌석별 임시 홀드(hold) 필요 — 결제 넘어가는 몇 분간 그 좌석 남한테 안 팔리게 잠가둠(타이머 만료 시 자동 해제)</li>
-<li>동행 인원과 상의(같이 갈 자리 붙어있나), 시야 취향(가까이 vs 멀리) 비교 — 선택 자체에 고민 시간 소요, 혼자 빠르게 못 끝냄</li>
+<li>좌석맵 실시간 렌더링(빈자리/선택중/팔림) + 좌석별 임시 홀드(hold) 필요 —<br>
+결제 넘어가는 몇 분간 그 좌석 남한테 안 팔리게 잠가둠(타이머 만료 시 자동 해제)</li>
+<li>동행 인원과 상의(같이 갈 자리 붙어있나), 시야 취향(가까이 vs 멀리) 비교 —<br>
+선택 자체에 고민 시간 소요, 혼자 빠르게 못 끝냄</li>
 </ul>
 <p>캐치테이블의 &quot;임시 홀드&quot; 부재(찍으면 바로 확정)가 대기열 없이도 버틸 수 있는 핵심 이유.</p>
 <hr>
-<p><strong>용어 정리</strong> (CDN·엣지 서버·캐시 히트/미스·TTL은 위 &quot;1. 트래픽 흡수 계층&quot; 표 참고, 중복 생략)</p>
+<p><strong>용어 정리</strong> (CDN·엣지 서버·캐시 히트/미스·TTL은 위 &quot;1.<br>
+트래픽 흡수 계층&quot; 표 참고, 중복 생략)</p>
 <table>
 <thead>
 <tr>
@@ -2213,7 +2320,8 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 </thead>
 <tbody><tr>
 <td>Traffic (트래픽)</td>
-<td>서버로 오가는 요청/데이터의 양·흐름. &quot;트래픽 몰린다&quot; = 동시 요청 수가 급증한다는 뜻</td>
+<td>서버로 오가는 요청/데이터의 양·흐름.<br>
+&quot;트래픽 몰린다&quot; = 동시 요청 수가 급증한다는 뜻</td>
 </tr>
 <tr>
 <td>서버시간 vs 로컬시간 오차</td>
@@ -2236,15 +2344,25 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 <td>정원 초과로 확정돼버리는 사고</td>
 </tr>
 </tbody></table>
-<p><strong>흐름 요약</strong>: 정각 몰리는 트래픽 → CDN이 &quot;구경하는 부하&quot; 걸러냄 → 오토스케일/커넥션 풀로 몰리는 시간대 미리 대비 → 마지막 승부처인 원자적 연산(DB 락 또는 Redis)이 레이스 컨디션·오버부킹 차단.</p>
+<p><strong>흐름 요약</strong>:<br>
+정각 몰리는 트래픽 → CDN이 &quot;구경하는 부하&quot; 걸러냄 →<br>
+오토스케일/커넥션 풀로 몰리는 시간대 미리 대비 →<br>
+마지막 승부처인 원자적 연산(DB 락 또는 Redis)이 레이스 컨디션·오버부킹 차단.</p>
 <hr>
 <p><strong>체감 속도 차이 = &quot;캐싱 가능한 데이터 비율&quot; 차이</strong></p>
-<p>서버 성능 차이가 아니라 데이터 성격 차이. 내 포트폴리오(frontend Vercel/엣지 자동 배포, backend Railway 단일 리전)가 빠른 이유는 정적 콘텐츠 비율이 높아서. 반대로 은행(신분확인·계좌·이체)·증권(실시간 시세)이 버벅이는 이유는 캐싱 자체가 불가능한 데이터 비율이 높기 때문:</p>
+<p>서버 성능 차이가 아니라 데이터 성격 차이.<br>
+내 포트폴리오(frontend Vercel/엣지 자동 배포,<br>
+backend Railway 단일 리전)가 빠른 이유는 정적 콘텐츠 비율이 높아서.<br>
+반대로 은행(신분확인·계좌·이체)·증권(실시간 시세)이 버벅이는 이유는<br>
+캐싱 자체가 불가능한 데이터 비율이 높기 때문:</p>
 <ul>
-<li>개인화·보안 민감 데이터(계좌, 인증) → 캐싱 불가, 매번 origin + 다중 검증(잔액·한도·이상거래탐지) 직행</li>
-<li>실시간성 요구 데이터(주식 시세) → TTL을 극도로 짧게 잡아야 해서 캐싱 이점 거의 없음, 외부 시세 API 홉까지 추가돼 지연 누적</li>
+<li>개인화·보안 민감 데이터(계좌, 인증) → 캐싱 불가,<br>
+매번 origin + 다중 검증(잔액·한도·이상거래탐지) 직행</li>
+<li>실시간성 요구 데이터(주식 시세) → TTL을 극도로 짧게 잡아야 해서 캐싱 이점 거의 없음,<br>
+외부 시세 API 홉까지 추가돼 지연 누적</li>
 </ul>
-<p>→ &quot;안 바뀌는 정적 데이터 비율&quot;이 높을수록 체감 빠르고, &quot;캐싱 못 하는 민감·실시간 데이터 비율&quot;이 높을수록 체감 느림.</p>
+<p>→ &quot;안 바뀌는 정적 데이터 비율&quot;이 높을수록 체감 빠르고,<br>
+&quot;캐싱 못 하는 민감·실시간 데이터 비율&quot;이 높을수록 체감 느림.</p>
 <hr>
 </article>
 
@@ -2252,14 +2370,18 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 <p class="doc-kicker">X3 · 부록</p>
 <h1>메모리 계층과 레이턴시</h1>
 <blockquote>
-<p>[연속재생] 캐시 합본에 이어진 파트. &quot;최신 NVMe SSD가 RAM보다 200배 느리다는 사실, 알고 계셨나요?&quot;</p>
+<p>[연속재생] 캐시 합본에 이어진 파트.<br>
+&quot;최신 NVMe SSD가 RAM보다 200배 느리다는 사실,<br>
+알고 계셨나요?&quot;</p>
 </blockquote>
 <p>캐시를 사용자와 가까운 계층에서 끝내라는 말의 하드웨어적 근거. 3단계 캐시의 전제다.</p>
 <p><strong>메모리 계층 구조란</strong></p>
 <blockquote>
-<p>컴퓨터 시스템에서 <strong>속도 · 용량 · 비용</strong> 간의 균형(Trade-off)을 맞추기 위해 메모리를 여러 계층으로 나눈 구조.</p>
+<p>컴퓨터 시스템에서 <strong>속도 · 용량 · 비용</strong> 간의 균형(Trade-off)을 맞추기 위해<br>
+메모리를 여러 계층으로 나눈 구조.</p>
 </blockquote>
-<p>CPU는 매우 빠른데 디스크는 매우 느리다. 그 간극을 메우려고 여러 계층의 저장소를 <strong>CPU와의 거리</strong>에 따라 배치한 것.</p>
+<p>CPU는 매우 빠른데 디스크는 매우 느리다.<br>
+그 간극을 메우려고 여러 계층의 저장소를 <strong>CPU와의 거리</strong>에 따라 배치한 것.</p>
 <pre><code>빠름 / 작음 / 비쌈
         ┌─────────────────┐
         │   CPU 레지스터    │
@@ -2392,7 +2514,8 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 <blockquote>
 <p>&quot;최신 SSD 썼으니까 충분히 빠르겠지?&quot;</p>
 </blockquote>
-<p>NVMe SSD도 RAM보다 약 200배 느리다. &quot;SSD로 바꿨으니 DB 성능 걱정 끝&quot;은 위험한 접근이다.</p>
+<p>NVMe SSD도 RAM보다 약 200배 느리다.<br>
+&quot;SSD로 바꿨으니 DB 성능 걱정 끝&quot;은 위험한 접근이다.</p>
 <p>기억할 원칙 3개.</p>
 <ol>
 <li>계층 간 격차는 <strong>단위 자체가 다르다</strong> (ns → µs → ms)</li>
@@ -2401,14 +2524,16 @@ A. 있음. 다만 캐싱/락 &quot;구조&quot;는 상시 존재하고, 그 위�
 </ol>
 <p><strong>핵심 3줄</strong></p>
 <ul>
-<li>메모리 계층 구조는 <strong>속도 · 용량 · 비용의 균형(Trade-off)</strong> 을 맞추려고 메모리를 여러 계층으로 나눈 구조다</li>
+<li>메모리 계층 구조는 <strong>속도 · 용량 · 비용의 균형(Trade-off)</strong> 을 맞추려고<br>
+메모리를 여러 계층으로 나눈 구조다</li>
 <li>레이턴시는 데이터 크기와 무관한 <strong>접근 자체의 고정 비용</strong>이다</li>
 <li>계층 간 레이턴시는 <strong>단위가 바뀔 만큼</strong> 극적이다 (ns → µs → ms, RAM과 HDD 사이 약 5만 배)</li>
 </ul>
 <p><strong>[참고] Latency Numbers Every Programmer Should Know</strong></p>
 <p>영상 중간에 나온 인터랙티브 페이지. 실존한다 — Colin Scott 이 만들어 공개한 것.</p>
 <p><a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">https://colin-scott.github.io/personal_website/research/interactive_latency.html</a></p>
-<p>연도 슬라이더(1990 ~ 2020)를 좌우로 끌면 그 해 기준 수치와 블록 그림이 같이 바뀐다.<br>원 수치는 Peter Norvig 의 <a href="http://norvig.com/21-days.html#answers">Teach Yourself Programming in Ten Years</a> 답안에서 출발했고,<br>Jeff Dean 이 퍼뜨린 목록이 토대다.<br>L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕복(500 µs) · CA↔네덜란드 패킷 왕복(150 ms) 같은 항목이 들어 있다.</p>
+<p>연도 슬라이더(1990 ~ 2020)를 좌우로 끌면 그 해 기준 수치와 블록 그림이 같이 바뀐다.<br>원 수치는 Peter Norvig 의 <a href="http://norvig.com/21-days.html#answers">Teach Yourself Programming in Ten Years</a> 답안에서 출발했고,<br>Jeff Dean 이 퍼뜨린 목록이 토대다.<br>L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕복(500 µs)<br>
+· CA↔네덜란드 패킷 왕복(150 ms) 같은 항목이 들어 있다.</p>
 <p>같은 데이터센터 안의 왕복이 500 µs — <strong>RAM 접근(100 ns)보다 5,000배 느리다.</strong><br>네트워크를 타는 순간 메모리 계층 어디보다도 비싸진다는 뜻이고,<br>이게 로컬 캐시가 Redis보다 빠른 이유다.</p>
 <hr>
 </article>
@@ -3214,7 +3339,8 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, &#39;ALLSTATS LAST&#39
 <li><code>/* */</code> 는 일반 주석이고 <code>+</code> 가 붙은 <code>/*+ */</code> 만 힌트로 읽는다</li>
 <li><code>+</code> 는 여는 <code>/*</code> 에 붙어야 한다. <code>/* + INDEX...</code> 는 그냥 주석이 된다</li>
 <li><code>SELECT</code>·<code>INSERT</code>·<code>UPDATE</code>·<code>DELETE</code> 키워드 바로 뒤에만 유효하다</li>
-<li><strong>틀린 힌트는 에러 없이 조용히 무시된다.</strong> 인덱스명에 오타가 나도 아무 말 없이 풀스캔으로 돈다</li>
+<li><strong>틀린 힌트는 에러 없이 조용히 무시된다.</strong><br>
+인덱스명에 오타가 나도 아무 말 없이 풀스캔으로 돈다</li>
 </ul>
 <p><strong>경로를 바꾸는 힌트</strong></p>
 <table>
@@ -3274,7 +3400,8 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, &#39;ALLSTATS LAST&#39
 </tr>
 <tr>
 <td>딕셔너리 — 디스크, 영구</td>
-<td>테이블 목록, 컬럼 목록, 인덱스 목록, FK 참조, 주석, 무효 오브젝트, 최근 변경 객체, 권한, 프로시저/함수 소스, 소스 전체 검색, 컴파일 에러 상세</td>
+<td>테이블 목록, 컬럼 목록, 인덱스 목록, FK 참조, 주석, 무효 오브젝트,<br>
+최근 변경 객체, 권한, 프로시저/함수 소스, 소스 전체 검색, 컴파일 에러 상세</td>
 </tr>
 <tr>
 <td><code>DBA_</code> — 권한 필요</td>

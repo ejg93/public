@@ -9,7 +9,10 @@
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-changed=$( { git diff HEAD --name-only 2>/dev/null; git ls-files --others --exclude-standard; } | sort -u )
+# 비교 기준은 origin/main 과의 merge-base 다. HEAD 로 잡으면 커밋·리베이스 뒤에 diff 가 비어
+# 검사를 하나도 안 돌리고 도장만 찍는다(2026-09-21 에 실제로 났다). main 에서 곧장 일할 때는 둘이 같다.
+base=$(git merge-base HEAD origin/main 2>/dev/null || git rev-parse HEAD)
+changed=$( { git diff "$base" --name-only 2>/dev/null; git ls-files --others --exclude-standard; } | sort -u )
 hit() { [ "${1:-}" = "--all" ] || printf '%s\n' "$changed" | grep -qE "$2"; }
 fe=0; be=0; e2=0
 hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/(package\.json|package-lock\.json|next\.config\.js|tsconfig\.json|tailwind\.config\.js|postcss\.config\.js|eslint\.config\.mjs)$' && fe=1
