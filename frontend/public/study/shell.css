@@ -136,7 +136,6 @@ main:focus{outline:none;}
   margin:0 0 20px; padding:10px 14px; border-radius:0 8px 8px 0;
   border-left:3px solid var(--accent2); background:var(--surface2); color:var(--text); font-size:13.5px;
 }
-.q::before{content:"판정 질문"; display:block; font-size:10px; letter-spacing:.14em; color:var(--accent2); font-weight:700; margin-bottom:2px;}
 .page-tools{display:flex; align-items:center; gap:10px; margin:12px 0 20px; padding-bottom:12px; border-bottom:1px dashed var(--border);}
 .done-btn{
   display:flex; align-items:center; gap:8px; background:var(--surface2); border:1px solid var(--border);
