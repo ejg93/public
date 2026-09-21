@@ -18,11 +18,16 @@ hit "${1:-}" '^backend/(src/|pom\.xml$|Dockerfile$)' && be=1
 hit "${1:-}" '^frontend/(app|components|lib)/|^frontend/public/(study|game|docrules|jobhunt|toolbox)/|^frontend/e2e/|^frontend/playwright\.config\.ts$' && e2=1
 
 # 초록일 때 작업트리 tree 해시를 도장으로 남긴다. push hook 이 이것만 보고 판단한다(hook-push-gate.sh).
+# 도장은 git 디렉터리 안에 둔다. `.git` 을 그대로 쓰면 git worktree 에서 깨진다 —
+# 거기선 `.git` 이 디렉터리가 아니라 진짜 위치를 적어 둔 파일이라 하위 경로로 못 쓴다.
+# rev-parse 는 본 저장소에서 `.git`, worktree 에서 `.git/worktrees/<이름>` 을 준다.
+# 작업트리마다 도장이 갈라지는 것이 맞다 — 트리가 다르면 검증 결과도 다르다.
+GITDIR=$(git rev-parse --git-dir 2>/dev/null || echo .git)
 stamp() {
   tmp=$(mktemp)
   GIT_INDEX_FILE="$tmp" git read-tree HEAD 2>/dev/null
   GIT_INDEX_FILE="$tmp" git add -A . 2>/dev/null
-  GIT_INDEX_FILE="$tmp" git write-tree 2>/dev/null > .git/verify-stamp
+  GIT_INDEX_FILE="$tmp" git write-tree 2>/dev/null > "$GITDIR/verify-stamp"
   rm -f "$tmp"
 }
 
