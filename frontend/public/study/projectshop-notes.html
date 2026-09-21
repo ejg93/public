@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ProjectShop — 층·권한·상태머신을 왜 그렇게 정했나</title>
-<meta name="description" content="멀티 셀러 쇼핑몰의 층 구조·권한 모델·주문 상태머신을 왜 그렇게 정했는지, 결정마다 근거와 대가를 적었다.">
+<meta name="description" content="멀티 셀러 쇼핑몰의 층 구조·권한 모델·주문 상태머신을 왜 그렇게 정했는지 근거와 대가를 적었다.">
 <meta name="keywords" content="Tier / Layer,권한,상태머신,법 요건">
 <meta name="date" content="2026-08-23">
 <meta name="kind" content="결정">
@@ -185,7 +185,8 @@
   <div class="note warn"><b>프론트가 세션을 해석하는 것이 아니다.</b> 서버 메모리 세션이라
   쿠키에 든 것은 뜻 없는 식별자고, 프록시가 이미 그 값을 Next 서버로 통과시킨다.
   바뀌는 것은 <b>운반을 프레임워크가 하느냐 우리 코드가 하느냐</b>뿐이라 입구 하나에 가둔다.</div>
-  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다. 기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
+  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다.<br>
+    기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0003-scope-on-role-permission.md" target="_blank" rel="noopener">0003 스코프는 role_permission 행에 둔다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0004-permission-axes.md" target="_blank" rel="noopener">0004 권한 축을 넷으로 늘린다</a>
   </div>
@@ -324,7 +325,7 @@
   <div class="note"><b>「판단한 적 없는 것」과 「판단해서 괜찮은 것」은 다르다.</b>
   위 표가 그 판단을 기록한 것이다 — 로컬 전용이라 지금 위험은 없지만,
   <b>공개하기로 하면 인용 자료의 파생물 조항부터 다시 본다.</b></div>
-  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다. 기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
+  <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0001-flyway.md" target="_blank" rel="noopener">0001 스키마 변경은 Flyway로 관리한다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0002-spring-boot-4.md" target="_blank" rel="noopener">0002 Spring Boot 4.1, Java 25로 간다</a>
   </div>
@@ -445,7 +446,7 @@
   </figure>
   <div class="note"><b>실제로 걸렸다.</b> 셀러 신원 표시(제10조·제13조)가 코드에 흔적이 0이었다.
   DB 컬럼은 다 있는데 내리는 경로가 없었다. 요건표를 읽고 <b>「이걸 누가 채웠나」</b>를 물어야 나왔다.</div>
-  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다. 기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
+  <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0005-doc-and-compliance-axis.md" target="_blank" rel="noopener">0005 문서와 법 요건을 청크로 세운다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0007-compliance-design-choices.md" target="_blank" rel="noopener">0007 법 요건이 부딪치는 자리의 설계를 정한다</a>
   </div>
@@ -528,7 +529,7 @@
       <text x="588" y="41" font-size="10" fill="var(--muted)" text-anchor="middle">강제 지점 2위 — 여기까지 내렸다</text>
 
       <text x="0" y="76" font-size="11" fill="var(--muted)">문서에만 적힌 법은 안 지켜진다. 내릴 수 있는 데까지 내린 다음, 못 내린 것만 문서에 남긴다.</text>
-      <text x="0" y="98" font-size="11" fill="var(--muted)">DB 제약은 <tspan fill="var(--muted)">출처</tspan>로는 3위(우리가 만든 것)지만 <tspan fill="var(--muted)">막는 즉시성</tspan>은 법보다 세다 — 법은 5년 뒤, 제약은 0.1초 뒤에 걸린다.</text>
+      <text x="0" y="98" font-size="11" fill="var(--muted)">DB 제약은 <tspan fill="var(--text)" font-weight="700">출처</tspan>로는 3위(우리가 만든 것)지만 <tspan fill="var(--text)" font-weight="700">막는 즉시성</tspan>은 법보다 세다 — 법은 5년 뒤, 제약은 0.1초 뒤에 걸린다.</text>
     </svg>
   </figure>
 
@@ -554,7 +555,7 @@
   문서에 없는 방식이 코드에 먼저 들어가면 다음 사람이 그것을 <b>관례로 본다.</b></div>
   <p>그리고 지금 어긋나 있는 것은 규약 문서에 <strong>표로</strong> 적혀 있다 — 무엇이 어긋났고 어느 작업이 치울지가 같이 있다.
   「나중에 본다」는 처분이 아니라는 게 이 저장소의 규칙이다.</p>
-  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다. 기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
+  <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0008-document-baseline.md" target="_blank" rel="noopener">0008 기준 문서를 청크의 선행으로 세운다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0011-plan-dependency-audit.md" target="_blank" rel="noopener">0011 미착수 청크의 선행을 다시 훑고 D21 순환을 깬다</a>
   </div>
@@ -672,7 +673,7 @@
   </table></div>
   <p><code>own</code>·<code>seller</code> 는 값으로 표현되는데 <code>all</code> 은 <strong>「제한이 없다」</strong>라
   넣을 값이 없다. 타입으로 가르지 않으면 그 뜻이 주석에만 남는다 — 가장 약한 강제 지점이다.</p>
-  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다. 기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
+  <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0003-scope-on-role-permission.md" target="_blank" rel="noopener">0003 스코프는 role_permission 행에 둔다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0004-permission-axes.md" target="_blank" rel="noopener">0004 권한 축을 넷으로 늘린다</a> ·<br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0010-revoking-live-sessions.md" target="_blank" rel="noopener">0010 살아 있는 세션을 끊는 방법을 두 겹으로 둔다</a>
@@ -831,7 +832,7 @@
       <tr><td>그래도 나는 충돌</td><td>충돌만 골라 3회 재시도</td><td><strong>트랜잭션 바깥에서만</strong> — 안쪽은 이미 죽은 트랜잭션이라 다음 문장이 또 터진다</td></tr>
     </tbody>
   </table></div>
-  <div class="note"><b>근거 ADR</b> — 그때 왜 그렇게 정했는지는 ADR 이 쥔다. 기준 문서는 덮어쓰지만 ADR 은 안 고친다.<br>
+  <div class="note"><b>근거 ADR</b><br>
     <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/adr/0009-holiday-and-transition-table.md" target="_blank" rel="noopener">0009 공휴일은 데이터로, 전이표는 코드로 둔다</a>
   </div>
 </article>

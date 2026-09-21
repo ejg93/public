@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Next.js — Spring 이 하던 일이 어디로 갔나</title>
-<meta name="description" content="JSP·Spring 이 맡던 렌더링·번들·화면 이동을 Next.js App Router 에서는 누가 언제 하는지, 축 셋의 판정 질문으로 답한다.">
+<meta name="description" content="JSP·Spring 이 맡던 렌더링·번들·화면 이동을 Next.js 에서는 누가 언제 하는지 축 셋으로 답한다.">
 <meta name="keywords" content="App Router,Server / Client,하이드레이션,번들">
 <meta name="date" content="2026-08-30">
 <meta name="kind" content="배움">
@@ -942,8 +942,10 @@ const rows = await getOrderEvent(date)   // 함수 호출처럼 생겼지만 실
     </table>
   </div>
   <div class="note key">
-    <b>서버 입구를 둘로 가른 이유는 캐시다.</b> 한 함수에 옵션으로 두면 옵션을 빠뜨린 화면이 남의 주문을 캐시한다.<br>
-    서버 입구는 읽기 전용이고, 쓰기는 클라이언트 컴포넌트에서 브라우저 입구를 쓴다 — ① 의 「읽기는 서버, 쓰기는 클라이언트」가 그대로다.
+    <b>서버 입구를 둘로 가른 이유는 캐시다.</b><br>
+    한 함수에 옵션으로 두면 옵션을 빠뜨린 화면이 남의 주문을 캐시한다.<br>
+    서버 입구는 읽기 전용이고, 쓰기는 클라이언트 컴포넌트에서 브라우저 입구를 쓴다 —<br>
+    ① 의 「읽기는 서버, 쓰기는 클라이언트」가 그대로다.
   </div>
   <p>원문은 <a href="https://github.com/ejg93/ProjectShop/blob/main/doc/reference/frontend-rules.md" target="_blank" rel="noopener">doc/reference/frontend-rules.md 「서버를 부르는 입구가 셋이다」</a>. 2026-09-21 기준.</p>
 </article>
