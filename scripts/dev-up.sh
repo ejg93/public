@@ -51,6 +51,14 @@ echo "== backend 8080"
 if curl -sf -m 2 http://localhost:8080/api/jobs >/dev/null 2>&1; then
   echo "   이미 떠 있다"
 else
+  # application.properties 는 키가 들어 있어 커밋하지 않는다. 없으면 스프링이 뜨다 말고 죽는데,
+  # wait_for 는 90초를 기다린 뒤 로그 20줄만 뱉어서 「무엇이 없는지」가 안 보인다. 여기서 먼저 말한다.
+  PROPS=backend/src/main/resources/application.properties
+  if [ ! -f "$PROPS" ]; then
+    echo "   $PROPS 가 없다 — 키가 들어 있어 커밋하지 않는 파일이다."
+    echo "   cp $PROPS.template $PROPS 로 복사한 뒤 anthropic.api.key 와 youtube.api.key 를 채운다."
+    exit 1
+  fi
   case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) export JAVA_HOME="$JDK17" ;; esac
   (cd backend && ./mvnw -B -q spring-boot:run) >"$BACK_LOG" 2>&1 &
   wait_for http://localhost:8080/api/jobs 90 "backend" || { tail -20 "$BACK_LOG"; exit 1; }
