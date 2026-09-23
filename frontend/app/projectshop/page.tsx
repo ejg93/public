@@ -357,8 +357,8 @@ export default async function ProjectShop() {
           <div style={{ marginBottom: '18px' }}>
             <Figure src="/images/ps-layers.svg" alt="문서·테스트·앱 검증·DB 제약·타입 다섯 층을 아래로 갈수록 일찍 막히는 순으로 늘어놓은 그림" />
           </div>
-          <a href="/study/ai-workflow-notes" className="mono" style={{ fontSize: '12px', color: 'var(--accent)', letterSpacing: '1px', textDecoration: 'none' }}>
-            작업 틀 여섯 갈래는 학습 노트에 →
+          <a href="/study/ai-native-notes" className="mono" style={{ fontSize: '12px', color: 'var(--accent)', letterSpacing: '1px', textDecoration: 'none' }}>
+            AI 로 굴리는 방법은 학습 노트 「LLM · AI-Native」에 →
           </a>
         </div>
       </Section>

@@ -144,7 +144,7 @@ export default function Workflow() {
             </div>
           ))}
         </div>
-        <a href="/study/ai-workflow-notes" className="mono" style={{ ...linkStyle, fontSize: '12px', display: 'inline-block', marginTop: '16px' }}>
+        <a href="/study/ai-native-notes" className="mono" style={{ ...linkStyle, fontSize: '12px', display: 'inline-block', marginTop: '16px' }}>
           전체 노트 →
         </a>
       </Section>

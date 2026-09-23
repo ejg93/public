@@ -2,500 +2,198 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>아키텍처 학습노트</title>
-<meta name="description" content="Tier·트랜잭션·캐시·MSA 강의를 절 단위로 끊어 정리하고, 오라클이 SQL 한 문장을 처리하는 구조를 부록으로 붙였다.">
-<meta name="keywords" content="Tier / Layer,트랜잭션,격리수준,모듈러 모놀리스,Oracle 성능">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아키텍처 — Tier·트랜잭션·캐시·MSA 강의 정리</title>
+<meta name="description" content="코딩하는기술사 강의를 절 단위로 정리한 Tier·트랜잭션·캐시·MSA 와 오라클 SQL 부록.">
+<meta name="keywords" content="Tier / Layer,트랜잭션,캐시,MSA,Oracle">
 <meta name="date" content="2026-07-12">
-<style>
-  :root{
-    --bg:#0F2036;
-    --bg-2:#0B1930;
-    --panel:#152B47;
-    --panel-2:#1B3958;
-    --line:#2A4A6E;
-    --line-soft:#1F3958;
-    --ink:#E8F1FA;
-    --ink-dim:#8FAAC7;
-    --ink-faint:#7E9CBC;
-    --accent:#FFC24B;
-    --accent-2:#68E3C4;
-    --accent-3:#7BA9FF;
-    --danger:#FF8A80;
-    --radius:10px;
-    font-size:15px;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
-      var(--bg);
-    color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
-    line-height:1.62;
-    -webkit-font-smoothing:antialiased;
-    min-height:100vh;
-    padding-bottom:60px;
-  }
-  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
-
-  /* ---------- Header ---------- */
-  header.app-bar{
-    position:sticky; top:0; z-index:40;
-    background:rgba(11,25,48,0.92);
-    backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line);
-  }
-  .app-bar-row{
-    display:flex; align-items:center; gap:8px; flex-wrap:wrap; row-gap:6px;
-    padding:7px 10px;
-    max-width:760px; margin:0 auto;
-  }
-  .icon-btn{
-    background:var(--panel); border:1px solid var(--line); color:var(--ink);
-    width:30px; height:30px; border-radius:7px;
-    display:flex; align-items:center; justify-content:center;
-    font-size:15px; cursor:pointer; flex-shrink:0;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .icon-btn:active{background:var(--panel-2);}
-  .eyebrow{
-    font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;
-    flex:1; min-width:0;
-  }
-  .progress-pill{
-    font-size:11px; color:var(--ink-dim);
-    background:var(--panel); border:1px solid var(--line);
-    border-radius:20px; padding:4px 9px; flex-shrink:0;
-    display:flex; align-items:center; gap:5px;
-  }
-  .progress-pill b{color:var(--accent); font-weight:700;}
-  .progress-track{
-    height:3px; background:var(--line-soft); position:relative; overflow:hidden;
-  }
-  .progress-fill{
-    height:100%; width:0%; background:linear-gradient(90deg,var(--accent-3),var(--accent-2));
-    transition:width .1s linear;
-  }
-  .chip-btn{
-    font-size:11px; color:var(--ink-dim); background:var(--panel);
-    border:1px solid var(--line); border-radius:20px; padding:5px 9px;
-    white-space:nowrap; cursor:pointer; -webkit-tap-highlight-color:transparent;
-    flex-shrink:0;
-  }
-  .chip-btn:active{background:var(--panel-2); color:var(--ink);}
-
-  /* ---------- Drawer ---------- */
-  /* 스크림을 걷어냈다. 목차가 열려 있어도 본문 스크롤·클릭이 그대로 산다 */
-  .drawer{
-    position:fixed; top:0; left:0; bottom:0; width:82vw; max-width:320px;
-    background:var(--bg-2); border-right:1px solid var(--line);
-    z-index:50; transform:translateX(-100%); transition:transform .2s ease;
-    display:flex; flex-direction:column;
-  }
-  .drawer.open{transform:translateX(0);}
-  .drawer-head{
-    padding:16px 16px 10px; border-bottom:1px solid var(--line);
-    display:flex; align-items:center; justify-content:space-between;
-  }
-  .drawer-head .eyebrow{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;}
-  .drawer-head h2{font-size:14px; margin:2px 0 0;}
-  .drawer-list{overflow-y:auto; padding:8px 0 20px; flex:1;}
-  .drawer-stage{
-    font-size:10.5px; letter-spacing:.08em; color:var(--ink-faint);
-    padding:12px 16px 4px; text-transform:uppercase;
-  }
-  .drawer-link{
-    display:flex; align-items:center; gap:8px;
-    width:100%; text-align:left; background:none; border:none; color:var(--ink-dim);
-    font-size:13px; padding:8px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-    line-height:1.4;
-  }
-  .drawer-link:active{background:var(--panel);}
-  .drawer-link .dot{
-    width:6px; height:6px; border-radius:50%; background:var(--line); flex-shrink:0;
-  }
-  .drawer-link.done .dot{background:var(--accent-2);}
-  .drawer-link.done{color:var(--ink);}
-
-  /* ---------- Layout ---------- */
-  main{max-width:760px; margin:0 auto; padding:18px 14px 40px;}
-  .intro{
-    padding:4px 4px 20px; border-bottom:1px dashed var(--line); margin-bottom:18px;
-  }
-  .intro h1{
-    font-size:21px; margin:0 0 8px; color:var(--ink); letter-spacing:-.01em;
-  }
-  .intro blockquote{margin:0; padding-left:12px; border-left:2px solid var(--accent-2); color:var(--ink-dim); font-size:13px;}
-
-  /* ---------- Topic ---------- */
-  /* 아코디언(.stage · details.topic · .chk-wrap)은 걷어냈다.
-     한 항목이 한 화면이라 접을 것이 없다. 아래 「한 항목만 보이게」 절이 그 자리다. */
-  .stage-flow{font-size:13.5px; color:var(--ink-dim); margin-bottom:8px;}
-  .topic-content{padding:2px 0 14px; font-size:13.5px;}
-
-  /* ---------- Markdown element styling ---------- */
-  .topic-content h4, .stage-flow h4{font-size:13px; color:var(--accent-2); margin:14px 0 6px;}
-  .topic-content p, .stage-flow p{margin:8px 0; color:var(--ink);}
-  .topic-content strong, .stage-flow strong{color:var(--accent);}
-  .topic-content blockquote, .stage-flow blockquote{
-    margin:10px 0; padding:8px 12px; border-left:3px solid var(--accent-2);
-    background:rgba(104,227,196,0.06); color:var(--ink-dim); font-size:13px; border-radius:0 6px 6px 0;
-  }
-  .topic-content ul, .topic-content ol, .stage-flow ul, .stage-flow ol{padding-left:20px; margin:8px 0;}
-  .topic-content li, .stage-flow li{margin:4px 0;}
-  .topic-content hr, .stage-flow hr{
-    border:none; border-top:1px dashed var(--line); margin:16px 0;
-  }
-  .topic-content code, .stage-flow code{
-    font-family:"SFMono-Regular",Consolas,monospace; font-size:12px;
-    background:var(--panel-2); color:var(--accent-2); padding:1px 5px; border-radius:4px;
-  }
-  .topic-content pre, .stage-flow pre{
-    background:#081627; border:1px solid var(--line); border-radius:8px;
-    padding:12px; overflow-x:auto; margin:10px 0;
-  }
-  .topic-content pre code, .stage-flow pre code{background:none; padding:0; color:#CFE8E0; font-size:12px; line-height:1.55;}
-  .table-wrap{overflow-x:auto; margin:12px 0; border:1px solid var(--line); border-radius:8px;}
-  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:340px;}
-  thead th{
-    background:var(--panel-2); color:var(--accent-2); text-align:left;
-    padding:8px 10px; white-space:nowrap; border-bottom:1px solid var(--line);
-  }
-  tbody td{padding:7px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-dim); vertical-align:top;}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
-
-  footer.credit{
-    max-width:760px; margin:20px auto 0; padding:14px; text-align:center;
-    color:var(--ink-faint); font-size:11px; border-top:1px dashed var(--line);
-  }
-  ::selection{background:var(--accent); color:#0B1930;}
-
-  /* ═══════════ 한 항목만 보이게 (스크림 없음 · 본문이 안 멈춘다) ═══════════ */
-  :root{ --nav-w:288px; --bar-h:46px; }
-
-  .app-bar-row{max-width:none; padding:7px 12px;}
-  .bar-here{
-    font-size:12px; color:var(--accent-2); font-weight:600;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; min-width:0;
-  }
-  .bar-crumb{font-size:11.5px; color:var(--ink-faint); white-space:nowrap; flex-shrink:0;}
-
-  /* 드로어를 도킹 사이드바로 */
-  .drawer{
-    top:var(--bar-h); bottom:0; width:var(--nav-w); max-width:var(--nav-w);
-    z-index:30; overflow-y:auto; overscroll-behavior:contain;
-  }
-  .drawer-head{position:sticky; top:0; background:var(--bg-2); z-index:2;}
-
-  .drawer-stage{
-    display:flex; align-items:center; gap:8px; width:100%; text-align:left;
-    background:none; border:none; border-left:2px solid transparent;
-    font:inherit; font-size:11px; letter-spacing:.06em; color:var(--ink-faint);
-    padding:14px 16px 5px; cursor:pointer; text-transform:none;
-  }
-  .drawer-stage:hover{color:var(--accent-2);}
-  .drawer-stage[aria-current="true"]{color:var(--accent); border-left-color:var(--accent);}
-
-  .drawer-link{border-left:2px solid transparent; transition:background-color .12s,color .12s,border-color .12s;}
-  .drawer-link:hover{background:var(--panel); color:var(--ink);}
-  .drawer-link[aria-current="true"]{
-    background:var(--panel); color:var(--ink); font-weight:600; border-left-color:var(--accent-2);
-  }
-  .drawer-link[aria-current="true"] .dot{background:var(--accent-2);}
-
-  /* 본문 — 넓은 화면에서만 밀린다 */
-  main{transition:margin-left .2s ease; max-width:none; padding:18px 16px 48px;}
-  main:focus{outline:none;}
-  .page-inner{max-width:820px; margin:0 auto;}
-  @media (min-width:1080px){ main.shifted{margin-left:var(--nav-w);} }
-
-  /* 한 항목 = 한 화면 */
-  .page{display:none;}
-  .page.on{display:block; animation:pgin .18s ease;}
-  @keyframes pgin{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
-  .page-kicker{
-    font-size:10px; letter-spacing:.14em; color:var(--accent-2);
-    font-weight:700; text-transform:uppercase;
-  }
-  .page h1{font-size:20px; margin:5px 0 4px; letter-spacing:-.015em; color:var(--ink);}
-  .page-tools{
-    display:flex; align-items:center; gap:10px; margin:12px 0 20px;
-    padding-bottom:12px; border-bottom:1px dashed var(--line);
-  }
-  .done-btn{
-    display:flex; align-items:center; gap:8px; background:var(--panel);
-    border:1px solid var(--line); border-radius:20px; color:var(--ink-dim);
-    font:inherit; font-size:11.5px; padding:5px 12px 5px 8px; cursor:pointer;
-  }
-  .done-btn:hover{border-color:var(--accent-2); color:var(--ink);}
-  .done-btn .box{
-    width:15px; height:15px; border:1.5px solid var(--ink-faint); border-radius:4px;
-    display:inline-block; position:relative; flex-shrink:0;
-  }
-  .done-btn[aria-pressed="true"]{border-color:var(--accent-2); color:var(--accent-2);}
-  .done-btn[aria-pressed="true"] .box{background:var(--accent-2); border-color:var(--accent-2);}
-  .done-btn[aria-pressed="true"] .box::after{
-    content:""; position:absolute; left:4px; top:0; width:4px; height:9px;
-    border:solid var(--bg-2); border-width:0 2px 2px 0; transform:rotate(45deg);
-  }
-
-  /* 단계 개요 페이지 */
-  .stage-intro{font-size:13.5px;}
-  .topic-jump{display:grid; gap:8px; margin-top:18px;}
-  .topic-jump button{
-    display:flex; align-items:center; gap:10px; width:100%; text-align:left;
-    background:rgba(21,43,71,0.45); border:1px solid var(--line-soft); border-radius:8px;
-    color:var(--ink); font:inherit; font-size:13px; padding:11px 13px; cursor:pointer;
-  }
-  .topic-jump button:hover{border-color:var(--accent-2); background:var(--panel);}
-  .topic-jump .n{
-    font-family:"SFMono-Regular",Consolas,monospace; font-size:11px; color:var(--accent);
-    background:var(--panel-2); border-radius:5px; padding:2px 6px; flex-shrink:0;
-  }
-  .topic-jump .tick{margin-left:auto; color:var(--accent-2); font-size:12px;}
-
-  /* 이전 / 다음 */
-  .pager{display:flex; gap:10px; margin-top:34px; padding-top:14px; border-top:1px dashed var(--line);}
-  .pager button{
-    flex:1; background:var(--panel); border:1px solid var(--line); border-radius:8px;
-    color:var(--ink-dim); font:inherit; font-size:12px; padding:10px 12px;
-    cursor:pointer; text-align:left; min-width:0;
-  }
-  .pager button:hover:not(:disabled){background:var(--panel-2); color:var(--ink); border-color:var(--accent-2);}
-  .pager button:disabled{opacity:.35; cursor:default;}
-  .pager button span{display:block; font-size:10px; letter-spacing:.1em; color:var(--ink-faint);}
-  .pager button em{font-style:normal; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .pager .next{text-align:right;}
-
-  /* 본문 안의 마크다운은 topic-content 스타일을 그대로 쓴다 */
-  .page-body{padding:0; font-size:13.5px;}
-
-  /* 반복 영역 건너뛰기 — 목차 항목이 52개라 키보드가 그걸 다 지나야 본문에 닿는다.
-     display:none 으로 숨기면 초점 자체가 안 가서 있으나 마나다. */
-  .skip{
-    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
-    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
-  }
-  .skip:focus{
-    position:fixed; top:8px; left:8px; z-index:60; width:auto; height:auto;
-    margin:0; padding:8px 14px; clip:auto; overflow:visible;
-    background:var(--accent); color:#0B1930; font-size:12.5px; font-weight:700;
-    border-radius:8px; text-decoration:none;
-  }
-  /* 닫힌 목차는 화면 밖에 있으므로 초점도 안 가야 한다 */
-  .drawer{visibility:hidden; transition:transform .2s ease, visibility .2s ease;}
-  .drawer.open{visibility:visible;}
-  /* 절을 바꿀 때 제목으로 초점을 옮긴다. 프로그램이 옮긴 초점이라 테두리는 안 그린다 */
-  .page h1:focus{outline:none;}
-
-  /* ---------- 스크롤바 ---------- */
-  /* color-scheme 한 줄로 브라우저 기본 스크롤바·폼 컨트롤이 어두워진다.
-     ::-webkit-scrollbar 를 안 쓰는 브라우저의 바탕이 되는 줄이라 먼저 둔다. */
-  :root{ color-scheme:dark; }
-
-  /* 표준 속성 (Firefox) */
-  html{ scrollbar-width:thin; scrollbar-color:#4573A6 var(--bg-2); }
-  .drawer,.table-wrap,pre{ scrollbar-width:thin; scrollbar-color:#4573A6 transparent; }
-
-  /* 고정된 머리 아래로 목표가 숨지 않게 — 건너뛰기 링크가 이걸 쓴다 */
-  html{ scroll-padding-top:calc(var(--bar-h) + 10px); }
-
-  /* WebKit · Chromium */
-  ::-webkit-scrollbar{ width:11px; height:11px; }
-  ::-webkit-scrollbar-track{ background:var(--bg-2); }
-  ::-webkit-scrollbar-thumb{
-    background:#4573A6; border-radius:99px;
-    border:3px solid var(--bg-2);   /* 트랙과 사이를 띄워 얇아 보이게 한다 */
-  }
-  ::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; }
-  ::-webkit-scrollbar-corner{ background:var(--bg-2); }
-
-  /* 안쪽 스크롤(목차·표·코드)은 더 얇고 트랙을 안 그린다 */
-  .drawer::-webkit-scrollbar,
-  .table-wrap::-webkit-scrollbar,
-  pre::-webkit-scrollbar{ width:8px; height:8px; }
-  .drawer::-webkit-scrollbar-track,
-  .table-wrap::-webkit-scrollbar-track,
-  pre::-webkit-scrollbar-track{ background:transparent; }
-  .drawer::-webkit-scrollbar-thumb,
-  .table-wrap::-webkit-scrollbar-thumb,
-  pre::-webkit-scrollbar-thumb{
-    background:#4573A6; border:2px solid transparent; background-clip:padding-box;
-  }
-  .drawer::-webkit-scrollbar-thumb:hover,
-  .table-wrap::-webkit-scrollbar-thumb:hover,
-  pre::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; background-clip:padding-box; }
-</style>
+<meta name="kind" content="배움">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<link rel="stylesheet" href="/study/shell.css">
+<script src="/study/shell.js" defer></script>
 </head>
 <body>
+<main id="mainContent" data-title="아키텍처" data-stages="S1:1단계 — 아키텍처 철학 기초|S2:2단계 — DB / 트랜잭션|S3:3단계 — 캐시|S4:4단계 — MSA|S5:5단계 — 메시지 / 이벤트|S6:6단계 — 분산 시스템 고급|S7:7단계 — 실전 설계 케이스|S8:8단계 — 아키텍처 평가 / 원칙|X1:부록 — 모니터링|X2:부록 — 캐치테이블 예시|X3:부록 — 메모리 계층과 레이턴시|X4:부록 — 읽기 vs 쓰기 성능 최적화|X5:부록 — 오라클 SQL 처리 구조와 성능 측정">
 
-<a class="skip" href="#mainContent">본문 바로가기</a>
-
-<header class="app-bar">
-  <div class="app-bar-row">
-    <button class="icon-btn" id="drawerOpenBtn" aria-label="목차 열기" aria-expanded="false">☰</button>
-    <div class="bar-crumb" id="barCrumb">STUDY</div>
-    <div class="bar-here" id="barHere">—</div>
-    <button class="chip-btn" id="resetProgressBtn">진행률 초기화</button>
-    <div class="progress-pill"><b id="doneCount">0</b>/<span id="totalCount">0</span> 완료</div>
-  </div>
-  <div class="progress-track"><div class="progress-fill" id="scrollFill"></div></div>
-</header>
-
-<nav class="drawer" id="drawer">
-  <div class="drawer-head">
-    <div>
-      <div class="eyebrow">목차</div>
-      <h2>Contents</h2>
-    </div>
-    <button class="icon-btn" id="drawerCloseBtn" aria-label="닫기">✕</button>
-  </div>
-  <div class="drawer-list" id="drawerList"></div>
-</nav>
-
-<main id="mainContent" tabindex="-1">
-  <div class="page-inner">
-    <div class="page" id="page-intro"><div class="intro" id="introBlock"></div></div>
-    <div id="pagesRoot"></div>
-    <div class="pager" id="pager"></div>
-  </div>
-</main>
-
-<footer class="credit">코딩하는기술사 (@codingpe) 영상 정리 · 학습용 개인 노트</footer>
-
-<script type="text/markdown" id="source-md">
-# Architecture Study Notes
-> 코딩하는기술사 (@codingpe) 영상 정리
-
----
-
-## 1단계 — 아키텍처 철학 기초
-
-### 1. Tier vs Layer
-> 개발자 필독 | 티어와 레이어 구분 #개발자개념장착 (5분 32초)
-
-| 구분 | Tier | Layer |
-|------|------|-------|
-| 원래 뜻 | 층, 단계 | 층, 겹 |
-| 관점 | **물리적** 분리 | **논리적** 분리 |
-| 위치 | 다른 서버 / 프로세스 | 같은 소프트웨어 구성 내 |
-| 통신 | 네트워크 호출 | 함수 호출 |
-| 예시 | Client ↔ Server ↔ DB | Controller → Service → Repository |
-
-**Tier** : SW System을 구성하는 물리적으로 분리된 실행 계층
-- 네트워크로 연결 → 요청/응답이 양방향으로 오감
-```
-[Client] ↔ [Server] ↔ [DB]
-```
-
-**Layer** : SW 구성을 역할과 책임에 따라 논리적으로 나눈 구조
-- 함수 호출로 연결 → **의존 방향이 단방향** (상위 → 하위만 호출, 역방향 금지)
-```
-Presentation (Controller)
+<article class="doc" id="t1" data-stage="S1">
+<p class="doc-kicker">S1 · 1단계 — 아키텍처 철학 기초</p>
+<h1>1. Tier vs Layer</h1>
+<blockquote>
+<p>개발자 필독 | 티어와 레이어 구분 #개발자개념장착 (5분 32초)</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>Tier</th>
+<th>Layer</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>원래 뜻</td>
+<td>층, 단계</td>
+<td>층, 겹</td>
+</tr>
+<tr>
+<td>관점</td>
+<td><strong>물리적</strong> 분리</td>
+<td><strong>논리적</strong> 분리</td>
+</tr>
+<tr>
+<td>위치</td>
+<td>다른 서버 / 프로세스</td>
+<td>같은 소프트웨어 구성 내</td>
+</tr>
+<tr>
+<td>통신</td>
+<td>네트워크 호출</td>
+<td>함수 호출</td>
+</tr>
+<tr>
+<td>예시</td>
+<td>Client ↔ Server ↔ DB</td>
+<td>Controller → Service → Repository</td>
+</tr>
+</tbody></table>
+<p><strong>Tier</strong> : SW System을 구성하는 물리적으로 분리된 실행 계층</p>
+<ul>
+<li>네트워크로 연결 → 요청/응답이 양방향으로 오감</li>
+</ul>
+<pre><code>[Client] ↔ [Server] ↔ [DB]
+</code></pre>
+<p><strong>Layer</strong> : SW 구성을 역할과 책임에 따라 논리적으로 나눈 구조</p>
+<ul>
+<li>함수 호출로 연결 → <strong>의존 방향이 단방향</strong> (상위 → 하위만 호출, 역방향 금지)</li>
+</ul>
+<pre><code>Presentation (Controller)
       ↓ 함수 호출
   Business (Service)
       ↓ 함수 호출
  Data Access (Repository)
-```
-
-> **핵심 차이**: Tier는 ↔ (네트워크 왕복), Layer는 → (의존 단방향)  
-> Repository가 Service를 직접 호출하면 Layer 위반 — 의존성 역전이 필요한 경우 DIP 패턴 사용
-
-> 둘은 독립적 — 1-Tier 안에 3-Layer 가능, 3-Tier 각각이 또 내부 Layer 가질 수 있음
-
-**Tier 역사: 2-Tier (Fat Client 시대, 1990년대 ~ 2000년대 초)**
-
-```
-[클라이언트 (Fat Client)]   ← 1st Tier
+</code></pre>
+<blockquote>
+<p><strong>핵심 차이</strong>: Tier는 ↔ (네트워크 왕복), Layer는 → (의존 단방향)<br>Repository가 Service를 직접 호출하면 Layer 위반 — 의존성 역전이 필요한 경우 DIP 패턴 사용</p>
+</blockquote>
+<blockquote>
+<p>둘은 독립적 — 1-Tier 안에 3-Layer 가능, 3-Tier 각각이 또 내부 Layer 가질 수 있음</p>
+</blockquote>
+<p><strong>Tier 역사: 2-Tier (Fat Client 시대, 1990년대 ~ 2000년대 초)</strong></p>
+<pre><code>[클라이언트 (Fat Client)]   ← 1st Tier
   설치형 데스크톱 .exe
   화면 + 업무로직 + SQL 전부 클라이언트에 존재
        ↕ 직접 연결
       [DB 서버]             ← 2nd Tier
-```
-
-- 대표 기술: Visual Basic, Delphi, PowerBuilder, C++ Builder
-- 클라이언트가 DB에 직접 접속 권한을 가짐
-
-**2-Tier의 문제점 — 공통 원인: "업무 로직이 클라이언트에 있었기 때문"**
-
-| 문제 | 내용 |
-|------|------|
-| 보안 | 클라이언트가 DB 직접 접속 권한 보유 → DB 접속 정보 유출 시 직접 접근 가능 |
-| 유지보수 | 업무 로직이 여러 클라이언트에 분산 → 정책 변경 시 모든 클라이언트 수정·재배포 필요 |
-| 확장성 | 커넥션 풀이 클라이언트 PC마다 분산 → DB가 감당할 커넥션 수를 중앙에서 통제 불가 |
-
-> 이 문제들이 3-Tier (Server 계층 추가) 탄생의 이유
-
-> **핵심**: "통제"는 중간 계층이 있어야 가능. DB는 데이터 저장이 목적이지 트래픽 관리가 목적이 아님.  
-> 2-Tier = DB가 최전선. 커넥션 한계 초과 시 그냥 거부, 대기열/안내 없음.  
-> 3-Tier = App Server가 트래픽 통제 → DB엔 정해진 수만 연결 (커넥션 풀)
-
-**Tier 역사: 3-Tier (App Server 등장, 1990년대 후반 ~ 2000년대)**
-
-```
-[클라이언트 (화면만)]   ← 1st Tier
+</code></pre>
+<ul>
+<li>대표 기술: Visual Basic, Delphi, PowerBuilder, C++ Builder</li>
+<li>클라이언트가 DB에 직접 접속 권한을 가짐</li>
+</ul>
+<p><strong>2-Tier의 문제점 — 공통 원인: &quot;업무 로직이 클라이언트에 있었기 때문&quot;</strong></p>
+<table>
+<thead>
+<tr>
+<th>문제</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>보안</td>
+<td>클라이언트가 DB 직접 접속 권한 보유 → DB 접속 정보 유출 시 직접 접근 가능</td>
+</tr>
+<tr>
+<td>유지보수</td>
+<td>업무 로직이 여러 클라이언트에 분산 → 정책 변경 시 모든 클라이언트 수정·재배포 필요</td>
+</tr>
+<tr>
+<td>확장성</td>
+<td>커넥션 풀이 클라이언트 PC마다 분산 → DB가 감당할 커넥션 수를 중앙에서 통제 불가</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>이 문제들이 3-Tier (Server 계층 추가) 탄생의 이유</p>
+</blockquote>
+<blockquote>
+<p><strong>핵심</strong>: &quot;통제&quot;는 중간 계층이 있어야 가능.<br>
+DB는 데이터 저장이 목적이지 트래픽 관리가 목적이 아님.<br>2-Tier = DB가 최전선.<br>
+커넥션 한계 초과 시 그냥 거부,<br>
+대기열/안내 없음.<br>3-Tier = App Server가 트래픽 통제 → DB엔 정해진 수만 연결 (커넥션 풀)</p>
+</blockquote>
+<p><strong>Tier 역사: 3-Tier (App Server 등장, 1990년대 후반 ~ 2000년대)</strong></p>
+<pre><code>[클라이언트 (화면만)]   ← 1st Tier
        ↕ 네트워크
   [Application Server] ← 2nd Tier  ← 업무 로직 여기로 이동
        ↕ 네트워크
       [DB 서버]         ← 3rd Tier
-```
-
-App Server의 역할 (2-Tier 문제 전부 해결):
-- 업무 로직을 서버로 이동 → 클라이언트 재배포 불필요
-- DB 커넥션 풀 중앙 관리 → 확장성 확보
-- 트랜잭션 관리
-- 클라이언트와 DB 사이의 보안 경계 역할
-
-> C/S 기반: Tuxedo, CORBA, COM+, 초기 EJB  
-> Web 기반: WebLogic, WebSphere (WAS) — 웹 시대로 넘어가며 주류
-
----
-
-**웹/모바일 시대 — 구조 변화 흐름**
-
-| 시기 | 변화 |
-|------|------|
-| 2000년대 초 | 브라우저가 클라이언트가 됨 → Fat Client 사라지기 시작 |
-| RIA 시대 | ActiveX, Flash, Applet으로 브라우저가 다시 무거워짐 → 사실상 Fat Client 재현 |
-| **핵심 변화** | **브라우저는 일반적으로 DB에 직접 연결하지 않는다** (DB 드라이버 부재, 보안 정책, 계정 노출 위험) |
-| 2010년대 | HTML5 표준화 · ActiveX 퇴출 → 브라우저가 진정한 Thin Client로 / 스마트폰 앱 등장 |
-| 현재 | REST API / GraphQL이 프론트-백 경계의 표준 |
-
-> 3-Tier 원칙은 그대로 — 클라이언트 / API 서버 / DB로 이름만 바뀐 것
-
----
-
-**현대 Architecture — N-Tier**
-
-```
-[앱 / 브라우저 클라이언트]
+</code></pre>
+<p>App Server의 역할 (2-Tier 문제 전부 해결):</p>
+<ul>
+<li>업무 로직을 서버로 이동 → 클라이언트 재배포 불필요</li>
+<li>DB 커넥션 풀 중앙 관리 → 확장성 확보</li>
+<li>트랜잭션 관리</li>
+<li>클라이언트와 DB 사이의 보안 경계 역할</li>
+</ul>
+<blockquote>
+<p>C/S 기반: Tuxedo, CORBA, COM+, 초기 EJB<br>Web 기반: WebLogic, WebSphere (WAS) — 웹 시대로 넘어가며 주류</p>
+</blockquote>
+<hr>
+<p><strong>웹/모바일 시대 — 구조 변화 흐름</strong></p>
+<table>
+<thead>
+<tr>
+<th>시기</th>
+<th>변화</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>2000년대 초</td>
+<td>브라우저가 클라이언트가 됨 → Fat Client 사라지기 시작</td>
+</tr>
+<tr>
+<td>RIA 시대</td>
+<td>ActiveX, Flash, Applet으로 브라우저가 다시 무거워짐 → 사실상 Fat Client 재현</td>
+</tr>
+<tr>
+<td><strong>핵심 변화</strong></td>
+<td><strong>브라우저는 일반적으로 DB에 직접 연결하지 않는다</strong> (DB 드라이버 부재, 보안 정책, 계정 노출 위험)</td>
+</tr>
+<tr>
+<td>2010년대</td>
+<td>HTML5 표준화 · ActiveX 퇴출 → 브라우저가 진정한 Thin Client로 / 스마트폰 앱 등장</td>
+</tr>
+<tr>
+<td>현재</td>
+<td>REST API / GraphQL이 프론트-백 경계의 표준</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>3-Tier 원칙은 그대로 — 클라이언트 / API 서버 / DB로 이름만 바뀐 것</p>
+</blockquote>
+<hr>
+<p><strong>현대 Architecture — N-Tier</strong></p>
+<pre><code>[앱 / 브라우저 클라이언트]
        ↕ HTTPS / REST / GraphQL
       [API 서버]
            ↕
     [캐시 / 메시지큐]
            ↕
       [DB / 저장소]
-```
-
-- N-Tier = 3-Tier 이상으로 계층이 늘어난 구조
-- 캐시, 메시지큐, 인증 서버 등이 별도 Tier로 분리
-- MSA에서는 여러 개의 3-Tier 서비스가 공존
-
-> Tier가 늘수록 유연성↑ 복잡성↑ — 적절한 수준이 중요
-
-**Tier "물리적 분리"의 현대적 해석**
-- 고전: 기계(서버)가 물리적으로 다름
-- 현대 기준: **네트워크 없이는 통신 불가능한 경계**가 존재하면 Tier로 취급
-- Docker 컨테이너도 Tier — 같은 기기여도 HTTP/TCP 쳐야 통신 가능
-- 판단 기준: `네트워크 호출 필요?` → YES = Tier, `함수 호출로 끝?` → YES = Layer
-
-```
-실제 사례 (Spring + MyBatis 환경):
+</code></pre>
+<ul>
+<li>N-Tier = 3-Tier 이상으로 계층이 늘어난 구조</li>
+<li>캐시, 메시지큐, 인증 서버 등이 별도 Tier로 분리</li>
+<li>MSA에서는 여러 개의 3-Tier 서비스가 공존</li>
+</ul>
+<blockquote>
+<p>Tier가 늘수록 유연성↑ 복잡성↑ — 적절한 수준이 중요</p>
+</blockquote>
+<p><strong>Tier &quot;물리적 분리&quot;의 현대적 해석</strong></p>
+<ul>
+<li>고전: 기계(서버)가 물리적으로 다름</li>
+<li>현대 기준: <strong>네트워크 없이는 통신 불가능한 경계</strong>가 존재하면 Tier로 취급</li>
+<li>Docker 컨테이너도 Tier — 같은 기기여도 HTTP/TCP 쳐야 통신 가능</li>
+<li>판단 기준: <code>네트워크 호출 필요?</code> → YES = Tier, <code>함수 호출로 끝?</code> → YES = Layer</li>
+</ul>
+<pre><code>실제 사례 (Spring + MyBatis 환경):
 [브라우저] ↔ [Spring 서버] ↔ [MySQL]   ← Tier (네트워크 경계)
               ↑ 서버 내부
          Controller (@Controller)
@@ -503,468 +201,785 @@ App Server의 역할 (2-Tier 문제 전부 해결):
           Service (@Service / ServiceImpl)
               ↓
          Repository (@Mapper / MyBatis)    ← Layer (함수 호출)
-```
-
-**Layer 단방향이어야 하는 이유**
-- 역방향 호출 시 **순환 의존** 발생 → 수정 한 곳이 전체에 영향
-- 계층 간 **책임 경계 붕괴** → 어디서 뭘 해야 하는지 모호
-- **테스트 불가** → Repository 단위 테스트하려면 Service, Controller까지 올려야 함
-- `Service` 인터페이스 + `ServiceImpl` 구현체 분리 = 상위 계층이 구현체가 아닌 **추상에만 의존**하도록 강제 (각 계층은 자기 바로 아래 인터페이스만 알면 됨)
-
----
-
-**[심화] 웹 vs 게임 통신 방식 비교**
-
-| | 웹 | 실시간 게임 |
-|--|--|--|
-| 연결 | 요청마다 새로 (HTTP) | 상시 유지 (TCP Socket / WebSocket) |
-| 상태 유지 | 세션ID 쿠키 | 연결 자체가 상태 |
-| 프로토콜 | TCP | 위치/이펙트 → UDP, 결제/채팅 → TCP |
-
-**HTTP는 Stateless** — 요청/응답 후 연결 끊김. 로그인 유지는 세션ID 쿠키로 흉내냄.
-
-**게임 데이터 분리:**
-```
-서버 보유 (검증 필요): 위치, 체력, 골드, 스킬 판정
+</code></pre>
+<p><strong>Layer 단방향이어야 하는 이유</strong></p>
+<ul>
+<li>역방향 호출 시 <strong>순환 의존</strong> 발생 → 수정 한 곳이 전체에 영향</li>
+<li>계층 간 <strong>책임 경계 붕괴</strong> → 어디서 뭘 해야 하는지 모호</li>
+<li><strong>테스트 불가</strong> → Repository 단위 테스트하려면 Service, Controller까지 올려야 함</li>
+<li><code>Service</code> 인터페이스 + <code>ServiceImpl</code> 구현체 분리 = 상위 계층이 구현체가 아닌 <strong>추상에만 의존</strong>하도록 강제 (각 계층은 자기 바로 아래 인터페이스만 알면 됨)</li>
+</ul>
+<hr>
+<p><strong>[심화] 웹 vs 게임 통신 방식 비교</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>웹</th>
+<th>실시간 게임</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>연결</td>
+<td>요청마다 새로 (HTTP)</td>
+<td>상시 유지 (TCP Socket / WebSocket)</td>
+</tr>
+<tr>
+<td>상태 유지</td>
+<td>세션ID 쿠키</td>
+<td>연결 자체가 상태</td>
+</tr>
+<tr>
+<td>프로토콜</td>
+<td>TCP</td>
+<td>위치/이펙트 → UDP, 결제/채팅 → TCP</td>
+</tr>
+</tbody></table>
+<p><strong>HTTP는 Stateless</strong> — 요청/응답 후 연결 끊김. 로그인 유지는 세션ID 쿠키로 흉내냄.</p>
+<p><strong>게임 데이터 분리:</strong></p>
+<pre><code>서버 보유 (검증 필요): 위치, 체력, 골드, 스킬 판정
 클라 보유 (렌더링용): 스킨, 모델, 이펙트, 미니맵
 → 커스텀 스킨이 본인 화면에만 적용되는 이유
-```
-
-**UDP 쓰는 이유** — 위치 패킷 하나 손실돼도 다음 프레임에 새 위치 옴. 재전송 기다리는 딜레이가 더 치명적.  
-**보간(interpolation)** 으로 손실된 위치 추정. 스킬 적중 판정은 서버가 최종 결정.  
-→ "분명히 피했는데 맞음" = 핑 차이 + UDP 손실 + 서버 판정 타이밍 차이
-
-**[심화] 브라우저 제약**
-
-브라우저 = 샌드박스. TCP/UDP 직접 못 씀. 실시간 연결 우회책만 허용:
-- `WebSocket` — HTTP 업그레이드 후 양방향 유지 (채팅, 주식차트)
-- `SSE` — 서버→클라 단방향
-- `WebRTC` — 브라우저끼리 P2P (화상통화)
-
-게임 클라이언트(.exe) = OS 위 직접 실행 → TCP/UDP 자유, 제약 없음.  
-브라우저 게임 성능 한계 / 플래시 망한 이유 = 이 샌드박스 제약 때문.
-
----
-
-**[1번 영상 복습 질문] — 스스로 답 내보기**
-1. MSA는 몇 Tier일까? Tier와 서비스 개수는 다른 개념인가?
-2. Firebase · Supabase 같은 BaaS를 쓰면 백엔드 개발자가 필요 없어질까?
-3. 왜 CORBA·DCOM은 사라지고 REST API가 살아남았을까?
-
----
-
-### 2. 모놀리식이 먼저입니다
-> 모놀리식이 먼저 입니다. 😊 (4분 3초)
-
-**Why MSA?**
-
-MSA는 모놀리식 아키텍처의 한계에서 출발한 해결책.  
-그 한계를 모르면 MSA도 이해할 수 없음.
-
-> "모놀리식을 제대로 해본 사람이 MSA를 제대로 씁니다"
-
-**모놀리식이 커지면 나타나는 대표적인 한계**  
-(Martin Fowler & James Lewis, 2014 / Conway's Law 기반)
-
-| 한계 | 문제 | MSA 해결책 |
-|------|------|-----------|
-| 배포 | 버튼 하나 바꿔도 전체 애플리케이션 재배포. 배포 범위·위험도 증가 | 서비스 단위 독립 배포 |
-| 확장 | 특정 기능만 과부하여도 전체 애플리케이션을 함께 확장 | 서비스 단위 독립 스케일 |
-| 협업 | 팀이 커질수록 변경 하나가 다른 팀 작업을 망침. 독립 개발 어려움 | 팀 단위 독립 개발 지원 |
-
-> 이 한계를 직접 경험해봐야 MSA의 설계 결정들이 납득됨
-
-**[추가] 모놀리식 한계 보완**
-
-| 한계 | 문제 | MSA 해결책 |
-|------|------|-----------|
-| 장애 격리 (SPOF) | 결제 모듈 하나 죽으면 전체 서비스 다운 | 서비스별 독립 장애 격리 |
-| 스케일링 비효율 | 트래픽 몰리는 기능만 키우고 싶어도 전체 애플리케이션을 스케일업해야 함 | 트래픽 몰리는 서비스만 스케일아웃 (주문 서비스만 10개 띄우기) |
-| 기술 스택 고착 | 전체가 한 언어/프레임워크에 묶임 | 서비스별 최적 스택 선택 가능 (추천 → Python, 결제 → Java) |
-
-**[추가] MSA 단점 상세**
-
-영상에서 "관리 복잡성" 으로 묶인 것의 실체:
-
-| 단점 | 내용 |
-|------|------|
-| 분산 트랜잭션 | 주문 + 결제 + 재고 동시 성공해야 하는데 중간 하나 실패 시 롤백 처리 매우 복잡 |
-| 네트워크 레이턴시 | 함수 호출이 네트워크 호출로 바뀜 → 느려짐, 실패 가능성 추가 |
-| 데이터 일관성 | 서비스마다 DB 분리 → 정합성 맞추기 어려움 |
-| 배포 파이프라인 | 서비스 수만큼 CI/CD 파이프라인 관리 |
-| 로컬 개발 | 서비스 여러 개 동시 기동해야 개발 가능 |
-
-> 결론: 모놀리식 문제 = **결합도**, MSA 문제 = **분산 복잡성**. 트레이드오프.  
-> 시스템이 충분히 크지 않으면 MSA가 오히려 일을 늘림.
-
----
-
-**STEP 1 — 모놀리식 기본기부터**
-
-| 기본기 (토대) | 모놀리식 기본기 (메인) |
-|---|---|
-| 네트워크 (HTTP) | REST API · JSON |
-| OS (프로세스/스레드) | 인증 (세션 · JWT) |
-| 자료구조 | DB 연동 CRUD |
-| Docker 기초 | 트랜잭션 처리 |
-| | 캐싱 |
-| | DB 설계 ← MSA에서도 결국 이걸 잘해야 함 |
-
-추천 실습: Spring Boot로 CRUD + JWT 인증 + 트랜잭션 적용한 개인 프로젝트 1~2개 완성하기
-
----
-
-**STEP 2 — 개념은 미리 알아둬도 좋습니다**
-
-> 채용공고에서 MSA 환경은 매우 흔해짐. 구현보다 먼저 개념은 알아두는 것이 좋음.
-
-**이 정도는 미리 — 개념 수준으로**
-- MSA가 왜 등장했는가
-- 서비스 분리의 기준
-- API Gateway의 역할
-- 서비스 간 통신 방식 (동기 / 비동기)
-- 분산 트랜잭션 문제
-
-**아직은 괜찮음 — 구현은 나중에**
-- Kafka 직접 구축
-- Kubernetes 운영
-- Service Mesh 설정
-- 분산 추적 (Jaeger 등)
-
-> 기본기 없이 배우면 기술 스택 암기에 그침
-
----
-
-**STEP 3 — 기본기가 되면 MSA가 납득됩니다**
-
-> 모놀리식의 고통을 직접 겪은 사람은 MSA의 복잡한 설계 결정들이 왜 그렇게 됐는지 자연스럽게 납득됨
-
-**이때 비로소 보이는 것**
-- 트랜잭션 처리 → 분산 트랜잭션의 어려움
-- DB 설계 → 서비스별 DB 분리 이유
-- 캐싱 → 분산 캐시 전략
-- 인증 → API G/W 인증 위임 구조
-
-**이때 공부하면 효과적인 것**
-- Kafka / RabbitMQ (MSA 외에도 널리 쓰임)
-- Kubernetes · Service Mesh
-- Service Mesh (Istio 등)
-- 분산 추적 · 모니터링
-
----
-
-**[2번 영상 복습 질문]**
-1. 모놀리식이 커질수록 나타나는 3가지 한계는?
-2. 모놀리스냐 MSA냐 — 언제 MSA로 전환을 고려해야 하는가?
-3. 모놀리식 기본기(트랜잭션, DB 설계, 캐싱, 인증)를 먼저 해야 MSA가 납득되는 이유는?
-
----
-
-### 3. 모놀리스 vs MSA
-> 스타트업 딜레마! 모놀리스냐 MSA냐? (7분 20초)
-
-**판정 질문 — 표를 읽기 전에 이것부터**
-
-| 개념 | 질문 | 예 → |
-|---|---|---|
-| 모놀리스 | 전체를 한 번에 배포해도 팀끼리 안 부딪히나? | 한 덩어리로 둔다 |
-| MSA | 기능마다 배포 주기·확장량·장애 범위를 따로 가져가야 하나? | 서비스로 자른다 |
-
-> 둘 다 「아니오」거나 헷갈리면 모놀리스다.<br>
-> MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 아니다.
-
----
-
-| 구분 | 모놀리스 | MSA |
-|------|----------|-----|
-| 배포 | 단순 | 복잡 |
-| 확장성 | 비효율적 | 효율적 |
-| 장애 격리 | 취약 | 우수 |
-| 기술 복잡도 | 낮음 (구조) | 높음 (운영) |
-
-**콘웨이의 법칙 (Conway's Law)**
-> 시스템의 구조는 그것을 만드는 조직의 커뮤니케이션 구조를 닮아간다는 법칙.
-
-**[3번 영상 복습 질문]**
-1. 스타트업에서 모놀리스와 MSA 중 무엇을 선택해야 하는가?
-
-    힌트 각도:
-    - 사업 불확실성 — 초기에 규모를 알 수 있는가?
-    - 트래픽 — 팀 크기보다 트래픽 폭발 가능성이 더 중요할 수도
-    - 팀 구조 — Conway's Law: 조직이 분리 안 됐으면 MSA 해도 모놀리식처럼 됨
-    - 전환 전략 — 모놀리식 먼저 → 한계 느낄 때 분리 (Martin Fowler 권장)
-    - 인프라 비용 — MSA는 Docker/K8s/Gateway 등 초반 셋업 비용 큼
-
-2. MSA에서 서비스 간 트랜잭션은 어떻게 처리해야 하는가?
-3. 수많은 MSA 서비스들은 어떤 방식으로 통신하는 것이 좋은가?
-
----
-
-### 4. 모듈러 모놀리스
-> 모듈러 모놀리스로 시작하세요 (5분 43초)
-
-**판정 질문 — 세 아키텍처를 가르는 자리**
-
-| 개념 | 질문 | 예 → |
-|---|---|---|
-| 모놀리스 | 도메인끼리 서로의 클래스를 직접 불러도 되나? | 그냥 둔다 |
-| 모듈러 모놀리스 | 배포는 한 덩어리로 두되, 도메인 간 직접 호출은 컴파일 단계에서 막아야 하나? | 모듈 경계를 세운다 |
-| MSA | 배포 시점과 장애 범위까지 도메인마다 떼어야 하나? | 서비스로 자른다 |
-
-> 둘째 질문이 이 절 전체다. 경계는 원하지만 네트워크 값은 아직 치르기 싫을 때 나오는 답이다.
-
----
-
-**모놀리스 시절**
-
-| 모놀리스 | 그래도 구조는 있었다 |
-|----------|---------------------|
-| 단일 코드베이스 | 모듈화 — 기능별 코드 분리 |
-| 단일 배포 단위 | MVC / 레이어드 아키텍처 |
-| 시스템이 커질수록 뒤엉킴 | 경계를 나누려는 시도는 계속 있었음 |
-
-> 모놀리스 ≠ 구조 없음. 그래도 시스템이 커지면 **덩어리가 너무 커지는 문제**는 남음.
-
----
-
-**MSA의 등장**
-
-> "언젠가부터 너도나도 MSA로… MSA = 현대적인 아키텍처"라는 분위기
-
-- MSA의 약속: 서비스별 독립 배포, 개별 확장, 장애 격리
-- 대형 사례(Netflix·Amazon): 수백 개 마이크로서비스, 수천 명 개발자 조직, 엄청난 트래픽 규모
-
-**그러나 부작용이 서서히 드러났다**
-
-| MSA의 현실 (운영 복잡도 급증) | 팀이 작으면 역효과 |
-|-------------------------------|-------------------|
-| 네트워크 통신 / 장애 포인트 증가 | 서비스 수 > 감당 가능한 팀 수 |
-| 분산 트랜잭션 처리 | Conway's Law — 조직이 아키텍처를 결정 |
-| 모니터링·배포 파이프라인 부담 | 복잡성이 오히려 속도를 늦춤 |
-
-> "우리 팀 규모에 MSA가 맞나?"
-
----
-
-**모듈러 모놀리스**
-
-> 그냥 모놀리스 말고, **모듈러 모놀리스**  
-> 단일 배포 단위를 유지하면서, 내부를 도메인 경계로 명확히 분리한 구조
-
-**세 가지 아키텍처 비교**
-
-| 구분 | 모놀리스 | 모듈러 모놀리스 | MSA |
-|------|----------|----------------|-----|
-| 경계 | 없음 | 도메인 경계 강제 | 독립 배포 단위 |
-| 배포 | 단일 | 단일 | 서비스별 독립 |
-| 운영 복잡도 | 낮음 | 낮음 | 높음 |
-| 특징 | 유지보수 어려움 | 도메인 분리 유지 | 개별 확장 가능 |
-
-**언제 무엇을 선택하는가?** (절대적 기준 없음)
-
-| 기준 | 모듈러 모놀리스 | MSA |
-|------|----------------|-----|
-| 팀 규모 | ~10명 이하 | 팀이 서비스별로 분리될 수 있을 때 |
-| 배포 독립성 | 불필요 or 낮음 | 서비스별 독립 배포 필수 |
-| 도메인 복잡도 | 중간 수준 | 높고, 도메인별 성장 속도가 다를 때 |
-| 장애 격리 | 불필요 or 낮음 | 서비스별 격리가 비즈니스 요구사항 |
-| 운영 역량 | 일반 수준 | 분산 시스템 운영 역량 필요 |
-
----
-
-**전환 전략 — 모놀리스 → 모듈러 → MSA**
-
-> 모듈러 모놀리스는 MSA의 예행연습. 경계를 코드로 강제해두면 필요할 때 쪼개기가 훨씬 수월함.
-
-```
-1단계: 모놀리스 정리     → 도메인 경계 식별, 의존성 정리
+</code></pre>
+<p><strong>UDP 쓰는 이유</strong> — 위치 패킷 하나 손실돼도 다음 프레임에 새 위치 옴.<br>
+재전송 기다리는 딜레이가 더 치명적.<br><strong>보간(interpolation)</strong> 으로 손실된 위치 추정.<br>
+스킬 적중 판정은 서버가 최종 결정.<br>→ &quot;분명히 피했는데 맞음&quot; = 핑 차이 + UDP 손실 + 서버 판정 타이밍 차이</p>
+<p><strong>[심화] 브라우저 제약</strong></p>
+<p>브라우저 = 샌드박스. TCP/UDP 직접 못 씀. 실시간 연결 우회책만 허용:</p>
+<ul>
+<li><code>WebSocket</code> — HTTP 업그레이드 후 양방향 유지 (채팅, 주식차트)</li>
+<li><code>SSE</code> — 서버→클라 단방향</li>
+<li><code>WebRTC</code> — 브라우저끼리 P2P (화상통화)</li>
+</ul>
+<p>게임 클라이언트(.exe) = OS 위 직접 실행 → TCP/UDP 자유, 제약 없음.<br>브라우저 게임 성능 한계 / 플래시 망한 이유 = 이 샌드박스 제약 때문.</p>
+<hr>
+<p><strong>[1번 영상 복습 질문] — 스스로 답 내보기</strong></p>
+<ol>
+<li>MSA는 몇 Tier일까? Tier와 서비스 개수는 다른 개념인가?</li>
+<li>Firebase · Supabase 같은 BaaS를 쓰면 백엔드 개발자가 필요 없어질까?</li>
+<li>왜 CORBA·DCOM은 사라지고 REST API가 살아남았을까?</li>
+</ol>
+<hr>
+</article>
+
+<article class="doc" id="t2" data-stage="S1">
+<p class="doc-kicker">S1 · 1단계 — 아키텍처 철학 기초</p>
+<h1>2. 「모놀리식이 먼저입니다」</h1>
+<blockquote>
+<p>「모놀리식이 먼저 입니다. 😊」 (4분 3초)</p>
+</blockquote>
+<p><strong>Why MSA?</strong></p>
+<p>MSA는 모놀리식 아키텍처의 한계에서 출발한 해결책.<br>그 한계를 모르면 MSA도 이해할 수 없음.</p>
+<blockquote>
+<p>&quot;모놀리식을 제대로 해본 사람이 MSA를 제대로 씁니다&quot;</p>
+</blockquote>
+<p><strong>모놀리식이 커지면 나타나는 대표적인 한계</strong><br>(Martin Fowler &amp; James Lewis, 2014 / Conway&#39;s Law 기반)</p>
+<table>
+<thead>
+<tr>
+<th>한계</th>
+<th>문제</th>
+<th>MSA 해결책</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>배포</td>
+<td>버튼 하나 바꿔도 전체 애플리케이션 재배포. 배포 범위·위험도 증가</td>
+<td>서비스 단위 독립 배포</td>
+</tr>
+<tr>
+<td>확장</td>
+<td>특정 기능만 과부하여도 전체 애플리케이션을 함께 확장</td>
+<td>서비스 단위 독립 스케일</td>
+</tr>
+<tr>
+<td>협업</td>
+<td>팀이 커질수록 변경 하나가 다른 팀 작업을 망침. 독립 개발 어려움</td>
+<td>팀 단위 독립 개발 지원</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>이 한계를 직접 경험해봐야 MSA의 설계 결정들이 납득됨</p>
+</blockquote>
+<p><strong>[추가] 모놀리식 한계 보완</strong></p>
+<table>
+<thead>
+<tr>
+<th>한계</th>
+<th>문제</th>
+<th>MSA 해결책</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>장애 격리 (SPOF)</td>
+<td>결제 모듈 하나 죽으면 전체 서비스 다운</td>
+<td>서비스별 독립 장애 격리</td>
+</tr>
+<tr>
+<td>스케일링 비효율</td>
+<td>트래픽 몰리는 기능만 키우고 싶어도 전체 애플리케이션을 스케일업해야 함</td>
+<td>트래픽 몰리는 서비스만 스케일아웃 (주문 서비스만 10개 띄우기)</td>
+</tr>
+<tr>
+<td>기술 스택 고착</td>
+<td>전체가 한 언어/프레임워크에 묶임</td>
+<td>서비스별 최적 스택 선택 가능 (추천 → Python, 결제 → Java)</td>
+</tr>
+</tbody></table>
+<p><strong>[추가] MSA 단점 상세</strong></p>
+<p>영상에서 &quot;관리 복잡성&quot; 으로 묶인 것의 실체:</p>
+<table>
+<thead>
+<tr>
+<th>단점</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>분산 트랜잭션</td>
+<td>주문 + 결제 + 재고 동시 성공해야 하는데 중간 하나 실패 시 롤백 처리 매우 복잡</td>
+</tr>
+<tr>
+<td>네트워크 레이턴시</td>
+<td>함수 호출이 네트워크 호출로 바뀜 → 느려짐, 실패 가능성 추가</td>
+</tr>
+<tr>
+<td>데이터 일관성</td>
+<td>서비스마다 DB 분리 → 정합성 맞추기 어려움</td>
+</tr>
+<tr>
+<td>배포 파이프라인</td>
+<td>서비스 수만큼 CI/CD 파이프라인 관리</td>
+</tr>
+<tr>
+<td>로컬 개발</td>
+<td>서비스 여러 개 동시 기동해야 개발 가능</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>결론: 모놀리식 문제 = <strong>결합도</strong>, MSA 문제 = <strong>분산 복잡성</strong>. 트레이드오프.<br>시스템이 충분히 크지 않으면 MSA가 오히려 일을 늘림.</p>
+</blockquote>
+<hr>
+<p><strong>STEP 1 — 모놀리식 기본기부터</strong></p>
+<table>
+<thead>
+<tr>
+<th>기본기 (토대)</th>
+<th>모놀리식 기본기 (메인)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>네트워크 (HTTP)</td>
+<td>REST API · JSON</td>
+</tr>
+<tr>
+<td>OS (프로세스/스레드)</td>
+<td>인증 (세션 · JWT)</td>
+</tr>
+<tr>
+<td>자료구조</td>
+<td>DB 연동 CRUD</td>
+</tr>
+<tr>
+<td>Docker 기초</td>
+<td>트랜잭션 처리</td>
+</tr>
+<tr>
+<td></td>
+<td>캐싱</td>
+</tr>
+<tr>
+<td></td>
+<td>DB 설계 ← MSA에서도 결국 이걸 잘해야 함</td>
+</tr>
+</tbody></table>
+<p>추천 실습: Spring Boot로 CRUD + JWT 인증 + 트랜잭션 적용한 개인 프로젝트 1~2개 완성하기</p>
+<hr>
+<p><strong>STEP 2 — 「개념은 미리 알아둬도 좋습니다」</strong></p>
+<blockquote>
+<p>채용공고에서 MSA 환경은 매우 흔해짐. 구현보다 먼저 개념은 알아두는 것이 좋음.</p>
+</blockquote>
+<p><strong>이 정도는 미리 — 개념 수준으로</strong></p>
+<ul>
+<li>MSA가 왜 등장했는가</li>
+<li>서비스 분리의 기준</li>
+<li>API Gateway의 역할</li>
+<li>서비스 간 통신 방식 (동기 / 비동기)</li>
+<li>분산 트랜잭션 문제</li>
+</ul>
+<p><strong>아직은 괜찮음 — 구현은 나중에</strong></p>
+<ul>
+<li>Kafka 직접 구축</li>
+<li>Kubernetes 운영</li>
+<li>Service Mesh 설정</li>
+<li>분산 추적 (Jaeger 등)</li>
+</ul>
+<blockquote>
+<p>기본기 없이 배우면 기술 스택 암기에 그침</p>
+</blockquote>
+<hr>
+<p><strong>STEP 3 — 기본기가 되면 MSA가 납득됩니다</strong></p>
+<blockquote>
+<p>모놀리식의 고통을 직접 겪은 사람은<br>
+MSA의 복잡한 설계 결정들이 왜 그렇게 됐는지 자연스럽게 납득됨</p>
+</blockquote>
+<p><strong>이때 비로소 보이는 것</strong></p>
+<ul>
+<li>트랜잭션 처리 → 분산 트랜잭션의 어려움</li>
+<li>DB 설계 → 서비스별 DB 분리 이유</li>
+<li>캐싱 → 분산 캐시 전략</li>
+<li>인증 → API G/W 인증 위임 구조</li>
+</ul>
+<p><strong>이때 공부하면 효과적인 것</strong></p>
+<ul>
+<li>Kafka / RabbitMQ (MSA 외에도 널리 쓰임)</li>
+<li>Kubernetes · Service Mesh</li>
+<li>Service Mesh (Istio 등)</li>
+<li>분산 추적 · 모니터링</li>
+</ul>
+<hr>
+<p><strong>[2번 영상 복습 질문]</strong></p>
+<ol>
+<li>모놀리식이 커질수록 나타나는 3가지 한계는?</li>
+<li>모놀리스냐 MSA냐 — 언제 MSA로 전환을 고려해야 하는가?</li>
+<li>모놀리식 기본기(트랜잭션, DB 설계, 캐싱, 인증)를 먼저 해야 MSA가 납득되는 이유는?</li>
+</ol>
+<hr>
+</article>
+
+<article class="doc" id="t3" data-stage="S1">
+<p class="doc-kicker">S1 · 1단계 — 아키텍처 철학 기초</p>
+<h1>3. 모놀리스 vs MSA</h1>
+<blockquote>
+<p>스타트업 딜레마! 모놀리스냐 MSA냐? (7분 20초)</p>
+</blockquote>
+<p><strong>판정 질문 — 표를 읽기 전에 이것부터</strong></p>
+<table>
+<thead>
+<tr>
+<th>개념</th>
+<th>질문</th>
+<th>예 →</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>모놀리스</td>
+<td>전체를 한 번에 배포해도 팀끼리 안 부딪히나?</td>
+<td>한 덩어리로 둔다</td>
+</tr>
+<tr>
+<td>MSA</td>
+<td>기능마다 배포 주기·확장량·장애 범위를 따로 가져가야 하나?</td>
+<td>서비스로 자른다</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>둘 다 「아니오」거나 헷갈리면 모놀리스다.<br>
+MSA는 필요가 증명됐을 때 지불하는 운영 비용이지 기본값이 아니다.</p>
+</blockquote>
+<hr>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>모놀리스</th>
+<th>MSA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>배포</td>
+<td>단순</td>
+<td>복잡</td>
+</tr>
+<tr>
+<td>확장성</td>
+<td>비효율적</td>
+<td>효율적</td>
+</tr>
+<tr>
+<td>장애 격리</td>
+<td>취약</td>
+<td>우수</td>
+</tr>
+<tr>
+<td>기술 복잡도</td>
+<td>낮음 (구조)</td>
+<td>높음 (운영)</td>
+</tr>
+</tbody></table>
+<p><strong>콘웨이의 법칙 (Conway&#39;s Law)</strong></p>
+<blockquote>
+<p>시스템의 구조는 그것을 만드는 조직의 커뮤니케이션 구조를 닮아간다는 법칙.</p>
+</blockquote>
+<p><strong>[3번 영상 복습 질문]</strong></p>
+<ol>
+<li><p>스타트업에서 모놀리스와 MSA 중 무엇을 선택해야 하는가?</p>
+<p> 힌트 각도:</p>
+<ul>
+<li>사업 불확실성 — 초기에 규모를 알 수 있는가?</li>
+<li>트래픽 — 팀 크기보다 트래픽 폭발 가능성이 더 중요할 수도</li>
+<li>팀 구조 — Conway&#39;s Law: 조직이 분리 안 됐으면 MSA 해도 모놀리식처럼 됨</li>
+<li>전환 전략 — 모놀리식 먼저 → 한계 느낄 때 분리 (Martin Fowler 권장)</li>
+<li>인프라 비용 — MSA는 Docker/K8s/Gateway 등 초반 셋업 비용 큼</li>
+</ul>
+</li>
+<li><p>MSA에서 서비스 간 트랜잭션은 어떻게 처리해야 하는가?</p>
+</li>
+<li><p>수많은 MSA 서비스들은 어떤 방식으로 통신하는 것이 좋은가?</p>
+</li>
+</ol>
+<hr>
+</article>
+
+<article class="doc" id="t4" data-stage="S1">
+<p class="doc-kicker">S1 · 1단계 — 아키텍처 철학 기초</p>
+<h1>4. 모듈러 모놀리스</h1>
+<blockquote>
+<p>「모듈러 모놀리스로 시작하세요」 (5분 43초)</p>
+</blockquote>
+<p><strong>판정 질문 — 세 아키텍처를 가르는 자리</strong></p>
+<table>
+<thead>
+<tr>
+<th>개념</th>
+<th>질문</th>
+<th>예 →</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>모놀리스</td>
+<td>도메인끼리 서로의 클래스를 직접 불러도 되나?</td>
+<td>그냥 둔다</td>
+</tr>
+<tr>
+<td>모듈러 모놀리스</td>
+<td>배포는 한 덩어리로 두되, 도메인 간 직접 호출은 컴파일 단계에서 막아야 하나?</td>
+<td>모듈 경계를 세운다</td>
+</tr>
+<tr>
+<td>MSA</td>
+<td>배포 시점과 장애 범위까지 도메인마다 떼어야 하나?</td>
+<td>서비스로 자른다</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>둘째 질문이 이 절 전체다.<br>
+경계는 원하지만 네트워크 값은 아직 치르기 싫을 때 나오는 답이다.</p>
+</blockquote>
+<hr>
+<p><strong>모놀리스 시절</strong></p>
+<table>
+<thead>
+<tr>
+<th>모놀리스</th>
+<th>그래도 구조는 있었다</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>단일 코드베이스</td>
+<td>모듈화 — 기능별 코드 분리</td>
+</tr>
+<tr>
+<td>단일 배포 단위</td>
+<td>MVC / 레이어드 아키텍처</td>
+</tr>
+<tr>
+<td>시스템이 커질수록 뒤엉킴</td>
+<td>경계를 나누려는 시도는 계속 있었음</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>모놀리스 ≠ 구조 없음. 그래도 시스템이 커지면 <strong>덩어리가 너무 커지는 문제</strong>는 남음.</p>
+</blockquote>
+<hr>
+<p><strong>MSA의 등장</strong></p>
+<blockquote>
+<p>&quot;언젠가부터 너도나도 MSA로… MSA = 현대적인 아키텍처&quot;라는 분위기</p>
+</blockquote>
+<ul>
+<li>MSA의 약속: 서비스별 독립 배포, 개별 확장, 장애 격리</li>
+<li>대형 사례(Netflix·Amazon): 수백 개 마이크로서비스, 수천 명 개발자 조직, 엄청난 트래픽 규모</li>
+</ul>
+<p><strong>그러나 부작용이 서서히 드러났다</strong></p>
+<table>
+<thead>
+<tr>
+<th>MSA의 현실 (운영 복잡도 급증)</th>
+<th>팀이 작으면 역효과</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>네트워크 통신 / 장애 포인트 증가</td>
+<td>서비스 수 &gt; 감당 가능한 팀 수</td>
+</tr>
+<tr>
+<td>분산 트랜잭션 처리</td>
+<td>Conway&#39;s Law — 조직이 아키텍처를 결정</td>
+</tr>
+<tr>
+<td>모니터링·배포 파이프라인 부담</td>
+<td>복잡성이 오히려 속도를 늦춤</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>&quot;우리 팀 규모에 MSA가 맞나?&quot;</p>
+</blockquote>
+<hr>
+<p><strong>모듈러 모놀리스</strong></p>
+<blockquote>
+<p>그냥 모놀리스 말고, <strong>모듈러 모놀리스</strong><br>단일 배포 단위를 유지하면서, 내부를 도메인 경계로 명확히 분리한 구조</p>
+</blockquote>
+<p><strong>세 가지 아키텍처 비교</strong></p>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>모놀리스</th>
+<th>모듈러 모놀리스</th>
+<th>MSA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>경계</td>
+<td>없음</td>
+<td>도메인 경계 강제</td>
+<td>독립 배포 단위</td>
+</tr>
+<tr>
+<td>배포</td>
+<td>단일</td>
+<td>단일</td>
+<td>서비스별 독립</td>
+</tr>
+<tr>
+<td>운영 복잡도</td>
+<td>낮음</td>
+<td>낮음</td>
+<td>높음</td>
+</tr>
+<tr>
+<td>특징</td>
+<td>유지보수 어려움</td>
+<td>도메인 분리 유지</td>
+<td>개별 확장 가능</td>
+</tr>
+</tbody></table>
+<p><strong>언제 무엇을 선택하는가?</strong> (절대적 기준 없음)</p>
+<table>
+<thead>
+<tr>
+<th>기준</th>
+<th>모듈러 모놀리스</th>
+<th>MSA</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>팀 규모</td>
+<td>~10명 이하</td>
+<td>팀이 서비스별로 분리될 수 있을 때</td>
+</tr>
+<tr>
+<td>배포 독립성</td>
+<td>불필요 or 낮음</td>
+<td>서비스별 독립 배포 필수</td>
+</tr>
+<tr>
+<td>도메인 복잡도</td>
+<td>중간 수준</td>
+<td>높고, 도메인별 성장 속도가 다를 때</td>
+</tr>
+<tr>
+<td>장애 격리</td>
+<td>불필요 or 낮음</td>
+<td>서비스별 격리가 비즈니스 요구사항</td>
+</tr>
+<tr>
+<td>운영 역량</td>
+<td>일반 수준</td>
+<td>분산 시스템 운영 역량 필요</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>전환 전략 — 모놀리스 → 모듈러 → MSA</strong></p>
+<blockquote>
+<p>모듈러 모놀리스는 MSA의 예행연습.<br>
+경계를 코드로 강제해두면 필요할 때 쪼개기가 훨씬 수월함.</p>
+</blockquote>
+<pre><code>1단계: 모놀리스 정리     → 도메인 경계 식별, 의존성 정리
 2단계: 모듈러 모놀리스   → 경계를 코드로 강제, 인터페이스 명확화
 3단계: MSA 전환 (필요시) → 경계가 이미 잡혀있음, 모듈 → 서비스 분리
-```
-
-**구현 도구**
-
-| 언어 | 도구 | 특징 |
-|------|------|------|
-| Java | Spring Modulith | Spring 공식 지원, 모듈 경계 위반 자동 감지, 이벤트 기반 모듈 간 통신 |
-| .NET | Clean Architecture + ASP.NET Core | 실무에서 가장 흔한 조합, MediatR + CQRS 패턴, 프로젝트 구조로 경계 강제 |
-| Node.js | NestJS | 모듈 시스템이 프레임워크 핵심 설계에 내장, TypeScript 기반 |
-
-> 프레임워크보다 중요한 건 **팀이 경계를 지키겠다는 합의**
-
-**자주 나오는 오해**
-
-> "모듈러 모놀리스는 MSA 가기 전 임시방편 아닌가요?"  
-> → 아님. 서비스 규모와 팀 상황에 따라 **최종 목적지**가 될 수 있음. MSA는 필연적 목표가 아님.
-
-기억할 원칙: 복잡성을 감수할 만큼 **팀과 서비스가 성장했을 때** MSA를 고려. 그 전까지는 모듈러 모놀리스가 합리적인 선택.
-
----
-
-**[추가 메모] 모듈러 모놀리스 실제 구현**
-
-경계는 **패키지 구조 + 접근제어자**로 구현. 특별한 프레임워크 필요 없음.
-
-```
-src/main/java/com/app/
+</code></pre>
+<p><strong>구현 도구</strong></p>
+<table>
+<thead>
+<tr>
+<th>언어</th>
+<th>도구</th>
+<th>특징</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Java</td>
+<td>Spring Modulith</td>
+<td>Spring 공식 지원, 모듈 경계 위반 자동 감지, 이벤트 기반 모듈 간 통신</td>
+</tr>
+<tr>
+<td>.NET</td>
+<td>Clean Architecture + ASP.NET Core</td>
+<td>실무에서 가장 흔한 조합, MediatR + CQRS 패턴, 프로젝트 구조로 경계 강제</td>
+</tr>
+<tr>
+<td>Node.js</td>
+<td>NestJS</td>
+<td>모듈 시스템이 프레임워크 핵심 설계에 내장, TypeScript 기반</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>프레임워크보다 중요한 건 <strong>팀이 경계를 지키겠다는 합의</strong></p>
+</blockquote>
+<p><strong>자주 나오는 오해</strong></p>
+<blockquote>
+<p>&quot;모듈러 모놀리스는 MSA 가기 전 임시방편 아닌가요?&quot;<br>→ 아님.<br>
+서비스 규모와 팀 상황에 따라 <strong>최종 목적지</strong>가 될 수 있음.<br>
+MSA는 필연적 목표가 아님.</p>
+</blockquote>
+<p>기억할 원칙: 복잡성을 감수할 만큼 <strong>팀과 서비스가 성장했을 때</strong> MSA를 고려.<br>
+그 전까지는 모듈러 모놀리스가 합리적인 선택.</p>
+<hr>
+<p><strong>[추가 메모] 모듈러 모놀리스 실제 구현</strong></p>
+<p>경계는 <strong>패키지 구조 + 접근제어자</strong>로 구현. 특별한 프레임워크 필요 없음.</p>
+<pre><code>src/main/java/com/app/
 ├── user/
 │   ├── UserService.java       ← public (외부 접근 허용)
 │   └── UserRepository.java   ← package-private (외부 접근 금지)
 ├── order/
 │   ├── OrderService.java      ← public
 │   └── OrderRepository.java  ← package-private
-```
+</code></pre>
+<ul>
+<li><code>order</code>에서 <code>user.UserRepository</code> 직접 쓰면 컴파일 에러 → 경계 강제</li>
+<li>모듈 간 통신은 이벤트(<code>ApplicationEventPublisher</code>)로</li>
+<li>Spring Modulith = 위반 시 테스트에서 잡아주는 편의도구 (필수 아님)</li>
+</ul>
+<p><strong>경계 개념은 MSA와 동일</strong> — 차이는 경계를 코드가 막냐(모듈러 모놀리스) vs 네트워크가 막냐(MSA)</p>
+<p><strong>MSA 일찍 시작하면 생기는 고통 (모듈러 모놀리스는 전부 없음)</strong></p>
+<ul>
+<li>배포 파이프라인 서비스 수만큼 관리</li>
+<li>서비스 간 네트워크 실패 처리 (재시도, 타임아웃, 서킷브레이커)</li>
+<li>로컬 개발 시 서비스 여러 개 동시 기동</li>
+<li>분산 트랜잭션 (주문 성공 + 결제 실패 → 어떻게 롤백?)</li>
+</ul>
+<hr>
+</article>
 
-- `order`에서 `user.UserRepository` 직접 쓰면 컴파일 에러 → 경계 강제
-- 모듈 간 통신은 이벤트(`ApplicationEventPublisher`)로
-- Spring Modulith = 위반 시 테스트에서 잡아주는 편의도구 (필수 아님)
-
-**경계 개념은 MSA와 동일** — 차이는 경계를 코드가 막냐(모듈러 모놀리스) vs 네트워크가 막냐(MSA)
-
-**MSA 일찍 시작하면 생기는 고통 (모듈러 모놀리스는 전부 없음)**
-- 배포 파이프라인 서비스 수만큼 관리
-- 서비스 간 네트워크 실패 처리 (재시도, 타임아웃, 서킷브레이커)
-- 로컬 개발 시 서비스 여러 개 동시 기동
-- 분산 트랜잭션 (주문 성공 + 결제 실패 → 어떻게 롤백?)
-
----
-
-## 2단계 — DB / 트랜잭션
-
-### 5. 트랜잭션 ACID
-> 백엔드 개발자라면 반드시 알아야 하는, 트랜잭션 ACID (5분 54초)
-
-**판정 질문 — 이 연산 묶음을 트랜잭션으로 감쌀까**
-
-| 질문 | 예 → |
-|---|---|
-| 중간까지만 반영된 상태가 DB에 남아도 되나? | 감쌀 필요 없다 |
-| 앞 연산이 성공하고 뒤가 실패했을 때, 앞 것도 없던 일이 되어야 하나? | 트랜잭션으로 묶는다 |
-
----
-
-**트랜잭션이란?**
-> 여러 DB 연산을 하나의 논리적 작업 단위로 묶은 것. 전부 성공하거나 전부 없던 일이 되어야 함.
-
-```
-예: 계좌이체
+<article class="doc" id="t5" data-stage="S2">
+<p class="doc-kicker">S2 · 2단계 — DB / 트랜잭션</p>
+<h1>5. 트랜잭션 ACID</h1>
+<blockquote>
+<p>백엔드 개발자라면 반드시 알아야 하는, 트랜잭션 ACID (5분 54초)</p>
+</blockquote>
+<p><strong>판정 질문 — 이 연산 묶음을 트랜잭션으로 감쌀까</strong></p>
+<table>
+<thead>
+<tr>
+<th>질문</th>
+<th>예 →</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>중간까지만 반영된 상태가 DB에 남아도 되나?</td>
+<td>감쌀 필요 없다</td>
+</tr>
+<tr>
+<td>앞 연산이 성공하고 뒤가 실패했을 때, 앞 것도 없던 일이 되어야 하나?</td>
+<td>트랜잭션으로 묶는다</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>트랜잭션이란?</strong></p>
+<blockquote>
+<p>여러 DB 연산을 하나의 논리적 작업 단위로 묶은 것.<br>
+전부 성공하거나 전부 없던 일이 되어야 함.</p>
+</blockquote>
+<pre><code>예: 계좌이체
 1. A 계좌 -10,000원
 2. B 계좌 +10,000원
 → 1만 성공하고 2가 실패하면? DB는 절대 그 상태로 남으면 안 됨
-```
----
-
-**A — Atomicity (원자성)**
-
-> 트랜잭션 내 모든 연산은 전부 성공(COMMIT) 또는 전부 실패(ROLLBACK). 중간 상태 없음.
-
-- "All or Nothing"
-- 실패 시 DB는 트랜잭션 시작 전 상태로 되돌아감
-- 구현: UNDO 로그 (실패 시 이전 값으로 복구)
-
----
-
-**C — Consistency (일관성)**
-
-> 트랜잭션 전후로 DB의 무결성 제약 조건이 항상 유지되어야 함.
-
-- 잔액이 음수가 되면 안 된다는 규칙 → 트랜잭션 후에도 유지
-- NOT NULL, UNIQUE, FK 제약 등 모두 포함
-- 비즈니스 규칙을 DB가 보장
-
-```
-잔액 >= 0 제약이 있다면:
+</code></pre>
+<hr>
+<p><strong>A — Atomicity (원자성)</strong></p>
+<blockquote>
+<p>트랜잭션 내 모든 연산은 전부 성공(COMMIT) 또는 전부 실패(ROLLBACK).<br>
+중간 상태 없음.</p>
+</blockquote>
+<ul>
+<li>&quot;All or Nothing&quot;</li>
+<li>실패 시 DB는 트랜잭션 시작 전 상태로 되돌아감</li>
+<li>구현: UNDO 로그 (실패 시 이전 값으로 복구)</li>
+</ul>
+<hr>
+<p><strong>C — Consistency (일관성)</strong></p>
+<blockquote>
+<p>트랜잭션 전후로 DB의 무결성 제약 조건이 항상 유지되어야 함.</p>
+</blockquote>
+<ul>
+<li>잔액이 음수가 되면 안 된다는 규칙 → 트랜잭션 후에도 유지</li>
+<li>NOT NULL, UNIQUE, FK 제약 등 모두 포함</li>
+<li>비즈니스 규칙을 DB가 보장</li>
+</ul>
+<pre><code>잔액 &gt;= 0 제약이 있다면:
 A 계좌 잔액 5,000원인데 10,000원 이체 시도 → 트랜잭션 거부
-```
-
----
-
-**I — Isolation (격리성)**
-
-> 동시에 실행 중인 트랜잭션들은 서로의 중간 상태를 볼 수 없어야 함.
-
-- 트랜잭션 A가 진행 중일 때 트랜잭션 B는 A의 미완료 변경사항을 못 봄
-- **완벽한 격리 = 성능 저하** → 격리 수준(Isolation Level)으로 트레이드오프 조절
-- 다음 영상(6번)에서 격리 수준 4단계 상세 다룸
-
-| 격리 낮음 ↔ 높음 | 문제 현상 |
-|--|--|
-| 격리 낮으면 | Dirty Read, Non-Repeatable Read, Phantom Read 발생 |
-| 격리 높으면 | 동시성 낮아짐, 성능 저하 |
-
----
-
-**D — Durability (지속성)**
-
-> 커밋된 트랜잭션의 결과는 장애가 발생해도 영구적으로 유지되어야 함.
-
-- DB 서버 다운, 정전 → 재시작 후에도 커밋된 데이터 보존
-- 구현: REDO 로그 (커밋 후 장애 시 로그로 복구)
-- `COMMIT` 응답을 받았다면 디스크에 쓰여진 것이 보장됨
-
----
-
-**ACID 한눈에**
-
-| 속성 | 핵심 한 줄 | 구현 수단 |
-|------|-----------|----------|
-| Atomicity | 전부 or 없음 | UNDO 로그, ROLLBACK |
-| Consistency | 제약 조건 항상 유지 | DB 제약, 비즈니스 규칙 |
-| Isolation | 중간 상태 안 보임 | 락, MVCC |
-| Durability | 커밋 = 영구 보존 | REDO 로그, WAL |
-
-> ACID는 DB가 "믿을 수 있는 저장소"임을 보장하는 4가지 약속.  
-> 이 중 하나라도 깨지면 데이터 정합성 보장 불가.
-
-**Spring에서 트랜잭션**
-
-```java
-@Transactional  // 이 어노테이션 하나가 ACID 전부 보장
+</code></pre>
+<hr>
+<p><strong>I — Isolation (격리성)</strong></p>
+<blockquote>
+<p>동시에 실행 중인 트랜잭션들은 서로의 중간 상태를 볼 수 없어야 함.</p>
+</blockquote>
+<ul>
+<li>트랜잭션 A가 진행 중일 때 트랜잭션 B는 A의 미완료 변경사항을 못 봄</li>
+<li><strong>완벽한 격리 = 성능 저하</strong> → 격리 수준(Isolation Level)으로 트레이드오프 조절</li>
+<li>다음 영상(6번)에서 격리 수준 4단계 상세 다룸</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>격리 낮음 ↔ 높음</th>
+<th>문제 현상</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>격리 낮으면</td>
+<td>Dirty Read, Non-Repeatable Read, Phantom Read 발생</td>
+</tr>
+<tr>
+<td>격리 높으면</td>
+<td>동시성 낮아짐, 성능 저하</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>D — Durability (지속성)</strong></p>
+<blockquote>
+<p>커밋된 트랜잭션의 결과는 장애가 발생해도 영구적으로 유지되어야 함.</p>
+</blockquote>
+<ul>
+<li>DB 서버 다운, 정전 → 재시작 후에도 커밋된 데이터 보존</li>
+<li>구현: REDO 로그 (커밋 후 장애 시 로그로 복구)</li>
+<li><code>COMMIT</code> 응답을 받았다면 디스크에 쓰여진 것이 보장됨</li>
+</ul>
+<hr>
+<p><strong>ACID 한눈에</strong></p>
+<table>
+<thead>
+<tr>
+<th>속성</th>
+<th>핵심 한 줄</th>
+<th>구현 수단</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Atomicity</td>
+<td>전부 or 없음</td>
+<td>UNDO 로그, ROLLBACK</td>
+</tr>
+<tr>
+<td>Consistency</td>
+<td>제약 조건 항상 유지</td>
+<td>DB 제약, 비즈니스 규칙</td>
+</tr>
+<tr>
+<td>Isolation</td>
+<td>중간 상태 안 보임</td>
+<td>락, MVCC</td>
+</tr>
+<tr>
+<td>Durability</td>
+<td>커밋 = 영구 보존</td>
+<td>REDO 로그, WAL</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>ACID는 DB가 &quot;믿을 수 있는 저장소&quot;임을 보장하는 4가지 약속.<br>이 중 하나라도 깨지면 데이터 정합성 보장 불가.</p>
+</blockquote>
+<p><strong>Spring에서 트랜잭션</strong></p>
+<pre><code class="language-java">@Transactional  // 이 어노테이션 하나가 ACID 전부 보장
 public void transfer(Long fromId, Long toId, int amount) {
     accountRepository.decrease(fromId, amount);  // 실패하면
     accountRepository.increase(toId, amount);    // 전체 ROLLBACK
 }
-```
+</code></pre>
+<p><strong>[5번 영상 복습 질문]</strong></p>
+<ol>
+<li>계좌이체에서 Atomicity가 없으면 어떤 일이 생기는가?</li>
+<li>Consistency는 누가 보장하는가 — DB인가 애플리케이션인가?</li>
+<li>Isolation이 완벽하면 왜 성능이 낮아지는가?</li>
+</ol>
+<hr>
+</article>
 
-**[5번 영상 복습 질문]**
-1. 계좌이체에서 Atomicity가 없으면 어떤 일이 생기는가?
-2. Consistency는 누가 보장하는가 — DB인가 애플리케이션인가?
-3. Isolation이 완벽하면 왜 성능이 낮아지는가?
-
----
-
-### 6. 트랜잭션 격리수준
-> 트랜잭션 격리수준 4단계 완전 이해 (12분 19초)
-
-**판정 질문 — 위에서부터 「아니오」가 처음 나오는 줄이 필요한 수준이다**
-
-| 질문 | 아니오 → 최소 |
-|---|---|
-| 아직 커밋 안 된 남의 값을 읽어도 되나? | READ COMMITTED |
-| 같은 행을 두 번 읽었을 때 값이 달라져도 되나? | REPEATABLE READ |
-| 같은 조건으로 두 번 조회했을 때 행 수가 달라져도 되나? | SERIALIZABLE |
-
-> 셋 다 「예」면 READ UNCOMMITTED로 충분하다.<br>
-> 아래 「현상 3가지」 표는 각 질문에 「예」로 답했을 때 실제로 무엇이 보이는지를 적은 것이다.
-
----
-
-**핵심 면접 질문**
-> "왜 무조건 최고 수준(SERIALIZABLE)으로 설정하지 않나요?"  
-> → 격리 높을수록 락 범위 넓어짐 → 대기 트랜잭션 쌓임 → 처리량 저하. 신뢰성과 성능의 트레이드오프.
-
----
-
-**격리가 낮을 때 생기는 문제 현상 3가지**
-
-| 현상 | 설명 | 예시 |
-|------|------|------|
-| Dirty Read | 커밋 안 된 값 읽음 | A가 롤백할 값을 B가 이미 읽어서 사용 |
-| Non-Repeatable Read | 같은 쿼리 두 번 날렸는데 결과 다름 | 트랜잭션 중 다른 트랜잭션이 UPDATE·DELETE |
-| Phantom Read | 같은 조건 두 번 조회했는데 행 수 다름 | 트랜잭션 중 다른 트랜잭션이 INSERT |
-
-```
-Dirty Read:
+<article class="doc" id="t6" data-stage="S2">
+<p class="doc-kicker">S2 · 2단계 — DB / 트랜잭션</p>
+<h1>6. 트랜잭션 격리수준</h1>
+<blockquote>
+<p>트랜잭션 격리수준 4단계 완전 이해 (12분 19초)</p>
+</blockquote>
+<p><strong>판정 질문 — 위에서부터 「아니오」가 처음 나오는 줄이 필요한 수준이다</strong></p>
+<table>
+<thead>
+<tr>
+<th>질문</th>
+<th>아니오 → 최소</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>아직 커밋 안 된 남의 값을 읽어도 되나?</td>
+<td>READ COMMITTED</td>
+</tr>
+<tr>
+<td>같은 행을 두 번 읽었을 때 값이 달라져도 되나?</td>
+<td>REPEATABLE READ</td>
+</tr>
+<tr>
+<td>같은 조건으로 두 번 조회했을 때 행 수가 달라져도 되나?</td>
+<td>SERIALIZABLE</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>셋 다 「예」면 READ UNCOMMITTED로 충분하다.<br>
+아래 「현상 3가지」 표는 각 질문에 「예」로 답했을 때 실제로 무엇이 보이는지를 적은 것이다.</p>
+</blockquote>
+<hr>
+<p><strong>핵심 면접 질문</strong></p>
+<blockquote>
+<p>&quot;왜 무조건 최고 수준(SERIALIZABLE)으로 설정하지 않나요?&quot;<br>→ 격리 높을수록 락 범위 넓어짐 → 대기 트랜잭션 쌓임 → 처리량 저하.<br>
+신뢰성과 성능의 트레이드오프.</p>
+</blockquote>
+<hr>
+<p><strong>격리가 낮을 때 생기는 문제 현상 3가지</strong></p>
+<table>
+<thead>
+<tr>
+<th>현상</th>
+<th>설명</th>
+<th>예시</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dirty Read</td>
+<td>커밋 안 된 값 읽음</td>
+<td>A가 롤백할 값을 B가 이미 읽어서 사용</td>
+</tr>
+<tr>
+<td>Non-Repeatable Read</td>
+<td>같은 쿼리 두 번 날렸는데 결과 다름</td>
+<td>트랜잭션 중 다른 트랜잭션이 UPDATE·DELETE</td>
+</tr>
+<tr>
+<td>Phantom Read</td>
+<td>같은 조건 두 번 조회했는데 행 수 다름</td>
+<td>트랜잭션 중 다른 트랜잭션이 INSERT</td>
+</tr>
+</tbody></table>
+<pre><code>Dirty Read:
   A: UPDATE money = 0           (미커밋)
   B: SELECT money → 0 읽음
   A: ROLLBACK → 다시 10000
@@ -976,48 +991,85 @@ Non-Repeatable Read:
   B: SELECT money → 5000  ← 같은 트랜잭션인데 다른 결과
 
 Phantom Read:
-  B: SELECT COUNT(*) WHERE age > 20 → 5건
+  B: SELECT COUNT(*) WHERE age &gt; 20 → 5건
   A: INSERT 새 행 (age=25); COMMIT
-  B: SELECT COUNT(*) WHERE age > 20 → 6건  ← 유령 행 등장
-```
-
----
-
-**격리 수준 4단계 (낮음 → 높음)**
-
-| 단계 | 수준 | Dirty Read | Non-Repeatable Read | Phantom Read | 성능 |
-|------|------|-----------|---------------------|--------------|------|
-| 1단계 | READ UNCOMMITTED | 발생 | 발생 | 발생 | 최고 |
-| 2단계 | READ COMMITTED | 방지 | 발생 | 발생 | 높음 |
-| 3단계 | REPEATABLE READ | 방지 | 방지 | 발생 | 중간 |
-| 4단계 | SERIALIZABLE | 방지 | 방지 | 방지 | 최저 |
-
----
-
-**각 수준 설명**
-
-**READ UNCOMMITTED** — 커밋 안 된 것도 다 읽음. 실무 사용 거의 없음. Dirty Read 허용.
-
-**READ COMMITTED** — 커밋된 것만 읽음. **PostgreSQL·Oracle 기본값**. 대부분 서비스에서 충분.
-
-**REPEATABLE READ** — 트랜잭션 시작 시점 스냅샷 고정. 같은 SELECT 항상 같은 결과. **MySQL InnoDB 기본값**. MVCC로 구현.
-
-**SERIALIZABLE** — 완전 직렬 실행. 모든 문제 방지. 락 경합 심해 처리량 급락. 금융 일부 배치 처리에서만 사용.
-
----
-
-**MVCC (Multi-Version Concurrency Control)**
-
-> MySQL InnoDB가 REPEATABLE READ를 성능 저하 없이 구현하는 방법
-
-락 없이 격리 구현:
-- 트랜잭션 시작 시점에 스냅샷 찍음 (Undo 로그에 이전 버전 보관)
-- 트랜잭션 안에서 SELECT는 스냅샷 기준으로 읽음
-- **남이 바꾼 건 스냅샷 기준으로 무시, 내가 직접 바꾼 건 즉시 반영**
-- 읽기와 쓰기가 서로 블로킹 안 함
-
-```
-B 트랜잭션 시작 → 스냅샷: money=10000
+  B: SELECT COUNT(*) WHERE age &gt; 20 → 6건  ← 유령 행 등장
+</code></pre>
+<hr>
+<p><strong>격리 수준 4단계 (낮음 → 높음)</strong></p>
+<table>
+<thead>
+<tr>
+<th>단계</th>
+<th>수준</th>
+<th>Dirty Read</th>
+<th>Non-Repeatable Read</th>
+<th>Phantom Read</th>
+<th>성능</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1단계</td>
+<td>READ UNCOMMITTED</td>
+<td>발생</td>
+<td>발생</td>
+<td>발생</td>
+<td>최고</td>
+</tr>
+<tr>
+<td>2단계</td>
+<td>READ COMMITTED</td>
+<td>방지</td>
+<td>발생</td>
+<td>발생</td>
+<td>높음</td>
+</tr>
+<tr>
+<td>3단계</td>
+<td>REPEATABLE READ</td>
+<td>방지</td>
+<td>방지</td>
+<td>발생</td>
+<td>중간</td>
+</tr>
+<tr>
+<td>4단계</td>
+<td>SERIALIZABLE</td>
+<td>방지</td>
+<td>방지</td>
+<td>방지</td>
+<td>최저</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>각 수준 설명</strong></p>
+<p><strong>READ UNCOMMITTED</strong> — 커밋 안 된 것도 다 읽음.<br>
+실무 사용 거의 없음.<br>
+Dirty Read 허용.</p>
+<p><strong>READ COMMITTED</strong> — 커밋된 것만 읽음.<br>
+<strong>PostgreSQL·Oracle 기본값</strong>.<br>
+대부분 서비스에서 충분.</p>
+<p><strong>REPEATABLE READ</strong> — 트랜잭션 시작 시점 스냅샷 고정.<br>
+같은 SELECT 항상 같은 결과.<br>
+<strong>MySQL InnoDB 기본값</strong>.<br>
+MVCC로 구현.</p>
+<p><strong>SERIALIZABLE</strong> — 완전 직렬 실행.<br>
+모든 문제 방지.<br>
+락 경합 심해 처리량 급락.<br>
+금융 일부 배치 처리에서만 사용.</p>
+<hr>
+<p><strong>MVCC (Multi-Version Concurrency Control)</strong></p>
+<blockquote>
+<p>MySQL InnoDB가 REPEATABLE READ를 성능 저하 없이 구현하는 방법</p>
+</blockquote>
+<p>락 없이 격리 구현:</p>
+<ul>
+<li>트랜잭션 시작 시점에 스냅샷 찍음 (Undo 로그에 이전 버전 보관)</li>
+<li>트랜잭션 안에서 SELECT는 스냅샷 기준으로 읽음</li>
+<li><strong>남이 바꾼 건 스냅샷 기준으로 무시, 내가 직접 바꾼 건 즉시 반영</strong></li>
+<li>읽기와 쓰기가 서로 블로킹 안 함</li>
+</ul>
+<pre><code>B 트랜잭션 시작 → 스냅샷: money=10000
 
 A: UPDATE money=5000; COMMIT   ← DB 실제값 바뀜
 B: SELECT money → 10000        ← 남이 바꾼 건 스냅샷 기준
@@ -1026,404 +1078,629 @@ B: UPDATE money=7000           ← 본인이 직접 바꿈
 B: SELECT money → 7000         ← 본인 변경은 즉시 반영
 
 B 트랜잭션 종료 후 새 조회 → 7000 (최신값)
-```
-
----
-
-**실무 기본값**
-
-| DB | 기본 격리 수준 |
-|----|--------------|
-| MySQL InnoDB | REPEATABLE READ |
-| PostgreSQL | READ COMMITTED |
-| Oracle | READ COMMITTED |
-| SQL Server | READ COMMITTED |
-
-> Spring `@Transactional`은 DB 기본값 따라감. 변경 필요 시 `@Transactional(isolation = Isolation.SERIALIZABLE)`
-
----
-
-**격리수준 적용 단위 — 테이블 아니고 트랜잭션(세션)**
-
-> 격리수준은 테이블·DB 전체에 고정되는 설정이 아님. **트랜잭션 단위**로 그때그때 다르게 걸 수 있음.
-
-```java
-@Transactional(isolation = Isolation.SERIALIZABLE)
+</code></pre>
+<hr>
+<p><strong>실무 기본값</strong></p>
+<table>
+<thead>
+<tr>
+<th>DB</th>
+<th>기본 격리 수준</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MySQL InnoDB</td>
+<td>REPEATABLE READ</td>
+</tr>
+<tr>
+<td>PostgreSQL</td>
+<td>READ COMMITTED</td>
+</tr>
+<tr>
+<td>Oracle</td>
+<td>READ COMMITTED</td>
+</tr>
+<tr>
+<td>SQL Server</td>
+<td>READ COMMITTED</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Spring <code>@Transactional</code>은 DB 기본값 따라감. 변경 필요 시 <code>@Transactional(isolation = Isolation.SERIALIZABLE)</code></p>
+</blockquote>
+<hr>
+<p><strong>격리수준 적용 단위 — 테이블 아니고 트랜잭션(세션)</strong></p>
+<blockquote>
+<p>격리수준은 테이블·DB 전체에 고정되는 설정이 아님.<br>
+<strong>트랜잭션 단위</strong>로 그때그때 다르게 걸 수 있음.</p>
+</blockquote>
+<pre><code class="language-java">@Transactional(isolation = Isolation.SERIALIZABLE)
 public void monthEndInterestBatch() { ... }   // 이 트랜잭션만 SERIALIZABLE
 
 @Transactional  // 기본값 (예: READ COMMITTED)
 public void normalTransfer() { ... }          // 평소 이체는 기본 격리로 빠르게
-```
-
-- 같은 테이블이라도 **어떤 트랜잭션이 접근하냐**에 따라 그 순간 격리수준이 다를 수 있음
-- 실무 패턴: 평상시 트래픽(이체·조회)은 기본 격리로 처리, 월말 이자 계산처럼 "계산 중 아무도 못 건드려야 하는" 배치 작업만 그 트랜잭션에 SERIALIZABLE 적용
-- 이런 배치는 보통 트래픽 적은 새벽 시간대에 짧게 실행 → 락 경합 비용 낮음
-- 세션 레벨(`SET SESSION TRANSACTION ISOLATION LEVEL ...`)로 커넥션 전체 기본값 바꾸는 것도 가능하지만, 실무에서는 필요한 트랜잭션에만 국소적으로 지정하는 게 일반적
-
----
-
-**SELECT ... FOR UPDATE (비관적 락)**
-
-> 스냅샷 무시하고 실제 최신값 읽으면서 동시에 락 걸기. "읽고 → 판단 → 쓰는" 패턴에서 사용.
-
-```sql
-SELECT * FROM item WHERE id = 1 FOR UPDATE;
+</code></pre>
+<ul>
+<li>같은 테이블이라도 <strong>어떤 트랜잭션이 접근하냐</strong>에 따라 그 순간 격리수준이 다를 수 있음</li>
+<li>실무 패턴:<br>
+평상시 트래픽(이체·조회)은 기본 격리로 처리,<br>
+월말 이자 계산처럼 &quot;계산 중 아무도 못 건드려야 하는&quot; 배치 작업만<br>
+그 트랜잭션에 SERIALIZABLE 적용</li>
+<li>이런 배치는 보통 트래픽 적은 새벽 시간대에 짧게 실행 → 락 경합 비용 낮음</li>
+<li>세션 레벨(<code>SET SESSION TRANSACTION ISOLATION LEVEL ...</code>)로 커넥션 전체 기본값 바꾸는 것도 가능하지만, 실무에서는 필요한 트랜잭션에만 국소적으로 지정하는 게 일반적</li>
+</ul>
+<hr>
+<p><strong>SELECT ... FOR UPDATE (비관적 락)</strong></p>
+<blockquote>
+<p>스냅샷 무시하고 실제 최신값 읽으면서 동시에 락 걸기.<br>
+&quot;읽고 → 판단 → 쓰는&quot; 패턴에서 사용.</p>
+</blockquote>
+<pre><code class="language-sql">SELECT * FROM item WHERE id = 1 FOR UPDATE;
 -- 해당 행에 쓰기 락(exclusive lock)
 -- 다른 트랜잭션의 UPDATE/DELETE → 대기
 -- 다른 트랜잭션의 FOR UPDATE SELECT → 대기
 -- 다른 트랜잭션의 일반 SELECT → 통과 (스냅샷 읽기라 락 안 봄)
-```
-
-스냅샷 읽기는 "남이 바꾼 거 안 보임" → 재고 10 읽고 차감했는데 실제론 이미 0이면 문제.  
-`FOR UPDATE`는 최신값 읽고 **수정만 막음** (일반 읽기는 허용). 내 트랜잭션 끝날 때까지 다른 트랜잭션 수정 대기.
-
-```java
-// Spring Data JPA
+</code></pre>
+<p>스냅샷 읽기는 &quot;남이 바꾼 거 안 보임&quot; → 재고 10 읽고 차감했는데 실제론 이미 0이면 문제.<br><code>FOR UPDATE</code>는 최신값 읽고 <strong>수정만 막음</strong> (일반 읽기는 허용). 내 트랜잭션 끝날 때까지 다른 트랜잭션 수정 대기.</p>
+<pre><code class="language-java">// Spring Data JPA
 @Lock(LockModeType.PESSIMISTIC_WRITE)  // FOR UPDATE
-Item findByIdForUpdate(@Param("id") Long id);
+Item findByIdForUpdate(@Param(&quot;id&quot;) Long id);
 
 // 사용
 @Transactional
 public void order(Long itemId) {
     Item item = itemRepo.findByIdForUpdate(itemId);  // 최신값 + 락
-    if (item.getStock() < 1) throw new SoldOutException();
+    if (item.getStock() &lt; 1) throw new SoldOutException();
     item.decreaseStock();  // 안전하게 차감
 }
-```
+</code></pre>
+<hr>
+<p><strong>Gap Lock (MySQL InnoDB 전용)</strong></p>
+<blockquote>
+<p>행 자체가 아니라 <strong>행 사이의 빈 공간</strong>에 락 거는 것. Phantom Read 방지 목적.</p>
+</blockquote>
+<pre><code>현재 age 데이터: 10, 20, 30
 
----
-
-**Gap Lock (MySQL InnoDB 전용)**
-
-> 행 자체가 아니라 **행 사이의 빈 공간**에 락 거는 것. Phantom Read 방지 목적.
-
-```
-현재 age 데이터: 10, 20, 30
-
-B: SELECT * WHERE age > 20
+B: SELECT * WHERE age &gt; 20
    → (20초과~30 사이, 30 이후 공간에 Gap Lock 걸림)
 
 A: INSERT age=25  ← 그 공간에 삽입 시도 → B 끝날 때까지 대기
 A: INSERT age=35  ← 마찬가지 대기
-```
+</code></pre>
+<p>REPEATABLE READ는 ANSI 표준상 Phantom Read 허용인데, InnoDB가 Gap Lock으로 추가 방어.<br>→ MySQL에서 3단계(REPEATABLE READ)로도 Phantom Read 거의 안 터지는 이유.</p>
+<p>PostgreSQL은 Gap Lock 없고 MVCC를 더 정교하게 구현해서 다른 방식으로 처리.</p>
+<hr>
+<p><strong>[6번 영상 복습 질문]</strong></p>
+<ol>
+<li>Dirty Read가 왜 위험한가? 실제 사례로 설명하면?</li>
+<li>MySQL 기본값이 REPEATABLE READ인데 Phantom Read는 왜 실제로 잘 안 터지는가?</li>
+<li>SERIALIZABLE을 쓰면 안 되는 상황은? 써야 하는 상황은?</li>
+</ol>
+<hr>
+</article>
 
-REPEATABLE READ는 ANSI 표준상 Phantom Read 허용인데, InnoDB가 Gap Lock으로 추가 방어.  
-→ MySQL에서 3단계(REPEATABLE READ)로도 Phantom Read 거의 안 터지는 이유.
-
-PostgreSQL은 Gap Lock 없고 MVCC를 더 정교하게 구현해서 다른 방식으로 처리.
-
----
-
-**[6번 영상 복습 질문]**
-1. Dirty Read가 왜 위험한가? 실제 사례로 설명하면?
-2. MySQL 기본값이 REPEATABLE READ인데 Phantom Read는 왜 실제로 잘 안 터지는가?
-3. SERIALIZABLE을 쓰면 안 되는 상황은? 써야 하는 상황은?
-
----
-
-### 7. 동시성 vs 병렬성
-> 둘 다 동시에 실행? 아닙니다. 동시성과 병렬성! #개발자개념장착 (7분 21초)
-
-**판정 질문**
-
-| 개념 | 질문 | 예 → |
-|---|---|---|
-| 동시성 | 코어가 하나뿐인 기계에서도 이 말이 성립해야 하나? | 번갈아 실행. 하드웨어 조건 없음 |
-| 병렬성 | 두 작업이 물리적으로 같은 시각에 돌아가야 하나? | 코어가 둘 이상 필요 |
-
-> 두 답이 배타적이지 않다. 멀티코어에서 도는 동시성 코드는 둘 다 「예」다.
-
----
-
-**완벽한 비유 — 요리사**
-
-| | Concurrency (동시성) | Parallelism (병렬성) |
-|--|--|--|
-| 요리사 | 1명 | 2명 |
-| 방식 | 양파 썰고, 물 올리고, 계란 풀고… 번갈아 처리 (Switching) | 한 명은 썰고 한 명은 끓이고 — 진짜 동시 실행 (Simultaneous) |
-
----
-
-**CPU 코어 관점**
-
-```
-1. 동시성 (Single Core)
+<article class="doc" id="t7" data-stage="S2">
+<p class="doc-kicker">S2 · 2단계 — DB / 트랜잭션</p>
+<h1>7. 동시성 vs 병렬성</h1>
+<blockquote>
+<p>둘 다 동시에 실행? 아닙니다. 동시성과 병렬성! #개발자개념장착 (7분 21초)</p>
+</blockquote>
+<p><strong>판정 질문</strong></p>
+<table>
+<thead>
+<tr>
+<th>개념</th>
+<th>질문</th>
+<th>예 →</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>동시성</td>
+<td>코어가 하나뿐인 기계에서도 이 말이 성립해야 하나?</td>
+<td>번갈아 실행. 하드웨어 조건 없음</td>
+</tr>
+<tr>
+<td>병렬성</td>
+<td>두 작업이 물리적으로 같은 시각에 돌아가야 하나?</td>
+<td>코어가 둘 이상 필요</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>두 답이 배타적이지 않다. 멀티코어에서 도는 동시성 코드는 둘 다 「예」다.</p>
+</blockquote>
+<hr>
+<p><strong>완벽한 비유 — 요리사</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Concurrency (동시성)</th>
+<th>Parallelism (병렬성)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>요리사</td>
+<td>1명</td>
+<td>2명</td>
+</tr>
+<tr>
+<td>방식</td>
+<td>양파 썰고, 물 올리고, 계란 풀고… 번갈아 처리 (Switching)</td>
+<td>한 명은 썰고 한 명은 끓이고 — 진짜 동시 실행 (Simultaneous)</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>CPU 코어 관점</strong></p>
+<pre><code>1. 동시성 (Single Core)
 [■■□□■■□□■■□□]  ← Core 1 하나가 Time Slicing
-아주 빠르게 번갈아 실행 → 사용자 눈엔 "동시"처럼 보임
+아주 빠르게 번갈아 실행 → 사용자 눈엔 &quot;동시&quot;처럼 보임
 
 2. 병렬성 (Multi Core)
 Core 1 → Task A
 Core 2 → Task B
 Physical Simultaneity — 물리적으로 같은 시간에 실행 (하드웨어 지원 필수)
-```
+</code></pre>
+<hr>
+<p><strong>핵심 구분 (가장 헷갈리는 포인트)</strong></p>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>동시성 (Concurrency)</th>
+<th>병렬성 (Parallelism)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>핵심</td>
+<td>설계 / 구조 (Structure)</td>
+<td>실행 / 자원 (Execution)</td>
+</tr>
+<tr>
+<td>싱글 코어</td>
+<td>가능 ✅</td>
+<td>불가능 ❌</td>
+</tr>
+<tr>
+<td>개념</td>
+<td>논리적 (Logical)</td>
+<td>물리적 (Physical)</td>
+</tr>
+<tr>
+<td>사례</td>
+<td>싱글 코어 멀티태스킹, 이벤트 루프 기반 서버 (Node.js), 비동기 I/O 처리</td>
+<td>멀티코어에서 CPU 연산 병렬처리, GPU 병렬연산, 비디오/이미지 렌더링</td>
+</tr>
+</tbody></table>
+<hr>
+<p><strong>100점짜리 모범 답안</strong></p>
+<ol>
+<li>동시성(Concurrency)은 논리적인 개념으로,<br>
+여러 작업을 아주 빠르게 번갈아 가며 처리해 동시에 실행되는 것처럼 보이게 하는 것.</li>
+<li>병렬성(Parallelism)은 물리적인 개념으로, 멀티 코어에서 실제로 동시에 작업을 수행하는 것.</li>
+<li>동시성은 여러 작업을 겹쳐 다룰 수 있도록 구성하는 <strong>구조와 설계</strong>의 개념이고,<br>
+병렬성은 멀티 코어에서 작업이 <strong>물리적으로 동시에 실행</strong>되는 상태.
+(동시성은 구조, 병렬성은 실행이다)</li>
+</ol>
+<hr>
+<p><strong>꼬리에 꼬리를 무는 질문</strong></p>
+<ol>
+<li>싱글 코어에서 동시성이 왜 필요한가요?<ul>
+<li>키워드: I/O 대기, CPU 유휴, Time Slicing, 이벤트 루프 / Node.js, 인터럽트</li>
+<li>I/O 대기: 디스크/네트워크 응답은 CPU 연산보다 수만~수십만 배 느림. <code>data = read()</code> 다음 줄은 data값 없으면 실행 불가 → 그 스레드만 멈춤(Blocked)</li>
+<li>CPU 유휴: 그 대기 시간 동안 CPU가 아무것도 안 하면 자원 낭비</li>
+<li>Time Slicing:<br>
+CPU 시간을 잘게 쪼개서(수ms) 여러 작업에 번갈아 배정 → 유휴 시간에 딴 작업 끼워넣기</li>
+<li>이벤트 루프(Node.js): I/O 요청 던지고 결과 안 기다리고 바로 다음 코드로 진행.<br>
+결과 오면 콜백을 이벤트 큐에 넣고, 루프가 짬날 때 꺼내 실행 (블로킹 read()와 정반대 방식)</li>
+<li>인터럽트: I/O 완료를 CPU에 &quot;알려주는&quot; 하드웨어 신호.<br>
+폴링(계속 확인하러 감)과 반대로,<br>
+끝나면 그때 CPU 하던 일 끊고 처리 → 낭비 없이 대기 가능하게 해주는 장치</li>
+</ul>
+</li>
+<li>병렬성이 무조건 빠를까요?<ul>
+<li>키워드:<br>
+Amdahl&#39;s Law, 순차 구간, 자원 경합(Contention),<br>
+Cache Coherence, 작업 분할 오버헤드, 병목(Bottleneck)</li>
+</ul>
+</li>
+<li>파이썬은 멀티코어 환경에서도 쓰레드 병렬 처리가 안 된다던데?<ul>
+<li>키워드:<br>
+GIL(Global Interpreter Lock), CPython, 프로세스 vs 스레드,<br>
+multiprocessing, 동시 실행 자체를 봉쇄(자바의 synchronized와 대조)</li>
+</ul>
+</li>
+</ol>
+<hr>
+</article>
 
----
-
-**핵심 구분 (가장 헷갈리는 포인트)**
-
-| 구분 | 동시성 (Concurrency) | 병렬성 (Parallelism) |
-|------|----------------------|----------------------|
-| 핵심 | 설계 / 구조 (Structure) | 실행 / 자원 (Execution) |
-| 싱글 코어 | 가능 ✅ | 불가능 ❌ |
-| 개념 | 논리적 (Logical) | 물리적 (Physical) |
-| 사례 | 싱글 코어 멀티태스킹, 이벤트 루프 기반 서버 (Node.js), 비동기 I/O 처리 | 멀티코어에서 CPU 연산 병렬처리, GPU 병렬연산, 비디오/이미지 렌더링 |
-
----
-
-**100점짜리 모범 답안**
-
-1. 동시성(Concurrency)은 논리적인 개념으로, 여러 작업을 아주 빠르게 번갈아 가며 처리해 동시에 실행되는 것처럼 보이게 하는 것.
-2. 병렬성(Parallelism)은 물리적인 개념으로, 멀티 코어에서 실제로 동시에 작업을 수행하는 것.
-3. 동시성은 여러 작업을 겹쳐 다룰 수 있도록 구성하는 **구조와 설계**의 개념이고, 병렬성은 멀티 코어에서 작업이 **물리적으로 동시에 실행**되는 상태.
-   (동시성은 구조, 병렬성은 실행이다)
-
----
-
-**꼬리에 꼬리를 무는 질문**
-1. 싱글 코어에서 동시성이 왜 필요한가요?
-   - 키워드: I/O 대기, CPU 유휴, Time Slicing, 이벤트 루프 / Node.js, 인터럽트
-   - I/O 대기: 디스크/네트워크 응답은 CPU 연산보다 수만~수십만 배 느림. `data = read()` 다음 줄은 data값 없으면 실행 불가 → 그 스레드만 멈춤(Blocked)
-   - CPU 유휴: 그 대기 시간 동안 CPU가 아무것도 안 하면 자원 낭비
-   - Time Slicing: CPU 시간을 잘게 쪼개서(수ms) 여러 작업에 번갈아 배정 → 유휴 시간에 딴 작업 끼워넣기
-   - 이벤트 루프(Node.js): I/O 요청 던지고 결과 안 기다리고 바로 다음 코드로 진행. 결과 오면 콜백을 이벤트 큐에 넣고, 루프가 짬날 때 꺼내 실행 (블로킹 read()와 정반대 방식)
-   - 인터럽트: I/O 완료를 CPU에 "알려주는" 하드웨어 신호. 폴링(계속 확인하러 감)과 반대로, 끝나면 그때 CPU 하던 일 끊고 처리 → 낭비 없이 대기 가능하게 해주는 장치
-2. 병렬성이 무조건 빠를까요?
-   - 키워드: Amdahl's Law, 순차 구간, 자원 경합(Contention), Cache Coherence, 작업 분할 오버헤드, 병목(Bottleneck)
-3. 파이썬은 멀티코어 환경에서도 쓰레드 병렬 처리가 안 된다던데?
-   - 키워드: GIL(Global Interpreter Lock), CPython, 프로세스 vs 스레드, multiprocessing, 동시 실행 자체를 봉쇄(자바의 synchronized와 대조)
-
----
-
-## 3단계 — 캐시
-
-**[개념 정리] 캐싱은 어디서든 같은 원리**
-> 원본(느리고 크고 멂)에서 매번 안 가져오고, 자주 쓰는 걸 더 빠르고 가까운 곳에 임시 복사본으로 두는 것. 이 원리는 계층만 다를 뿐 CPU 캐시, DB 캐시, CDN/엣지 캐시 전부 동일.
-
-| 계층 | 원본(느림) | 캐시(빠름) |
-|---|---|---|
-| CPU | RAM | L1/L2/L3 캐시 |
-| 웹/앱 | Origin 서버, DB | CDN 엣지 서버, Redis |
-
-- 캐시는 항상 **사본이자 임시 저장소** — 원본이 진짜 정답, 캐시는 사라지거나 만료돼도 원본에서 다시 채우면 됨 (그래서 안전하게 버릴 수 있음)
-- 캐싱 가능 기준은 "중요하냐"가 아니라 **"모두에게 동일하고 자주 안 바뀌냐"** — 중요한 정보(가격표)도 모두에게 같으면 캐싱 가능, 안 중요해도 개인화됐으면 캐싱 불가
-
-**[헷갈림 주의] "매체가 빠르다"(하드웨어 성질) ≠ "캐시다"(상대적 역할)**
-- RAM 자체가 빠른 건 물리적 특성(재료 성질)이지 캐시 아님
-- 캐시는 절대적 속성이 아니라 **비교 대상에 따라 바뀌는 상대적 역할** — 디스크 대비 RAM은 캐시(OS 페이지 캐시), CPU 캐시 대비 RAM은 원본
-- 캐시 여부 = "무엇의 복사본으로 쓰이냐"로 결정, "그 매체가 원래 빠르냐"와는 별개
-
-**[합본 영상] 캐시 계층 전략 — 브라우저부터 Redis까지**
-> [연속재생] 성능 향상의 핵심, 캐시 완전 정복 | 브라우저 캐시 부터 Redis까지  
-> 부제: "캐시라고 다 같은 캐시가 아니다"
-
-계층을 가까운 쪽에 둘수록 빠른 하드웨어적 근거(RAM과 HDD 사이 약 5만 배)는  
-«부록 — 메모리 계층과 레이턴시» 에 있다.
-
-**전체 캐시 계층 지도**
-
-```
-사용자 ─────────────────────────────────────────────────────────────► 저장소
+<article class="doc" id="s3" data-stage="S3" data-overview>
+<p class="doc-kicker">S3 · 단계 개요</p>
+<h1>3단계 — 캐시</h1>
+<p><strong>[개념 정리] 캐싱은 어디서든 같은 원리</strong></p>
+<blockquote>
+<p>원본(느리고 크고 멂)에서 매번 안 가져오고,<br>
+자주 쓰는 걸 더 빠르고 가까운 곳에 임시 복사본으로 두는 것.<br>
+이 원리는 계층만 다를 뿐 CPU 캐시, DB 캐시, CDN/엣지 캐시 전부 동일.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>계층</th>
+<th>원본(느림)</th>
+<th>캐시(빠름)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU</td>
+<td>RAM</td>
+<td>L1/L2/L3 캐시</td>
+</tr>
+<tr>
+<td>웹/앱</td>
+<td>Origin 서버, DB</td>
+<td>CDN 엣지 서버, Redis</td>
+</tr>
+</tbody></table>
+<ul>
+<li>캐시는 항상 <strong>사본이자 임시 저장소</strong> —<br>
+원본이 진짜 정답,<br>
+캐시는 사라지거나 만료돼도 원본에서 다시 채우면 됨 (그래서 안전하게 버릴 수 있음)</li>
+<li>캐싱 가능 기준은 &quot;중요하냐&quot;가 아니라 <strong>&quot;모두에게 동일하고 자주 안 바뀌냐&quot;</strong> —<br>
+중요한 정보(가격표)도 모두에게 같으면 캐싱 가능, 안 중요해도 개인화됐으면 캐싱 불가</li>
+</ul>
+<p><strong>[헷갈림 주의] &quot;매체가 빠르다&quot;(하드웨어 성질) ≠ &quot;캐시다&quot;(상대적 역할)</strong></p>
+<ul>
+<li>RAM 자체가 빠른 건 물리적 특성(재료 성질)이지 캐시 아님</li>
+<li>캐시는 절대적 속성이 아니라 <strong>비교 대상에 따라 바뀌는 상대적 역할</strong> —<br>
+디스크 대비 RAM은 캐시(OS 페이지 캐시), CPU 캐시 대비 RAM은 원본</li>
+<li>캐시 여부 = &quot;무엇의 복사본으로 쓰이냐&quot;로 결정, &quot;그 매체가 원래 빠르냐&quot;와는 별개</li>
+</ul>
+<p><strong>[합본 영상] 캐시 계층 전략 — 브라우저부터 Redis까지</strong></p>
+<blockquote>
+<p>[연속재생] 성능 향상의 핵심, 캐시 완전 정복 | 브라우저 캐시 부터 Redis까지<br>부제: &quot;캐시라고 다 같은 캐시가 아니다&quot;</p>
+</blockquote>
+<p>계층을 가까운 쪽에 둘수록 빠른 하드웨어적 근거(RAM과 HDD 사이 약 5만 배)는<br>«부록 — 메모리 계층과 레이턴시» 에 있다.</p>
+<p><strong>전체 캐시 계층 지도</strong></p>
+<pre><code>사용자 ─────────────────────────────────────────────────────────────► 저장소
 
 [Browser Cache] → [CDN] → [In-App Local Cache] → [공유 캐시(Redis)] → [DB Buffer Cache] → [Disk]
  사용자 브라우저    엣지 서버     서버 인스턴스        인스턴스 간          DBMS 자동 관리      실제 저장소
  HTTP 헤더 제어    전 세계 공유   내부 메모리          분산 환경
 
 └──────── 애플리케이션 개발자가 설계하는 구간 ────────┘   └── DBMS/OS 소관 ──┘
-```
-
-> 요청은 가능한 한 사용자와 가까운 계층에서 끝내라.  
-> 개발자가 주로 설계하는 계층은 **Browser ~ Redis** — DB Buffer Cache와 Disk는 DBMS가 알아서 관리.
-
-| 계층 | 위치 | 공유 범위 | 신선도(TTL) | 제어 주체 |
-|---|---|---|---|---|
-| Browser Cache | 사용자 브라우저 | 나 혼자 (private) | HTTP 헤더가 정함 | 서버가 헤더로 지정, 사용자가 삭제 |
-| CDN (엣지) | 지역별 엣지 서버 | 같은 지역 사용자 전부 (public) | 길게 — 안 바뀌는 데이터라서 | 서버가 TTL·Purge로 |
-| In-App Local Cache | 서버 인스턴스 내부 메모리 | 그 인스턴스 안에서만 | 길게 — 변경 드문 데이터라서 | 애플리케이션 코드 |
-| 공유 캐시 (Redis) | 별도 캐시 서버 | 여러 인스턴스·사용자 공유 (public) | 짧게~중간, TTL 필수 | 애플리케이션 코드 |
-| DB Buffer Cache | DBMS 내부 | DB에 붙은 세션 전체 | DBMS가 판단 | DBMS 자동 |
-
-- **CPU 캐시**(L1/L2/L3)는 이 흐름에 없지만 원리는 같음 — 원본(RAM)보다 빠르고 가까운 사본. 하드웨어가 수 나노초 단위로 자동 관리하고 개발자가 제어하지 않음
-- **네이티브 앱의 로컬 캐시**는 Browser Cache 자리에 해당.  
-&nbsp;&nbsp;단 HTTP 헤더가 아니라 앱이 직접 관리하고, 사용자가 앱 설정에서 지움
-
-핵심: 캐시는 "몇 종류"로 딱 나뉘는 게 아니라, "어디 위치하냐"(계층) × "누구와 공유하고 얼마나 자주 갱신되냐"(정책) 조합으로 매번 달라지는 하나의 원리.
-
----
-
-**왜 계층 하나로는 안 되나 — 데이터마다 성질이 다르다**
-
-| 축 | 데이터마다 다른 점 | 그래서 |
-|---|---|---|
-| 변경 빈도 | 정적 이미지는 몇 달 안 변하고, 장바구니는 초 단위로 바뀜 | 빈도에 안 맞는 계층을 쓰면 낡은 데이터를 서빙하거나 캐시가 무의미해짐 |
-| 공유 범위 | 국가 코드는 모든 사용자가 공유하고, 세션 정보는 한 사람만 씀 | 공유 범위에 맞는 계층이 따로 있음 |
-| 용량·네트워크 비용 | 이미지는 수 MB, 코드 목록은 수 KB | 데이터가 클수록 전송·저장 비용이 달라지고 적합한 계층도 달라짐 |
-| 최신성 요구 | 주식 시세는 실시간이어야 하고, 공지사항은 5분 지연도 무방 | 허용 TTL이 계층 선택을 결정 |
-
-> 결론: 변경 빈도 · 공유 범위 · 용량/네트워크 비용 · 최신성 — 데이터 특성에 맞는 계층을 골라야 함
-
----
-
-**① Browser Cache — 사용자 브라우저에 저장**
-
-- 언제: CSS·JS·이미지 등 정적 리소스, 변경이 거의 없는 리소스, 사용자 재방문 시 네트워크 절감
-- 제어: `ETag`(변경 여부 검증 — 조건부 요청), `Last-Modified`(시간 기반 검증), `Cache-Control`(지시어별 의미는 8번 항목)
-- 강점: 서버 요청 자체가 없음 — 가장 빠름. 네트워크 비용 0
-- 주의: 개인 캐시라 다른 사용자와 공유 안 됨. 정적 리소스는 파일명 해시(versioning)로 캐시 무효화
-
-**② CDN — 전 세계 엣지 서버에 저장**
-
-- 언제: 이미지·영상·정적 파일 전 세계 배포, 원본 서버 부하를 줄이고 싶을 때, 지리적으로 분산된 사용자 대상
-- 제어: `Cache-Control`(`max-age`·`s-maxage`)로 TTL 설정, Cache Purge로 콘텐츠 배포 시 무효화, CDN 콘솔/API로 직접 제어
-- 강점: 전 세계 사용자에게 빠른 응답, 원본 서버 트래픽 대폭 감소
-- 주의: Purge 없이 배포하면 구버전이 계속 서비스됨. 동적 콘텐츠 캐싱 시 개인정보 혼입 위험
-
-**③ In-App Local Cache — 서버 인스턴스 메모리에 저장**
-
-- 언제: 변경이 드물고 조회가 매우 잦은 데이터, 국가 코드·공통 코드·설정값 등, 네트워크 왕복조차 아까울 때
-- 대표 구현: Spring Cache + Caffeine(실무 표준), Caffeine(Java — 고성능 독립 사용), Guava Cache(Java)
-- 강점: 네트워크 없음 — 인메모리 직접 접근. Redis보다 훨씬 빠름
-- 주의: 인스턴스마다 데이터가 따로 존재해 정합성 문제. 다중 서버 환경에서 업데이트 동기화 어려움
-
-**④ 공유 캐시(Redis) — 인스턴스 간 공유 캐시**
-
-- 언제: 여러 서버 인스턴스가 동일 데이터를 공유해야 할 때, 세션·장바구니·사용자별 상태, 로컬 캐시로 해결 안 되는 다중 서버 환경
-- 제어: TTL 만료 시간 명시(필수), Eviction Policy(LRU·LFU 등), 캐시 무효화 이벤트(예: Redis Pub/Sub)
-- 강점: 모든 인스턴스가 동일 데이터 접근, 다양한 자료구조 지원
-- 주의: 네트워크 왕복 비용 발생해 로컬 캐시보다 느림. TTL 없이 쓰면 메모리 증가 → Eviction → 캐시 효율 저하
-
----
-
-**[상세] ① Browser Cache — 최신성은 어떻게 확보하나**  
-> 이 구간은 슬라이드 없이 말로 진행됨
-
-정적 리소스(CSS · JS · 이미지 · 폰트)를 사용자 브라우저의 메모리·디스크에 사본으로 두고,  
-다음 방문 때 네트워크 대신 그 사본을 재사용한다.  
-남는 문제는 **사본이 낡았을 때 어떻게 알아채나** — HTTP 헤더로 처리한다.
-
-**첫 요청** — 서버가 본문과 함께 캐싱 규칙 3가지를 같이 내려준다.
-
-| 규칙 | 헤더 |
-|---|---|
-| 캐싱해도 되나 | `Cache-Control: public` / `private` / `no-store` |
-| 언제까지 신선한가 | `Cache-Control: max-age=…` 또는 `Expires` |
-| 만료 후 재검증 수단 | `ETag`(내용의 지문) · `Last-Modified`(마지막 수정 시각) |
-
-유효기간 지정은 두 방식이 있고, **둘 다 있으면 `Cache-Control` 이 이긴다.**
-
-| | `Cache-Control` (HTTP/1.1) | `Expires` (HTTP/1.0) |
-|---|---|---|
-| 위치 | 현재 표준 | 과거 방식 (Legacy) |
-| 지정 방식 | 유효기간을 **초 단위 상대시간**으로 | 만료될 **절대 시각**을 못 박음 |
-| 예 | `Cache-Control: max-age=3600` | `Expires: Wed, 12 Feb 2026 12:00:00 GMT` |
-
-절대 시각 방식은 클라이언트 시계가 틀어져 있으면 같이 틀어진다. 상대시간이 그 문제를 안 겪는 게 `Cache-Control` 이 표준이 된 이유 중 하나.
-
-브라우저는 받은 사본을 메모리 캐시나 디스크 캐시에 넣는다.
-
-> **어디에 넣을지는 서버가 못 정한다 — 브라우저가 판단한다.** 지정하는 HTTP 헤더가 없다.  
-> 판단 근거는 리소스 크기 · 최근 사용 빈도 · 남은 RAM · 그 페이지가 아직 열려 있는지 등.  
-> 메모리 캐시는 탭이 살아 있는 동안만 유지되고 가장 빠르다. 디스크 캐시는 브라우저를 껐다 켜도 남아서, 재방문에서 실제로 쓰이는 쪽이다.
-
-**두 번째 요청** — 만료 전과 만료 후의 동작이 완전히 다르다.
-
-```
-같은 URL 재접속
+</code></pre>
+<blockquote>
+<p>요청은 가능한 한 사용자와 가까운 계층에서 끝내라.<br>개발자가 주로 설계하는 계층은 <strong>Browser ~ Redis</strong> — DB Buffer Cache와 Disk는 DBMS가 알아서 관리.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>계층</th>
+<th>위치</th>
+<th>공유 범위</th>
+<th>신선도(TTL)</th>
+<th>제어 주체</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Browser Cache</td>
+<td>사용자 브라우저</td>
+<td>나 혼자 (private)</td>
+<td>HTTP 헤더가 정함</td>
+<td>서버가 헤더로 지정, 사용자가 삭제</td>
+</tr>
+<tr>
+<td>CDN (엣지)</td>
+<td>지역별 엣지 서버</td>
+<td>같은 지역 사용자 전부 (public)</td>
+<td>길게 — 안 바뀌는 데이터라서</td>
+<td>서버가 TTL·Purge로</td>
+</tr>
+<tr>
+<td>In-App Local Cache</td>
+<td>서버 인스턴스 내부 메모리</td>
+<td>그 인스턴스 안에서만</td>
+<td>길게 — 변경 드문 데이터라서</td>
+<td>애플리케이션 코드</td>
+</tr>
+<tr>
+<td>공유 캐시 (Redis)</td>
+<td>별도 캐시 서버</td>
+<td>여러 인스턴스·사용자 공유 (public)</td>
+<td>짧게~중간, TTL 필수</td>
+<td>애플리케이션 코드</td>
+</tr>
+<tr>
+<td>DB Buffer Cache</td>
+<td>DBMS 내부</td>
+<td>DB에 붙은 세션 전체</td>
+<td>DBMS가 판단</td>
+<td>DBMS 자동</td>
+</tr>
+</tbody></table>
+<ul>
+<li><strong>CPU 캐시</strong>(L1/L2/L3)는 이 흐름에 없지만 원리는 같음 — 원본(RAM)보다 빠르고 가까운 사본.<br>
+하드웨어가 수 나노초 단위로 자동 관리하고 개발자가 제어하지 않음</li>
+<li><strong>네이티브 앱의 로컬 캐시</strong>는 Browser Cache 자리에 해당.<br>&nbsp;&nbsp;단 HTTP 헤더가 아니라 앱이 직접 관리하고, 사용자가 앱 설정에서 지움</li>
+</ul>
+<p>핵심:<br>
+캐시는 &quot;몇 종류&quot;로 딱 나뉘는 게 아니라,<br>
+&quot;어디 위치하냐&quot;(계층)<br>
+× &quot;누구와 공유하고 얼마나 자주 갱신되냐&quot;(정책) 조합으로 매번 달라지는 하나의 원리.</p>
+<hr>
+<p><strong>왜 계층 하나로는 안 되나 — 데이터마다 성질이 다르다</strong></p>
+<table>
+<thead>
+<tr>
+<th>축</th>
+<th>데이터마다 다른 점</th>
+<th>그래서</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>변경 빈도</td>
+<td>정적 이미지는 몇 달 안 변하고, 장바구니는 초 단위로 바뀜</td>
+<td>빈도에 안 맞는 계층을 쓰면 낡은 데이터를 서빙하거나 캐시가 무의미해짐</td>
+</tr>
+<tr>
+<td>공유 범위</td>
+<td>국가 코드는 모든 사용자가 공유하고, 세션 정보는 한 사람만 씀</td>
+<td>공유 범위에 맞는 계층이 따로 있음</td>
+</tr>
+<tr>
+<td>용량·네트워크 비용</td>
+<td>이미지는 수 MB, 코드 목록은 수 KB</td>
+<td>데이터가 클수록 전송·저장 비용이 달라지고 적합한 계층도 달라짐</td>
+</tr>
+<tr>
+<td>최신성 요구</td>
+<td>주식 시세는 실시간이어야 하고, 공지사항은 5분 지연도 무방</td>
+<td>허용 TTL이 계층 선택을 결정</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>결론: 변경 빈도 · 공유 범위 · 용량/네트워크 비용 · 최신성 — 데이터 특성에 맞는 계층을 골라야 함</p>
+</blockquote>
+<hr>
+<p><strong>① Browser Cache — 사용자 브라우저에 저장</strong></p>
+<ul>
+<li>언제: CSS·JS·이미지 등 정적 리소스, 변경이 거의 없는 리소스, 사용자 재방문 시 네트워크 절감</li>
+<li>제어: <code>ETag</code>(변경 여부 검증 — 조건부 요청), <code>Last-Modified</code>(시간 기반 검증), <code>Cache-Control</code>(지시어별 의미는 8번 항목)</li>
+<li>강점: 서버 요청 자체가 없음 — 가장 빠름. 네트워크 비용 0</li>
+<li>주의: 개인 캐시라 다른 사용자와 공유 안 됨.<br>
+정적 리소스는 파일명 해시(versioning)로 캐시 무효화</li>
+</ul>
+<p><strong>② CDN — 전 세계 엣지 서버에 저장</strong></p>
+<ul>
+<li>언제:<br>
+이미지·영상·정적 파일 전 세계 배포,<br>
+원본 서버 부하를 줄이고 싶을 때, 지리적으로 분산된 사용자 대상</li>
+<li>제어: <code>Cache-Control</code>(<code>max-age</code>·<code>s-maxage</code>)로 TTL 설정, Cache Purge로 콘텐츠 배포 시 무효화, CDN 콘솔/API로 직접 제어</li>
+<li>강점: 전 세계 사용자에게 빠른 응답, 원본 서버 트래픽 대폭 감소</li>
+<li>주의: Purge 없이 배포하면 구버전이 계속 서비스됨.<br>
+동적 콘텐츠 캐싱 시 개인정보 혼입 위험</li>
+</ul>
+<p><strong>③ In-App Local Cache — 서버 인스턴스 메모리에 저장</strong></p>
+<ul>
+<li>언제:<br>
+변경이 드물고 조회가 매우 잦은 데이터,<br>
+국가 코드·공통 코드·설정값 등, 네트워크 왕복조차 아까울 때</li>
+<li>대표 구현: Spring Cache + Caffeine(실무 표준), Caffeine(Java —<br>
+고성능 독립 사용), Guava Cache(Java)</li>
+<li>강점: 네트워크 없음 — 인메모리 직접 접근. Redis보다 훨씬 빠름</li>
+<li>주의: 인스턴스마다 데이터가 따로 존재해 정합성 문제.<br>
+다중 서버 환경에서 업데이트 동기화 어려움</li>
+</ul>
+<p><strong>④ 공유 캐시(Redis) — 인스턴스 간 공유 캐시</strong></p>
+<ul>
+<li>언제:<br>
+여러 서버 인스턴스가 동일 데이터를 공유해야 할 때,<br>
+세션·장바구니·사용자별 상태, 로컬 캐시로 해결 안 되는 다중 서버 환경</li>
+<li>제어: TTL 만료 시간 명시(필수), Eviction Policy(LRU·LFU 등), 캐시 무효화 이벤트(예:<br>
+Redis Pub/Sub)</li>
+<li>강점: 모든 인스턴스가 동일 데이터 접근, 다양한 자료구조 지원</li>
+<li>주의: 네트워크 왕복 비용 발생해 로컬 캐시보다 느림.<br>
+TTL 없이 쓰면 메모리 증가 → Eviction → 캐시 효율 저하</li>
+</ul>
+<hr>
+<p><strong>[상세] ① Browser Cache — 최신성은 어떻게 확보하나</strong>  </p>
+<blockquote>
+<p>이 구간은 슬라이드 없이 말로 진행됨</p>
+</blockquote>
+<p>정적 리소스(CSS · JS · 이미지 · 폰트)를 사용자 브라우저의 메모리·디스크에 사본으로 두고,<br>다음 방문 때 네트워크 대신 그 사본을 재사용한다.<br>남는 문제는 <strong>사본이 낡았을 때 어떻게 알아채나</strong> — HTTP 헤더로 처리한다.</p>
+<p><strong>첫 요청</strong> — 서버가 본문과 함께 캐싱 규칙 3가지를 같이 내려준다.</p>
+<table>
+<thead>
+<tr>
+<th>규칙</th>
+<th>헤더</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>캐싱해도 되나</td>
+<td><code>Cache-Control: public</code> / <code>private</code> / <code>no-store</code></td>
+</tr>
+<tr>
+<td>언제까지 신선한가</td>
+<td><code>Cache-Control: max-age=…</code> 또는 <code>Expires</code></td>
+</tr>
+<tr>
+<td>만료 후 재검증 수단</td>
+<td><code>ETag</code>(내용의 지문) · <code>Last-Modified</code>(마지막 수정 시각)</td>
+</tr>
+</tbody></table>
+<p>유효기간 지정은 두 방식이 있고, <strong>둘 다 있으면 <code>Cache-Control</code> 이 이긴다.</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>Cache-Control</code> (HTTP/1.1)</th>
+<th><code>Expires</code> (HTTP/1.0)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>위치</td>
+<td>현재 표준</td>
+<td>과거 방식 (Legacy)</td>
+</tr>
+<tr>
+<td>지정 방식</td>
+<td>유효기간을 <strong>초 단위 상대시간</strong>으로</td>
+<td>만료될 <strong>절대 시각</strong>을 못 박음</td>
+</tr>
+<tr>
+<td>예</td>
+<td><code>Cache-Control: max-age=3600</code></td>
+<td><code>Expires: Wed, 12 Feb 2026 12:00:00 GMT</code></td>
+</tr>
+</tbody></table>
+<p>절대 시각 방식은 클라이언트 시계가 틀어져 있으면 같이 틀어진다. 상대시간이 그 문제를 안 겪는 게 <code>Cache-Control</code> 이 표준이 된 이유 중 하나.</p>
+<p>브라우저는 받은 사본을 메모리 캐시나 디스크 캐시에 넣는다.</p>
+<blockquote>
+<p><strong>어디에 넣을지는 서버가 못 정한다 — 브라우저가 판단한다.</strong><br>
+지정하는 HTTP 헤더가 없다.<br>판단 근거는 리소스 크기 · 최근 사용 빈도 · 남은 RAM · 그 페이지가 아직 열려 있는지 등.<br>메모리 캐시는 탭이 살아 있는 동안만 유지되고 가장 빠르다.<br>
+디스크 캐시는 브라우저를 껐다 켜도 남아서, 재방문에서 실제로 쓰이는 쪽이다.</p>
+</blockquote>
+<p><strong>두 번째 요청</strong> — 만료 전과 만료 후의 동작이 완전히 다르다.</p>
+<pre><code>같은 URL 재접속
     │
     ▼  아직 신선한가?  (첫 응답의 max-age / Expires 기준)
     │
     ├─ YES → 네트워크 요청을 아예 안 보낸다. 로컬 사본 즉시 사용
-    │        (DevTools 에 "from memory cache" / "from disk cache" 로 찍힘)
+    │        (DevTools 에 &quot;from memory cache&quot; / &quot;from disk cache&quot; 로 찍힘)
     │
     └─ NO  → 조건부 요청으로 재검증한다. 본문은 아직 안 받는다
-             If-None-Match: "a1b2c3"        ← 받아둔 ETag 를 되보냄
+             If-None-Match: &quot;a1b2c3&quot;        ← 받아둔 ETag 를 되보냄
              If-Modified-Since: Mon, 01 …   ← 받아둔 Last-Modified 를 되보냄
                  │
                  ├─ 안 바뀜 → 304 Not Modified. 본문 없음.
                  │            로컬 사본 그대로 쓰고 신선도 시계만 다시 감는다
                  │
                  └─ 바뀜   → 200 OK + 새 본문 + 새 ETag. 로컬 사본 교체
-```
-
-`304 Not Modified` 는 "바뀐 걸 받아온다"가 아니라 **"안 바뀌었으니 네 사본을 그대로 써라"** 는 응답이다.  
-바뀌었으면 `304` 가 아니라 `200` 에 새 본문이 실려 온다.
-
-**서버 재검증(조건부 요청) — 두 가지 기준**
-
-> "캐시 만료됐어! 근데 서버에 있는 거랑 똑같으면 304 줘!"
-
-| 구분 | 내용 기준 (`ETag`) | 시간 기준 (`Last-Modified`) |
-|---|---|---|
-| 응답 헤더 | `ETag: "abc123"` | `Last-Modified: [날짜]` |
-| 재요청 헤더 | `If-None-Match: "abc123"` | `If-Modified-Since: [날짜]` |
-
-둘 다 값이 같으면 `304 Not Modified`(Body 없음)가 온다.  
-`ETag` 는 내용이 바뀌면 즉시 변하므로 초 단위인 시간 기준보다 정밀하다.
-
-헤더 이름이 하는 일을 그대로 말한다 —  
-`If-None-Match` = "일치하는 게 없으면(= 바뀌었으면) 보내라"  
-`If-Modified-Since` = "그 시각 이후로 바뀌었으면 보내라"  
-외울 대상 아님.
-
-**[참고] HTTP 상태 코드**
-
-`304` 도 `200` `404` 와 같은 것 — 서버가 응답 첫 줄에 붙이는 3자리 숫자다. 첫 자리가 부류를 정한다.
-
-| 대역 | 뜻 | 자주 보는 것 |
-|---|---|---|
-| 1xx | 정보 — 처리 중 | `100 Continue` |
-| 2xx | 성공 | `200 OK` · `201 Created` · `204 No Content` |
-| 3xx | 본문 대신 클라이언트가 할 일을 알려줌 | `301`·`302` 리다이렉트 · `304 Not Modified` |
-| 4xx | 클라이언트 잘못 | `400 Bad Request` · `401 Unauthorized` · `403 Forbidden` · `404 Not Found` |
-| 5xx | 서버 잘못 | `500 Internal Server Error` · `502 Bad Gateway` · `503 Service Unavailable` |
-
-`304` 가 3xx 인 게 의아할 텐데,  
-3xx 는 리다이렉트 전용이 아니라 **"본문 안 줄 테니 뭔가 더 해라"** 대역이다.  
-`301`·`302` 의 할 일이 "다른 URL로 다시 가라"라면,  
-`304` 의 할 일은 **"네 로컬 캐시를 꺼내 써라"** 다.  
-그래서 본문이 없고, 그 점이 전송량을 아끼는 지점이다.
-
-`401`(인증 자체가 안 됨 — 로그인해라)과 `403`(인증은 됐는데 권한 없음)은 자주 헷갈리는 짝.
-
-**Fingerprinting (파일 지문화) — 요즘 대세의 캐시 전략**
-
-`304` 도 왕복 1회는 든다 — 본문만 안 올 뿐 네트워크는 탄다. 재검증을 아예 없애는 방법이 지문화다.
-
-**파일 내용의 해시를 파일명에 박아버린다.**
-
-```
-main.js  →  main.a1b2c3.js
-```
-
-- 내용이 바뀌면 해시가 바뀌므로 **파일명 자체가 바뀐다**
-- 파일명이 다르면 브라우저는 **완전히 다른 리소스로 인식**한다
-
-그래서 갱신 방식이 재검증이 아니라 **교체**가 된다.  
-서버는 바뀐 파일을 새 이름으로 내보내고, 브라우저는 처음 보는 URL이라 그냥 새로 받는다.  
-캐시 만료를 기다릴 일도, 물어볼 일도 없다.
-
-| 얻는 것 | 내용 |
-|---|---|
-| 재검증 불필요 | 조건부 요청 자체가 사라진다 |
-| `max-age` 를 1년으로 | 어차피 안 바뀔 파일이라 최대로 늘릴 수 있다 |
-| 배포 즉시 반영 | 새 파일명을 참조하는 HTML만 갱신되면 끝 |
-
-**어떤 캐시 전략을 쓸까 — 파일 종류에 따라 갈린다**
-
-| | 일반적인 HTML | 정적 자산 (JS · CSS · IMG) |
-|---|---|---|
-| 파일명 | `index.html` 로 고정됨 | Fingerprinting 적용 |
-| 전략 | `no-cache` | `immutable, max-age=31536000` |
-| 동작 | 매번 재검증해서 `304` 또는 새 응답 | 서버에 묻지도 않고 100% 로컬 캐시 |
-
-HTML 은 파일명을 못 바꾼다 — 사용자가 치고 들어오는 진입점이라서. 그래서 HTML만 매번 확인하고, 그 HTML이 가리키는 자산은 이름이 곧 버전이라 영구 캐싱한다.  
-`max-age=31536000` 이 1년(365일)이다.
-
----
-
-**Cache Fill Flow — 실제 요청은 어떻게 흐르나**
-
-```
-[조회] 사용자 요청
+</code></pre>
+<p><code>304 Not Modified</code> 는 &quot;바뀐 걸 받아온다&quot;가 아니라 <strong>&quot;안 바뀌었으니 네 사본을 그대로 써라&quot;</strong> 는 응답이다.<br>바뀌었으면 <code>304</code> 가 아니라 <code>200</code> 에 새 본문이 실려 온다.</p>
+<p><strong>서버 재검증(조건부 요청) — 두 가지 기준</strong></p>
+<blockquote>
+<p>&quot;캐시 만료됐어! 근데 서버에 있는 거랑 똑같으면 304 줘!&quot;</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>내용 기준 (<code>ETag</code>)</th>
+<th>시간 기준 (<code>Last-Modified</code>)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>응답 헤더</td>
+<td><code>ETag: &quot;abc123&quot;</code></td>
+<td><code>Last-Modified: [날짜]</code></td>
+</tr>
+<tr>
+<td>재요청 헤더</td>
+<td><code>If-None-Match: &quot;abc123&quot;</code></td>
+<td><code>If-Modified-Since: [날짜]</code></td>
+</tr>
+</tbody></table>
+<p>둘 다 값이 같으면 <code>304 Not Modified</code>(Body 없음)가 온다.<br><code>ETag</code> 는 내용이 바뀌면 즉시 변하므로 초 단위인 시간 기준보다 정밀하다.</p>
+<p>헤더 이름이 하는 일을 그대로 말한다 —<br><code>If-None-Match</code> = &quot;일치하는 게 없으면(= 바뀌었으면) 보내라&quot;<br><code>If-Modified-Since</code> = &quot;그 시각 이후로 바뀌었으면 보내라&quot;<br>외울 대상 아님.</p>
+<p><strong>[참고] HTTP 상태 코드</strong></p>
+<p><code>304</code> 도 <code>200</code> <code>404</code> 와 같은 것 — 서버가 응답 첫 줄에 붙이는 3자리 숫자다. 첫 자리가 부류를 정한다.</p>
+<table>
+<thead>
+<tr>
+<th>대역</th>
+<th>뜻</th>
+<th>자주 보는 것</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1xx</td>
+<td>정보 — 처리 중</td>
+<td><code>100 Continue</code></td>
+</tr>
+<tr>
+<td>2xx</td>
+<td>성공</td>
+<td><code>200 OK</code> · <code>201 Created</code> · <code>204 No Content</code></td>
+</tr>
+<tr>
+<td>3xx</td>
+<td>본문 대신 클라이언트가 할 일을 알려줌</td>
+<td><code>301</code>·<code>302</code> 리다이렉트 · <code>304 Not Modified</code></td>
+</tr>
+<tr>
+<td>4xx</td>
+<td>클라이언트 잘못</td>
+<td><code>400 Bad Request</code> · <code>401 Unauthorized</code> · <code>403 Forbidden</code> · <code>404 Not Found</code></td>
+</tr>
+<tr>
+<td>5xx</td>
+<td>서버 잘못</td>
+<td><code>500 Internal Server Error</code> · <code>502 Bad Gateway</code> · <code>503 Service Unavailable</code></td>
+</tr>
+</tbody></table>
+<p><code>304</code> 가 3xx 인 게 의아할 텐데,<br>3xx 는 리다이렉트 전용이 아니라 <strong>&quot;본문 안 줄 테니 뭔가 더 해라&quot;</strong> 대역이다.<br><code>301</code>·<code>302</code> 의 할 일이 &quot;다른 URL로 다시 가라&quot;라면,<br><code>304</code> 의 할 일은 <strong>&quot;네 로컬 캐시를 꺼내 써라&quot;</strong> 다.<br>그래서 본문이 없고, 그 점이 전송량을 아끼는 지점이다.</p>
+<p><code>401</code>(인증 자체가 안 됨 — 로그인해라)과 <code>403</code>(인증은 됐는데 권한 없음)은 자주 헷갈리는 짝.</p>
+<p><strong>Fingerprinting (파일 지문화) — 요즘 대세의 캐시 전략</strong></p>
+<p><code>304</code> 도 왕복 1회는 든다 — 본문만 안 올 뿐 네트워크는 탄다. 재검증을 아예 없애는 방법이 지문화다.</p>
+<p><strong>파일 내용의 해시를 파일명에 박아버린다.</strong></p>
+<pre><code>main.js  →  main.a1b2c3.js
+</code></pre>
+<ul>
+<li>내용이 바뀌면 해시가 바뀌므로 <strong>파일명 자체가 바뀐다</strong></li>
+<li>파일명이 다르면 브라우저는 <strong>완전히 다른 리소스로 인식</strong>한다</li>
+</ul>
+<p>그래서 갱신 방식이 재검증이 아니라 <strong>교체</strong>가 된다.<br>서버는 바뀐 파일을 새 이름으로 내보내고, 브라우저는 처음 보는 URL이라 그냥 새로 받는다.<br>캐시 만료를 기다릴 일도, 물어볼 일도 없다.</p>
+<table>
+<thead>
+<tr>
+<th>얻는 것</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>재검증 불필요</td>
+<td>조건부 요청 자체가 사라진다</td>
+</tr>
+<tr>
+<td><code>max-age</code> 를 1년으로</td>
+<td>어차피 안 바뀔 파일이라 최대로 늘릴 수 있다</td>
+</tr>
+<tr>
+<td>배포 즉시 반영</td>
+<td>새 파일명을 참조하는 HTML만 갱신되면 끝</td>
+</tr>
+</tbody></table>
+<p><strong>어떤 캐시 전략을 쓸까 — 파일 종류에 따라 갈린다</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>일반적인 HTML</th>
+<th>정적 자산 (JS · CSS · IMG)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>파일명</td>
+<td><code>index.html</code> 로 고정됨</td>
+<td>Fingerprinting 적용</td>
+</tr>
+<tr>
+<td>전략</td>
+<td><code>no-cache</code></td>
+<td><code>immutable, max-age=31536000</code></td>
+</tr>
+<tr>
+<td>동작</td>
+<td>매번 재검증해서 <code>304</code> 또는 새 응답</td>
+<td>서버에 묻지도 않고 100% 로컬 캐시</td>
+</tr>
+</tbody></table>
+<p>HTML 은 파일명을 못 바꾼다 — 사용자가 치고 들어오는 진입점이라서. 그래서 HTML만 매번 확인하고, 그 HTML이 가리키는 자산은 이름이 곧 버전이라 영구 캐싱한다.<br><code>max-age=31536000</code> 이 1년(365일)이다.</p>
+<hr>
+<p><strong>Cache Fill Flow — 실제 요청은 어떻게 흐르나</strong></p>
+<pre><code>[조회] 사용자 요청
   Browser      MISS
        ↓
   CDN          MISS
@@ -1437,361 +1714,675 @@ HTML 은 파일명을 못 바꾼다 — 사용자가 치고 들어오는 진입�
 [채움] 역순으로 채운다
   Redis 저장 → Local Cache 저장 → CDN 저장 → Browser 저장
   → 다음 요청은 위에서 바로 HIT
-```
-
-- CDN 저장 자리에는 정적 파일뿐 아니라 **동적 API 응답**도 올릴 수 있음 (25번 항목)
-- "캐시 삭제하면 다음 로딩만 느리고 그 후 다시 빨라짐"은 Browser·앱 캐시 얘기, 캐치테이블 CDN 예시의 히트/미스는 엣지 캐시 얘기 — 서로 다른 계층
-
----
-
-**실무에서는 어떻게 선택하나**
-
-| 데이터 | 선택 계층 | 이유 |
-|---|---|---|
-| 이미지 · CSS · JS | Browser Cache + CDN | 변경 빈도 낮음 · 전송 비용 큼 · 전 세계 공유 → 최대한 사용자 단에서 끝내기 |
-| 공지사항 · 배너 | Redis | 모든 사용자 공유 · 간헐적 변경 · TTL 5~10분으로 충분 |
-| 권한 정보 · 메뉴 | Local Cache + Redis | 변경 드묾 · Local Miss 시 Redis → 두 계층 함께 사용 (Look-Aside) |
-| 국가 코드 · 공통 코드 | Local Cache | 변경 거의 없음 · 전 인스턴스 동일 데이터 · 네트워크 왕복 불필요 |
-
-> 하나의 서비스 안에서도 데이터마다 다른 계층을 고르는 것이 실무 캐싱 전략
-
-**실무에서 많이 하는 실수**
-
-| 실수 | 해결 |
-|---|---|
-| CSS를 매번 다운로드 | Browser Cache 미설정 — `Cache-Control` 헤더 하나로 해결 |
-| 모든 조회를 Redis로 | 변경 없는 공통 코드는 Local Cache로 충분. Redis로 보내면 네트워크 낭비 |
-| TTL 없이 계속 캐시 추가 | 메모리 증가 → Eviction 발생 → 캐시 효율 저하. TTL은 선택이 아닌 필수 |
-| 캐시 만료 후 동시 요청 | Cache Stampede 발생. Lock 또는 확률적 조기 재계산(PER)으로 방어 (12번 항목) |
-
-**실무 캐싱 전략 3원칙**
-
-1. **캐시는 하나가 아니다** — 브라우저 · CDN · 로컬 · 공유 캐시, 각 계층은 역할이 다르다
-2. **사용자와 가까운 계층에서 끝내라** — 사용자에게 가까울수록 빠르고, 비용이 낮고, 원본 서버 부하가 줄어든다
-3. **데이터 특성에 맞는 계층을 선택하라** — 변경 빈도 · 공유 범위 · 용량/네트워크 비용 · 최신성을 함께 고려해야 한다
-
-### 8. Cache-Control
-> 헷갈리는 캐시 설정, 쉽게 정리해 드립니다 (feat Cache-Control) (20분)
-
-**캐싱 가능 여부를 가르는 3가지 축**
-
-| 축 | 질문 | HTTP 지시어 |
-|---|---|---|
-| 신선도(Freshness) | 얼마나 자주 바뀌나, 오래 캐싱해도 되나 | `max-age`, `s-maxage` (유효 초) |
-| 공유범위(Scope) | 여러 사용자가 같이 써도 되나 | `public`(공유 캐시 허용) vs `private`(개인 기기만) |
-| 민감도(Sensitivity) | 아예 저장하면 안 되는 정보인가 | `no-store`(캐싱 자체 금지) |
-
-**조합 예시**
-
-| 데이터 | 조합 | 결과 |
-|---|---|---|
-| 가게 사진, 메뉴 | public + max-age 김 | CDN 상시 캐싱 |
-| 좌석/재고 현황 | public + max-age 짧음(초단위) | 짧게 캐싱 또는 실시간 갱신 |
-| 내 예약내역 | private | CDN 못 감, 내 기기 캐시만 |
-| 결제/계좌 정보 | no-store | 어디에도 저장 안 함 |
-
-**지시어 총정리** (합본 영상에서 보충)
-
-| 지시어 | 하는 일 | 갈래 |
-|---|---|---|
-| `public` | 모든 캐시(브라우저 · CDN)에 저장 허용 | 저장 범위 |
-| `private` | 브라우저에만 저장 허용. 개인정보라 공유 캐시엔 못 올림 | 저장 범위 |
-| `no-store` | 어디에도 저장 금지. 보안 목적 | 저장 범위 |
-| `no-cache` | 저장은 하되, 쓰기 전에 **항상** 재검증 | 재검증 시점 |
-| `must-revalidate` | 만료된 뒤에는 반드시 재검증. 만료 전엔 그냥 씀 | 재검증 시점 |
-| `immutable` | 수명 동안 안 변한다고 선언. 재검증 자체를 생략 | 재검증 시점 |
-
-`no-cache` 는 이름과 달리 **캐싱 금지가 아니다.**  
-저장은 하고 매번 조건부 요청으로 확인만 한다 — 안 바뀌었으면 `304` 라 전송량은 거의 0.  
-저장 자체를 막는 건 `no-store` 다.
-
-`no-cache` 와 `must-revalidate` 의 차이는 **만료 전 동작**이다.  
-`no-cache` 는 만료 전에도 매번 묻고, `must-revalidate` 는 만료 전에는 안 묻는다.
-
-지시어는 쉼표로 함께 쓴다.
-
-```
-Cache-Control: private, no-cache, must-revalidate
-```
-
----
-
-### 9. 캐시 무효화
-> 캐시 무효화에 관한 모든 것 (14분 20초)
-
----
-
-### 10. Cache Miss 폭발 방어
-> 대규모 트래픽에서 Cache Miss 폭발을 막는 아키텍처 전략 (10분 23초)
-
----
-
-### 11. Redis 키 설계
-> 키 설계 잘못하면 Redis가 뻗습니다. #redis (4분 39초)
-
----
-
-### 12. Cache Stampede 방어
-> 실무구현 - 분산 락을 이용한 Cache Stampede 방어 (17분)
-
----
-
-## 4단계 — MSA
-
-### 13. API Gateway
-> MSA아키텍처, API 게이트웨이 어떻게 설계하시나요? (6분 27초)
-
----
-
-### 14. Service Discovery
-> MSA에서 똑똑하게 서비스 찾기! Service Discovery (7분 41초)
-
----
-
-### 15. Circuit Breaker
-> MSA에서 장애를 다루는 방법, 서킷 브레이커 (7분 1초)
-
----
-
-### 16. MSA 분산 트랜잭션
-> [논문리뷰] MSA 분산 트랜잭션 설계의 기원이 되었던 40년 전 논문 (22분)
-
----
-
-## 5단계 — 메시지 / 이벤트
-
-### 17. Kafka 기초
-> [카프카 창시자 원문 리뷰] Kafka 제대로 이해하기 (33분)
-
----
-
-### 18. Kafka 설계 원칙
-> [논문리뷰] 카프카를 탄생시킨 핵심 설계 원칙들 (32분)
-
----
-
-## 6단계 — 분산 시스템 고급
-
-### 19. 분산 시스템 일관성
-> 대규모 분산시스템에서의 일관성 설계 🤔 #개발자개념장착 (7분 13초)
-
----
-
-### 20. 연쇄 장애 원인 (Google SRE Part 1)
-> 견고한 분산 시스템이 한순간에 무너지는 이유 (18분)
-
----
-
-### 21. 연쇄 장애 방어 (Google SRE Part 2)
-> 대규모 분산 시스템의 연쇄 장애 방어 전략 (38분)
-
----
-
-## 7단계 — 실전 설계 케이스
-
-### 22. 읽기 최적화 아키텍처
-> [Case Study] 읽기 최적화 아키텍처 (23분)
-
-읽기·쓰기 최적화 기법을 레이어별로 훑은 것은 «부록 — 읽기 vs 쓰기 성능 최적화» 에 있다.
-
----
-
-### 23. 예매 시스템 설계
-> 수백만 동시 접속을 처리하는 예매 시스템 아키텍처 설계 (18분)
-
----
-
-### 24. 대량 쿠폰 발급 시스템
-> 아키텍처 설계: 대량 쿠폰 발급 시스템 개발3 (14분 58초)
-
----
-
-### 25. CDN 활용
-> 동적 API도 CDN을 사용하면 좋은 이유 (9분 51초)
-
----
-
-### 26. Pre-rendering
-> 메인페이지 Pre-rendering 아키텍처 설계와 구현 (14분 51초)
-
----
-
-### 27. 커넥션 풀
-> 아키텍트가 알아야 할 커넥션 풀의 기본과 함정 (37분)
-
----
-
-## 8단계 — 아키텍처 평가 / 원칙
-
-### 28. 좋은 아키텍트의 기준
-> 좋은 아키텍트는 명확한 기준을 가지고 있습니다. (10분 23초)
-
----
-
-### 29. ATAM 평가법
-> 아키텍처는 이렇게 평가합니다. | SEI 공식 평가법 ATAM (32분)
-
----
-
-## 부록 — 모니터링
-
-### 30. USE / RED 메트릭
-> [모니터링 시리즈] 인프라는 USE, 서비스는 RED (12분 23초)
-
----
-
-## 부록 — 캐치테이블 예시
-> 실전 Q&A 정리 — 인기 예약(오픈런) 시스템이 순간 트래픽 스파이크를 어떻게 버티는가
-
-**문제 상황**
-- 인기 매장 예약(정오 오픈, 슬롯 소수) → 수만 명 동시 접속
-- 인터파크식 대기열 없음 — "먼저 누른 사람이 임자" 구조
-- 체감상 타이밍 승부처럼 보이지만, 이면엔 계층별 방어 설계가 있음
-
----
-
-**1. 트래픽 흡수 계층 — CDN / 엣지 캐싱** (→ 10번 Cache Miss 폭발 방어, 25번 CDN 활용과 연결)
-
-정각에 몰리는 요청 대부분은 예약 로직과 무관한 "화면 그리는 데 필요한 데이터" (가게 사진, UI, 메뉴, 날짜 목록). 이걸 매번 origin 서버가 처리하면 예약 로직 돌기도 전에 서버가 죽음.
-
-| 개념 | 설명 |
-|------|------|
-| Origin 서버 | 진짜 로직·DB 처리하는 본서버 |
-| CDN (Content Delivery Network) | 엣지 서버들을 모아놓은 전송망 서비스 |
-| 엣지 서버 | CDN 안의 개별 지역 서버. 콘텐츠 복사본을 들고 있다가 origin 대신 응답 |
-| 캐시 히트 / 미스 | 엣지가 이미 들고 있으면 히트(origin 안 감), 없으면 미스(origin 한 번 조회 후 저장) |
-| TTL (Time To Live) | 캐시 유효기간. 사진·UI는 길게, "잔여석 여부"처럼 실시간성 있는 데이터는 짧게(또는 캐싱 안 함) — 안 그러면 마감된 날짜가 계속 "예약 가능"으로 보이는 오류 발생 |
-
-핵심: 안 바뀌는 데이터는 CDN에서 걸러내고, origin 서버는 "예약 확정" 같은 진짜 중요한 요청만 받게 만드는 것.
-
-**데이터 종류별 캐싱 정책 (앱 전체가 하나의 스위치 아님)**
-
-| 데이터 | 캐싱 여부 | 이유 |
-|---|---|---|
-| 가게 사진, 로고, 메뉴 이미지 | CDN 상시 캐싱, TTL 김 | 안 바뀜 |
-| 가게 소개, 리뷰, 위치정보 | CDN 캐싱, TTL 중간 | 자주 안 바뀜 |
-| 날짜별 "예약 가능/마감" 상태 | 캐싱 안 하거나 TTL 초단위 | 실시간성 필요 |
-| "예약하기" 버튼 누르는 순간(재고 차감) | 캐싱 절대 안 함, origin 직행 | 원자적 연산 필요 |
-
-캐치테이블은 웹이 아니라 네이티브 앱이라 UI 골격(버튼 배치, 폰트, 아이콘)은 이미 설치 시점에 로컬에 있음. CDN이 필요한 건 그때그때 바뀌는 콘텐츠(사진·메뉴·예약현황)뿐 — 이 점이 매번 HTML/JS 받아야 하는 웹(Next.js 케이스)과 다름.
-
-**중요: 캐싱은 "트래픽 몰릴 때만 켜는 스위치"가 아니라 상시 기본 설정.** 배포 시점에 헤더(`Cache-Control`)로 미리 정해두는 것이지, 실시간으로 온오프 안 함. 오히려 평소엔 꺼뒀다가 스파이크 순간에만 켜면 그 순간 다 같이 origin 몰려서 **Cache Stampede**(12번 항목) 터짐. 캐싱은 미리, 상시 걸어둬야 스파이크 순간에 이미 준비된 상태가 됨.
-
----
-
-**2. 진짜 승부처 — 원자적 연산 (재고 차감)** (→ 6번 트랜잭션 격리수준, `SELECT ... FOR UPDATE`와 동일 원리)
-
-슬롯 1개에 수백 명이 동시에 "확인 → 차감" 시도하면, 확인과 차감 사이 텀에 여러 요청이 끼어들어 동시에 성공 처리되는 **레이스 컨디션** 발생 가능. 이게 막히지 않으면 **오버부킹**(정원 초과 확정) 터짐.
-
-```
-잘못된 방식 (원자적이지 않음):
+</code></pre>
+<ul>
+<li>CDN 저장 자리에는 정적 파일뿐 아니라 <strong>동적 API 응답</strong>도 올릴 수 있음 (25번 항목)</li>
+<li>&quot;캐시 삭제하면 다음 로딩만 느리고 그 후 다시 빨라짐&quot;은 Browser·앱 캐시 얘기,<br>
+캐치테이블 CDN 예시의 히트/미스는 엣지 캐시 얘기 —<br>
+서로 다른 계층</li>
+</ul>
+<hr>
+<p><strong>실무에서는 어떻게 선택하나</strong></p>
+<table>
+<thead>
+<tr>
+<th>데이터</th>
+<th>선택 계층</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>이미지 · CSS · JS</td>
+<td>Browser Cache + CDN</td>
+<td>변경 빈도 낮음 · 전송 비용 큼 · 전 세계 공유 → 최대한 사용자 단에서 끝내기</td>
+</tr>
+<tr>
+<td>공지사항 · 배너</td>
+<td>Redis</td>
+<td>모든 사용자 공유 · 간헐적 변경 · TTL 5~10분으로 충분</td>
+</tr>
+<tr>
+<td>권한 정보 · 메뉴</td>
+<td>Local Cache + Redis</td>
+<td>변경 드묾 · Local Miss 시 Redis → 두 계층 함께 사용 (Look-Aside)</td>
+</tr>
+<tr>
+<td>국가 코드 · 공통 코드</td>
+<td>Local Cache</td>
+<td>변경 거의 없음 · 전 인스턴스 동일 데이터 · 네트워크 왕복 불필요</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>하나의 서비스 안에서도 데이터마다 다른 계층을 고르는 것이 실무 캐싱 전략</p>
+</blockquote>
+<p><strong>실무에서 많이 하는 실수</strong></p>
+<table>
+<thead>
+<tr>
+<th>실수</th>
+<th>해결</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CSS를 매번 다운로드</td>
+<td>Browser Cache 미설정 — <code>Cache-Control</code> 헤더 하나로 해결</td>
+</tr>
+<tr>
+<td>모든 조회를 Redis로</td>
+<td>변경 없는 공통 코드는 Local Cache로 충분. Redis로 보내면 네트워크 낭비</td>
+</tr>
+<tr>
+<td>TTL 없이 계속 캐시 추가</td>
+<td>메모리 증가 → Eviction 발생 → 캐시 효율 저하. TTL은 선택이 아닌 필수</td>
+</tr>
+<tr>
+<td>캐시 만료 후 동시 요청</td>
+<td>Cache Stampede 발생. Lock 또는 확률적 조기 재계산(PER)으로 방어 (12번 항목)</td>
+</tr>
+</tbody></table>
+<p><strong>실무 캐싱 전략 3원칙</strong></p>
+<ol>
+<li><strong>캐시는 하나가 아니다</strong> — 브라우저 · CDN · 로컬 · 공유 캐시, 각 계층은 역할이 다르다</li>
+<li><strong>사용자와 가까운 계층에서 끝내라</strong> —<br>
+사용자에게 가까울수록 빠르고, 비용이 낮고, 원본 서버 부하가 줄어든다</li>
+<li><strong>데이터 특성에 맞는 계층을 선택하라</strong> —<br>
+변경 빈도 · 공유 범위 · 용량/네트워크 비용 · 최신성을 함께 고려해야 한다</li>
+</ol>
+</article>
+
+<article class="doc" id="t8" data-stage="S3">
+<p class="doc-kicker">S3 · 3단계 — 캐시</p>
+<h1>8. Cache-Control</h1>
+<blockquote>
+<p>헷갈리는 캐시 설정, 쉽게 정리해 드립니다 (feat Cache-Control) (20분)</p>
+</blockquote>
+<p><strong>캐싱 가능 여부를 가르는 3가지 축</strong></p>
+<table>
+<thead>
+<tr>
+<th>축</th>
+<th>질문</th>
+<th>HTTP 지시어</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>신선도(Freshness)</td>
+<td>얼마나 자주 바뀌나, 오래 캐싱해도 되나</td>
+<td><code>max-age</code>, <code>s-maxage</code> (유효 초)</td>
+</tr>
+<tr>
+<td>공유범위(Scope)</td>
+<td>여러 사용자가 같이 써도 되나</td>
+<td><code>public</code>(공유 캐시 허용) vs <code>private</code>(개인 기기만)</td>
+</tr>
+<tr>
+<td>민감도(Sensitivity)</td>
+<td>아예 저장하면 안 되는 정보인가</td>
+<td><code>no-store</code>(캐싱 자체 금지)</td>
+</tr>
+</tbody></table>
+<p><strong>조합 예시</strong></p>
+<table>
+<thead>
+<tr>
+<th>데이터</th>
+<th>조합</th>
+<th>결과</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>가게 사진, 메뉴</td>
+<td>public + max-age 김</td>
+<td>CDN 상시 캐싱</td>
+</tr>
+<tr>
+<td>좌석/재고 현황</td>
+<td>public + max-age 짧음(초단위)</td>
+<td>짧게 캐싱 또는 실시간 갱신</td>
+</tr>
+<tr>
+<td>내 예약내역</td>
+<td>private</td>
+<td>CDN 못 감, 내 기기 캐시만</td>
+</tr>
+<tr>
+<td>결제/계좌 정보</td>
+<td>no-store</td>
+<td>어디에도 저장 안 함</td>
+</tr>
+</tbody></table>
+<p><strong>지시어 총정리</strong> (합본 영상에서 보충)</p>
+<table>
+<thead>
+<tr>
+<th>지시어</th>
+<th>하는 일</th>
+<th>갈래</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>public</code></td>
+<td>모든 캐시(브라우저 · CDN)에 저장 허용</td>
+<td>저장 범위</td>
+</tr>
+<tr>
+<td><code>private</code></td>
+<td>브라우저에만 저장 허용. 개인정보라 공유 캐시엔 못 올림</td>
+<td>저장 범위</td>
+</tr>
+<tr>
+<td><code>no-store</code></td>
+<td>어디에도 저장 금지. 보안 목적</td>
+<td>저장 범위</td>
+</tr>
+<tr>
+<td><code>no-cache</code></td>
+<td>저장은 하되, 쓰기 전에 <strong>항상</strong> 재검증</td>
+<td>재검증 시점</td>
+</tr>
+<tr>
+<td><code>must-revalidate</code></td>
+<td>만료된 뒤에는 반드시 재검증. 만료 전엔 그냥 씀</td>
+<td>재검증 시점</td>
+</tr>
+<tr>
+<td><code>immutable</code></td>
+<td>수명 동안 안 변한다고 선언. 재검증 자체를 생략</td>
+<td>재검증 시점</td>
+</tr>
+</tbody></table>
+<p><code>no-cache</code> 는 이름과 달리 <strong>캐싱 금지가 아니다.</strong><br>저장은 하고 매번 조건부 요청으로 확인만 한다 — 안 바뀌었으면 <code>304</code> 라 전송량은 거의 0.<br>저장 자체를 막는 건 <code>no-store</code> 다.</p>
+<p><code>no-cache</code> 와 <code>must-revalidate</code> 의 차이는 <strong>만료 전 동작</strong>이다.<br><code>no-cache</code> 는 만료 전에도 매번 묻고, <code>must-revalidate</code> 는 만료 전에는 안 묻는다.</p>
+<p>지시어는 쉼표로 함께 쓴다.</p>
+<pre><code>Cache-Control: private, no-cache, must-revalidate
+</code></pre>
+<hr>
+</article>
+
+<article class="doc" id="t9" data-stage="S3">
+<p class="doc-kicker">S3 · 3단계 — 캐시</p>
+<h1>9. 캐시 무효화</h1>
+<blockquote>
+<p>캐시 무효화에 관한 모든 것 (14분 20초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t10" data-stage="S3">
+<p class="doc-kicker">S3 · 3단계 — 캐시</p>
+<h1>10. Cache Miss 폭발 방어</h1>
+<blockquote>
+<p>대규모 트래픽에서 Cache Miss 폭발을 막는 아키텍처 전략 (10분 23초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t11" data-stage="S3">
+<p class="doc-kicker">S3 · 3단계 — 캐시</p>
+<h1>11. Redis 키 설계</h1>
+<blockquote>
+<p>「키 설계 잘못하면 Redis가 뻗습니다. #redis」 (4분 39초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t12" data-stage="S3">
+<p class="doc-kicker">S3 · 3단계 — 캐시</p>
+<h1>12. Cache Stampede 방어</h1>
+<blockquote>
+<p>실무구현 - 분산 락을 이용한 Cache Stampede 방어 (17분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t13" data-stage="S4">
+<p class="doc-kicker">S4 · 4단계 — MSA</p>
+<h1>13. API Gateway</h1>
+<blockquote>
+<p>MSA아키텍처, API 게이트웨이 어떻게 설계하시나요? (6분 27초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t14" data-stage="S4">
+<p class="doc-kicker">S4 · 4단계 — MSA</p>
+<h1>14. Service Discovery</h1>
+<blockquote>
+<p>MSA에서 똑똑하게 서비스 찾기! Service Discovery (7분 41초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t15" data-stage="S4">
+<p class="doc-kicker">S4 · 4단계 — MSA</p>
+<h1>15. Circuit Breaker</h1>
+<blockquote>
+<p>MSA에서 장애를 다루는 방법, 서킷 브레이커 (7분 1초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t16" data-stage="S4">
+<p class="doc-kicker">S4 · 4단계 — MSA</p>
+<h1>16. MSA 분산 트랜잭션</h1>
+<blockquote>
+<p>[논문리뷰] MSA 분산 트랜잭션 설계의 기원이 되었던 40년 전 논문 (22분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t17" data-stage="S5">
+<p class="doc-kicker">S5 · 5단계 — 메시지 / 이벤트</p>
+<h1>17. Kafka 기초</h1>
+<blockquote>
+<p>[카프카 창시자 원문 리뷰] Kafka 제대로 이해하기 (33분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t18" data-stage="S5">
+<p class="doc-kicker">S5 · 5단계 — 메시지 / 이벤트</p>
+<h1>18. Kafka 설계 원칙</h1>
+<blockquote>
+<p>[논문리뷰] 카프카를 탄생시킨 핵심 설계 원칙들 (32분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t19" data-stage="S6">
+<p class="doc-kicker">S6 · 6단계 — 분산 시스템 고급</p>
+<h1>19. 분산 시스템 일관성</h1>
+<blockquote>
+<p>대규모 분산시스템에서의 일관성 설계 🤔 #개발자개념장착 (7분 13초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t20" data-stage="S6">
+<p class="doc-kicker">S6 · 6단계 — 분산 시스템 고급</p>
+<h1>20. 연쇄 장애 원인 (Google SRE Part 1)</h1>
+<blockquote>
+<p>견고한 분산 시스템이 한순간에 무너지는 이유 (18분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t21" data-stage="S6">
+<p class="doc-kicker">S6 · 6단계 — 분산 시스템 고급</p>
+<h1>21. 연쇄 장애 방어 (Google SRE Part 2)</h1>
+<blockquote>
+<p>대규모 분산 시스템의 연쇄 장애 방어 전략 (38분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t22" data-stage="S7">
+<p class="doc-kicker">S7 · 7단계 — 실전 설계 케이스</p>
+<h1>22. 읽기 최적화 아키텍처</h1>
+<blockquote>
+<p>[Case Study] 읽기 최적화 아키텍처 (23분)</p>
+</blockquote>
+<p>읽기·쓰기 최적화 기법을 레이어별로 훑은 것은 «부록 — 읽기 vs 쓰기 성능 최적화» 에 있다.</p>
+<hr>
+</article>
+
+<article class="doc" id="t23" data-stage="S7">
+<p class="doc-kicker">S7 · 7단계 — 실전 설계 케이스</p>
+<h1>23. 예매 시스템 설계</h1>
+<blockquote>
+<p>수백만 동시 접속을 처리하는 예매 시스템 아키텍처 설계 (18분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t24" data-stage="S7">
+<p class="doc-kicker">S7 · 7단계 — 실전 설계 케이스</p>
+<h1>24. 대량 쿠폰 발급 시스템</h1>
+<blockquote>
+<p>아키텍처 설계: 대량 쿠폰 발급 시스템 개발3 (14분 58초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t25" data-stage="S7">
+<p class="doc-kicker">S7 · 7단계 — 실전 설계 케이스</p>
+<h1>25. CDN 활용</h1>
+<blockquote>
+<p>동적 API도 CDN을 사용하면 좋은 이유 (9분 51초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t26" data-stage="S7">
+<p class="doc-kicker">S7 · 7단계 — 실전 설계 케이스</p>
+<h1>26. Pre-rendering</h1>
+<blockquote>
+<p>메인페이지 Pre-rendering 아키텍처 설계와 구현 (14분 51초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t27" data-stage="S7">
+<p class="doc-kicker">S7 · 7단계 — 실전 설계 케이스</p>
+<h1>27. 커넥션 풀</h1>
+<blockquote>
+<p>아키텍트가 알아야 할 커넥션 풀의 기본과 함정 (37분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t28" data-stage="S8">
+<p class="doc-kicker">S8 · 8단계 — 아키텍처 평가 / 원칙</p>
+<h1>28. 좋은 아키텍트의 기준</h1>
+<blockquote>
+<p>「좋은 아키텍트는 명확한 기준을 가지고 있습니다.」 (10분 23초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t29" data-stage="S8">
+<p class="doc-kicker">S8 · 8단계 — 아키텍처 평가 / 원칙</p>
+<h1>29. ATAM 평가법</h1>
+<blockquote>
+<p>「아키텍처는 이렇게 평가합니다. | SEI 공식 평가법 ATAM」 (32분)</p>| SEI 공식 평가법 ATAM (32분)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="t30" data-stage="X1">
+<p class="doc-kicker">X1 · 부록 — 모니터링</p>
+<h1>30. USE / RED 메트릭</h1>
+<blockquote>
+<p>[모니터링 시리즈] 인프라는 USE, 서비스는 RED (12분 23초)</p>
+</blockquote>
+<hr>
+</article>
+
+<article class="doc" id="x2" data-stage="X2">
+<p class="doc-kicker">X2 · 부록</p>
+<h1>캐치테이블 예시</h1>
+<blockquote>
+<p>실전 Q&amp;A 정리 — 인기 예약(오픈런) 시스템이 순간 트래픽 스파이크를 어떻게 버티는가</p>
+</blockquote>
+<p><strong>문제 상황</strong></p>
+<ul>
+<li>인기 매장 예약(정오 오픈, 슬롯 소수) → 수만 명 동시 접속</li>
+<li>인터파크식 대기열 없음 — &quot;먼저 누른 사람이 임자&quot; 구조</li>
+<li>체감상 타이밍 승부처럼 보이지만, 이면엔 계층별 방어 설계가 있음</li>
+</ul>
+<hr>
+<p><strong>1.<br>
+트래픽 흡수 계층 — CDN / 엣지 캐싱</strong> (→ 10번 Cache Miss 폭발 방어, 25번 CDN 활용과 연결)</p>
+<p>정각에 몰리는 요청 대부분은 예약 로직과 무관한 &quot;화면 그리는 데 필요한 데이터&quot; (가게 사진,<br>
+UI, 메뉴, 날짜 목록).<br>
+이걸 매번 origin 서버가 처리하면 예약 로직 돌기도 전에 서버가 죽음.</p>
+<table>
+<thead>
+<tr>
+<th>개념</th>
+<th>설명</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Origin 서버</td>
+<td>진짜 로직·DB 처리하는 본서버</td>
+</tr>
+<tr>
+<td>CDN (Content Delivery Network)</td>
+<td>엣지 서버들을 모아놓은 전송망 서비스</td>
+</tr>
+<tr>
+<td>엣지 서버</td>
+<td>CDN 안의 개별 지역 서버. 콘텐츠 복사본을 들고 있다가 origin 대신 응답</td>
+</tr>
+<tr>
+<td>캐시 히트 / 미스</td>
+<td>엣지가 이미 들고 있으면 히트(origin 안 감), 없으면 미스(origin 한 번 조회 후 저장)</td>
+</tr>
+<tr>
+<td>TTL (Time To Live)</td>
+<td>캐시 유효기간.<br>
+사진·UI는 길게, &quot;잔여석 여부&quot;처럼 실시간성 있는 데이터는 짧게(또는 캐싱 안 함) —<br>
+안 그러면 마감된 날짜가 계속 &quot;예약 가능&quot;으로 보이는 오류 발생</td>
+</tr>
+</tbody></table>
+<p>핵심:<br>
+안 바뀌는 데이터는 CDN에서 걸러내고,<br>
+origin 서버는 &quot;예약 확정&quot; 같은 진짜 중요한 요청만 받게 만드는 것.</p>
+<p><strong>데이터 종류별 캐싱 정책 (앱 전체가 하나의 스위치 아님)</strong></p>
+<table>
+<thead>
+<tr>
+<th>데이터</th>
+<th>캐싱 여부</th>
+<th>이유</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>가게 사진, 로고, 메뉴 이미지</td>
+<td>CDN 상시 캐싱, TTL 김</td>
+<td>안 바뀜</td>
+</tr>
+<tr>
+<td>가게 소개, 리뷰, 위치정보</td>
+<td>CDN 캐싱, TTL 중간</td>
+<td>자주 안 바뀜</td>
+</tr>
+<tr>
+<td>날짜별 &quot;예약 가능/마감&quot; 상태</td>
+<td>캐싱 안 하거나 TTL 초단위</td>
+<td>실시간성 필요</td>
+</tr>
+<tr>
+<td>&quot;예약하기&quot; 버튼 누르는 순간(재고 차감)</td>
+<td>캐싱 절대 안 함, origin 직행</td>
+<td>원자적 연산 필요</td>
+</tr>
+</tbody></table>
+<p>캐치테이블은 웹이 아니라 네이티브 앱이라 UI 골격(버튼 배치,<br>
+폰트, 아이콘)은 이미 설치 시점에 로컬에 있음.<br>
+CDN이 필요한 건 그때그때 바뀌는 콘텐츠(사진·메뉴·예약현황)뿐 —<br>
+이 점이 매번 HTML/JS 받아야 하는 웹(Next.js 케이스)과 다름.</p>
+<p><strong>중요: 캐싱은 &quot;트래픽 몰릴 때만 켜는 스위치&quot;가 아니라 상시 기본 설정.</strong> 배포 시점에 헤더(<code>Cache-Control</code>)로 미리 정해두는 것이지, 실시간으로 온오프 안 함. 오히려 평소엔 꺼뒀다가 스파이크 순간에만 켜면 그 순간 다 같이 origin 몰려서 <strong>Cache Stampede</strong>(12번 항목) 터짐. 캐싱은 미리, 상시 걸어둬야 스파이크 순간에 이미 준비된 상태가 됨.</p>
+<hr>
+<p><strong>2. 진짜 승부처 — 원자적 연산 (재고 차감)</strong> (→ 6번 트랜잭션 격리수준, <code>SELECT ... FOR UPDATE</code>와 동일 원리)</p>
+<p>슬롯 1개에 수백 명이 동시에 &quot;확인 → 차감&quot; 시도하면,<br>
+확인과 차감 사이 텀에 여러 요청이 끼어들어 동시에 성공 처리되는 <strong>레이스 컨디션</strong> 발생 가능.<br>
+이게 막히지 않으면 <strong>오버부킹</strong>(정원 초과 확정) 터짐.</p>
+<pre><code>잘못된 방식 (원자적이지 않음):
 1. count = SELECT stock FROM slot WHERE id=1   ← A, B 둘 다 count=1 읽음
-2. if count > 0: UPDATE stock -= 1              ← A, B 둘 다 성공 처리
+2. if count &gt; 0: UPDATE stock -= 1              ← A, B 둘 다 성공 처리
 → 재고 1개인데 2명 확정 (오버부킹)
 
 원자적 방식 (락/원자연산으로 확인+차감을 한 덩어리로):
 - DB: SELECT stock FROM slot WHERE id=1 FOR UPDATE  (6번 항목의 비관적 락)
       → 다른 트랜잭션은 이 행 UPDATE 끝날 때까지 대기, 순서 보장
-- 또는 Redis: DECR 커맨드나 Lua 스크립트로 "확인+차감"을 단일 원자 연산 처리
-```
+- 또는 Redis: DECR 커맨드나 Lua 스크립트로 &quot;확인+차감&quot;을 단일 원자 연산 처리
+</code></pre>
+<p>즉 캐치테이블도 겉보기엔 &quot;먼저 누른 사람이 임자&quot;지만,<br>
+뒤에서는 DB 락 또는 Redis 원자 연산이 순서를 강제하고 있음.<br>
+대기열 시스템(인터파크식)이 없는 대신, 이 원자적 연산 지점에서 승부가 갈림.</p>
+<hr>
+<p><strong>3. 예측 가능한 스파이크 대비 — 오토스케일 / 커넥션 풀</strong> (→ 27번 커넥션 풀)</p>
+<p>정오 오픈처럼 트래픽 몰리는 시각이 예측 가능하면, 실시간 트래픽보다 대응이 쉬움:</p>
+<ul>
+<li>오토스케일: 오픈 직전 서버 대수 미리 늘려둠</li>
+<li>DB 커넥션 풀:<br>
+동시 요청 받아낼 커넥션 수 미리 넉넉히 확보 → 커넥션 부족으로 요청이 대기열에 밀리는 것 방지</li>
+</ul>
+<hr>
+<p><strong>&quot;상시 방어&quot; vs &quot;순간 반응&quot; — 둘 다 있음, 역할이 다름</strong></p>
+<blockquote>
+<p>Q.<br>
+캐싱도 상시, 원자적 연산 구조도 상시라면,<br>
+그 순간(스파이크)에만 작동하는 위기 대응 기능은 따로 없는 건가?
+A.<br>
+있음.<br>
+다만 캐싱/락 &quot;구조&quot;는 상시 존재하고,<br>
+그 위에서 실시간 부하에 따라 강도가 달라지는 반응형 계층이 따로 있음.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>구분</th>
+<th>상시 존재 (항상 켜져 있음)</th>
+<th>순간 반응 (실시간 부하에 따라 동적으로 작동)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>정체</td>
+<td>미리 설계해둔 구조 자체</td>
+<td>실시간 지표(요청량, 에러율, 지연시간) 보고 그때그때 반응</td>
+</tr>
+<tr>
+<td>예시</td>
+<td>CDN 캐싱, DB 락/원자적 연산 구조</td>
+<td>Rate limiting 강도 조절, Circuit Breaker 트립(15번), 오토스케일 트리거, DB 커넥션 풀 대기열</td>
+</tr>
+<tr>
+<td>비유</td>
+<td>건물 소화 설비(항상 설치돼 있음)</td>
+<td>화재감지기가 실제 불 감지하면 스프링클러 작동(그 순간에만 트립)</td>
+</tr>
+</tbody></table>
+<p>즉 &quot;구조&quot;는 미리 다 짜여있고 상시 대기 중이며,<br>
+그 구조 위에서 실시간 부하를 감지해 강도를 조절하는 반응형 계층(서킷브레이커,<br>
+오토스케일 트리거, 커넥션 풀 대기)이 &quot;그 순간의 위기&quot;를 넘기는 역할을 함.<br>
+즉석에서 뭔가 새로 만드는 게 아니라, 미리 준비된 도구를 그 순간에 꺼내 쓰는 것에 가까움.</p>
+<hr>
+<p><strong>왜 예전엔 예약 시스템에 문제가 잦았나</strong></p>
+<p>지금 열거한 계층들(CDN, 원자적 락, 오토스케일,<br>
+서킷브레이커)이 표준 관행으로 자리잡은 게 비교적 최근(2010년대 클라우드 대중화 이후)임.<br>
+예전엔:</p>
+<table>
+<thead>
+<tr>
+<th>원인</th>
+<th>문제</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>클라우드 이전 = 고정 서버</td>
+<td>오토스케일 자체가 불가능.<br>
+물리 서버 증설에 며칠~몇 주 걸림 → 스파이크에 서버 대수 못 늘림</td>
+</tr>
+<tr>
+<td>캐싱 계층 미비</td>
+<td>모든 요청이 origin/DB 직행 → DB가 병목되며 다운</td>
+</tr>
+<tr>
+<td>원자적 락 미적용</td>
+<td>&quot;확인 후 차감&quot;을 트랜잭션 없이 구현 → 레이스 컨디션으로 오버부킹 흔함</td>
+</tr>
+<tr>
+<td>모놀리식 구조 (1~4번 항목)</td>
+<td>예약 기능 하나 과부하돼도 전체 애플리케이션이 함께 죽음, 장애 격리 안 됨</td>
+</tr>
+<tr>
+<td>서킷브레이커 개념 미성숙</td>
+<td>DB가 느려지면 그 지연이 앞단까지 그대로 전파돼 연쇄 장애(20·21번 항목)</td>
+</tr>
+</tbody></table>
+<p>정리:<br>
+예전 실패는 &quot;위기의 순간에 뭔가 특별한 대응을 못해서&quot;가 아니라,<br>
+애초에 지금은 당연한 상시 구조(캐싱·원자적 락·오토스케일·서킷브레이커)들이<br>
+아직 실무 표준이 아니었거나 구축 비용이 커서 못 갖췄기 때문.<br>
+지금 시스템이 &quot;심심하게 상시로만 돌아가는 것처럼&quot; 보이는 이유가 바로,<br>
+예전엔 위기 때마다 즉흥 대응해야 했던 걸<br>
+지금은 미리 다 준비해놔서 위기 자체가 안 생기게 만든 것.</p>
+<hr>
+<p><strong>4. 왜 인터파크식 대기열이 없는가</strong></p>
+<p>뮤지컬 티켓팅은 유입 자체를 순서대로 통제(가상대기실)해야 할 만큼 트래픽 지속시간이 김.<br>
+캐치테이블은 슬롯 수 자체가 적고 승부가 몇 초~1분 안에 끝나 대기열 만들 실익이 적음 —<br>
+대신 1·2번 계층(캐싱 + 원자적 연산)으로 짧고 굵게 버팀.</p>
+<p><strong>캐치테이블(시간대 예약) vs 좌석 예매 — 왜 후자가 더 오래 걸리나</strong></p>
+<p>캐치테이블: 확인+결제가 원자적 연산 한 방(순식간) → 중간 상태 없음.</p>
+<p>좌석 예매:<br>
+아래 이유로 한 사람이 시스템 붙잡는 시간 자체가 훨씬 김 →<br>
+순간 트래픽이 아니라 몇 분간 지속되는 트래픽이 됨 →<br>
+그래서 입장을 순서대로 흘리는 대기열이 필요해짐.</p>
+<ul>
+<li>좌석맵 실시간 렌더링(빈자리/선택중/팔림) + 좌석별 임시 홀드(hold) 필요 —<br>
+결제 넘어가는 몇 분간 그 좌석 남한테 안 팔리게 잠가둠(타이머 만료 시 자동 해제)</li>
+<li>동행 인원과 상의(같이 갈 자리 붙어있나), 시야 취향(가까이 vs 멀리) 비교 —<br>
+선택 자체에 고민 시간 소요, 혼자 빠르게 못 끝냄</li>
+</ul>
+<p>캐치테이블의 &quot;임시 홀드&quot; 부재(찍으면 바로 확정)가 대기열 없이도 버틸 수 있는 핵심 이유.</p>
+<hr>
+<p><strong>용어 정리</strong> (CDN·엣지 서버·캐시 히트/미스·TTL은 위 &quot;1.<br>
+트래픽 흡수 계층&quot; 표 참고, 중복 생략)</p>
+<table>
+<thead>
+<tr>
+<th>용어</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Traffic (트래픽)</td>
+<td>서버로 오가는 요청/데이터의 양·흐름.<br>
+&quot;트래픽 몰린다&quot; = 동시 요청 수가 급증한다는 뜻</td>
+</tr>
+<tr>
+<td>서버시간 vs 로컬시간 오차</td>
+<td>내 기기 시계와 실제 서버 판단 시간 차이. 카운트다운은 서버 시간 기준</td>
+</tr>
+<tr>
+<td>Rate limiting</td>
+<td>IP/기기당 요청 수 제한. 매크로 방지 겸 서버 보호</td>
+</tr>
+<tr>
+<td>원자적 연산</td>
+<td>&quot;확인+차감&quot;을 쪼개지지 않게 한 번에 처리</td>
+</tr>
+<tr>
+<td>레이스 컨디션</td>
+<td>동시 요청 순서가 꼬여 충돌하는 상황</td>
+</tr>
+<tr>
+<td>오버부킹</td>
+<td>정원 초과로 확정돼버리는 사고</td>
+</tr>
+</tbody></table>
+<p><strong>흐름 요약</strong>:<br>
+정각 몰리는 트래픽 → CDN이 &quot;구경하는 부하&quot; 걸러냄 →<br>
+오토스케일/커넥션 풀로 몰리는 시간대 미리 대비 →<br>
+마지막 승부처인 원자적 연산(DB 락 또는 Redis)이 레이스 컨디션·오버부킹 차단.</p>
+<hr>
+<p><strong>체감 속도 차이 = &quot;캐싱 가능한 데이터 비율&quot; 차이</strong></p>
+<p>서버 성능 차이가 아니라 데이터 성격 차이.<br>
+내 포트폴리오(frontend Vercel/엣지 자동 배포,<br>
+backend Railway 단일 리전)가 빠른 이유는 정적 콘텐츠 비율이 높아서.<br>
+반대로 은행(신분확인·계좌·이체)·증권(실시간 시세)이 버벅이는 이유는<br>
+캐싱 자체가 불가능한 데이터 비율이 높기 때문:</p>
+<ul>
+<li>개인화·보안 민감 데이터(계좌, 인증) → 캐싱 불가,<br>
+매번 origin + 다중 검증(잔액·한도·이상거래탐지) 직행</li>
+<li>실시간성 요구 데이터(주식 시세) → TTL을 극도로 짧게 잡아야 해서 캐싱 이점 거의 없음,<br>
+외부 시세 API 홉까지 추가돼 지연 누적</li>
+</ul>
+<p>→ &quot;안 바뀌는 정적 데이터 비율&quot;이 높을수록 체감 빠르고,<br>
+&quot;캐싱 못 하는 민감·실시간 데이터 비율&quot;이 높을수록 체감 느림.</p>
+<hr>
+</article>
 
-즉 캐치테이블도 겉보기엔 "먼저 누른 사람이 임자"지만, 뒤에서는 DB 락 또는 Redis 원자 연산이 순서를 강제하고 있음. 대기열 시스템(인터파크식)이 없는 대신, 이 원자적 연산 지점에서 승부가 갈림.
-
----
-
-**3. 예측 가능한 스파이크 대비 — 오토스케일 / 커넥션 풀** (→ 27번 커넥션 풀)
-
-정오 오픈처럼 트래픽 몰리는 시각이 예측 가능하면, 실시간 트래픽보다 대응이 쉬움:
-- 오토스케일: 오픈 직전 서버 대수 미리 늘려둠
-- DB 커넥션 풀: 동시 요청 받아낼 커넥션 수 미리 넉넉히 확보 → 커넥션 부족으로 요청이 대기열에 밀리는 것 방지
-
----
-
-**"상시 방어" vs "순간 반응" — 둘 다 있음, 역할이 다름**
-
-> Q. 캐싱도 상시, 원자적 연산 구조도 상시라면, 그 순간(스파이크)에만 작동하는 위기 대응 기능은 따로 없는 건가?
-> A. 있음. 다만 캐싱/락 "구조"는 상시 존재하고, 그 위에서 실시간 부하에 따라 강도가 달라지는 반응형 계층이 따로 있음.
-
-| 구분 | 상시 존재 (항상 켜져 있음) | 순간 반응 (실시간 부하에 따라 동적으로 작동) |
-|---|---|---|
-| 정체 | 미리 설계해둔 구조 자체 | 실시간 지표(요청량, 에러율, 지연시간) 보고 그때그때 반응 |
-| 예시 | CDN 캐싱, DB 락/원자적 연산 구조 | Rate limiting 강도 조절, Circuit Breaker 트립(15번), 오토스케일 트리거, DB 커넥션 풀 대기열 |
-| 비유 | 건물 소화 설비(항상 설치돼 있음) | 화재감지기가 실제 불 감지하면 스프링클러 작동(그 순간에만 트립) |
-
-즉 "구조"는 미리 다 짜여있고 상시 대기 중이며, 그 구조 위에서 실시간 부하를 감지해 강도를 조절하는 반응형 계층(서킷브레이커, 오토스케일 트리거, 커넥션 풀 대기)이 "그 순간의 위기"를 넘기는 역할을 함. 즉석에서 뭔가 새로 만드는 게 아니라, 미리 준비된 도구를 그 순간에 꺼내 쓰는 것에 가까움.
-
----
-
-**왜 예전엔 예약 시스템에 문제가 잦았나**
-
-지금 열거한 계층들(CDN, 원자적 락, 오토스케일, 서킷브레이커)이 표준 관행으로 자리잡은 게 비교적 최근(2010년대 클라우드 대중화 이후)임. 예전엔:
-
-| 원인 | 문제 |
-|---|---|
-| 클라우드 이전 = 고정 서버 | 오토스케일 자체가 불가능. 물리 서버 증설에 며칠~몇 주 걸림 → 스파이크에 서버 대수 못 늘림 |
-| 캐싱 계층 미비 | 모든 요청이 origin/DB 직행 → DB가 병목되며 다운 |
-| 원자적 락 미적용 | "확인 후 차감"을 트랜잭션 없이 구현 → 레이스 컨디션으로 오버부킹 흔함 |
-| 모놀리식 구조 (1~4번 항목) | 예약 기능 하나 과부하돼도 전체 애플리케이션이 함께 죽음, 장애 격리 안 됨 |
-| 서킷브레이커 개념 미성숙 | DB가 느려지면 그 지연이 앞단까지 그대로 전파돼 연쇄 장애(20·21번 항목) |
-
-정리: 예전 실패는 "위기의 순간에 뭔가 특별한 대응을 못해서"가 아니라, 애초에 지금은 당연한 상시 구조(캐싱·원자적 락·오토스케일·서킷브레이커)들이 아직 실무 표준이 아니었거나 구축 비용이 커서 못 갖췄기 때문. 지금 시스템이 "심심하게 상시로만 돌아가는 것처럼" 보이는 이유가 바로, 예전엔 위기 때마다 즉흥 대응해야 했던 걸 지금은 미리 다 준비해놔서 위기 자체가 안 생기게 만든 것.
-
----
-
-**4. 왜 인터파크식 대기열이 없는가**
-
-뮤지컬 티켓팅은 유입 자체를 순서대로 통제(가상대기실)해야 할 만큼 트래픽 지속시간이 김. 캐치테이블은 슬롯 수 자체가 적고 승부가 몇 초~1분 안에 끝나 대기열 만들 실익이 적음 — 대신 1·2번 계층(캐싱 + 원자적 연산)으로 짧고 굵게 버팀.
-
-**캐치테이블(시간대 예약) vs 좌석 예매 — 왜 후자가 더 오래 걸리나**
-
-캐치테이블: 확인+결제가 원자적 연산 한 방(순식간) → 중간 상태 없음.
-
-좌석 예매: 아래 이유로 한 사람이 시스템 붙잡는 시간 자체가 훨씬 김 → 순간 트래픽이 아니라 몇 분간 지속되는 트래픽이 됨 → 그래서 입장을 순서대로 흘리는 대기열이 필요해짐.
-- 좌석맵 실시간 렌더링(빈자리/선택중/팔림) + 좌석별 임시 홀드(hold) 필요 — 결제 넘어가는 몇 분간 그 좌석 남한테 안 팔리게 잠가둠(타이머 만료 시 자동 해제)
-- 동행 인원과 상의(같이 갈 자리 붙어있나), 시야 취향(가까이 vs 멀리) 비교 — 선택 자체에 고민 시간 소요, 혼자 빠르게 못 끝냄
-
-캐치테이블의 "임시 홀드" 부재(찍으면 바로 확정)가 대기열 없이도 버틸 수 있는 핵심 이유.
-
----
-
-**용어 정리** (CDN·엣지 서버·캐시 히트/미스·TTL은 위 "1. 트래픽 흡수 계층" 표 참고, 중복 생략)
-
-| 용어 | 뜻 |
-|------|-----|
-| Traffic (트래픽) | 서버로 오가는 요청/데이터의 양·흐름. "트래픽 몰린다" = 동시 요청 수가 급증한다는 뜻 |
-| 서버시간 vs 로컬시간 오차 | 내 기기 시계와 실제 서버 판단 시간 차이. 카운트다운은 서버 시간 기준 |
-| Rate limiting | IP/기기당 요청 수 제한. 매크로 방지 겸 서버 보호 |
-| 원자적 연산 | "확인+차감"을 쪼개지지 않게 한 번에 처리 |
-| 레이스 컨디션 | 동시 요청 순서가 꼬여 충돌하는 상황 |
-| 오버부킹 | 정원 초과로 확정돼버리는 사고 |
-
-**흐름 요약**: 정각 몰리는 트래픽 → CDN이 "구경하는 부하" 걸러냄 → 오토스케일/커넥션 풀로 몰리는 시간대 미리 대비 → 마지막 승부처인 원자적 연산(DB 락 또는 Redis)이 레이스 컨디션·오버부킹 차단.
-
----
-
-**체감 속도 차이 = "캐싱 가능한 데이터 비율" 차이**
-
-서버 성능 차이가 아니라 데이터 성격 차이. 내 포트폴리오(frontend Vercel/엣지 자동 배포, backend Railway 단일 리전)가 빠른 이유는 정적 콘텐츠 비율이 높아서. 반대로 은행(신분확인·계좌·이체)·증권(실시간 시세)이 버벅이는 이유는 캐싱 자체가 불가능한 데이터 비율이 높기 때문:
-- 개인화·보안 민감 데이터(계좌, 인증) → 캐싱 불가, 매번 origin + 다중 검증(잔액·한도·이상거래탐지) 직행
-- 실시간성 요구 데이터(주식 시세) → TTL을 극도로 짧게 잡아야 해서 캐싱 이점 거의 없음, 외부 시세 API 홉까지 추가돼 지연 누적
-
-→ "안 바뀌는 정적 데이터 비율"이 높을수록 체감 빠르고, "캐싱 못 하는 민감·실시간 데이터 비율"이 높을수록 체감 느림.
-
----
-
-## 부록 — 메모리 계층과 레이턴시
-> [연속재생] 캐시 합본에 이어진 파트. "최신 NVMe SSD가 RAM보다 200배 느리다는 사실, 알고 계셨나요?"
-
-캐시를 사용자와 가까운 계층에서 끝내라는 말의 하드웨어적 근거. 3단계 캐시의 전제다.
-
-**메모리 계층 구조란**
-
-> 컴퓨터 시스템에서 **속도 · 용량 · 비용** 간의 균형(Trade-off)을 맞추기 위해 메모리를 여러 계층으로 나눈 구조.
-
-CPU는 매우 빠른데 디스크는 매우 느리다. 그 간극을 메우려고 여러 계층의 저장소를 **CPU와의 거리**에 따라 배치한 것.
-
-```
-빠름 / 작음 / 비쌈
+<article class="doc" id="x3" data-stage="X3">
+<p class="doc-kicker">X3 · 부록</p>
+<h1>메모리 계층과 레이턴시</h1>
+<blockquote>
+<p>[연속재생] 캐시 합본에 이어진 파트.<br>
+&quot;최신 NVMe SSD가 RAM보다 200배 느리다는 사실,<br>
+알고 계셨나요?&quot;</p>
+</blockquote>
+<p>캐시를 사용자와 가까운 계층에서 끝내라는 말의 하드웨어적 근거. 3단계 캐시의 전제다.</p>
+<p><strong>메모리 계층 구조란</strong></p>
+<blockquote>
+<p>컴퓨터 시스템에서 <strong>속도 · 용량 · 비용</strong> 간의 균형(Trade-off)을 맞추기 위해<br>
+메모리를 여러 계층으로 나눈 구조.</p>
+</blockquote>
+<p>CPU는 매우 빠른데 디스크는 매우 느리다.<br>
+그 간극을 메우려고 여러 계층의 저장소를 <strong>CPU와의 거리</strong>에 따라 배치한 것.</p>
+<pre><code>빠름 / 작음 / 비쌈
         ┌─────────────────┐
         │   CPU 레지스터    │
       ┌─┴─────────────────┴─┐
@@ -1806,531 +2397,738 @@ CPU는 매우 빠른데 디스크는 매우 느리다. 그 간극을 메우려�
 │              HDD                │
 └─────────────────────────────────┘
 느림 / 큼 / 저렴
-```
+</code></pre>
+<p><strong>계층별 레이턴시 수치</strong></p>
+<blockquote>
+<p><strong>레이턴시(Latency)</strong> — 요청을 보낸 시점부터 응답을 받을 때까지 걸리는 시간.<br>데이터 크기와 무관한 <strong>&quot;접근 자체의 고정 비용&quot;</strong> 이다.</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>계층</th>
+<th>레이턴시</th>
+<th>RAM 대비</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CPU 레지스터</td>
+<td>~0.3 ns</td>
+<td>약 330배 빠름</td>
+</tr>
+<tr>
+<td>L1 캐시</td>
+<td>~1 ns</td>
+<td>약 100배 빠름</td>
+</tr>
+<tr>
+<td>L2 / L3 캐시</td>
+<td>~4 ~ 40 ns</td>
+<td>약 2.5 ~ 25배 빠름</td>
+</tr>
+<tr>
+<td><strong>메인 메모리 (RAM)</strong></td>
+<td><strong>~100 ns</strong></td>
+<td><strong>기준</strong></td>
+</tr>
+<tr>
+<td>NVMe SSD</td>
+<td>~20 µs</td>
+<td>약 200배 느림</td>
+</tr>
+<tr>
+<td>SATA SSD</td>
+<td>~100 µs</td>
+<td>약 1,000배 느림</td>
+</tr>
+<tr>
+<td>HDD</td>
+<td>~5 ms</td>
+<td>약 50,000배 느림</td>
+</tr>
+</tbody></table>
+<p>계층 간 크기 비교용 대표값이다. 실제 하드웨어와 접근 패턴에 따라 달라진다.<br>원 수치는 Peter Norvig · Jeff Dean · Colin Scott 이 정리·갱신해온 자료 기반.</p>
+<p><strong>1ns 를 1초라고 가정하면</strong></p>
+<p>나노초는 너무 작아서 감이 안 온다. <code>1ns = 1초</code> 로 확대하면 격차가 체감된다.</p>
+<table>
+<thead>
+<tr>
+<th>계층</th>
+<th>실제 레이턴시</th>
+<th>체감 시간 (1ns = 1초 기준)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>L1 캐시</td>
+<td>~1 ns</td>
+<td>1초</td>
+</tr>
+<tr>
+<td>메인 메모리 (RAM)</td>
+<td>~100 ns</td>
+<td>1분 40초</td>
+</tr>
+<tr>
+<td>NVMe SSD</td>
+<td>~20 µs</td>
+<td>5시간 30분</td>
+</tr>
+<tr>
+<td>SATA SSD</td>
+<td>~100 µs</td>
+<td>28시간</td>
+</tr>
+<tr>
+<td>HDD</td>
+<td>~5 ms</td>
+<td>약 2개월</td>
+</tr>
+</tbody></table>
+<p><strong>알아둘 점 — Random vs Sequential</strong></p>
+<p>위 SSD/HDD 수치는 전부 <strong>랜덤 액세스</strong> 기준이다. 순차 읽기는 전혀 다른 이야기.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>랜덤 액세스</th>
+<th>순차 읽기</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>접근 방식</td>
+<td>흩어진 위치를 무작위로 접근. 매번 새 위치로 &quot;점프&quot;</td>
+<td>연속된 데이터를 쭉 읽음. 한 번 접근 후 스트리밍</td>
+</tr>
+<tr>
+<td>지배 요인</td>
+<td>레이턴시</td>
+<td>처리량(Throughput)</td>
+</tr>
+<tr>
+<td>NVMe 기준</td>
+<td>~20 µs / 회</td>
+<td>수 GB/s</td>
+</tr>
+</tbody></table>
+<p>같은 NVMe SSD라도 작은 랜덤 접근 1만 번과 큰 파일 연속 읽기는 성능이 수십 배 차이 난다.<br><strong>데이터베이스 인덱스 설계가 중요한 이유가 여기 있다</strong> — 인덱스는 랜덤 접근 횟수를 줄이는 장치다.</p>
+<p><strong>실무에서 자주 하는 오해</strong></p>
+<blockquote>
+<p>&quot;최신 SSD 썼으니까 충분히 빠르겠지?&quot;</p>
+</blockquote>
+<p>NVMe SSD도 RAM보다 약 200배 느리다.<br>
+&quot;SSD로 바꿨으니 DB 성능 걱정 끝&quot;은 위험한 접근이다.</p>
+<p>기억할 원칙 3개.</p>
+<ol>
+<li>계층 간 격차는 <strong>단위 자체가 다르다</strong> (ns → µs → ms)</li>
+<li>자주 쓰는 데이터는 <strong>위쪽 계층</strong>에 두는 것이 성능의 핵심</li>
+<li>하드웨어가 발전해도 <strong>계층 간 상대적 격차</strong>는 놀랍도록 유지된다</li>
+</ol>
+<p><strong>핵심 3줄</strong></p>
+<ul>
+<li>메모리 계층 구조는 <strong>속도 · 용량 · 비용의 균형(Trade-off)</strong> 을 맞추려고<br>
+메모리를 여러 계층으로 나눈 구조다</li>
+<li>레이턴시는 데이터 크기와 무관한 <strong>접근 자체의 고정 비용</strong>이다</li>
+<li>계층 간 레이턴시는 <strong>단위가 바뀔 만큼</strong> 극적이다 (ns → µs → ms, RAM과 HDD 사이 약 5만 배)</li>
+</ul>
+<p><strong>[참고] Latency Numbers Every Programmer Should Know</strong></p>
+<p>영상 중간에 나온 인터랙티브 페이지. 실존한다 — Colin Scott 이 만들어 공개한 것.</p>
+<p><a href="https://colin-scott.github.io/personal_website/research/interactive_latency.html">https://colin-scott.github.io/personal_website/research/interactive_latency.html</a></p>
+<p>연도 슬라이더(1990 ~ 2020)를 좌우로 끌면 그 해 기준 수치와 블록 그림이 같이 바뀐다.<br>원 수치는 Peter Norvig 의 <a href="http://norvig.com/21-days.html#answers">Teach Yourself Programming in Ten Years</a> 답안에서 출발했고,<br>Jeff Dean 이 퍼뜨린 목록이 토대다.<br>L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕복(500 µs)<br>
+· CA↔네덜란드 패킷 왕복(150 ms) 같은 항목이 들어 있다.</p>
+<p>같은 데이터센터 안의 왕복이 500 µs — <strong>RAM 접근(100 ns)보다 5,000배 느리다.</strong><br>네트워크를 타는 순간 메모리 계층 어디보다도 비싸진다는 뜻이고,<br>이게 로컬 캐시가 Redis보다 빠른 이유다.</p>
+<hr>
+</article>
 
-**계층별 레이턴시 수치**
-
-> **레이턴시(Latency)** — 요청을 보낸 시점부터 응답을 받을 때까지 걸리는 시간.  
-> 데이터 크기와 무관한 **"접근 자체의 고정 비용"** 이다.
-
-| 계층 | 레이턴시 | RAM 대비 |
-|---|---|---|
-| CPU 레지스터 | ~0.3 ns | 약 330배 빠름 |
-| L1 캐시 | ~1 ns | 약 100배 빠름 |
-| L2 / L3 캐시 | ~4 ~ 40 ns | 약 2.5 ~ 25배 빠름 |
-| **메인 메모리 (RAM)** | **~100 ns** | **기준** |
-| NVMe SSD | ~20 µs | 약 200배 느림 |
-| SATA SSD | ~100 µs | 약 1,000배 느림 |
-| HDD | ~5 ms | 약 50,000배 느림 |
-
-계층 간 크기 비교용 대표값이다. 실제 하드웨어와 접근 패턴에 따라 달라진다.  
-원 수치는 Peter Norvig · Jeff Dean · Colin Scott 이 정리·갱신해온 자료 기반.
-
-**1ns 를 1초라고 가정하면**
-
-나노초는 너무 작아서 감이 안 온다. `1ns = 1초` 로 확대하면 격차가 체감된다.
-
-| 계층 | 실제 레이턴시 | 체감 시간 (1ns = 1초 기준) |
-|---|---|---|
-| L1 캐시 | ~1 ns | 1초 |
-| 메인 메모리 (RAM) | ~100 ns | 1분 40초 |
-| NVMe SSD | ~20 µs | 5시간 30분 |
-| SATA SSD | ~100 µs | 28시간 |
-| HDD | ~5 ms | 약 2개월 |
-
-**알아둘 점 — Random vs Sequential**
-
-위 SSD/HDD 수치는 전부 **랜덤 액세스** 기준이다. 순차 읽기는 전혀 다른 이야기.
-
-| | 랜덤 액세스 | 순차 읽기 |
-|---|---|---|
-| 접근 방식 | 흩어진 위치를 무작위로 접근. 매번 새 위치로 "점프" | 연속된 데이터를 쭉 읽음. 한 번 접근 후 스트리밍 |
-| 지배 요인 | 레이턴시 | 처리량(Throughput) |
-| NVMe 기준 | ~20 µs / 회 | 수 GB/s |
-
-같은 NVMe SSD라도 작은 랜덤 접근 1만 번과 큰 파일 연속 읽기는 성능이 수십 배 차이 난다.  
-**데이터베이스 인덱스 설계가 중요한 이유가 여기 있다** — 인덱스는 랜덤 접근 횟수를 줄이는 장치다.
-
-**실무에서 자주 하는 오해**
-
-> "최신 SSD 썼으니까 충분히 빠르겠지?"
-
-NVMe SSD도 RAM보다 약 200배 느리다. "SSD로 바꿨으니 DB 성능 걱정 끝"은 위험한 접근이다.
-
-기억할 원칙 3개.
-
-1. 계층 간 격차는 **단위 자체가 다르다** (ns → µs → ms)
-2. 자주 쓰는 데이터는 **위쪽 계층**에 두는 것이 성능의 핵심
-3. 하드웨어가 발전해도 **계층 간 상대적 격차**는 놀랍도록 유지된다
-
-**핵심 3줄**
-
-- 메모리 계층 구조는 **속도 · 용량 · 비용의 균형(Trade-off)** 을 맞추려고 메모리를 여러 계층으로 나눈 구조다
-- 레이턴시는 데이터 크기와 무관한 **접근 자체의 고정 비용**이다
-- 계층 간 레이턴시는 **단위가 바뀔 만큼** 극적이다 (ns → µs → ms, RAM과 HDD 사이 약 5만 배)
-
-**[참고] Latency Numbers Every Programmer Should Know**
-
-영상 중간에 나온 인터랙티브 페이지. 실존한다 — Colin Scott 이 만들어 공개한 것.
-
-<https://colin-scott.github.io/personal_website/research/interactive_latency.html>
-
-연도 슬라이더(1990 ~ 2020)를 좌우로 끌면 그 해 기준 수치와 블록 그림이 같이 바뀐다.  
-원 수치는 Peter Norvig 의 [Teach Yourself Programming in Ten Years](http://norvig.com/21-days.html#answers) 답안에서 출발했고,  
-Jeff Dean 이 퍼뜨린 목록이 토대다.  
-L1 캐시 · 메인 메모리 · SSD 랜덤 읽기 · 같은 데이터센터 왕복(500 µs) · CA↔네덜란드 패킷 왕복(150 ms) 같은 항목이 들어 있다.
-
-같은 데이터센터 안의 왕복이 500 µs — **RAM 접근(100 ns)보다 5,000배 느리다.**  
-네트워크를 타는 순간 메모리 계층 어디보다도 비싸진다는 뜻이고,  
-이게 로컬 캐시가 Redis보다 빠른 이유다.
-
----
-
-## 부록 — 읽기 vs 쓰기 성능 최적화
-> 개발자 개념 장착! 읽기 성능 vs 쓰기 성능
-
-영상에서 **"정답이 없는 파트"** 라고 밝힌 내용이다.  
-정해진 정답이 아니라 **답변을 어떻게 구성하느냐**에 관한 것.
-
-면접 질문: *"성능 향상 전략(기법)을 읽기(Read)와 쓰기(Write)로 나눠서 말씀해 보세요."*
-
-**흔한 실수 — 두서없는 나열**
-
-- "음… 캐시(Cache) 쓰면 빨라지고요…"
-- "인덱스(Index) 걸고… 샤딩(Sharding)도 하고…"
-- "레디스? 카프카? 그런 거 쓰면 됩니다!"
-
-키워드만 던지면 감점.  
-**어느 레이어에서, 왜 쓰는지**를 구조적으로 말해야 한다.
-
-**답변 뼈대 — Layered Approach**
-
-```
-[Network / Web]  →  [Application]  →  [Database]
+<article class="doc" id="x4" data-stage="X4">
+<p class="doc-kicker">X4 · 부록</p>
+<h1>읽기 vs 쓰기 성능 최적화</h1>
+<blockquote>
+<p>개발자 개념 장착! 읽기 성능 vs 쓰기 성능</p>
+</blockquote>
+<p>영상에서 <strong>&quot;정답이 없는 파트&quot;</strong> 라고 밝힌 내용이다.<br>정해진 정답이 아니라 <strong>답변을 어떻게 구성하느냐</strong>에 관한 것.</p>
+<p>면접 질문: <em>&quot;성능 향상 전략(기법)을 읽기(Read)와 쓰기(Write)로 나눠서 말씀해 보세요.&quot;</em></p>
+<p><strong>흔한 실수 — 두서없는 나열</strong></p>
+<ul>
+<li>&quot;음… 캐시(Cache) 쓰면 빨라지고요…&quot;</li>
+<li>&quot;인덱스(Index) 걸고… 샤딩(Sharding)도 하고…&quot;</li>
+<li>&quot;레디스? 카프카? 그런 거 쓰면 됩니다!&quot;</li>
+</ul>
+<p>키워드만 던지면 감점.<br><strong>어느 레이어에서, 왜 쓰는지</strong>를 구조적으로 말해야 한다.</p>
+<p><strong>답변 뼈대 — Layered Approach</strong></p>
+<pre><code>[Network / Web]  →  [Application]  →  [Database]
      입구              중간 처리          저장소
-```
+</code></pre>
+<p><strong>읽기(Read) 최적화 — 레이어별</strong></p>
+<table>
+<thead>
+<tr>
+<th>레이어</th>
+<th>기법</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Network / Web</td>
+<td>HTTP Cache · CDN · HTTP/2 &amp; HTTP/3</td>
+</tr>
+<tr>
+<td>App / Cache</td>
+<td>Cache (Redis) · Local Cache</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Replication(복제) · Indexing · Partitioning · 미리 계산된 결과(통계)</td>
+</tr>
+</tbody></table>
+<p>앞 두 레이어는 3단계 캐시의 계층 지도와 같은 얘기다.<br>읽기 최적화의 본체가 캐싱이라는 뜻.</p>
+<p><strong>쓰기(Write) 최적화 — 레이어별</strong></p>
+<table>
+<thead>
+<tr>
+<th>레이어</th>
+<th>기법</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>App / Broker</td>
+<td>Message Queue (Kafka) · 비동기 처리</td>
+</tr>
+<tr>
+<td>DB Arch</td>
+<td>Sharding · Partitioning · Eventual Consistency</td>
+</tr>
+<tr>
+<td>DB Internal</td>
+<td>Batch Write · 인덱스 최적화</td>
+</tr>
+</tbody></table>
+<p>읽기가 &quot;가까운 데서 끝내기&quot;라면, 쓰기는 <strong>&quot;부하를 분산하고 나중으로 미루기&quot;</strong> 다.<br>큐에 넣고 응답부터 돌려주거나, 여러 샤드로 쪼개거나, 모아서 한 번에 쓴다.</p>
+<p><strong>성능 튜닝 전 고려사항</strong></p>
+<table>
+<thead>
+<tr>
+<th>항목</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>병목(Bottleneck) 찾기가 최우선</td>
+<td>추측하지 말고 측정하라. Slow Query 등</td>
+</tr>
+<tr>
+<td>Trade-off 고려 — 은탄환은 없다</td>
+<td>읽기가 빨라지면 쓰기가 느려질 수 있음</td>
+</tr>
+<tr>
+<td>Read : Write 비율 고려</td>
+<td>대부분의 서비스는 읽기가 8:2로 압도적 → 읽기 최적화 효율이 높음</td>
+</tr>
+</tbody></table>
+<p><strong>Trade-off 대표 예시</strong></p>
+<blockquote>
+<p>&quot;인덱스(Index)는 <strong>읽기 성능</strong>을 높여주지만, 반대로 <strong>쓰기 성능</strong>은 떨어뜨린다.&quot;</p>
+</blockquote>
+<p>쓸 때마다 인덱스도 같이 갱신하고 정렬해야 하기 때문.<br>인덱스를 늘릴수록 <code>INSERT</code>·<code>UPDATE</code> 가 비싸진다.</p>
+<p><strong>100점짜리 모범 답안</strong></p>
+<ol>
+<li><strong>읽기 성능</strong>은 Web(CDN) · App(캐싱) · DB(복제/인덱싱) 계층별로 최적화한다</li>
+<li><strong>쓰기 성능</strong>은 App(비동기 큐) · DB(샤딩/배치 처리)를 통해 부하를 분산시킨다</li>
+<li>무엇보다 성능 튜닝 전 <strong>병목 지점</strong>을 파악하고, 읽기/쓰기 비율에 따른 <strong>트레이드오프</strong>를 고려한다</li>
+</ol>
+<p><strong>꼬리에 꼬리를 무는 질문</strong></p>
+<ol>
+<li>Replication Lag(지연)은 어떻게 해결하나?<ul>
+<li>마스터–슬레이브 간 데이터 싱크가 안 맞을 때</li>
+</ul>
+</li>
+<li>CQRS 패턴이 무엇인가?<ul>
+<li>Command(쓰기)와 Query(읽기)의 책임을 분리하는 패턴</li>
+</ul>
+</li>
+<li>캐시 전략 Write-Back vs Write-Through 의 차이는?<ul>
+<li>쓰기 성능 vs 데이터 일관성</li>
+</ul>
+</li>
+</ol>
+<hr>
+</article>
 
-**읽기(Read) 최적화 — 레이어별**
-
-| 레이어 | 기법 |
-|---|---|
-| Network / Web | HTTP Cache · CDN · HTTP/2 & HTTP/3 |
-| App / Cache | Cache (Redis) · Local Cache |
-| Database | Replication(복제) · Indexing · Partitioning · 미리 계산된 결과(통계) |
-
-앞 두 레이어는 3단계 캐시의 계층 지도와 같은 얘기다.  
-읽기 최적화의 본체가 캐싱이라는 뜻.
-
-**쓰기(Write) 최적화 — 레이어별**
-
-| 레이어 | 기법 |
-|---|---|
-| App / Broker | Message Queue (Kafka) · 비동기 처리 |
-| DB Arch | Sharding · Partitioning · Eventual Consistency |
-| DB Internal | Batch Write · 인덱스 최적화 |
-
-읽기가 "가까운 데서 끝내기"라면, 쓰기는 **"부하를 분산하고 나중으로 미루기"** 다.  
-큐에 넣고 응답부터 돌려주거나, 여러 샤드로 쪼개거나, 모아서 한 번에 쓴다.
-
-**성능 튜닝 전 고려사항**
-
-| 항목 | 내용 |
-|---|---|
-| 병목(Bottleneck) 찾기가 최우선 | 추측하지 말고 측정하라. Slow Query 등 |
-| Trade-off 고려 — 은탄환은 없다 | 읽기가 빨라지면 쓰기가 느려질 수 있음 |
-| Read : Write 비율 고려 | 대부분의 서비스는 읽기가 8:2로 압도적 → 읽기 최적화 효율이 높음 |
-
-**Trade-off 대표 예시**
-
-> "인덱스(Index)는 **읽기 성능**을 높여주지만, 반대로 **쓰기 성능**은 떨어뜨린다."
-
-쓸 때마다 인덱스도 같이 갱신하고 정렬해야 하기 때문.  
-인덱스를 늘릴수록 `INSERT`·`UPDATE` 가 비싸진다.
-
-**100점짜리 모범 답안**
-
-1. **읽기 성능**은 Web(CDN) · App(캐싱) · DB(복제/인덱싱) 계층별로 최적화한다
-2. **쓰기 성능**은 App(비동기 큐) · DB(샤딩/배치 처리)를 통해 부하를 분산시킨다
-3. 무엇보다 성능 튜닝 전 **병목 지점**을 파악하고, 읽기/쓰기 비율에 따른 **트레이드오프**를 고려한다
-
-**꼬리에 꼬리를 무는 질문**
-
-1. Replication Lag(지연)은 어떻게 해결하나?
-   - 마스터–슬레이브 간 데이터 싱크가 안 맞을 때
-2. CQRS 패턴이 무엇인가?
-   - Command(쓰기)와 Query(읽기)의 책임을 분리하는 패턴
-3. 캐시 전략 Write-Back vs Write-Through 의 차이는?
-   - 쓰기 성능 vs 데이터 일관성
-
----
-
-## 부록 — 오라클 SQL 처리 구조와 성능 측정
-> 영상 정리가 아니라 실무 질문에서 출발해 정리한 내용
-
-시작은 이 말이었다 — **"`SELECT *` 가 컬럼을 다 적은 쿼리보다 빨랐다"**.  
-DB가 구식이라 그렇다는 설명이 돌았고, PM은 옵티마이저 문제로 추정했다.
-
-어느 쪽이 맞는지 가리려면 SQL 한 문장이 오라클 안에서  
-어디를 어떤 순서로 지나가는지부터 봐야 한다.
-
+<article class="doc" id="x5" data-stage="X5" data-overview>
+<p class="doc-kicker">X5 · 단계 개요</p>
+<h1>부록 — 오라클 SQL 처리 구조와 성능 측정</h1>
+<blockquote>
+<p>영상 정리가 아니라 실무 질문에서 출발해 정리한 내용</p>
+</blockquote>
+<p>시작은 이 말이었다 — <strong>&quot;<code>SELECT *</code> 가 컬럼을 다 적은 쿼리보다 빨랐다&quot;</strong>.<br>DB가 구식이라 그렇다는 설명이 돌았고, PM은 옵티마이저 문제로 추정했다.</p>
+<p>어느 쪽이 맞는지 가리려면 SQL 한 문장이 오라클 안에서<br>어디를 어떤 순서로 지나가는지부터 봐야 한다.</p>
 <svg viewBox="0 0 640 322" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="SQL 한 문장이 지나가는 경로">
-<defs><marker id="ahA" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7E9CBC"/></marker></defs>
-<rect x="20" y="20" width="170" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="105" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">① SQL 텍스트 도착</text>
-<line x1="192" y1="40" x2="216" y2="40" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
-<rect x="220" y="20" width="180" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="310" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">② 구문·의미 검사</text>
-<line x1="402" y1="40" x2="426" y2="40" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
-<rect x="430" y="20" width="190" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="525" y="45" text-anchor="middle" font-size="12.5" fill="#E8F1FA">③ 라이브러리 캐시 조회</text>
-<path d="M525,60 L525,78 L155,78" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
-<path d="M525,78 L475,78" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
-<line x1="155" y1="78" x2="155" y2="92" stroke="#68E3C4" stroke-width="1.4" marker-end="url(#ahA)"/>
-<line x1="475" y1="78" x2="475" y2="92" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahA)"/>
-<rect x="20" y="96" width="270" height="62" rx="7" fill="#152B47" stroke="#68E3C4"/>
-<text x="155" y="120" text-anchor="middle" font-size="12.5" fill="#68E3C4">같은 텍스트 있음 · 소프트 파싱</text>
-<text x="155" y="140" text-anchor="middle" font-size="11.5" fill="#8FAAC7">저장된 실행계획을 그대로 재사용</text>
-<rect x="330" y="96" width="290" height="62" rx="7" fill="#152B47" stroke="#FFC24B"/>
-<text x="475" y="120" text-anchor="middle" font-size="12.5" fill="#FFC24B">같은 텍스트 없음 · 하드 파싱</text>
-<text x="475" y="140" text-anchor="middle" font-size="11.5" fill="#8FAAC7">옵티마이저가 통계 읽고 플랜 계산</text>
-<path d="M155,158 L155,176 L320,176" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
-<path d="M475,158 L475,176 L320,176" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
-<line x1="320" y1="176" x2="320" y2="192" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
-<rect x="175" y="196" width="290" height="40" rx="7" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="320" y="221" text-anchor="middle" font-size="12.5" fill="#E8F1FA">④ 플랜대로 실행 · 블록 읽기</text>
-<path d="M320,236 L320,252 L165,252" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
-<path d="M320,252 L475,252" fill="none" stroke="#7E9CBC" stroke-width="1.4"/>
-<line x1="165" y1="252" x2="165" y2="266" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
-<line x1="475" y1="252" x2="475" y2="266" stroke="#7E9CBC" stroke-width="1.4" marker-end="url(#ahA)"/>
-<rect x="20" y="270" width="290" height="44" rx="7" fill="#152B47" stroke="#2A4A6E"/>
-<text x="165" y="297" text-anchor="middle" font-size="12" fill="#8FAAC7">버퍼 캐시에 있으면 메모리에서</text>
-<rect x="330" y="270" width="290" height="44" rx="7" fill="#152B47" stroke="#2A4A6E"/>
-<text x="475" y="297" text-anchor="middle" font-size="12" fill="#8FAAC7">없으면 데이터 파일에서 읽어 올림</text>
+<defs><marker id="ahA" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="var(--muted)"/></marker></defs>
+<rect x="20" y="20" width="170" height="40" rx="7" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="105" y="45" text-anchor="middle" font-size="12.5" fill="var(--text)">① SQL 텍스트 도착</text>
+<line x1="192" y1="40" x2="216" y2="40" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="220" y="20" width="180" height="40" rx="7" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="310" y="45" text-anchor="middle" font-size="12.5" fill="var(--text)">② 구문·의미 검사</text>
+<line x1="402" y1="40" x2="426" y2="40" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="430" y="20" width="190" height="40" rx="7" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="525" y="45" text-anchor="middle" font-size="12.5" fill="var(--text)">③ 라이브러리 캐시 조회</text>
+<path d="M525,60 L525,78 L155,78" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+<path d="M525,78 L475,78" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+<line x1="155" y1="78" x2="155" y2="92" stroke="var(--accent)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="475" y1="78" x2="475" y2="92" stroke="var(--accent2)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="20" y="96" width="270" height="62" rx="7" fill="var(--surface2)" stroke="var(--accent)"/>
+<text x="155" y="120" text-anchor="middle" font-size="12.5" fill="var(--accent)">같은 텍스트 있음 · 소프트 파싱</text>
+<text x="155" y="140" text-anchor="middle" font-size="11.5" fill="var(--muted)">저장된 실행계획을 그대로 재사용</text>
+<rect x="330" y="96" width="290" height="62" rx="7" fill="var(--surface2)" stroke="var(--accent2)"/>
+<text x="475" y="120" text-anchor="middle" font-size="12.5" fill="var(--accent2)">같은 텍스트 없음 · 하드 파싱</text>
+<text x="475" y="140" text-anchor="middle" font-size="11.5" fill="var(--muted)">옵티마이저가 통계 읽고 플랜 계산</text>
+<path d="M155,158 L155,176 L320,176" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+<path d="M475,158 L475,176 L320,176" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+<line x1="320" y1="176" x2="320" y2="192" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="175" y="196" width="290" height="40" rx="7" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="320" y="221" text-anchor="middle" font-size="12.5" fill="var(--text)">④ 플랜대로 실행 · 블록 읽기</text>
+<path d="M320,236 L320,252 L165,252" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+<path d="M320,252 L475,252" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+<line x1="165" y1="252" x2="165" y2="266" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<line x1="475" y1="252" x2="475" y2="266" stroke="var(--muted)" stroke-width="1.4" marker-end="url(#ahA)"/>
+<rect x="20" y="270" width="290" height="44" rx="7" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="165" y="297" text-anchor="middle" font-size="12" fill="var(--muted)">버퍼 캐시에 있으면 메모리에서</text>
+<rect x="330" y="270" width="290" height="44" rx="7" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="475" y="297" text-anchor="middle" font-size="12" fill="var(--muted)">없으면 데이터 파일에서 읽어 올림</text>
 </svg>
 
-③에서 갈리는 두 갈래와 ④의 캐시 적중 여부가  
-체감 속도 차의 대부분을 만든다.
+<p>③에서 갈리는 두 갈래와 ④의 캐시 적중 여부가<br>체감 속도 차의 대부분을 만든다.</p>
+</article>
 
-### A1. `SELECT *` 가 더 빨라 보이는 이유
-
-같은 테이블을 두 방식으로 조회했을 때 생기는 시간 차를  
-원인일 가능성이 높은 순서로 나열한다.
-
-**① 측정 순서** — 먼저 돌린 쿼리가 하드 파싱과 물리 I/O를 다 뒤집어쓴다.  
-두 번째 쿼리는 데워진 캐시를 그대로 쓴다.  
-`SELECT *` 를 나중에 돌렸으면 무조건 빠르게 나온다.
-
-> 순서를 바꿔 다시 재면 결과가 뒤집힌다. 이것부터 걸러낸다.
-
-**② 클라이언트가 결과를 다 안 받는다** — 툴은 그리드에 첫 50행만 채우고 멈춘다.  
-화면의 "완료" 는 전체 처리 시간이 아니라 첫 50행을 만든 시간이다.  
-`ORDER BY`·`GROUP BY`·`DISTINCT` 가 붙은 쪽은 결과를 전부 모아야  
-첫 행이 나오므로 같은 조건의 비교가 아니게 된다.
-
-**③ 컬럼을 적으면서 `WHERE` 절도 같이 바뀜** — 인덱스를 죽이는 건  
-`SELECT` 절이 아니라 `WHERE` 절에 씌운 함수다.
-
-| 쓴 위치 | 예 | 인덱스 |
-|---|---|---|
-| `WHERE` | `TO_CHAR(REG_DT,'YYYYMMDD') = '20260726'` | 못 탐 |
-| `WHERE` | `REG_DT >= TO_DATE('20260726','YYYYMMDD')` | 탐 |
-| `SELECT` | `SELECT TO_CHAR(REG_DT,'YYYYMMDD')` | 영향 없음. 행마다 CPU만 더 씀 |
-
-이 표는 내장 SQL 함수(`TO_CHAR` 등) 기준이다.<br>직접 만든 PL/SQL 함수를 `SELECT` 절에서 부르면 얘기가 커진다 — A6.
-
-**④ 컬럼을 줄여서 플랜이 바뀜** — 조회 컬럼이 전부 인덱스 안에 들어 있으면  
-옵티마이저가 인덱스만 읽는 경로로 갈아탄다.  
-그 인덱스가 테이블만큼 크면 풀스캔보다 느려질 수 있다.
-
-**컬럼을 적었을 때 정직하게 빠른 경우**
-
-조회 컬럼이 인덱스에 다 있으면 테이블을 아예 안 간다.
-
-```sql
-SELECT USER_ID FROM USER_INFO WHERE USER_ID LIKE 'A%';
+<article class="doc" id="a1" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A1. SELECT * 가 더 빨라 보이는 이유</h1>
+<p>같은 테이블을 두 방식으로 조회했을 때 생기는 시간 차를<br>원인일 가능성이 높은 순서로 나열한다.</p>
+<p><strong>① 측정 순서</strong> — 먼저 돌린 쿼리가 하드 파싱과 물리 I/O를 다 뒤집어쓴다.<br>두 번째 쿼리는 데워진 캐시를 그대로 쓴다.<br><code>SELECT *</code> 를 나중에 돌렸으면 무조건 빠르게 나온다.</p>
+<blockquote>
+<p>순서를 바꿔 다시 재면 결과가 뒤집힌다. 이것부터 걸러낸다.</p>
+</blockquote>
+<p><strong>② 클라이언트가 결과를 다 안 받는다</strong> — 툴은 그리드에 첫 50행만 채우고 멈춘다.<br>화면의 &quot;완료&quot; 는 전체 처리 시간이 아니라 첫 50행을 만든 시간이다.<br><code>ORDER BY</code>·<code>GROUP BY</code>·<code>DISTINCT</code> 가 붙은 쪽은 결과를 전부 모아야<br>첫 행이 나오므로 같은 조건의 비교가 아니게 된다.</p>
+<p><strong>③ 컬럼을 적으면서 <code>WHERE</code> 절도 같이 바뀜</strong> — 인덱스를 죽이는 건<br><code>SELECT</code> 절이 아니라 <code>WHERE</code> 절에 씌운 함수다.</p>
+<table>
+<thead>
+<tr>
+<th>쓴 위치</th>
+<th>예</th>
+<th>인덱스</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>WHERE</code></td>
+<td><code>TO_CHAR(REG_DT,&#39;YYYYMMDD&#39;) = &#39;20260726&#39;</code></td>
+<td>못 탐</td>
+</tr>
+<tr>
+<td><code>WHERE</code></td>
+<td><code>REG_DT &gt;= TO_DATE(&#39;20260726&#39;,&#39;YYYYMMDD&#39;)</code></td>
+<td>탐</td>
+</tr>
+<tr>
+<td><code>SELECT</code></td>
+<td><code>SELECT TO_CHAR(REG_DT,&#39;YYYYMMDD&#39;)</code></td>
+<td>영향 없음. 행마다 CPU만 더 씀</td>
+</tr>
+</tbody></table>
+<p>이 표는 내장 SQL 함수(<code>TO_CHAR</code> 등) 기준이다.<br>직접 만든 PL/SQL 함수를 <code>SELECT</code> 절에서 부르면 얘기가 커진다 — A6.</p>
+<p><strong>④ 컬럼을 줄여서 플랜이 바뀜</strong> — 조회 컬럼이 전부 인덱스 안에 들어 있으면<br>옵티마이저가 인덱스만 읽는 경로로 갈아탄다.<br>그 인덱스가 테이블만큼 크면 풀스캔보다 느려질 수 있다.</p>
+<p><strong>컬럼을 적었을 때 정직하게 빠른 경우</strong></p>
+<p>조회 컬럼이 인덱스에 다 있으면 테이블을 아예 안 간다.</p>
+<pre><code class="language-sql">SELECT USER_ID FROM USER_INFO WHERE USER_ID LIKE &#39;A%&#39;;
 --  INDEX RANGE SCAN 만. 테이블 접근 없음
 
-SELECT * FROM USER_INFO WHERE USER_ID LIKE 'A%';
+SELECT * FROM USER_INFO WHERE USER_ID LIKE &#39;A%&#39;;
 --  INDEX RANGE SCAN + TABLE ACCESS BY INDEX ROWID
 --  건마다 테이블 블록을 랜덤으로 한 번씩 더 읽음
-```
+</code></pre>
+<p>실행계획에 <code>TABLE ACCESS BY INDEX ROWID</code> 줄이 있느냐로 갈린다.<br>건수가 많을수록 차이가 벌어진다.</p>
+<blockquote>
+<p>성능과 별개로 컬럼을 적는 이유가 하나 더 있다.<br>테이블에 컬럼이 추가되면 <code>SELECT *</code> 는 결과 컬럼 순서가 밀려<br><code>ResultSet</code> 인덱스 접근과 <code>resultMap</code> 매핑이 조용히 깨진다.</p>
+</blockquote>
+</article>
 
-실행계획에 `TABLE ACCESS BY INDEX ROWID` 줄이 있느냐로 갈린다.  
-건수가 많을수록 차이가 벌어진다.
-
-> 성능과 별개로 컬럼을 적는 이유가 하나 더 있다.  
-> 테이블에 컬럼이 추가되면 `SELECT *` 는 결과 컬럼 순서가 밀려  
-> `ResultSet` 인덱스 접근과 `resultMap` 매핑이 조용히 깨진다.
-
-### A2. 파싱과 커서 공유
-
-오라클은 SQL 텍스트를 받으면 공유 풀의 라이브러리 캐시에서  
-같은 텍스트를 찾고, 있으면 저장된 실행계획을 그대로 쓴다.  
-이 재사용 판정을 **커서 공유(cursor sharing)** 라 한다.
-
-| 이름 | 무슨 일이 일어나나 | 비용 |
-|---|---|---|
-| 소프트 파싱 | 캐시에서 실행계획을 찾아 재사용 | 쌈 |
-| 하드 파싱 | 옵티마이저가 통계를 읽고 플랜을 새로 계산 | 비쌈 |
-
-하드 파싱은 조인 순서와 접근 방법 조합을 전부 따져 비용을 매긴다.  
-CPU를 많이 쓰고 라이브러리 캐시에 래치를 잡아 다른 세션과 경합한다.
-
-**같은 SQL 판정은 텍스트가 바이트 단위로 같아야 한다.**  
-대소문자·공백·주석이 하나만 달라도 다른 SQL로 친다.
-
-```sql
-SELECT * FROM USER_INFO WHERE USER_ID = '1234'   -- 값마다 새 SQL, 매번 하드 파싱
+<article class="doc" id="a2" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A2. 파싱과 커서 공유</h1>
+<p>오라클은 SQL 텍스트를 받으면 공유 풀의 라이브러리 캐시에서<br>같은 텍스트를 찾고, 있으면 저장된 실행계획을 그대로 쓴다.<br>이 재사용 판정을 <strong>커서 공유(cursor sharing)</strong> 라 한다.</p>
+<table>
+<thead>
+<tr>
+<th>이름</th>
+<th>무슨 일이 일어나나</th>
+<th>비용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>소프트 파싱</td>
+<td>캐시에서 실행계획을 찾아 재사용</td>
+<td>쌈</td>
+</tr>
+<tr>
+<td>하드 파싱</td>
+<td>옵티마이저가 통계를 읽고 플랜을 새로 계산</td>
+<td>비쌈</td>
+</tr>
+</tbody></table>
+<p>하드 파싱은 조인 순서와 접근 방법 조합을 전부 따져 비용을 매긴다.<br>CPU를 많이 쓰고 라이브러리 캐시에 래치를 잡아 다른 세션과 경합한다.</p>
+<p><strong>같은 SQL 판정은 텍스트가 바이트 단위로 같아야 한다.</strong><br>대소문자·공백·주석이 하나만 달라도 다른 SQL로 친다.</p>
+<pre><code class="language-sql">SELECT * FROM USER_INFO WHERE USER_ID = &#39;1234&#39;   -- 값마다 새 SQL, 매번 하드 파싱
 SELECT * FROM USER_INFO WHERE USER_ID = :1       -- 최초 1회만 하드 파싱
-```
+</code></pre>
+<p><strong>MyBatis에서 갈리는 지점</strong></p>
+<table>
+<thead>
+<tr>
+<th>작성</th>
+<th>오라클이 보는 텍스트</th>
+<th>커서</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>#{userId}</code></td>
+<td><code>... WHERE USER_ID = :1</code> 하나</td>
+<td>1개를 계속 재사용</td>
+</tr>
+<tr>
+<td><code>${userId}</code></td>
+<td>값마다 다른 텍스트</td>
+<td>값 종류만큼 생성</td>
+</tr>
+</tbody></table>
+<p>로그에 <code>USER_ID = 1</code> 로 찍히는 건 MyBatis가 읽기 좋으라고<br>파라미터를 끼워 보여주는 것이다. <code>V$SQL.SQL_TEXT</code> 에는 <code>:1</code> 로 들어 있다.</p>
+<blockquote>
+<p>리터럴 SQL을 남발하면 1회용 커서가 공유 풀을 채워<br>재사용될 커서를 밀어낸다. 이걸 라이브러리 캐시 오염이라 한다.</p>
+</blockquote>
+<p><code>CURSOR_SHARING</code> 파라미터를 <code>FORCE</code> 로 두면 오라클이 리터럴을<br>바인드 변수로 자동 치환한다. 소스를 못 고치는 레거시에 쓰는 응급처치고,<br>플랜 품질이 떨어질 수 있어 기본값은 <code>EXACT</code> 다.</p>
+</article>
 
-**MyBatis에서 갈리는 지점**
-
-| 작성 | 오라클이 보는 텍스트 | 커서 |
-|---|---|---|
-| `#{userId}` | `... WHERE USER_ID = :1` 하나 | 1개를 계속 재사용 |
-| `${userId}` | 값마다 다른 텍스트 | 값 종류만큼 생성 |
-
-로그에 `USER_ID = 1` 로 찍히는 건 MyBatis가 읽기 좋으라고  
-파라미터를 끼워 보여주는 것이다. `V$SQL.SQL_TEXT` 에는 `:1` 로 들어 있다.
-
-> 리터럴 SQL을 남발하면 1회용 커서가 공유 풀을 채워  
-> 재사용될 커서를 밀어낸다. 이걸 라이브러리 캐시 오염이라 한다.
-
-`CURSOR_SHARING` 파라미터를 `FORCE` 로 두면 오라클이 리터럴을  
-바인드 변수로 자동 치환한다. 소스를 못 고치는 레거시에 쓰는 응급처치고,  
-플랜 품질이 떨어질 수 있어 기본값은 `EXACT` 다.
-
-### A3. SGA와 PGA — SQL이 쓰는 메모리
-
-**판정 질문 — 이 값이 어느 메모리에 놓이나**
-
-| 개념 | 질문 | 예 → |
-|---|---|---|
-| SGA | 다른 세션이 이 값을 그대로 다시 써도 맞나? | 인스턴스에 하나만 두고 공유한다 |
-| PGA | 내 세션이 끝나는 순간 버려도 되는 값인가? | 세션마다 따로 잡는다 |
-
+<article class="doc" id="a3" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A3. SGA와 PGA — SQL이 쓰는 메모리</h1>
+<p><strong>판정 질문 — 이 값이 어느 메모리에 놓이나</strong></p>
+<table>
+<thead>
+<tr>
+<th>개념</th>
+<th>질문</th>
+<th>예 →</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SGA</td>
+<td>다른 세션이 이 값을 그대로 다시 써도 맞나?</td>
+<td>인스턴스에 하나만 두고 공유한다</td>
+</tr>
+<tr>
+<td>PGA</td>
+<td>내 세션이 끝나는 순간 버려도 되는 값인가?</td>
+<td>세션마다 따로 잡는다</td>
+</tr>
+</tbody></table>
 <svg viewBox="0 0 640 296" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="SGA와 PGA 구조">
-<defs><marker id="ahB" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#FF8A80"/></marker></defs>
-<rect x="14" y="14" width="392" height="268" rx="9" fill="#0B1930" stroke="#7BA9FF"/>
-<text x="28" y="38" font-size="12" fill="#7BA9FF">SGA — 전 세션 공유</text>
-<rect x="30" y="50" width="360" height="46" rx="6" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="210" y="70" text-anchor="middle" font-size="12.5" fill="#E8F1FA">버퍼 캐시</text>
-<text x="210" y="87" text-anchor="middle" font-size="11" fill="#8FAAC7">데이터 파일 블록 사본</text>
-<rect x="30" y="106" width="360" height="112" rx="6" fill="#152B47" stroke="#2A4A6E"/>
-<text x="44" y="126" font-size="12" fill="#68E3C4">공유 풀</text>
-<rect x="42" y="136" width="172" height="70" rx="5" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="128" y="158" text-anchor="middle" font-size="12" fill="#E8F1FA">라이브러리 캐시</text>
-<text x="128" y="176" text-anchor="middle" font-size="10.5" fill="#8FAAC7">파싱된 SQL</text>
-<text x="128" y="193" text-anchor="middle" font-size="10.5" fill="#8FAAC7">실행계획</text>
-<rect x="224" y="136" width="154" height="70" rx="5" fill="#1B3958" stroke="#2A4A6E"/>
-<text x="301" y="158" text-anchor="middle" font-size="12" fill="#E8F1FA">딕셔너리 캐시</text>
-<text x="301" y="176" text-anchor="middle" font-size="10.5" fill="#8FAAC7">테이블·컬럼</text>
-<text x="301" y="193" text-anchor="middle" font-size="10.5" fill="#8FAAC7">권한 정의</text>
-<rect x="30" y="228" width="360" height="34" rx="6" fill="#152B47" stroke="#2A4A6E"/>
-<text x="210" y="250" text-anchor="middle" font-size="11.5" fill="#8FAAC7">REDO 로그 버퍼</text>
-<rect x="422" y="14" width="204" height="152" rx="9" fill="#0B1930" stroke="#FFC24B"/>
-<text x="434" y="38" font-size="12" fill="#FFC24B">PGA — 세션 전용</text>
-<text x="434" y="66" font-size="11.5" fill="#8FAAC7">정렬 작업공간</text>
-<text x="434" y="88" font-size="11.5" fill="#8FAAC7">해시 조인 테이블</text>
-<text x="434" y="110" font-size="11.5" fill="#8FAAC7">바인드 값</text>
-<text x="434" y="132" font-size="11.5" fill="#8FAAC7">커서 실행 상태</text>
-<line x1="524" y1="166" x2="524" y2="208" stroke="#FF8A80" stroke-width="1.4" marker-end="url(#ahB)"/>
-<text x="534" y="192" font-size="11" fill="#FF8A80">넘치면</text>
-<rect x="422" y="212" width="204" height="60" rx="9" fill="#152B47" stroke="#FF8A80"/>
-<text x="524" y="236" text-anchor="middle" font-size="11.5" fill="#E8F1FA">TEMP 테이블스페이스</text>
-<text x="524" y="256" text-anchor="middle" font-size="10.5" fill="#8FAAC7">디스크. 여기 떨어지면 느려짐</text>
+<defs><marker id="ahB" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="var(--danger)"/></marker></defs>
+<rect x="14" y="14" width="392" height="268" rx="9" fill="var(--surface)" stroke="var(--accent3)"/>
+<text x="28" y="38" font-size="12" fill="var(--accent3)">SGA — 전 세션 공유</text>
+<rect x="30" y="50" width="360" height="46" rx="6" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="210" y="70" text-anchor="middle" font-size="12.5" fill="var(--text)">버퍼 캐시</text>
+<text x="210" y="87" text-anchor="middle" font-size="11" fill="var(--muted)">데이터 파일 블록 사본</text>
+<rect x="30" y="106" width="360" height="112" rx="6" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="44" y="126" font-size="12" fill="var(--accent)">공유 풀</text>
+<rect x="42" y="136" width="172" height="70" rx="5" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="128" y="158" text-anchor="middle" font-size="12" fill="var(--text)">라이브러리 캐시</text>
+<text x="128" y="176" text-anchor="middle" font-size="10.5" fill="var(--muted)">파싱된 SQL</text>
+<text x="128" y="193" text-anchor="middle" font-size="10.5" fill="var(--muted)">실행계획</text>
+<rect x="224" y="136" width="154" height="70" rx="5" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="301" y="158" text-anchor="middle" font-size="12" fill="var(--text)">딕셔너리 캐시</text>
+<text x="301" y="176" text-anchor="middle" font-size="10.5" fill="var(--muted)">테이블·컬럼</text>
+<text x="301" y="193" text-anchor="middle" font-size="10.5" fill="var(--muted)">권한 정의</text>
+<rect x="30" y="228" width="360" height="34" rx="6" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="210" y="250" text-anchor="middle" font-size="11.5" fill="var(--muted)">REDO 로그 버퍼</text>
+<rect x="422" y="14" width="204" height="152" rx="9" fill="var(--surface)" stroke="var(--accent2)"/>
+<text x="434" y="38" font-size="12" fill="var(--accent2)">PGA — 세션 전용</text>
+<text x="434" y="66" font-size="11.5" fill="var(--muted)">정렬 작업공간</text>
+<text x="434" y="88" font-size="11.5" fill="var(--muted)">해시 조인 테이블</text>
+<text x="434" y="110" font-size="11.5" fill="var(--muted)">바인드 값</text>
+<text x="434" y="132" font-size="11.5" fill="var(--muted)">커서 실행 상태</text>
+<line x1="524" y1="166" x2="524" y2="208" stroke="var(--danger)" stroke-width="1.4" marker-end="url(#ahB)"/>
+<text x="534" y="192" font-size="11" fill="var(--danger)">넘치면</text>
+<rect x="422" y="212" width="204" height="60" rx="9" fill="var(--surface2)" stroke="var(--danger)"/>
+<text x="524" y="236" text-anchor="middle" font-size="11.5" fill="var(--text)">TEMP 테이블스페이스</text>
+<text x="524" y="256" text-anchor="middle" font-size="10.5" fill="var(--muted)">디스크. 여기 떨어지면 느려짐</text>
 </svg>
 
-| 영역 | 담는 것 | 성격 |
-|---|---|---|
-| 버퍼 캐시 | 데이터 파일 블록 사본 | 전 세션 공유 |
-| 라이브러리 캐시 | 파싱된 SQL과 실행계획 | 전 세션 공유 |
-| 딕셔너리 캐시 | 테이블·컬럼·권한 정의 | 전 세션 공유 |
-| PGA | 정렬·해시 작업공간, 바인드 값 | 세션 전용 |
+<table>
+<thead>
+<tr>
+<th>영역</th>
+<th>담는 것</th>
+<th>성격</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>버퍼 캐시</td>
+<td>데이터 파일 블록 사본</td>
+<td>전 세션 공유</td>
+</tr>
+<tr>
+<td>라이브러리 캐시</td>
+<td>파싱된 SQL과 실행계획</td>
+<td>전 세션 공유</td>
+</tr>
+<tr>
+<td>딕셔너리 캐시</td>
+<td>테이블·컬럼·권한 정의</td>
+<td>전 세션 공유</td>
+</tr>
+<tr>
+<td>PGA</td>
+<td>정렬·해시 작업공간, 바인드 값</td>
+<td>세션 전용</td>
+</tr>
+</tbody></table>
+<p>딕셔너리 캐시가 따로 있는 이유는 파싱 2단계 때문이다.<br>&quot;이 테이블 있나, 이 컬럼 있나, 권한 있나&quot; 를 검사할 때<br>매번 디스크를 읽으면 감당이 안 된다.</p>
+<p><strong>PGA가 모자라면 TEMP 테이블스페이스로 넘어간다.</strong><br>메모리에서 끝나던 정렬이 디스크로 떨어지면 몇십 배 느려진다.<br>실행계획의 <code>SORT ORDER BY</code> 옆 <code>1Mem / 1Pass</code> 표시에서<br><code>Pass</code> 가 1 이상이면 넘어간 것이다.</p>
+<p><strong>결과 집합 자체는 어디에도 안 쌓인다.</strong><br>커서를 열어두고 클라이언트가 요청할 때마다 그때그때 만들어 보낸다.<br>100만 건을 조회해도 서버가 100만 건을 들고 있지 않다.</p>
+</article>
 
-딕셔너리 캐시가 따로 있는 이유는 파싱 2단계 때문이다.  
-"이 테이블 있나, 이 컬럼 있나, 권한 있나" 를 검사할 때  
-매번 디스크를 읽으면 감당이 안 된다.
+<article class="doc" id="a4" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A4. V$ 뷰 · 딕셔너리 뷰 · 내 테이블</h1>
+<p>셋 다 예외 없이 라이브러리 캐시에 커서로 올라간다.<br>갈리는 건 데이터를 어디서 퍼오느냐고, 거기서 재기동 후 남는지가 정해진다.</p>
+<table>
+<thead>
+<tr>
+<th>조회 대상</th>
+<th>실체</th>
+<th>데이터 출처</th>
+<th>재기동하면</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>내가 만든 테이블·뷰</td>
+<td>세그먼트</td>
+<td>버퍼 캐시 → 데이터 파일</td>
+<td>남음</td>
+</tr>
+<tr>
+<td><code>ALL_TABLES</code> 등</td>
+<td>SYS 소유 실제 테이블</td>
+<td>버퍼 캐시 + 딕셔너리 캐시</td>
+<td>남음</td>
+</tr>
+<tr>
+<td><code>V$SESSION</code> 등</td>
+<td>SGA 메모리 구조체</td>
+<td>SGA 직접 읽기</td>
+<td>사라짐</td>
+</tr>
+</tbody></table>
+<p><code>V$</code> 는 <strong>동적 성능 뷰</strong>다. 밑에 <code>X$</code> 고정 테이블이 있고,<br>그건 SGA 안의 구조체를 테이블처럼 보이게 씌운 껍데기다.<br>파일이 없으니 버퍼 캐시를 안 타고, 대신 읽는 동안 래치를 잡는다.</p>
+<blockquote>
+<p><code>V$SQL</code> 같은 무거운 뷰를 운영에서 짧은 주기로 반복 조회하면<br>그 조회 자체가 라이브러리 캐시 래치 경합을 만든다.<br>진단할 때 한 번씩 보는 용도다.</p>
+</blockquote>
+<p>딕셔너리 뷰는 <code>SYS.TAB$</code>·<code>SYS.OBJ$</code> 같은 진짜 테이블 위의 뷰다.<br>SYSTEM 테이블스페이스에 파일로 있고, <code>CREATE TABLE</code> 하면 행이 늘어난다.</p>
+<table>
+<thead>
+<tr>
+<th>접두사</th>
+<th>범위</th>
+<th>권한</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>USER_</code></td>
+<td>내가 소유한 것만</td>
+<td>필요 없음</td>
+</tr>
+<tr>
+<td><code>ALL_</code></td>
+<td>내가 접근 권한을 가진 것 전부</td>
+<td>필요 없음</td>
+</tr>
+<tr>
+<td><code>DBA_</code></td>
+<td>데이터베이스 전체</td>
+<td>DBA 권한 필요</td>
+</tr>
+</tbody></table>
+<p><strong>Windows에 빗대면</strong> 내 테이블은 내 문서 파일,<br>딕셔너리 뷰는 파일시스템 MFT나 레지스트리, <code>V$</code> 는 작업 관리자다.<br>MFT는 파일을 만들면 항목이 자동으로 늘고 직접 편집하면 시스템이 깨진다.<br>작업 관리자는 지금 메모리 상태만 보여주고 재부팅하면 초기화된다.</p>
+</article>
 
-**PGA가 모자라면 TEMP 테이블스페이스로 넘어간다.**  
-메모리에서 끝나던 정렬이 디스크로 떨어지면 몇십 배 느려진다.  
-실행계획의 `SORT ORDER BY` 옆 `1Mem / 1Pass` 표시에서  
-`Pass` 가 1 이상이면 넘어간 것이다.
-
-**결과 집합 자체는 어디에도 안 쌓인다.**  
-커서를 열어두고 클라이언트가 요청할 때마다 그때그때 만들어 보낸다.  
-100만 건을 조회해도 서버가 100만 건을 들고 있지 않다.
-
-### A4. `V$` 뷰 · 딕셔너리 뷰 · 내 테이블
-
-셋 다 예외 없이 라이브러리 캐시에 커서로 올라간다.  
-갈리는 건 데이터를 어디서 퍼오느냐고, 거기서 재기동 후 남는지가 정해진다.
-
-| 조회 대상 | 실체 | 데이터 출처 | 재기동하면 |
-|---|---|---|---|
-| 내가 만든 테이블·뷰 | 세그먼트 | 버퍼 캐시 → 데이터 파일 | 남음 |
-| `ALL_TABLES` 등 | SYS 소유 실제 테이블 | 버퍼 캐시 + 딕셔너리 캐시 | 남음 |
-| `V$SESSION` 등 | SGA 메모리 구조체 | SGA 직접 읽기 | 사라짐 |
-
-`V$` 는 **동적 성능 뷰**다. 밑에 `X$` 고정 테이블이 있고,  
-그건 SGA 안의 구조체를 테이블처럼 보이게 씌운 껍데기다.  
-파일이 없으니 버퍼 캐시를 안 타고, 대신 읽는 동안 래치를 잡는다.
-
-> `V$SQL` 같은 무거운 뷰를 운영에서 짧은 주기로 반복 조회하면  
-> 그 조회 자체가 라이브러리 캐시 래치 경합을 만든다.  
-> 진단할 때 한 번씩 보는 용도다.
-
-딕셔너리 뷰는 `SYS.TAB$`·`SYS.OBJ$` 같은 진짜 테이블 위의 뷰다.  
-SYSTEM 테이블스페이스에 파일로 있고, `CREATE TABLE` 하면 행이 늘어난다.
-
-| 접두사 | 범위 | 권한 |
-|---|---|---|
-| `USER_` | 내가 소유한 것만 | 필요 없음 |
-| `ALL_` | 내가 접근 권한을 가진 것 전부 | 필요 없음 |
-| `DBA_` | 데이터베이스 전체 | DBA 권한 필요 |
-
-**Windows에 빗대면** 내 테이블은 내 문서 파일,  
-딕셔너리 뷰는 파일시스템 MFT나 레지스트리, `V$` 는 작업 관리자다.  
-MFT는 파일을 만들면 항목이 자동으로 늘고 직접 편집하면 시스템이 깨진다.  
-작업 관리자는 지금 메모리 상태만 보여주고 재부팅하면 초기화된다.
-
-### A5. 옵티마이저 — 학습이 아니라 통계 계산
-
-기본 동작은 학습이 아니라 매번 계산이다.
-
-```
-1. 통계정보를 읽는다       → 이 조건이면 몇 건 나오겠다 (카디널리티 추정)
+<article class="doc" id="a5" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A5. 옵티마이저 — 학습이 아니라 통계 계산</h1>
+<p>기본 동작은 학습이 아니라 매번 계산이다.</p>
+<pre><code>1. 통계정보를 읽는다       → 이 조건이면 몇 건 나오겠다 (카디널리티 추정)
 2. 후보 경로마다 비용 계산  → 인덱스로 가면 블록 몇 개, 풀스캔이면 몇 개
 3. 제일 싼 경로를 고른다
-```
-
-**전부 1번에 달렸다.** 여기가 틀리면 2·3은 자동으로 틀린다.  
-통계는 `DBMS_STATS` 가 수집해 딕셔너리에 저장한 값이고,  
-실시간 값이 아니라 수집 시점에 찍은 사진이다.
-
-| 통계 | 어디에 | 무엇 |
-|---|---|---|
-| `NUM_ROWS`·`BLOCKS` | `ALL_TABLES` | 테이블 규모 |
-| 고유값 수·히스토그램 | `ALL_TAB_COL_STATISTICS` | 컬럼 값 분포 |
-| `CLUSTERING_FACTOR` | `ALL_INDEXES` | 인덱스 효율 |
-
-**인덱스가 오히려 느린 경우**
-
-인덱스는 건마다 랜덤 액세스, 풀스캔은 한 번에 여러 블록을 순차로 읽는다.  
-결과가 전체의 대략 5~15%를 넘어가면 풀스캔이 이긴다.
-
-`CLUSTERING_FACTOR` 는 인덱스 정렬 순서와 테이블의 물리 저장 순서가  
-얼마나 어긋나 있는지를 나타낸다.
-
-| 값 | 의미 |
-|---|---|
-| `BLOCKS` 에 가까움 | 좋음. 인덱스 순서대로 읽으면 같은 블록이 연달아 나옴 |
-| `NUM_ROWS` 에 가까움 | 나쁨. 건마다 다른 블록이라 랜덤 I/O가 됨 |
-
-**통계가 어긋나는 흔한 이유**
-
-- 오래됨 — 배치로 100만 건 넣었는데 통계는 1만 건 시절 값
-- 편중 분포인데 히스토그램이 없음 — `Y` 99% / `N` 1% 를 균등으로 가정
-- 조건 간 상관관계 무시 —  
-  `시도='서울' AND 구='강남구'` 를 독립으로 보고 확률을 곱해 실제보다 적게 추정
-
-> 현장에서 "옵티마이저 문제" 라는 말은 대개  
-> "통계가 실제와 어긋났다" 를 가리킨다.
-
-**예외적으로 보정이 도는 기능들**
-
-| 기능 | 도입 | 하는 일 |
-|---|---|---|
-| 바인드 피킹 | 9i | 하드 파싱 때 첫 바인드 값을 엿보고 그 값 기준으로 플랜을 짬 |
-| 적응형 커서 공유 | 11g | 값 범위별로 자식 커서를 나눠 각각 다른 플랜을 씀 |
-| 통계 피드백 | 11.2 | 예상과 실제 행수가 크게 벌어지면 다음 실행 때 보정 |
-| SQL 계획 관리 | 11g | 검증 안 된 새 플랜을 못 쓰게 막음 |
-
-트리거는 실행 횟수가 아니라 **예상과 실제가 어긋난 정도**다.  
-실행 횟수는 캐시에서 안 밀려나는 우선순위에만 영향을 준다.
-
-**바인드 피킹이 만드는 증상**
-
-`STATUS` 가 `Y` 99만 건 / `N` 100건인 테이블에서
-
-```
-1회차  STATUS='N' 실행  → 100건 예상, 인덱스 플랜 생성. 빠름
-2회차  STATUS='Y' 실행  → 같은 플랜 재사용. 99만 건을 인덱스로 → 느림
-```
-
-"어제는 빨랐는데 오늘 느리다", "재기동하니 반대가 됐다" 의 정체다.  
-같은 SQL의 자식 커서가 여러 개 생겼는지로 확인한다.
-
-```sql
-SELECT SQL_ID, CHILD_NUMBER, PLAN_HASH_VALUE, EXECUTIONS
+</code></pre>
+<p><strong>전부 1번에 달렸다.</strong> 여기가 틀리면 2·3은 자동으로 틀린다.<br>통계는 <code>DBMS_STATS</code> 가 수집해 딕셔너리에 저장한 값이고,<br>실시간 값이 아니라 수집 시점에 찍은 사진이다.</p>
+<table>
+<thead>
+<tr>
+<th>통계</th>
+<th>어디에</th>
+<th>무엇</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NUM_ROWS</code>·<code>BLOCKS</code></td>
+<td><code>ALL_TABLES</code></td>
+<td>테이블 규모</td>
+</tr>
+<tr>
+<td>고유값 수·히스토그램</td>
+<td><code>ALL_TAB_COL_STATISTICS</code></td>
+<td>컬럼 값 분포</td>
+</tr>
+<tr>
+<td><code>CLUSTERING_FACTOR</code></td>
+<td><code>ALL_INDEXES</code></td>
+<td>인덱스 효율</td>
+</tr>
+</tbody></table>
+<p><strong>인덱스가 오히려 느린 경우</strong></p>
+<p>인덱스는 건마다 랜덤 액세스, 풀스캔은 한 번에 여러 블록을 순차로 읽는다.<br>결과가 전체의 대략 5~15%를 넘어가면 풀스캔이 이긴다.</p>
+<p><code>CLUSTERING_FACTOR</code> 는 인덱스 정렬 순서와 테이블의 물리 저장 순서가<br>얼마나 어긋나 있는지를 나타낸다.</p>
+<table>
+<thead>
+<tr>
+<th>값</th>
+<th>의미</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>BLOCKS</code> 에 가까움</td>
+<td>좋음. 인덱스 순서대로 읽으면 같은 블록이 연달아 나옴</td>
+</tr>
+<tr>
+<td><code>NUM_ROWS</code> 에 가까움</td>
+<td>나쁨. 건마다 다른 블록이라 랜덤 I/O가 됨</td>
+</tr>
+</tbody></table>
+<p><strong>통계가 어긋나는 흔한 이유</strong></p>
+<ul>
+<li>오래됨 — 배치로 100만 건 넣었는데 통계는 1만 건 시절 값</li>
+<li>편중 분포인데 히스토그램이 없음 — <code>Y</code> 99% / <code>N</code> 1% 를 균등으로 가정</li>
+<li>조건 간 상관관계 무시 —<br><code>시도=&#39;서울&#39; AND 구=&#39;강남구&#39;</code> 를 독립으로 보고 확률을 곱해 실제보다 적게 추정</li>
+</ul>
+<blockquote>
+<p>현장에서 &quot;옵티마이저 문제&quot; 라는 말은 대개<br>&quot;통계가 실제와 어긋났다&quot; 를 가리킨다.</p>
+</blockquote>
+<p><strong>예외적으로 보정이 도는 기능들</strong></p>
+<table>
+<thead>
+<tr>
+<th>기능</th>
+<th>도입</th>
+<th>하는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>바인드 피킹</td>
+<td>9i</td>
+<td>하드 파싱 때 첫 바인드 값을 엿보고 그 값 기준으로 플랜을 짬</td>
+</tr>
+<tr>
+<td>적응형 커서 공유</td>
+<td>11g</td>
+<td>값 범위별로 자식 커서를 나눠 각각 다른 플랜을 씀</td>
+</tr>
+<tr>
+<td>통계 피드백</td>
+<td>11.2</td>
+<td>예상과 실제 행수가 크게 벌어지면 다음 실행 때 보정</td>
+</tr>
+<tr>
+<td>SQL 계획 관리</td>
+<td>11g</td>
+<td>검증 안 된 새 플랜을 못 쓰게 막음</td>
+</tr>
+</tbody></table>
+<p>트리거는 실행 횟수가 아니라 <strong>예상과 실제가 어긋난 정도</strong>다.<br>실행 횟수는 캐시에서 안 밀려나는 우선순위에만 영향을 준다.</p>
+<p><strong>바인드 피킹이 만드는 증상</strong></p>
+<p><code>STATUS</code> 가 <code>Y</code> 99만 건 / <code>N</code> 100건인 테이블에서</p>
+<pre><code>1회차  STATUS=&#39;N&#39; 실행  → 100건 예상, 인덱스 플랜 생성. 빠름
+2회차  STATUS=&#39;Y&#39; 실행  → 같은 플랜 재사용. 99만 건을 인덱스로 → 느림
+</code></pre>
+<p>&quot;어제는 빨랐는데 오늘 느리다&quot;, &quot;재기동하니 반대가 됐다&quot; 의 정체다.<br>같은 SQL의 자식 커서가 여러 개 생겼는지로 확인한다.</p>
+<pre><code class="language-sql">SELECT SQL_ID, CHILD_NUMBER, PLAN_HASH_VALUE, EXECUTIONS
      , IS_BIND_SENSITIVE, IS_BIND_AWARE
 FROM   V$SQL
-WHERE  SQL_TEXT LIKE '%USER_INFO%'
-  AND  SQL_TEXT NOT LIKE '%V$SQL%'
+WHERE  SQL_TEXT LIKE &#39;%USER_INFO%&#39;
+  AND  SQL_TEXT NOT LIKE &#39;%V$SQL%&#39;
 ORDER BY SQL_ID, CHILD_NUMBER;
-```
+</code></pre>
+<p><code>CHILD_NUMBER</code> 가 여러 개인데 <code>PLAN_HASH_VALUE</code> 가 서로 다르면<br>같은 SQL인데 플랜이 갈렸다는 뜻이다.</p>
+</article>
 
-`CHILD_NUMBER` 가 여러 개인데 `PLAN_HASH_VALUE` 가 서로 다르면  
-같은 SQL인데 플랜이 갈렸다는 뜻이다.
-
-### A6. PL/SQL 함수 호출 비용 — SQL과 PL/SQL 사이 컨텍스트 스위칭
-
-함수 안에 자기 `SELECT` 문이 있으면 A1의 표로는 설명이 안 된다.<br>
+<article class="doc" id="a6" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A6. PL/SQL 함수 호출 비용 — SQL과 PL/SQL 사이 컨텍스트 스위칭</h1>
+<p>함수 안에 자기 <code>SELECT</code> 문이 있으면 A1의 표로는 설명이 안 된다.<br>
 오라클은 SQL 엔진에서 PL/SQL 엔진으로 넘어갔다가, 그 안에서<br>
 다시 SQL 엔진을 불러 값을 받고, PL/SQL로 돌아와 결과를 만들어<br>
-SQL 엔진에 되돌려준다. 이 왕복을 **컨텍스트 스위칭**이라 한다.
-
+SQL 엔진에 되돌려준다. 이 왕복을 <strong>컨텍스트 스위칭</strong>이라 한다.</p>
 <svg viewBox="0 0 640 140" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="PL/SQL 함수 호출의 컨텍스트 스위칭 경로">
 <defs>
-<marker id="ahC" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#FFC24B"/></marker>
-<marker id="ahD" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7BA9FF"/></marker>
+<marker id="ahC" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="var(--accent2)"/></marker>
+<marker id="ahD" markerWidth="9" markerHeight="8" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="var(--accent3)"/></marker>
 </defs>
-<rect x="10" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#68E3C4"/>
-<text x="79" y="46" text-anchor="middle" font-size="12.5" fill="#68E3C4">SQL 엔진</text>
-<text x="79" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">행 하나 fetch</text>
-<line x1="148" y1="50" x2="156" y2="50" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahC)"/>
-<rect x="158" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#FFC24B"/>
-<text x="227" y="46" text-anchor="middle" font-size="12.5" fill="#FFC24B">PL/SQL 엔진</text>
-<text x="227" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">함수 진입</text>
-<line x1="296" y1="50" x2="304" y2="50" stroke="#7BA9FF" stroke-width="1.4" marker-end="url(#ahD)"/>
-<rect x="306" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#7BA9FF"/>
-<text x="375" y="46" text-anchor="middle" font-size="12" fill="#7BA9FF">SQL 엔진 재진입</text>
-<text x="375" y="64" text-anchor="middle" font-size="10" fill="#8FAAC7">내부 SELECT 실행</text>
-<line x1="444" y1="50" x2="452" y2="50" stroke="#FFC24B" stroke-width="1.4" marker-end="url(#ahC)"/>
-<rect x="454" y="20" width="138" height="60" rx="7" fill="#1B3958" stroke="#FFC24B"/>
-<text x="523" y="46" text-anchor="middle" font-size="12.5" fill="#FFC24B">PL/SQL 엔진</text>
-<text x="523" y="64" text-anchor="middle" font-size="10.5" fill="#8FAAC7">결과 조립·반환</text>
-<path d="M10,96 L10,102 M10,99 L592,99 M592,96 L592,102" stroke="#7E9CBC" stroke-width="1.2" fill="none"/>
-<text x="301" y="120" text-anchor="middle" font-size="11" fill="#8FAAC7">행 1건 · 함수 1회 호출 기준 — 컬럼마다, 행마다 다시 지나간다</text>
+<rect x="10" y="20" width="138" height="60" rx="7" fill="var(--surface2)" stroke="var(--accent)"/>
+<text x="79" y="46" text-anchor="middle" font-size="12.5" fill="var(--accent)">SQL 엔진</text>
+<text x="79" y="64" text-anchor="middle" font-size="10.5" fill="var(--muted)">행 하나 fetch</text>
+<line x1="148" y1="50" x2="156" y2="50" stroke="var(--accent2)" stroke-width="1.4" marker-end="url(#ahC)"/>
+<rect x="158" y="20" width="138" height="60" rx="7" fill="var(--surface2)" stroke="var(--accent2)"/>
+<text x="227" y="46" text-anchor="middle" font-size="12.5" fill="var(--accent2)">PL/SQL 엔진</text>
+<text x="227" y="64" text-anchor="middle" font-size="10.5" fill="var(--muted)">함수 진입</text>
+<line x1="296" y1="50" x2="304" y2="50" stroke="var(--accent3)" stroke-width="1.4" marker-end="url(#ahD)"/>
+<rect x="306" y="20" width="138" height="60" rx="7" fill="var(--surface2)" stroke="var(--accent3)"/>
+<text x="375" y="46" text-anchor="middle" font-size="12" fill="var(--accent3)">SQL 엔진 재진입</text>
+<text x="375" y="64" text-anchor="middle" font-size="10" fill="var(--muted)">내부 SELECT 실행</text>
+<line x1="444" y1="50" x2="452" y2="50" stroke="var(--accent2)" stroke-width="1.4" marker-end="url(#ahC)"/>
+<rect x="454" y="20" width="138" height="60" rx="7" fill="var(--surface2)" stroke="var(--accent2)"/>
+<text x="523" y="46" text-anchor="middle" font-size="12.5" fill="var(--accent2)">PL/SQL 엔진</text>
+<text x="523" y="64" text-anchor="middle" font-size="10.5" fill="var(--muted)">결과 조립·반환</text>
+<path d="M10,96 L10,102 M10,99 L592,99 M592,96 L592,102" stroke="var(--muted)" stroke-width="1.2" fill="none"/>
+<text x="301" y="120" text-anchor="middle" font-size="11" fill="var(--muted)">행 1건 · 함수 1회 호출 기준 — 컬럼마다, 행마다 다시 지나간다</text>
 </svg>
 
-한 번의 전환은 마이크로초 단위라 눈에 안 띈다. 문제는 곱셈이다.
-
-```
-1만 행 × SELECT절 함수 6번 = 컨텍스트 스위칭 6만 회
-```
-
-`SELECT *` 로 바꿔서 빨라졌다면 인덱스도 캐시도 아니라<br>
-이 함수 호출 자체가 빠진 것부터 의심한다.
-
-**확인 순서**
-
-1. 의심 가는 함수 소스에 `SELECT` 문이 있는지 본다 —<br>
-   `toolbox/tools/sql_snippets.html` 의 `프로시저/함수 소스 조회`(`USER_SOURCE`)로 바로 확인된다
-2. 그 컬럼만 빼고 같은 조건으로 다시 돌려 시간 차를 잰다 —<br>
-   차이가 크면 함수가 원인으로 확정된다
-3. `V$SQL` 로 실제 `ELAPSED_TIME` 을 봐서 체감이 아니라 수치로 남긴다
-
-**고치는 법 — 두 갈래**
-
-| 방법 | 하는 일 | 언제 |
-|---|---|---|
-| `RESULT_CACHE` | 같은 인자로 다시 부르면 함수를 안 태우고 캐시값을 바로 돌려줌 | 인자 조합이 적고 자주 겹칠 때 (공통코드 → 명칭 변환 등) |
-| `JOIN` 으로 대체 | 함수가 하던 조회를 쿼리 안에 직접 붙여 컨텍스트 전환 자체를 없앰 | 함수 내부가 단순 조회 하나뿐일 때. 여러 곳을 고쳐야 해서 손은 더 감 |
-
-```sql
-CREATE OR REPLACE FUNCTION FC_UCM_CMM_CDVL_NM_INQ(
+<p>한 번의 전환은 마이크로초 단위라 눈에 안 띈다. 문제는 곱셈이다.</p>
+<pre><code>1만 행 × SELECT절 함수 6번 = 컨텍스트 스위칭 6만 회
+</code></pre>
+<p><code>SELECT *</code> 로 바꿔서 빨라졌다면 인덱스도 캐시도 아니라<br>
+이 함수 호출 자체가 빠진 것부터 의심한다.</p>
+<p><strong>확인 순서</strong></p>
+<ol>
+<li>의심 가는 함수 소스에 <code>SELECT</code> 문이 있는지 본다 —<br>
+<code>toolbox/tools/sql_snippets.html</code> 의 <code>프로시저/함수 소스 조회</code>(<code>USER_SOURCE</code>)로 바로 확인된다</li>
+<li>그 컬럼만 빼고 같은 조건으로 다시 돌려 시간 차를 잰다 —<br>
+차이가 크면 함수가 원인으로 확정된다</li>
+<li><code>V$SQL</code> 로 실제 <code>ELAPSED_TIME</code> 을 봐서 체감이 아니라 수치로 남긴다</li>
+</ol>
+<p><strong>고치는 법 — 두 갈래</strong></p>
+<table>
+<thead>
+<tr>
+<th>방법</th>
+<th>하는 일</th>
+<th>언제</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>RESULT_CACHE</code></td>
+<td>같은 인자로 다시 부르면 함수를 안 태우고 캐시값을 바로 돌려줌</td>
+<td>인자 조합이 적고 자주 겹칠 때 (공통코드 → 명칭 변환 등)</td>
+</tr>
+<tr>
+<td><code>JOIN</code> 으로 대체</td>
+<td>함수가 하던 조회를 쿼리 안에 직접 붙여 컨텍스트 전환 자체를 없앰</td>
+<td>함수 내부가 단순 조회 하나뿐일 때. 여러 곳을 고쳐야 해서 손은 더 감</td>
+</tr>
+</tbody></table>
+<pre><code class="language-sql">CREATE OR REPLACE FUNCTION FC_UCM_CMM_CDVL_NM_INQ(
   p_grp_cd IN VARCHAR2, p_cd IN VARCHAR2
 ) RETURN VARCHAR2
 RESULT_CACHE
@@ -2340,37 +3138,31 @@ BEGIN
   SELECT CDVL_NM INTO v_nm FROM CMM_CDVL WHERE GRP_CD = p_grp_cd AND CD = p_cd;
   RETURN v_nm;
 END;
-```
-
-`RESULT_CACHE` 는 세션이 아니라 **인스턴스 전역**에 캐시한다.<br>
+</code></pre>
+<p><code>RESULT_CACHE</code> 는 세션이 아니라 <strong>인스턴스 전역</strong>에 캐시한다.<br>
 값이 자주 안 바뀌는 공통코드·룩업성 함수에 맞는다.<br>
-원본 테이블이 바뀌면 관련 캐시는 자동으로 무효화된다.
+원본 테이블이 바뀌면 관련 캐시는 자동으로 무효화된다.</p>
+<blockquote>
+<p>원인이 함수 호출이면 <code>EXPLAIN PLAN</code> 은 처음부터 못 잡는다 — A7.<br>
+플랜엔 테이블 접근 스텝만 나오고, SELECT절을 계산하며<br>
+PL/SQL을 몇 번 들락거리는지는 플랜에 남지 않는다.</p>
+</blockquote>
+</article>
 
-> 원인이 함수 호출이면 `EXPLAIN PLAN` 은 처음부터 못 잡는다 — A7.<br>
-> 플랜엔 테이블 접근 스텝만 나오고, SELECT절을 계산하며<br>
-> PL/SQL을 몇 번 들락거리는지는 플랜에 남지 않는다.
-
-### A7. 무엇으로 재나 — EXPLAIN PLAN의 한계
-
-`EXPLAIN PLAN` 은 쿼리를 실행하지 않는다.  
-옵티마이저에게 "이걸 돌린다면 어떻게 할 건가" 를 묻고 답만 받아 적는다.
-
-**돌려 보면 이렇게 나온다**
-
-두 문장이다. 첫 문장이 플랜을 `PLAN_TABLE` 에 적고,  
-둘째 문장이 그것을 꺼내 표로 그린다.
-
-```sql
-EXPLAIN PLAN FOR
+<article class="doc" id="a7" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A7. 무엇으로 재나 — EXPLAIN PLAN의 한계</h1>
+<p><code>EXPLAIN PLAN</code> 은 쿼리를 실행하지 않는다.<br>옵티마이저에게 &quot;이걸 돌린다면 어떻게 할 건가&quot; 를 묻고 답만 받아 적는다.</p>
+<p><strong>돌려 보면 이렇게 나온다</strong></p>
+<p>두 문장이다. 첫 문장이 플랜을 <code>PLAN_TABLE</code> 에 적고,<br>둘째 문장이 그것을 꺼내 표로 그린다.</p>
+<pre><code class="language-sql">EXPLAIN PLAN FOR
 SELECT USER_ID, USER_NM, DEPT_CD
 FROM   USER_INFO
-WHERE  USER_ID = 'USER001';
+WHERE  USER_ID = &#39;USER001&#39;;
 
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
-```
-
-```
-Plan hash value: 1739706282
+</code></pre>
+<pre><code>Plan hash value: 1739706282
 
 -------------------------------------------------------------------------------------------
 | Id  | Operation                   | Name         | Rows  | Bytes | Cost (%CPU)| Time     |
@@ -2382,33 +3174,43 @@ Plan hash value: 1739706282
 
 Predicate Information (identified by operation id):
 ---------------------------------------------------
-   2 - access("USER_ID"='USER001')
-```
-
-**읽는 순서**
-
-| 볼 것 | 뜻 |
-|---|---|
-| 들여쓰기 | 부모·자식 관계다. 안쪽(`Id 2`)부터 실행돼 바깥(`Id 0`)으로 올라간다 |
-| `Id` 앞의 `*` | 그 단계에 조건이 걸렸다는 표시.<br>아래 `Predicate Information` 에서 같은 번호를 찾는다 |
-| `access` | 인덱스로 찾아 들어간 조건. 안 읽고 건너뛴 행이 있다는 뜻 |
-| `filter` | 읽어 온 뒤 버린 조건. 그만큼은 이미 읽었다 |
-
-`access` 와 `filter` 를 가르는 것이 이 출력에서 제일 값어치 있는 정보다.
-
-**같은 쿼리, 컬럼에 함수를 씌우면**
-
-```sql
-EXPLAIN PLAN FOR
+   2 - access(&quot;USER_ID&quot;=&#39;USER001&#39;)
+</code></pre>
+<p><strong>읽는 순서</strong></p>
+<table>
+<thead>
+<tr>
+<th>볼 것</th>
+<th>뜻</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>들여쓰기</td>
+<td>부모·자식 관계다. 안쪽(<code>Id 2</code>)부터 실행돼 바깥(<code>Id 0</code>)으로 올라간다</td>
+</tr>
+<tr>
+<td><code>Id</code> 앞의 <code>*</code></td>
+<td>그 단계에 조건이 걸렸다는 표시.<br>아래 <code>Predicate Information</code> 에서 같은 번호를 찾는다</td>
+</tr>
+<tr>
+<td><code>access</code></td>
+<td>인덱스로 찾아 들어간 조건. 안 읽고 건너뛴 행이 있다는 뜻</td>
+</tr>
+<tr>
+<td><code>filter</code></td>
+<td>읽어 온 뒤 버린 조건. 그만큼은 이미 읽었다</td>
+</tr>
+</tbody></table>
+<p><code>access</code> 와 <code>filter</code> 를 가르는 것이 이 출력에서 제일 값어치 있는 정보다.</p>
+<p><strong>같은 쿼리, 컬럼에 함수를 씌우면</strong></p>
+<pre><code class="language-sql">EXPLAIN PLAN FOR
 SELECT USER_ID, USER_NM, DEPT_CD
 FROM   USER_INFO
-WHERE  SUBSTR(USER_ID, 1, 4) = 'USER';
+WHERE  SUBSTR(USER_ID, 1, 4) = &#39;USER&#39;;
 
 SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
-```
-
-```
-Plan hash value: 3081095356
+</code></pre>
+<pre><code>Plan hash value: 3081095356
 
 ---------------------------------------------------------------------------
 | Id  | Operation         | Name      | Rows  | Bytes | Cost (%CPU)| Time     |
@@ -2419,97 +3221,93 @@ Plan hash value: 3081095356
 
 Predicate Information (identified by operation id):
 ---------------------------------------------------
-   1 - filter(SUBSTR("USER_ID",1,4)='USER')
-```
-
-`access` 가 사라지고 `filter` 만 남았다.  
-인덱스로 범위를 좁힌 것이 아니라 전부 읽어서 버렸다는 뜻이다.  
-`Cost` 2 → 214, `Rows` 1 → 4,821.
-
-> 여기까지 잡히는 문제는 `DISPLAY_CURSOR` 까지 갈 것 없이 끝난다.
-
-**잘하는 것**
-
-- 인덱스를 타는지 — `TABLE ACCESS FULL` 이 보이면 거기서 끝난다
-- 조인 방식과 순서
-- 쿼리를 고치기 전후의 구조 비교
-- 실행을 안 하니 10시간짜리 쿼리도 즉시 답이 나온다
-
-**못 하는 것**
-
-| 한계 | 내용 |
-|---|---|
-| 추정치뿐 | `E-Rows` 는 통계 기반 예측. 실제 몇 건 나왔는지 모름 |
-| 플랜 보장 없음 | 바인드 변수를 미지수로 취급.<br>실제 실행은 바인드 피킹으로 다른 플랜을 고를 수 있음 |
-| 시간·블록 없음 | 어느 단계에서 시간을 태웠는지 안 나옴 |
-| 적응형 플랜 | 12c 이후 실행 중에 바뀌는 플랜은 바뀌기 전 모습만 보여줌 |
-
-`DBMS_XPLAN.DISPLAY_CURSOR` 는 반대로 실제 돌린 커서를 캐시에서 꺼내 본다.  
-`A-Rows`(실제 행수), `Buffers`(읽은 블록), `A-Time`(실제 시간)이 찍힌다.  
-`E-Rows` 와 `A-Rows` 가 크게 벌어지면 통계가 어긋났다는 신호다.
-
-**측정 수단이 각각 덮는 구간**
-
+   1 - filter(SUBSTR(&quot;USER_ID&quot;,1,4)=&#39;USER&#39;)
+</code></pre>
+<p><code>access</code> 가 사라지고 <code>filter</code> 만 남았다.<br>인덱스로 범위를 좁힌 것이 아니라 전부 읽어서 버렸다는 뜻이다.<br><code>Cost</code> 2 → 214, <code>Rows</code> 1 → 4,821.</p>
+<blockquote>
+<p>여기까지 잡히는 문제는 <code>DISPLAY_CURSOR</code> 까지 갈 것 없이 끝난다.</p>
+</blockquote>
+<p><strong>잘하는 것</strong></p>
+<ul>
+<li>인덱스를 타는지 — <code>TABLE ACCESS FULL</code> 이 보이면 거기서 끝난다</li>
+<li>조인 방식과 순서</li>
+<li>쿼리를 고치기 전후의 구조 비교</li>
+<li>실행을 안 하니 10시간짜리 쿼리도 즉시 답이 나온다</li>
+</ul>
+<p><strong>못 하는 것</strong></p>
+<table>
+<thead>
+<tr>
+<th>한계</th>
+<th>내용</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>추정치뿐</td>
+<td><code>E-Rows</code> 는 통계 기반 예측. 실제 몇 건 나왔는지 모름</td>
+</tr>
+<tr>
+<td>플랜 보장 없음</td>
+<td>바인드 변수를 미지수로 취급.<br>실제 실행은 바인드 피킹으로 다른 플랜을 고를 수 있음</td>
+</tr>
+<tr>
+<td>시간·블록 없음</td>
+<td>어느 단계에서 시간을 태웠는지 안 나옴</td>
+</tr>
+<tr>
+<td>적응형 플랜</td>
+<td>12c 이후 실행 중에 바뀌는 플랜은 바뀌기 전 모습만 보여줌</td>
+</tr>
+</tbody></table>
+<p><code>DBMS_XPLAN.DISPLAY_CURSOR</code> 는 반대로 실제 돌린 커서를 캐시에서 꺼내 본다.<br><code>A-Rows</code>(실제 행수), <code>Buffers</code>(읽은 블록), <code>A-Time</code>(실제 시간)이 찍힌다.<br><code>E-Rows</code> 와 <code>A-Rows</code> 가 크게 벌어지면 통계가 어긋났다는 신호다.</p>
+<p><strong>측정 수단이 각각 덮는 구간</strong></p>
 <svg viewBox="0 0 640 206" style="width:100%;height:auto;display:block;margin:14px 0;" role="img" aria-label="측정 수단별 대상 구간">
-<rect x="14" y="20" width="96" height="44" rx="6" fill="#152B47" stroke="#2A4A6E"/>
-<text x="62" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">커넥션 대기</text>
-<rect x="110" y="20" width="86" height="44" fill="#152B47" stroke="#2A4A6E"/>
-<text x="153" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">네트워크</text>
-<rect x="196" y="20" width="222" height="44" fill="#1B3958" stroke="#68E3C4"/>
-<text x="307" y="47" text-anchor="middle" font-size="12.5" fill="#68E3C4">DB 실행</text>
-<rect x="418" y="20" width="104" height="44" fill="#152B47" stroke="#2A4A6E"/>
-<text x="470" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">결과 전송</text>
-<rect x="522" y="20" width="104" height="44" rx="6" fill="#152B47" stroke="#2A4A6E"/>
-<text x="574" y="47" text-anchor="middle" font-size="11" fill="#8FAAC7">JDBC 매핑</text>
-<path d="M14,84 L14,92 M14,88 L626,88 M626,84 L626,92" stroke="#7E9CBC" stroke-width="1.4" fill="none"/>
-<text x="320" y="108" text-anchor="middle" font-size="11.5" fill="#8FAAC7">MyBatis 로그 시간</text>
-<path d="M196,126 L196,134 M196,130 L418,130 M418,126 L418,134" stroke="#68E3C4" stroke-width="1.4" fill="none"/>
-<text x="307" y="150" text-anchor="middle" font-size="11.5" fill="#68E3C4">V$SQL ELAPSED_TIME</text>
-<path d="M196,168 L196,176 M196,172 L418,172 M418,168 L418,176" stroke="#7BA9FF" stroke-width="1.4" fill="none"/>
-<text x="307" y="192" text-anchor="middle" font-size="11.5" fill="#7BA9FF">DISPLAY_CURSOR · 이 구간을 단계별로 쪼갬</text>
+<rect x="14" y="20" width="96" height="44" rx="6" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="62" y="47" text-anchor="middle" font-size="11" fill="var(--muted)">커넥션 대기</text>
+<rect x="110" y="20" width="86" height="44" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="153" y="47" text-anchor="middle" font-size="11" fill="var(--muted)">네트워크</text>
+<rect x="196" y="20" width="222" height="44" fill="var(--surface2)" stroke="var(--accent)"/>
+<text x="307" y="47" text-anchor="middle" font-size="12.5" fill="var(--accent)">DB 실행</text>
+<rect x="418" y="20" width="104" height="44" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="470" y="47" text-anchor="middle" font-size="11" fill="var(--muted)">결과 전송</text>
+<rect x="522" y="20" width="104" height="44" rx="6" fill="var(--surface2)" stroke="var(--border)"/>
+<text x="574" y="47" text-anchor="middle" font-size="11" fill="var(--muted)">JDBC 매핑</text>
+<path d="M14,84 L14,92 M14,88 L626,88 M626,84 L626,92" stroke="var(--muted)" stroke-width="1.4" fill="none"/>
+<text x="320" y="108" text-anchor="middle" font-size="11.5" fill="var(--muted)">MyBatis 로그 시간</text>
+<path d="M196,126 L196,134 M196,130 L418,130 M418,126 L418,134" stroke="var(--accent)" stroke-width="1.4" fill="none"/>
+<text x="307" y="150" text-anchor="middle" font-size="11.5" fill="var(--accent)">V$SQL ELAPSED_TIME</text>
+<path d="M196,168 L196,176 M196,172 L418,172 M418,168 L418,176" stroke="var(--accent3)" stroke-width="1.4" fill="none"/>
+<text x="307" y="192" text-anchor="middle" font-size="11.5" fill="var(--accent3)">DISPLAY_CURSOR · 이 구간을 단계별로 쪼갬</text>
 </svg>
 
-MyBatis 로그의 시간은 WAS 기준 왕복 전체다.  
-커넥션 풀 대기·네트워크·매핑이 다 섞여 있어  
-DB가 느린지 앱이 느린지를 구분하지 못한다.  
-로그 시간이 `V$SQL` 시간보다 훨씬 크면 범인은 DB 밖에 있다.
-
-**운영에서는 테스트하지 말고 결과만 회수한다**
-
-`SELECT` 라도 운영에서 함부로 돌리면 이런 일이 생긴다.
-
-- 큰 풀스캔 한 번이 버퍼 캐시를 밀어내 이후 모든 화면이 느려진다
-- 정렬이 크면 TEMP를 잠식해 다른 세션이 `ORA-01652` 로 죽는다
-- 툴에서 리터럴로 친 SQL이 공유 풀에 쌓여 운영 커서를 밀어낸다
-
-실행은 운영 화면이 이미 하고 있으니 흔적만 꺼내 보면 된다.
-
-```sql
--- 운영에서 실제로 돈 커서 찾기
+<p>MyBatis 로그의 시간은 WAS 기준 왕복 전체다.<br>커넥션 풀 대기·네트워크·매핑이 다 섞여 있어<br>DB가 느린지 앱이 느린지를 구분하지 못한다.<br>로그 시간이 <code>V$SQL</code> 시간보다 훨씬 크면 범인은 DB 밖에 있다.</p>
+<p><strong>운영에서는 테스트하지 말고 결과만 회수한다</strong></p>
+<p><code>SELECT</code> 라도 운영에서 함부로 돌리면 이런 일이 생긴다.</p>
+<ul>
+<li>큰 풀스캔 한 번이 버퍼 캐시를 밀어내 이후 모든 화면이 느려진다</li>
+<li>정렬이 크면 TEMP를 잠식해 다른 세션이 <code>ORA-01652</code> 로 죽는다</li>
+<li>툴에서 리터럴로 친 SQL이 공유 풀에 쌓여 운영 커서를 밀어낸다</li>
+</ul>
+<p>실행은 운영 화면이 이미 하고 있으니 흔적만 꺼내 보면 된다.</p>
+<pre><code class="language-sql">-- 운영에서 실제로 돈 커서 찾기
 SELECT SQL_ID, CHILD_NUMBER, PLAN_HASH_VALUE, EXECUTIONS
      , ROUND(ELAPSED_TIME/EXECUTIONS/1000, 2) AS AVG_MS
      , ROUND(BUFFER_GETS/EXECUTIONS)          AS GETS_PER_EXEC
      , ROUND(DISK_READS /EXECUTIONS)          AS READS_PER_EXEC
 FROM   V$SQL
-WHERE  SQL_TEXT LIKE '%USER_INFO%'
-  AND  SQL_TEXT NOT LIKE '%V$SQL%'
+WHERE  SQL_TEXT LIKE &#39;%USER_INFO%&#39;
+  AND  SQL_TEXT NOT LIKE &#39;%V$SQL%&#39;
 ORDER BY LAST_ACTIVE_TIME DESC;
 
 -- 그 커서가 실제로 쓴 플랜
 SELECT * FROM TABLE(
-  DBMS_XPLAN.DISPLAY_CURSOR('찾은SQL_ID', 자식번호, 'ALLSTATS LAST')
+  DBMS_XPLAN.DISPLAY_CURSOR(&#39;찾은SQL_ID&#39;, 자식번호, &#39;ALLSTATS LAST&#39;)
 );
-```
-
-운영은 보통 `STATISTICS_LEVEL` 이 `TYPICAL` 이라 `A-Rows`·`A-Time` 칸이 빈다.  
-플랜 구조와 `E-Rows`, `V$SQL` 의 블록 수치는 그대로 나오므로  
-플랜이 갈렸는지 비교하는 데는 충분하다.
-
-**툴에서 조건을 맞추는 법**
-
-```sql
-VARIABLE v_user_id VARCHAR2(20)
-EXEC :v_user_id := 'USER001';
+</code></pre>
+<p>운영은 보통 <code>STATISTICS_LEVEL</code> 이 <code>TYPICAL</code> 이라 <code>A-Rows</code>·<code>A-Time</code> 칸이 빈다.<br>플랜 구조와 <code>E-Rows</code>, <code>V$SQL</code> 의 블록 수치는 그대로 나오므로<br>플랜이 갈렸는지 비교하는 데는 충분하다.</p>
+<p><strong>툴에서 조건을 맞추는 법</strong></p>
+<pre><code class="language-sql">VARIABLE v_user_id VARCHAR2(20)
+EXEC :v_user_id := &#39;USER001&#39;;
 
 SET AUTOTRACE TRACEONLY   -- 결과는 안 뿌리고 전체 fetch + 통계만
 SET TIMING ON
@@ -2518,357 +3316,114 @@ SELECT /*+ GATHER_PLAN_STATISTICS */ *
 FROM   USER_INFO
 WHERE  USER_ID = :v_user_id;
 
-SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, 'ALLSTATS LAST'));
-```
+SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY_CURSOR(NULL, NULL, &#39;ALLSTATS LAST&#39;));
+</code></pre>
+<p>바인드 변수를 실제로 써서 운영과 같은 SQL 텍스트를 만들고,<br>3회 이상 돌려 2회차 이후 값만 쓴다. 1회차는 파싱과 물리 I/O가 섞여 있다.</p>
+<blockquote>
+<p><code>ALTER SYSTEM FLUSH BUFFER_CACHE</code> 로 조건을 맞추는 방법도 있지만<br>인스턴스 전체의 캐시를 날려 모든 세션이 느려진다.<br>개발·테스트 인스턴스 한정이고 운영에서는 쓰지 않는다.</p>
+</blockquote>
+<p><strong>보는 순서</strong></p>
+<ol>
+<li><code>EXPLAIN PLAN</code> 으로 구조 확인 — 대부분 여기서 끝난다</li>
+<li><code>V$SQL</code> 로 실제 실행 횟수·시간·플랜 해시 확인</li>
+<li><code>DISPLAY_CURSOR</code> 로 단계별 실측</li>
+<li>그래도 모르면 SQL Monitor — 라이선스 확인 필요</li>
+</ol>
+</article>
 
-바인드 변수를 실제로 써서 운영과 같은 SQL 텍스트를 만들고,  
-3회 이상 돌려 2회차 이후 값만 쓴다. 1회차는 파싱과 물리 I/O가 섞여 있다.
+<article class="doc" id="a8" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A8. 옵티마이저 힌트</h1>
+<p><code>/*+ ... */</code> 를 <strong>옵티마이저 힌트</strong>라 한다. 문법 조건이 까다롭다.</p>
+<ul>
+<li><code>/* */</code> 는 일반 주석이고 <code>+</code> 가 붙은 <code>/*+ */</code> 만 힌트로 읽는다</li>
+<li><code>+</code> 는 여는 <code>/*</code> 에 붙어야 한다. <code>/* + INDEX...</code> 는 그냥 주석이 된다</li>
+<li><code>SELECT</code>·<code>INSERT</code>·<code>UPDATE</code>·<code>DELETE</code> 키워드 바로 뒤에만 유효하다</li>
+<li><strong>틀린 힌트는 에러 없이 조용히 무시된다.</strong><br>
+인덱스명에 오타가 나도 아무 말 없이 풀스캔으로 돈다</li>
+</ul>
+<p><strong>경로를 바꾸는 힌트</strong></p>
+<table>
+<thead>
+<tr>
+<th>힌트</th>
+<th>하는 일</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>INDEX(A IDX_01)</code></td>
+<td>지정한 인덱스를 쓰게 함</td>
+</tr>
+<tr>
+<td><code>FULL(A)</code></td>
+<td>풀스캔을 쓰게 함</td>
+</tr>
+<tr>
+<td><code>LEADING(A B)</code></td>
+<td>조인 순서를 지정</td>
+</tr>
+<tr>
+<td><code>USE_NL(B)</code></td>
+<td>중첩 루프 조인을 쓰게 함</td>
+</tr>
+<tr>
+<td><code>FIRST_ROWS(10)</code></td>
+<td>첫 10행이 빨리 나오도록 최적화</td>
+</tr>
+<tr>
+<td><code>PARALLEL(A, 4)</code></td>
+<td>병렬로 처리</td>
+</tr>
+</tbody></table>
+<p><strong>계측만 켜는 힌트</strong></p>
+<p><code>GATHER_PLAN_STATISTICS</code> 는 경로를 바꾸지 않는다.<br>이번 실행의 단계별 실제 행수와 시간을 재서 남기라는 스위치다.<br>세션에 <code>STATISTICS_LEVEL = ALL</code> 을 거는 것과 같은 일을 쿼리 하나에만 적용한다.<br>붙이지 않으면 <code>DISPLAY_CURSOR</code> 의 <code>A-Rows</code> 칸이 빈다.</p>
+<p>계측 오버헤드가 있어 진단할 때만 붙이고 운영 쿼리에 상시로 두지 않는다.</p>
+<blockquote>
+<p>힌트로 인덱스를 박아두면 나중에 그 인덱스가 지워졌을 때<br>조용히 풀스캔으로 떨어진다. 통계 갱신과 쿼리 수정이 먼저고<br>힌트는 마지막 수단이다.</p>
+</blockquote>
+</article>
 
-> `ALTER SYSTEM FLUSH BUFFER_CACHE` 로 조건을 맞추는 방법도 있지만  
-> 인스턴스 전체의 캐시를 날려 모든 세션이 느려진다.  
-> 개발·테스트 인스턴스 한정이고 운영에서는 쓰지 않는다.
-
-**보는 순서**
-
-1. `EXPLAIN PLAN` 으로 구조 확인 — 대부분 여기서 끝난다
-2. `V$SQL` 로 실제 실행 횟수·시간·플랜 해시 확인
-3. `DISPLAY_CURSOR` 로 단계별 실측
-4. 그래도 모르면 SQL Monitor — 라이선스 확인 필요
-
-### A8. 옵티마이저 힌트
-
-`/*+ ... */` 를 **옵티마이저 힌트**라 한다. 문법 조건이 까다롭다.
-
-- `/* */` 는 일반 주석이고 `+` 가 붙은 `/*+ */` 만 힌트로 읽는다
-- `+` 는 여는 `/*` 에 붙어야 한다. `/* + INDEX...` 는 그냥 주석이 된다
-- `SELECT`·`INSERT`·`UPDATE`·`DELETE` 키워드 바로 뒤에만 유효하다
-- **틀린 힌트는 에러 없이 조용히 무시된다.** 인덱스명에 오타가 나도 아무 말 없이 풀스캔으로 돈다
-
-**경로를 바꾸는 힌트**
-
-| 힌트 | 하는 일 |
-|---|---|
-| `INDEX(A IDX_01)` | 지정한 인덱스를 쓰게 함 |
-| `FULL(A)` | 풀스캔을 쓰게 함 |
-| `LEADING(A B)` | 조인 순서를 지정 |
-| `USE_NL(B)` | 중첩 루프 조인을 쓰게 함 |
-| `FIRST_ROWS(10)` | 첫 10행이 빨리 나오도록 최적화 |
-| `PARALLEL(A, 4)` | 병렬로 처리 |
-
-**계측만 켜는 힌트**
-
-`GATHER_PLAN_STATISTICS` 는 경로를 바꾸지 않는다.  
-이번 실행의 단계별 실제 행수와 시간을 재서 남기라는 스위치다.  
-세션에 `STATISTICS_LEVEL = ALL` 을 거는 것과 같은 일을 쿼리 하나에만 적용한다.  
-붙이지 않으면 `DISPLAY_CURSOR` 의 `A-Rows` 칸이 빈다.
-
-계측 오버헤드가 있어 진단할 때만 붙이고 운영 쿼리에 상시로 두지 않는다.
-
-> 힌트로 인덱스를 박아두면 나중에 그 인덱스가 지워졌을 때  
-> 조용히 풀스캔으로 떨어진다. 통계 갱신과 쿼리 수정이 먼저고  
-> 힌트는 마지막 수단이다.
-
-### A9. 손에 든 도구로 어디까지 되나
-
-`toolbox/tools/sql_snippets.html` 의 오라클 항목을 이 기준으로 나누면 이렇다.
-
-| 계열 | 스니펫 |
-|---|---|
-| `V$` — 메모리, 재기동 시 소멸 | 느린 SQL 찾기, 활성 세션, 락 조회, 미커밋 트랜잭션, 인덱스 사용 현황 |
-| 딕셔너리 — 디스크, 영구 | 테이블 목록, 컬럼 목록, 인덱스 목록, FK 참조, 주석, 무효 오브젝트, 최근 변경 객체, 권한, 프로시저/함수 소스, 소스 전체 검색, 컴파일 에러 상세 |
-| `DBA_` — 권한 필요 | 테이블스페이스 용량 |
-
-여기서 바로 걸리는 것 두 가지.
-
-- 어제 느렸던 쿼리를 `느린 SQL 찾기` 로 못 찾으면<br>
-  버그가 아니라 재기동됐거나 캐시에서 밀려난 것이다
-- DBA 권한이 없는 계정은 `테이블스페이스 용량` 만 `ORA-00942` 로 죽고<br>
-  나머지는 정상 동작한다
-
-**빠져 있는 것** — 실측 실행계획(`DISPLAY_CURSOR`), 플랜 해시 비교,<br>
-`CLUSTERING_FACTOR`, 테이블 행 구조(`AVG_ROW_LEN`·`CHAIN_CNT`).<br>
-지금 도구로는 "느리다" 까지만 알고 "왜" 로 넘어가지 못한다.
-
-> 프로시저/함수 소스 조회가 추가된 뒤로 "A6에서 의심한 함수 안에<br>
-> SELECT 있나" 정도는 이제 툴 안에서 바로 확인된다.
-</script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.3.0/marked.min.js"></script>
-<script>
-(function(){
-  var STORAGE_KEY = 'arch-notes-progress-v1';
-  var LAST_KEY    = 'arch-notes-last-v2';
-  var NAV_KEY     = 'arch-notes-nav-v2';
-  var progress = {};
-  var totalTopics = 0;
-
-  function get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
-  function set(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
-
-  if('scrollRestoration' in history){ history.scrollRestoration = 'manual'; }
-
-  try{ progress = JSON.parse(get(STORAGE_KEY) || '{}') || {}; }catch(e){ progress = {}; }
-
-  /* ─────────────── 마크다운 파싱 : H2 = 단계, H3 = 항목 ─────────────── */
-  var rawMd = document.getElementById('source-md').textContent;
-  marked.setOptions({ gfm:true, breaks:false });
-  var temp = document.createElement('div');
-  temp.innerHTML = marked.parse(rawMd);
-  var nodes = Array.prototype.slice.call(temp.childNodes);
-
-  var introFrag = document.createDocumentFragment();
-  var stages = [];
-  var curStage = null, curTopic = null, phase = 'intro';
-
-  nodes.forEach(function(node){
-    if(node.nodeType === 1 && node.tagName === 'H2'){
-      curStage = { title:node.textContent.trim(), intro:[], topics:[] };
-      stages.push(curStage); curTopic = null; phase = 'stage'; return;
-    }
-    if(node.nodeType === 1 && node.tagName === 'H3' && curStage){
-      curTopic = { title:node.textContent.trim(), nodes:[] };
-      curStage.topics.push(curTopic); return;
-    }
-    if(phase === 'intro'){ introFrag.appendChild(node); return; }
-    if(curTopic) curTopic.nodes.push(node);
-    else if(curStage) curStage.intro.push(node);
-  });
-
-  document.getElementById('introBlock').appendChild(introFrag);
-
-  /* ─────────────── 페이지와 목차를 만든다 ─────────────── */
-  var pagesRoot  = document.getElementById('pagesRoot');
-  var drawerList = document.getElementById('drawerList');
-  var barHere    = document.getElementById('barHere');
-  var barCrumb   = document.getElementById('barCrumb');
-  var pager      = document.getElementById('pager');
-
-  var ORDER = [];              // [{id, title, crumb}] — 이전/다음 순서
-  var navFor = {};             // id → 목차 버튼
-  var doneBtnFor = {};         // topicId → 완료 버튼
-
-  ORDER.push({ id:'page-intro', title:'노트 소개', crumb:'STUDY' });
-
-  function wrapTables(root){
-    root.querySelectorAll('table').forEach(function(t){
-      if(t.parentNode && t.parentNode.className === 'table-wrap') return;
-      var w = document.createElement('div');
-      w.className = 'table-wrap';
-      t.parentNode.insertBefore(w, t);
-      w.appendChild(t);
-    });
-  }
-
-  function makePage(id, kicker, title){
-    var p = document.createElement('div');
-    p.className = 'page';
-    p.id = id;
-    var k = document.createElement('p'); k.className = 'page-kicker'; k.textContent = kicker;
-    var h = document.createElement('h1'); h.textContent = title;
-    p.appendChild(k); p.appendChild(h);
-    return p;
-  }
-
-  stages.forEach(function(stage, sIdx){
-    var m = stage.title.match(/^(\d+)\s*단계/);
-    var badge = m ? ('S' + m[1]) : (stage.title.indexOf('부록') === 0 ? 'EX' : ('S' + (sIdx + 1)));
-    var stageId = 'stage-' + sIdx;
-
-    /* ── 단계 개요 페이지 ── */
-    var sPage = makePage(stageId, badge + ' · 단계 개요', stage.title);
-    var sBody = document.createElement('div');
-    sBody.className = 'topic-content stage-intro';
-    sBody.style.padding = '0';
-    stage.intro.forEach(function(n){ sBody.appendChild(n); });
-    wrapTables(sBody);
-    sPage.appendChild(sBody);
-
-    var jump = document.createElement('div');
-    jump.className = 'topic-jump';
-    sPage.appendChild(jump);
-    pagesRoot.appendChild(sPage);
-
-    ORDER.push({ id:stageId, title:stage.title, crumb:badge });
-
-    /* ── 목차 : 단계 라벨도 누를 수 있다 ── */
-    var sLink = document.createElement('button');
-    sLink.type = 'button';
-    sLink.className = 'drawer-stage';
-    sLink.textContent = badge + ' · ' + stage.title;
-    sLink.addEventListener('click', function(){ go(stageId, true); });
-    drawerList.appendChild(sLink);
-    navFor[stageId] = sLink;
-
-    /* ── 항목 페이지 ── */
-    stage.topics.forEach(function(topic, tIdx){
-      var tid = sIdx + '-' + tIdx;
-      var pageId = 'topic-' + tid;
-      totalTopics++;
-
-      var tPage = makePage(pageId, badge + ' · ' + stage.title, topic.title);
-
-      var tools = document.createElement('div');
-      tools.className = 'page-tools';
-      var done = document.createElement('button');
-      done.type = 'button';
-      done.className = 'done-btn';
-      done.setAttribute('aria-pressed', progress[tid] ? 'true' : 'false');
-      done.innerHTML = '<span class="box"></span>학습 완료';
-      done.addEventListener('click', function(){
-        var now = done.getAttribute('aria-pressed') !== 'true';
-        progress[tid] = now;
-        done.setAttribute('aria-pressed', now ? 'true' : 'false');
-        set(STORAGE_KEY, JSON.stringify(progress));
-        if(navFor[pageId]) navFor[pageId].classList.toggle('done', now);
-        var tick = document.getElementById('tick-' + tid);
-        if(tick) tick.textContent = now ? '✓' : '';
-        badgeCount();
-      });
-      doneBtnFor[tid] = done;
-      tools.appendChild(done);
-      tPage.appendChild(tools);
-
-      var body = document.createElement('div');
-      body.className = 'topic-content page-body';
-      body.style.padding = '0';
-      topic.nodes.forEach(function(n){ body.appendChild(n); });
-      wrapTables(body);
-      tPage.appendChild(body);
-      pagesRoot.appendChild(tPage);
-
-      ORDER.push({ id:pageId, title:topic.title, crumb:badge + ' · ' + stage.title });
-
-      /* 목차 링크 */
-      var link = document.createElement('button');
-      link.type = 'button';
-      link.className = 'drawer-link' + (progress[tid] ? ' done' : '');
-      link.setAttribute('data-id', tid);
-      link.innerHTML = '<span class="dot"></span><span></span>';
-      link.lastChild.textContent = topic.title;
-      link.addEventListener('click', function(){ go(pageId, true); });
-      drawerList.appendChild(link);
-      navFor[pageId] = link;
-
-      /* 단계 개요의 항목 목록 */
-      var jb = document.createElement('button');
-      jb.type = 'button';
-      jb.innerHTML = '<span class="n">' + (tIdx + 1) + '</span><span></span>' +
-                     '<span class="tick" id="tick-' + tid + '">' + (progress[tid] ? '✓' : '') + '</span>';
-      jb.childNodes[1].textContent = topic.title;
-      jb.addEventListener('click', function(){ go(pageId, true); });
-      jump.appendChild(jb);
-    });
-  });
-
-  /* ─────────────── 진행률 ─────────────── */
-  function badgeCount(){
-    var d = Object.keys(progress).filter(function(k){ return progress[k]; }).length;
-    document.getElementById('doneCount').textContent = d;
-    document.getElementById('totalCount').textContent = totalTopics;
-  }
-  badgeCount();
-
-  document.getElementById('resetProgressBtn').addEventListener('click', function(){
-    progress = {};
-    set(STORAGE_KEY, '{}');
-    Object.keys(doneBtnFor).forEach(function(tid){
-      doneBtnFor[tid].setAttribute('aria-pressed', 'false');
-      var tick = document.getElementById('tick-' + tid);
-      if(tick) tick.textContent = '';
-    });
-    document.querySelectorAll('.drawer-link').forEach(function(l){ l.classList.remove('done'); });
-    badgeCount();
-  });
-
-  /* ─────────────── 한 항목만 보여준다 ─────────────── */
-  function go(id, fromClick){
-    var hit = ORDER.filter(function(o){ return o.id === id; })[0];
-    if(!hit) return;
-
-    ORDER.forEach(function(o){
-      var el = document.getElementById(o.id);
-      if(el) el.classList.toggle('on', o.id === id);
-      if(navFor[o.id]) navFor[o.id].setAttribute('aria-current', o.id === id ? 'true' : 'false');
-    });
-
-    barHere.textContent  = hit.title;
-    barCrumb.textContent = hit.crumb;
-    buildPager(id);
-    set(LAST_KEY, id);
-    if(location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
-    window.scrollTo({ top:0, behavior: fromClick ? 'smooth' : 'auto' });
-
-    /* 본문이 통째로 바뀌었는데 초점이 목차에 남아 있으면
-       화면낭독기에는 아무 일도 안 일어난 것과 같다. 제목으로 옮긴다. */
-    if(fromClick){
-      var h = document.querySelector('#' + id + ' h1');
-      if(h){ h.setAttribute('tabindex', '-1'); h.focus({ preventScroll:true }); }
-    }
-
-    /* 좁은 화면에서는 고른 뒤 접는다. 넓으면 열어 둔다 */
-    if(fromClick && window.innerWidth < 1080) setNav(false);
-  }
-
-  function buildPager(id){
-    var i = -1;
-    ORDER.forEach(function(o, idx){ if(o.id === id) i = idx; });
-    pager.innerHTML = '';
-
-    function btn(target, label, cls){
-      var b = document.createElement('button');
-      b.type = 'button';
-      if(cls) b.className = cls;
-      b.innerHTML = '<span>' + label + '</span><em></em>';
-      b.lastChild.textContent = target ? target.title : '—';
-      b.disabled = !target;
-      if(target) b.addEventListener('click', function(){ go(target.id, true); });
-      return b;
-    }
-    pager.appendChild(btn(i > 0 ? ORDER[i-1] : null, '이전'));
-    pager.appendChild(btn(i >= 0 && i < ORDER.length - 1 ? ORDER[i+1] : null, '다음', 'next'));
-  }
-
-  /* ─────────────── 사이드바 : 스크림이 없다 ─────────────── */
-  var drawer = document.getElementById('drawer');
-  var main   = document.getElementById('mainContent');
-  var openBtn = document.getElementById('drawerOpenBtn');
-
-  function setNav(open){
-    drawer.classList.toggle('open', open);
-    main.classList.toggle('shifted', open);
-    openBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    openBtn.setAttribute('aria-label', open ? '목차 닫기' : '목차 열기');
-    set(NAV_KEY, open ? '1' : '0');
-  }
-  openBtn.addEventListener('click', function(){ setNav(!drawer.classList.contains('open')); });
-  document.getElementById('drawerCloseBtn').addEventListener('click', function(){ setNav(false); });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape' && drawer.classList.contains('open')) setNav(false);
-  });
-
-  var savedNav = get(NAV_KEY);
-  setNav(savedNav !== null ? savedNav === '1' : window.innerWidth >= 1080);
-
-  /* ─────────────── 첫 진입 ─────────────── */
-  function known(id){ return ORDER.some(function(o){ return o.id === id; }); }
-
-  var want = location.hash.slice(1);
-  if(!known(want)) want = get(LAST_KEY);
-  go(known(want) ? want : 'page-intro', false);
-
-  window.addEventListener('hashchange', function(){
-    var h = location.hash.slice(1);
-    if(known(h)) go(h, false);
-  });
-
-  /* ─────────────── 스크롤 표시 ─────────────── */
-  window.addEventListener('scroll', function(){
-    var h = document.documentElement;
-    var top = h.scrollTop || document.body.scrollTop;
-    var span = (h.scrollHeight || document.body.scrollHeight) - h.clientHeight;
-    document.getElementById('scrollFill').style.width = (span > 0 ? (top / span) * 100 : 0) + '%';
-  }, { passive:true });
-})();
-</script>
+<article class="doc" id="a9" data-stage="X5">
+<p class="doc-kicker">X5 · 부록 — 오라클 SQL 처리 구조와 성능 측정</p>
+<h1>A9. 손에 든 도구로 어디까지 되나</h1>
+<p><code>toolbox/tools/sql_snippets.html</code> 의 오라클 항목을 이 기준으로 나누면 이렇다.</p>
+<table>
+<thead>
+<tr>
+<th>계열</th>
+<th>스니펫</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>V$</code> — 메모리, 재기동 시 소멸</td>
+<td>느린 SQL 찾기, 활성 세션, 락 조회, 미커밋 트랜잭션, 인덱스 사용 현황</td>
+</tr>
+<tr>
+<td>딕셔너리 — 디스크, 영구</td>
+<td>테이블 목록, 컬럼 목록, 인덱스 목록, FK 참조, 주석, 무효 오브젝트,<br>
+최근 변경 객체, 권한, 프로시저/함수 소스, 소스 전체 검색, 컴파일 에러 상세</td>
+</tr>
+<tr>
+<td><code>DBA_</code> — 권한 필요</td>
+<td>테이블스페이스 용량</td>
+</tr>
+</tbody></table>
+<p>여기서 바로 걸리는 것 두 가지.</p>
+<ul>
+<li>어제 느렸던 쿼리를 <code>느린 SQL 찾기</code> 로 못 찾으면<br>
+버그가 아니라 재기동됐거나 캐시에서 밀려난 것이다</li>
+<li>DBA 권한이 없는 계정은 <code>테이블스페이스 용량</code> 만 <code>ORA-00942</code> 로 죽고<br>
+나머지는 정상 동작한다</li>
+</ul>
+<p><strong>빠져 있는 것</strong> — 실측 실행계획(<code>DISPLAY_CURSOR</code>), 플랜 해시 비교,<br>
+<code>CLUSTERING_FACTOR</code>, 테이블 행 구조(<code>AVG_ROW_LEN</code>·<code>CHAIN_CNT</code>).<br>
+지금 도구로는 &quot;느리다&quot; 까지만 알고 &quot;왜&quot; 로 넘어가지 못한다.</p>
+<blockquote>
+<p>프로시저/함수 소스 조회가 추가된 뒤로 &quot;A6에서 의심한 함수 안에<br>
+SELECT 있나&quot; 정도는 이제 툴 안에서 바로 확인된다.</p>
+</blockquote>
+</article>
+<footer class="credit">코딩하는기술사 (@codingpe) 영상 정리 · 학습용 개인 노트</footer>
+</main>
 </body>
 </html>

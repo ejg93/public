@@ -5,298 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>아키텍처 기본기 — 해법을 강제하는 제약 일곱</title>
 <meta name="description" content="Redis·Kafka·MSA 같은 해법을 강제하는, 변하지 않는 제약 일곱으로 거슬러 올라가 적었다.">
-<meta name="keywords" content="트레이드오프,경계와 의존,동시성,분산,일관성,대기열,관측">
+<meta name="keywords" content="Tier / Layer,트랜잭션,캐시,MSA,동시성,SLO">
 <meta name="date" content="2026-09-24">
-<style>
-  :root{
-    --bg:#0F2036; --bg-2:#0B1930; --panel:#152B47; --panel-2:#1B3958;
-    --line:#2A4A6E; --line-soft:#1F3958;
-    --ink:#E8F1FA; --ink-dim:#8FAAC7; --ink-faint:#7E9CBC;
-    --accent:#FFC24B; --accent-2:#68E3C4; --accent-3:#7BA9FF; --danger:#FF8A80;
-    --radius:10px; --nav-w:268px; --bar-h:50px;
-    font-size:15px;
-  }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;}
-  body{
-    background:
-      linear-gradient(var(--bg-2), var(--bg-2)) fixed,
-      repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
-      repeating-linear-gradient(90deg, rgba(255,255,255,0.035) 0 1px, transparent 1px 28px),
-      var(--bg);
-    color:var(--ink);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Malgun Gothic","Apple SD Gothic Neo",Roboto,sans-serif;
-    line-height:1.62; -webkit-font-smoothing:antialiased; min-height:100vh;
-  }
-  .mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;}
-
-  /* ---------- App bar ---------- */
-  header.app-bar{
-    position:sticky; top:0; z-index:40; height:var(--bar-h);
-    background:rgba(11,25,48,0.94); backdrop-filter:blur(6px);
-    border-bottom:1px solid var(--line);
-    display:flex; align-items:center; gap:10px; padding:0 12px;
-  }
-  .icon-btn{
-    background:var(--panel); border:1px solid var(--line); color:var(--ink);
-    width:32px; height:32px; border-radius:8px; display:flex; align-items:center;
-    justify-content:center; cursor:pointer; flex-shrink:0; padding:0;
-    -webkit-tap-highlight-color:transparent;
-  }
-  .icon-btn:hover{background:var(--panel-2); border-color:var(--accent-2);}
-  .icon-btn:focus-visible{outline:2px solid var(--accent-2); outline-offset:2px;}
-  .icon-btn svg{width:16px; height:16px;}
-  .bar-title{font-size:13px; font-weight:700; letter-spacing:-.01em; flex-shrink:0;}
-  .bar-sep{color:var(--ink-faint); font-size:12px;}
-  .bar-here{font-size:12px; color:var(--accent-2); font-weight:600;
-            overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .eyebrow{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700;}
-
-  /* ---------- Sidebar : 스크림이 없다. 메인이 절대 안 멈춘다 ---------- */
-  .sidebar{
-    position:fixed; top:var(--bar-h); left:0; bottom:0; width:var(--nav-w); z-index:30;
-    background:var(--bg-2); border-right:1px solid var(--line);
-    transform:translateX(-100%); transition:transform .2s ease;
-    display:flex; flex-direction:column; overflow-y:auto; overscroll-behavior:contain;
-  }
-  .sidebar.open{transform:none;}
-  .nav-group{padding:14px 0 2px;}
-  .nav-group-label{
-    font-size:10px; letter-spacing:.12em; text-transform:uppercase;
-    color:var(--ink-faint); padding:0 16px 6px;
-  }
-  .nav-link{
-    display:flex; align-items:center; gap:9px; width:100%; text-align:left;
-    background:none; border:none; border-left:2px solid transparent;
-    color:var(--ink-dim); font:inherit; font-size:13px; line-height:1.35;
-    padding:9px 16px; cursor:pointer; -webkit-tap-highlight-color:transparent;
-    transition:background-color .12s, color .12s, border-color .12s;
-  }
-  .nav-link:hover{background:var(--panel); color:var(--ink);}
-  .nav-link:focus-visible{outline:2px solid var(--accent-2); outline-offset:-2px;}
-  .nav-link .dot{width:6px; height:6px; border-radius:50%; background:var(--line); flex-shrink:0;}
-  .nav-link[aria-current="true"]{
-    background:var(--panel); color:var(--ink); font-weight:600;
-    border-left-color:var(--accent);
-  }
-  .nav-link[aria-current="true"] .dot{background:var(--accent);}
-  .nav-foot{
-    margin-top:auto; padding:14px 16px 18px; border-top:1px dashed var(--line);
-    font-size:11px; color:var(--ink-faint);
-  }
-
-  /* ---------- Main : 넓은 화면에서만 밀린다. 좁으면 사이드바가 위에 뜬다 ---------- */
-  .main{padding:22px 16px 60px; transition:margin-left .2s ease;}
-  .main:focus{outline:none;}
-  .main-inner{max-width:860px; margin:0 auto;}
-  @media (min-width:1060px){
-    .main.shifted{margin-left:var(--nav-w);}
-  }
-
-  /* ---------- Doc ---------- */
-  .doc{display:none;}
-  .doc.on{display:block; animation:fade .2s ease;}
-  @keyframes fade{from{opacity:0; transform:translateY(5px)} to{opacity:1; transform:none}}
-  .doc-kicker{font-size:10px; letter-spacing:.14em; color:var(--accent-2); font-weight:700; text-transform:uppercase;}
-  .doc h1{font-size:22px; margin:4px 0 8px; letter-spacing:-.015em;}
-  .doc-lead{
-    margin:0 0 22px; padding-left:12px; border-left:2px solid var(--accent-2);
-    color:var(--ink-dim); font-size:13.5px;
-  }
-  h2{
-    font-size:15px; margin:30px 0 10px; color:var(--ink);
-    display:flex; align-items:center; gap:8px;
-  }
-  h2::before{
-    content:""; width:4px; height:15px; border-radius:2px;
-    background:var(--accent); flex-shrink:0;
-  }
-  h3{font-size:13px; color:var(--accent-3); margin:18px 0 6px;}
-  p{margin:9px 0; font-size:13.8px;}
-  strong{color:var(--accent);}
-  ul,ol{padding-left:20px; margin:9px 0; font-size:13.8px;}
-  li{margin:4px 0;}
-  code{
-    font-family:"SFMono-Regular",Consolas,monospace; font-size:12px;
-    background:var(--panel-2); color:var(--accent-2); padding:1px 5px; border-radius:4px;
-  }
-
-  /* ---------- Callout ---------- */
-  .note{
-    margin:14px 0; padding:11px 14px; border-radius:0 8px 8px 0;
-    border-left:3px solid var(--accent-2); background:rgba(104,227,196,0.07);
-    font-size:13px; color:var(--ink-dim);
-  }
-  .note b{color:var(--accent-2);}
-  .note.warn{border-left-color:var(--danger); background:rgba(255,138,128,0.07);}
-  .note.warn b{color:var(--danger);}
-  .note.key{border-left-color:var(--accent); background:rgba(255,194,75,0.07);}
-  .note.key b{color:var(--accent);}
-
-  /* ---------- Table ---------- */
-  .table-wrap{overflow-x:auto; margin:14px 0; border:1px solid var(--line); border-radius:8px;}
-  table{border-collapse:collapse; width:100%; font-size:12.5px; min-width:380px;}
-  thead th{
-    background:var(--panel-2); color:var(--accent-2); text-align:left;
-    padding:8px 10px; white-space:nowrap; border-bottom:1px solid var(--line); font-weight:700;
-  }
-  tbody td{padding:8px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-dim); vertical-align:top;}
-  tbody td strong{color:var(--ink);}
-  tbody tr:last-child td{border-bottom:none;}
-  tbody tr:nth-child(even){background:rgba(255,255,255,0.02);}
-  td .ok, td.ok{color:var(--accent-2); font-weight:700;}
-  td .no, td.no{color:var(--danger); font-weight:700;}
-  td .mid, td.mid{color:var(--accent); font-weight:700;}
-
-  /* ---------- Figure ---------- */
-  figure{margin:18px 0; padding:14px; border:1px solid var(--line);
-         border-radius:var(--radius); background:rgba(21,43,71,0.35);}
-  figure svg{display:block; width:100%; height:auto;}
-  figcaption{margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);
-             font-size:11.5px; color:var(--ink-faint);}
-  figcaption b{color:var(--ink-dim);}
-
-  /* ---------- Pager ---------- */
-  .pager{display:flex; gap:10px; margin-top:36px; padding-top:16px; border-top:1px dashed var(--line);}
-  .pager button{
-    flex:1; background:var(--panel); border:1px solid var(--line); border-radius:8px;
-    color:var(--ink-dim); font:inherit; font-size:12px; padding:10px 12px;
-    cursor:pointer; text-align:left; -webkit-tap-highlight-color:transparent;
-  }
-  .pager button:hover:not(:disabled){background:var(--panel-2); color:var(--ink); border-color:var(--accent-2);}
-  .pager button:disabled{opacity:.35; cursor:default;}
-  .pager button span{display:block; font-size:10px; letter-spacing:.1em; color:var(--ink-faint);}
-  .pager .next{text-align:right;}
-  ::selection{background:var(--accent); color:#0B1930;}
-
-  /* 반복 영역 건너뛰기 — 목차가 본문 앞에 있어서 키보드가 그걸 다 지나야 한다.
-     display:none 으로 숨기면 초점 자체가 안 가서 있으나 마나다. */
-  .skip{
-    position:absolute; width:1px; height:1px; margin:-1px; padding:0;
-    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
-  }
-  .skip:focus{
-    position:fixed; top:8px; left:8px; z-index:60; width:auto; height:auto;
-    margin:0; padding:8px 14px; clip:auto; overflow:visible;
-    background:var(--accent); color:#0B1930; font-size:12.5px; font-weight:700;
-    border-radius:8px; text-decoration:none;
-  }
-  /* 닫힌 목차는 화면 밖에 있으므로 초점도 안 가야 한다 */
-  .sidebar{visibility:hidden; transition:transform .2s ease, visibility .2s ease;}
-  .sidebar.open{visibility:visible;}
-  /* 절을 바꿀 때 제목으로 초점을 옮긴다. 프로그램이 옮긴 초점이라 테두리는 안 그린다 */
-  .doc h1:focus{outline:none;}
-
-  /* ---------- 스크롤바 ---------- */
-  /* color-scheme 한 줄로 브라우저 기본 스크롤바·폼 컨트롤이 어두워진다.
-     ::-webkit-scrollbar 를 안 쓰는 브라우저의 바탕이 되는 줄이라 먼저 둔다. */
-  :root{ color-scheme:dark; }
-
-  /* 표준 속성 (Firefox) */
-  html{ scrollbar-width:thin; scrollbar-color:#4573A6 var(--bg-2); }
-  .sidebar,.table-wrap{ scrollbar-width:thin; scrollbar-color:#4573A6 transparent; }
-
-  /* 고정된 머리 아래로 목표가 숨지 않게 — 건너뛰기 링크가 이걸 쓴다 */
-  html{ scroll-padding-top:calc(var(--bar-h) + 10px); }
-
-  /* WebKit · Chromium */
-  ::-webkit-scrollbar{ width:11px; height:11px; }
-  ::-webkit-scrollbar-track{ background:var(--bg-2); }
-  ::-webkit-scrollbar-thumb{
-    background:#4573A6; border-radius:99px;
-    border:3px solid var(--bg-2);   /* 트랙과 사이를 띄워 얇아 보이게 한다 */
-  }
-  ::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; }
-  ::-webkit-scrollbar-corner{ background:var(--bg-2); }
-
-  /* 안쪽 스크롤(목차·표)은 더 얇고 트랙을 안 그린다 */
-  .sidebar::-webkit-scrollbar,
-  .table-wrap::-webkit-scrollbar{ width:8px; height:8px; }
-  .sidebar::-webkit-scrollbar-track,
-  .table-wrap::-webkit-scrollbar-track{ background:transparent; }
-  .sidebar::-webkit-scrollbar-thumb,
-  .table-wrap::-webkit-scrollbar-thumb{
-    background:#4573A6; border:2px solid transparent; background-clip:padding-box;
-  }
-  .sidebar::-webkit-scrollbar-thumb:hover,
-  .table-wrap::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; background-clip:padding-box; }
-
-  /* ---------- Code block ---------- */
-  pre{
-    margin:14px 0; padding:12px 14px; overflow-x:auto;
-    background:var(--bg-2); border:1px solid var(--line); border-radius:8px;
-    font-size:11.8px; line-height:1.62;
-    scrollbar-width:thin; scrollbar-color:#4573A6 transparent;
-  }
-  pre code{
-    background:none; padding:0; border-radius:0; color:var(--ink-dim);
-    font-family:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
-    white-space:pre; font-size:inherit;
-  }
-  pre::-webkit-scrollbar{ height:8px; }
-  pre::-webkit-scrollbar-track{ background:transparent; }
-  pre::-webkit-scrollbar-thumb{
-    background:#4573A6; border:2px solid transparent; background-clip:padding-box;
-  }
-  pre::-webkit-scrollbar-thumb:hover{ background:#5C8FC6; background-clip:padding-box; }
-
-  /* 도형 안 글자는 확대해도 안 깨지게 벡터 그대로 둔다 */
-  figure svg text{ font-family:inherit; }
-
-  /* ---------- 본문 링크 ---------- */
-  .doc a{
-    color:var(--accent-3); text-decoration:none;
-    border-bottom:1px dashed var(--accent-3);
-  }
-  .doc a:hover{color:var(--accent-2); border-bottom-color:var(--accent-2);}
-  .doc a:focus-visible{outline:2px solid var(--accent-2); outline-offset:2px; border-radius:2px;}
-
-  /* note 안 코드블록은 여백을 줄인다 */
-  .note pre{margin:9px 0 4px; font-size:11.2px;}
-
-  .doc ol{padding-left:22px;}
-  .doc h3 + p{margin-top:6px;}
-</style>
+<meta name="kind" content="배움">
+<script>try{if(localStorage.getItem('theme')==='dark')document.documentElement.dataset.theme='dark'}catch(e){}</script>
+<link rel="stylesheet" href="/study/shell.css">
+<script src="/study/shell.js" defer></script>
 </head>
 <body>
-<a class="skip" href="#main">본문 바로가기</a>
-
-<header class="app-bar">
-  <button class="icon-btn" id="burger" aria-label="목차 열기" aria-expanded="false" aria-controls="sidebar">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
-      <path d="M2 4h12M2 8h12M2 12h12"/>
-    </svg>
-  </button>
-  <span class="bar-title">아키텍처 기본기</span>
-  <span class="bar-sep">/</span>
-  <span class="bar-here" id="barHere">트레이드오프</span>
-</header>
-
-<aside class="sidebar" id="sidebar" aria-label="목차">
-  <nav id="nav"></nav>
-  <div class="nav-foot">
-    제약 일곱 → 해법 서른<br>
-    해법 카탈로그는 아키텍처 학습노트
-  </div>
-</aside>
-
-<main class="main" id="main" tabindex="-1">
-<div class="main-inner">
-
-
+<main id="mainContent" data-title="아키텍처 기본기" data-stages="S1:바탕 — 결정과 경계|S2:시간 — 겹침|S3:거리 — 네트워크·사본·큐|S4:눈 — 관측|S5:종합">
 
 <!-- ══════════════════ d1. 트레이드오프 ══════════════════ -->
-<article class="doc" id="d1">
+<article class="doc" id="d1" data-stage="S1">
   <p class="doc-kicker">제약 1</p>
   <h1>아키텍처란 무엇인가 — 바꾸기 비싼 결정과 트레이드오프</h1>
+  <p class="q">판정 질문 — 이 결정을 반년 뒤에 뒤집으면 무엇을 얼마나 다시 만들어야 하나.<br>
+  답이 「거의 없다」면 아키텍처 결정이 아니다.</p>
   <p class="doc-lead">아키텍처를 구조도로 배우면 그림만 남는다.<br>
   여기서는 <strong>어떤 결정이 아키텍처 결정인가</strong>를 가르는 기준부터 잡고,<br>
   그 결정들이 왜 서로 부딪히는지를 본다. 뒤의 여섯 절은 전부 이 절의 사례다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 이 결정을 반년 뒤에 뒤집으면 무엇을 얼마나 다시 만들어야 하나.<br>
-    답이 「거의 없다」면 아키텍처 결정이 아니다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>아키텍처는 바꾸기 비싼 결정의 묶음이고, 그 결정이 올리는 품질 하나는 다른 품질을 내린다.</strong><br>
@@ -599,11 +326,11 @@
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
       <tr>
-        <td><a href="/study/architecture-notes#topic-7-0">28. 좋은 아키텍트의 기준</a></td>
+        <td><a href="/study/architecture-notes#t28">28. 좋은 아키텍트의 기준</a></td>
         <td>「기술을 많이 아는 사람」이 아니라 「트레이드오프를 드러내고 왜를 설명하는 사람」.<br>제2법칙의 다른 말이다</td>
       </tr>
       <tr>
-        <td><a href="/study/architecture-notes#topic-7-1">29. ATAM 평가법</a></td>
+        <td><a href="/study/architecture-notes#t29">29. ATAM 평가법</a></td>
         <td>이해관계자를 모아 품질 속성 시나리오를 뽑고, 결정마다 민감점과 트레이드오프 지점을 찍는 절차.<br>위 정의를 낸 SEI 가 만들어서 용어가 같다</td>
       </tr>
     </tbody>
@@ -626,17 +353,14 @@
 
 
 <!-- ══════════════════ d2. 경계와 의존 방향 ══════════════════ -->
-<article class="doc" id="d2">
+<article class="doc" id="d2" data-stage="S1">
   <p class="doc-kicker">제약 2</p>
   <h1>경계와 의존 방향 — 바뀔 것을 숨기고, 덜 바뀌는 쪽에 기댄다</h1>
+  <p class="q">판정 질문 — 이 모듈의 안쪽을 통째로 갈아엎을 때 밖의 코드는 한 줄도 안 바뀌나.<br>
+  「예」면 경계가 제대로 그어진 것이다.</p>
   <p class="doc-lead">1절에서 아키텍처는 「바꾸기 비싼 것」이었다.<br>
   그 비용의 크기를 정하는 것이 <strong>경계를 어디에 긋고 의존을 어느 방향으로 흐르게 하나</strong>다.<br>
   Tier · Layer · 모놀리스 · MSA 가 여기서 한 문제로 모인다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 이 모듈의 안쪽을 통째로 갈아엎을 때 밖의 코드는 한 줄도 안 바뀌나.<br>
-    「예」면 경계가 제대로 그어진 것이다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>변경은 의존을 타고 퍼진다.</strong><br>
@@ -986,7 +710,7 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
   <p>마지막 줄이 제일 늦게 걸리고 제일 자주 빠진다.<br>
   코드 경계는 세 겹으로 지키면서 데이터 경계는 「같은 스키마, 같은 계정」으로 두는 곳이 많다.<br>
   이 포트폴리오 저장소가 글 규칙을 hook 과 lint 로 내린 것도 같은 발상이다 —<br>
-  <a href="/study/ai-workflow-notes#d1">AI 작업 구조 노트</a> 의 「규칙을 기계가 막는 자리로 내린다」가 그 얘기다.</p>
+  <a href="/study/ai-native-notes#s4-15">LLM · AI-Native 노트 「hook — 실행되는 규칙」</a> 이 그 얘기다.</p>
 
   <h2>어기면 깨지는 것</h2>
   <h3>모두를 아는 공통 모듈</h3>
@@ -1009,19 +733,19 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
       <tr>
-        <td><a href="/study/architecture-notes#topic-0-0">1. Tier vs Layer</a></td>
+        <td><a href="/study/architecture-notes#t1">1. Tier vs Layer</a></td>
         <td>위 「논리 경계와 물리 경계」 표. 물리 경계는 논리 경계 위에 비용을 더한 것이다</td>
       </tr>
       <tr>
-        <td><a href="/study/architecture-notes#topic-0-1">2. 모놀리식이 먼저</a></td>
+        <td><a href="/study/architecture-notes#t2">2. 모놀리식이 먼저</a></td>
         <td>경계를 논리로 검증한 뒤 물리로 올린다는 순서</td>
       </tr>
       <tr>
-        <td><a href="/study/architecture-notes#topic-0-2">3. 모놀리스 vs MSA</a></td>
+        <td><a href="/study/architecture-notes#t3">3. 모놀리스 vs MSA</a></td>
         <td>한 축의 두 끝. 가르는 것은 경계가 논리인가 물리인가</td>
       </tr>
       <tr>
-        <td><a href="/study/architecture-notes#topic-0-3">4. 모듈러 모놀리스</a></td>
+        <td><a href="/study/architecture-notes#t4">4. 모듈러 모놀리스</a></td>
         <td>그 축의 중간점. 경계는 업무 단위로 긋고 넘는 방법은 함수 호출로 남긴다</td>
       </tr>
       <tr>
@@ -1050,18 +774,15 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
 
 
 <!-- ══════════════════ d3. 동시성 ══════════════════ -->
-<article class="doc" id="d3">
+<article class="doc" id="d3" data-stage="S2">
   <p class="doc-kicker">제약 3</p>
   <h1>같은 것에 둘이 손댄다 — 순서를 정하지 않으면 결과가 매번 다르다</h1>
+  <p class="q">판정 질문 — 이 코드를 두 요청이 동시에 돌리면,<br>
+  결과가 하나씩 차례로 돌린 것과 같나.<br>
+  「모르겠다」면 같지 않다고 봐야 한다.</p>
   <p class="doc-lead">여기부터 「시간」이 들어온다.<br>
   앞 두 절은 코드가 한 줄씩 순서대로 돈다고 가정했다. 서버는 그렇게 돌지 않는다.<br>
   요청 200개가 겹쳐서 돌고, 그중 둘이 같은 행을 만지는 순간 이 절의 문제가 시작된다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 이 코드를 두 요청이 동시에 돌리면,<br>
-    결과가 하나씩 차례로 돌린 것과 같나.<br>
-    「모르겠다」면 같지 않다고 봐야 한다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>같은 데이터에 둘이 동시에 손대면, 순서를 정하지 않는 한 결과는 실행마다 다르다.</strong><br>
@@ -1291,12 +1012,12 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
   <div class="table-wrap"><table>
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
-      <tr><td><a href="/study/architecture-notes#topic-1-0">5. 트랜잭션 ACID</a></td><td>위 ACID 표. I 가 이 절이다</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-1-1">6. 트랜잭션 격리수준</a></td><td>위 두 표. 기본 수준이 갱신 유실을 안 막는다는 것이 핵심</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-1-2">7. 동시성 vs 병렬성</a></td><td>겹침은 코어가 하나여도 생긴다는 것</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-6-1">23. 예매 시스템 설계</a></td><td>좌석 하나에 둘이 손댄다. 비관적 락 또는 원자적 갱신</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-6-2">24. 대량 쿠폰 발급</a></td><td>위 구체 상황. 원자적 갱신 + 큐로 도착률을 깎는다 (6절)</td></tr>
-      <tr><td><a href="/study/architecture-notes#stage-12">부록 · 오라클 SQL 처리 구조</a></td><td>커서 공유·SGA 락·<code>V$</code> 뷰. 이 절을 Oracle 안에서 보는 눈</td></tr>
+      <tr><td><a href="/study/architecture-notes#t5">5. 트랜잭션 ACID</a></td><td>위 ACID 표. I 가 이 절이다</td></tr>
+      <tr><td><a href="/study/architecture-notes#t6">6. 트랜잭션 격리수준</a></td><td>위 두 표. 기본 수준이 갱신 유실을 안 막는다는 것이 핵심</td></tr>
+      <tr><td><a href="/study/architecture-notes#t7">7. 동시성 vs 병렬성</a></td><td>겹침은 코어가 하나여도 생긴다는 것</td></tr>
+      <tr><td><a href="/study/architecture-notes#t23">23. 예매 시스템 설계</a></td><td>좌석 하나에 둘이 손댄다. 비관적 락 또는 원자적 갱신</td></tr>
+      <tr><td><a href="/study/architecture-notes#t24">24. 대량 쿠폰 발급</a></td><td>위 구체 상황. 원자적 갱신 + 큐로 도착률을 깎는다 (6절)</td></tr>
+      <tr><td><a href="/study/architecture-notes#x5">부록 · 오라클 SQL 처리 구조</a></td><td>커서 공유·SGA 락·<code>V$</code> 뷰. 이 절을 Oracle 안에서 보는 눈</td></tr>
     </tbody>
   </table></div>
 
@@ -1314,18 +1035,15 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
 
 
 <!-- ══════════════════ d4. 거리 ══════════════════ -->
-<article class="doc" id="d4">
+<article class="doc" id="d4" data-stage="S3">
   <p class="doc-kicker">제약 4</p>
   <h1>거리 — 네트워크 너머의 상대는 느린지 죽었는지 구분할 수 없다</h1>
+  <p class="q">판정 질문 — 보낸 요청에 응답이 없을 때,<br>
+  상대가 그 요청을 처리했는지 안 했는지 알 수 있나.<br>
+  답은 언제나 「아니오」다. 이 「아니오」 위에 4절 전체가 서 있다.</p>
   <p class="doc-lead">2절에서 경계를 네트워크로 올리면 「4·5·6절의 문제를 새로 산다」고 했다.<br>
   이 절이 그 첫 번째 청구서다.<br>
   함수 호출에는 없고 네트워크 호출에만 있는 것 셋 — <strong>지연, 유실, 순서 없음</strong>.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 보낸 요청에 응답이 없을 때,<br>
-    상대가 그 요청을 처리했는지 안 했는지 알 수 있나.<br>
-    답은 언제나 「아니오」다. 이 「아니오」 위에 4절 전체가 서 있다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>네트워크 너머의 상대는 느린지 죽었는지 구분할 수 없고, 보낸 것이 도착했는지도 알 수 없다.</strong><br>
@@ -1571,12 +1289,12 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
   <div class="table-wrap"><table>
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
-      <tr><td><a href="/study/architecture-notes#topic-3-0">13. API Gateway</a></td><td>경계가 여럿일 때 문을 하나로. 왕복 하나를 값으로 낸다</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-3-1">14. Service Discovery</a></td><td>오류 5 번의 결과. 이름으로 찾는다</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-3-2">15. Circuit Breaker</a></td><td>위 장치 표 셋째 줄</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-3-3">16. MSA 분산 트랜잭션</a></td><td>부분 실패 표. 2PC 가 왜 안 되고 사가가 왜 표준인가</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-4-0">17. Kafka 기초</a></td><td>큐를 사이에 두는 것. 파티션 안에서만 순서</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-4-1">18. Kafka 설계 원칙</a></td><td>「최소 한 번」과 멱등 소비자</td></tr>
+      <tr><td><a href="/study/architecture-notes#t13">13. API Gateway</a></td><td>경계가 여럿일 때 문을 하나로. 왕복 하나를 값으로 낸다</td></tr>
+      <tr><td><a href="/study/architecture-notes#t14">14. Service Discovery</a></td><td>오류 5 번의 결과. 이름으로 찾는다</td></tr>
+      <tr><td><a href="/study/architecture-notes#t15">15. Circuit Breaker</a></td><td>위 장치 표 셋째 줄</td></tr>
+      <tr><td><a href="/study/architecture-notes#t16">16. MSA 분산 트랜잭션</a></td><td>부분 실패 표. 2PC 가 왜 안 되고 사가가 왜 표준인가</td></tr>
+      <tr><td><a href="/study/architecture-notes#t17">17. Kafka 기초</a></td><td>큐를 사이에 두는 것. 파티션 안에서만 순서</td></tr>
+      <tr><td><a href="/study/architecture-notes#t18">18. Kafka 설계 원칙</a></td><td>「최소 한 번」과 멱등 소비자</td></tr>
     </tbody>
   </table></div>
 
@@ -1595,19 +1313,16 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
 
 
 <!-- ══════════════════ d5. 사본 ══════════════════ -->
-<article class="doc" id="d5">
+<article class="doc" id="d5" data-stage="S3">
   <p class="doc-kicker">제약 5</p>
   <h1>사본이 둘이면 한순간 둘이 다르다 — 캐시는 복제본이다</h1>
+  <p class="q">판정 질문 — 이 값을 읽는 곳이 둘 이상이고 그 둘이 같은 저장소를 보지 않는다면,<br>
+  지금 이 순간 둘이 같다고 말할 수 있나.<br>
+  「같은 저장소」에는 캐시·CDN·리드 레플리카·브라우저가 전부 별개로 센다.</p>
   <p class="doc-lead">가용성을 올리려면 사본을 둔다. 빠르게 하려면 가까이 사본을 둔다.<br>
   둘 다 1절 표에서 「내려가는 것」이 일관성이었다.<br>
   이 절은 그 일관성이 <strong>정확히 어디서 얼마나</strong> 깨지는지다.<br>
   캐시 얘기 전부가 여기 들어온다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 이 값을 읽는 곳이 둘 이상이고 그 둘이 같은 저장소를 보지 않는다면,<br>
-    지금 이 순간 둘이 같다고 말할 수 있나.<br>
-    「같은 저장소」에는 캐시·CDN·리드 레플리카·브라우저가 전부 별개로 센다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>사본이 둘이면 갱신이 퍼지는 동안 둘은 다르다.</strong><br>
@@ -1813,15 +1528,15 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
   <div class="table-wrap"><table>
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
-      <tr><td><a href="/study/architecture-notes#topic-2-0">8. Cache-Control</a></td><td>브라우저 캐시의 TTL. 지울 수 없는 사본이라 TTL 이 유일한 무효화</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-2-1">9. 캐시 무효화</a></td><td>위 무효화 셋 표</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-2-2">10. Cache Miss 폭발 방어</a></td><td>사본이 한꺼번에 비면 원본이 죽는다 → 6절</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-2-3">11. Redis 키 설계</a></td><td>무효화 단위를 정하는 일</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-2-4">12. Cache Stampede 방어</a></td><td>「원본에는 하나만」</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-5-0">19. 분산 시스템 일관성</a></td><td>위 CAP·일관성 모델 표</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-6-0">22. 읽기 최적화 아키텍처</a></td><td>읽기 모양의 사본. CQRS</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-6-3">25. CDN 활용</a></td><td>지리적으로 가까운 사본. 늦는 시간이 분~시간</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-6-4">26. Pre-rendering</a></td><td>빌드 시점의 사본. <a href="/study/nextjs-notes#d2">Next.js 노트 · 축 1</a> 이 같은 얘기</td></tr>
+      <tr><td><a href="/study/architecture-notes#t8">8. Cache-Control</a></td><td>브라우저 캐시의 TTL. 지울 수 없는 사본이라 TTL 이 유일한 무효화</td></tr>
+      <tr><td><a href="/study/architecture-notes#t9">9. 캐시 무효화</a></td><td>위 무효화 셋 표</td></tr>
+      <tr><td><a href="/study/architecture-notes#t10">10. Cache Miss 폭발 방어</a></td><td>사본이 한꺼번에 비면 원본이 죽는다 → 6절</td></tr>
+      <tr><td><a href="/study/architecture-notes#t11">11. Redis 키 설계</a></td><td>무효화 단위를 정하는 일</td></tr>
+      <tr><td><a href="/study/architecture-notes#t12">12. Cache Stampede 방어</a></td><td>「원본에는 하나만」</td></tr>
+      <tr><td><a href="/study/architecture-notes#t19">19. 분산 시스템 일관성</a></td><td>위 CAP·일관성 모델 표</td></tr>
+      <tr><td><a href="/study/architecture-notes#t22">22. 읽기 최적화 아키텍처</a></td><td>읽기 모양의 사본. CQRS</td></tr>
+      <tr><td><a href="/study/architecture-notes#t25">25. CDN 활용</a></td><td>지리적으로 가까운 사본. 늦는 시간이 분~시간</td></tr>
+      <tr><td><a href="/study/architecture-notes#t26">26. Pre-rendering</a></td><td>빌드 시점의 사본. <a href="/study/nextjs-notes#d2">Next.js 노트 · 축 1</a> 이 같은 얘기</td></tr>
     </tbody>
   </table></div>
 
@@ -1838,18 +1553,15 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
 
 
 <!-- ══════════════════ d6. 용량 ══════════════════ -->
-<article class="doc" id="d6">
+<article class="doc" id="d6" data-stage="S3">
   <p class="doc-kicker">제약 6</p>
   <h1>용량과 대기열 — 들어오는 양이 처리하는 양을 넘으면 어딘가에 쌓인다</h1>
+  <p class="q">판정 질문 — 초당 들어오는 양이 처리하는 양을 넘을 때,<br>
+  넘친 것이 <b>어디에</b> 쌓이는지 말할 수 있나.<br>
+  「안 쌓인다」는 답은 없다. 이름 붙이지 않은 큐에 쌓이고 있을 뿐이다.</p>
   <p class="doc-lead">3절의 락 대기, 4절의 타임아웃, 5절의 스탬피드가 전부 여기로 흘러온다.<br>
   이 절은 「왜 시스템은 천천히 느려지지 않고 <strong>갑자기</strong> 죽나」의 답이다.<br>
   수식은 없다. 표 하나가 그 답이다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 초당 들어오는 양이 처리하는 양을 넘을 때,<br>
-    넘친 것이 <b>어디에</b> 쌓이는지 말할 수 있나.<br>
-    「안 쌓인다」는 답은 없다. 이름 붙이지 않은 큐에 쌓이고 있을 뿐이다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>도착률이 처리율을 넘으면 큐는 끝없이 자라고, 처리율에 가까워질수록 대기 시간은 급격히 는다.</strong><br>
@@ -2032,15 +1744,15 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
   <div class="table-wrap"><table>
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
-      <tr><td><a href="/study/architecture-notes#topic-2-2">10. Cache Miss 폭발 방어</a></td><td>위 「캐시가 비는 순간」 표</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-2-4">12. Cache Stampede 방어</a></td><td>원본에는 하나만 — 도착률을 깎는다</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-5-1">20. 연쇄 장애 원인</a></td><td>위 다섯 단계</td></tr>
-      <tr><td><a href="/study/architecture-notes#topic-5-2">21. 연쇄 장애 방어</a></td><td>위 방어 표. 부하 제한과 재시도 예산</td></tr>
+      <tr><td><a href="/study/architecture-notes#t10">10. Cache Miss 폭발 방어</a></td><td>위 「캐시가 비는 순간」 표</td></tr>
+      <tr><td><a href="/study/architecture-notes#t12">12. Cache Stampede 방어</a></td><td>원본에는 하나만 — 도착률을 깎는다</td></tr>
+      <tr><td><a href="/study/architecture-notes#t20">20. 연쇄 장애 원인</a></td><td>위 다섯 단계</td></tr>
+      <tr><td><a href="/study/architecture-notes#t21">21. 연쇄 장애 방어</a></td><td>위 방어 표. 부하 제한과 재시도 예산</td></tr>
       <tr>
-        <td><a href="/study/architecture-notes#topic-6-2">24. 대량 쿠폰 발급</a></td>
+        <td><a href="/study/architecture-notes#t24">24. 대량 쿠폰 발급</a></td>
         <td>3절의 순서 문제에 더해, 도착 3,000 을 큐로 받아 처리 500 으로 깎는 것</td>
       </tr>
-      <tr><td><a href="/study/architecture-notes#topic-6-5">27. 커넥션 풀</a></td><td>위 「크게 잡으면 DB 안에서 기다린다」</td></tr>
+      <tr><td><a href="/study/architecture-notes#t27">27. 커넥션 풀</a></td><td>위 「크게 잡으면 DB 안에서 기다린다」</td></tr>
     </tbody>
   </table></div>
 
@@ -2058,18 +1770,15 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
 
 
 <!-- ══════════════════ d7. 관측 ══════════════════ -->
-<article class="doc" id="d7">
+<article class="doc" id="d7" data-stage="S4">
   <p class="doc-kicker">제약 7</p>
   <h1>재지 않은 것은 모른다 — 평균은 꼬리를 숨긴다</h1>
+  <p class="q">판정 질문 — 누가 「지금 느리다」고 말하면,<br>
+  어디가 얼마나 느린지를 5분 안에 <b>숫자로</b> 답할 수 있나.<br>
+  「로그를 뒤져 보겠다」는 「아니오」다.</p>
   <p class="doc-lead">1절에서 트레이드오프는 숫자끼리 비교한다고 했다. 그 숫자가 어디서 오나.<br>
   이 절은 앞의 여섯 절을 <strong>운영에서 확인하는 눈</strong>이다.<br>
   눈이 없으면 3~6절의 문제는 「가끔 느리다」는 민원으로만 온다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 누가 「지금 느리다」고 말하면,<br>
-    어디가 얼마나 느린지를 5분 안에 <b>숫자로</b> 답할 수 있나.<br>
-    「로그를 뒤져 보겠다」는 「아니오」다.
-  </div>
 
   <h2>제약 문장</h2>
   <p><strong>재지 않은 것은 모르고, 평균은 꼬리를 숨기며, 사용자가 느끼는 것은 꼬리다.</strong><br>
@@ -2252,12 +1961,12 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
   <div class="table-wrap"><table>
     <thead><tr><th>학습노트</th><th>이 제약과의 관계</th></tr></thead>
     <tbody>
-      <tr><td><a href="/study/architecture-notes#topic-8-0">30. USE / RED 메트릭</a></td><td>위 표</td></tr>
+      <tr><td><a href="/study/architecture-notes#t30">30. USE / RED 메트릭</a></td><td>위 표</td></tr>
       <tr>
-        <td><a href="/study/architecture-notes#stage-10">부록 · 메모리 계층과 레이턴시</a></td>
+        <td><a href="/study/architecture-notes#x3">부록 · 메모리 계층과 레이턴시</a></td>
         <td>2절 지연표의 원본. 어디가 느린지 판단할 때 기준 숫자</td>
       </tr>
-      <tr><td><a href="/study/architecture-notes#stage-12">부록 · 오라클 SQL 처리 구조와 성능 측정</a></td><td>A7 「무엇으로 재나」 — DB 한 층에서의 이 절</td></tr>
+      <tr><td><a href="/study/architecture-notes#x5">부록 · 오라클 SQL 처리 구조와 성능 측정</a></td><td>A7 「무엇으로 재나」 — DB 한 층에서의 이 절</td></tr>
       <tr><td><a href="/study/selfstudy-plan-notes#d1">관측·동시성 자습 계획</a></td><td>이 절을 ProjectShop 에 실제로 붙이는 6주 계획. 1주차가 카디널리티</td></tr>
     </tbody>
   </table></div>
@@ -2274,19 +1983,16 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
 
 
 <!-- ══════════════════ d8. 스타일 카탈로그 ══════════════════ -->
-<article class="doc" id="d8">
+<article class="doc" id="d8" data-stage="S5">
   <p class="doc-kicker">종합</p>
   <h1>스타일 카탈로그 — 이름 붙은 구조는 제약 일곱의 조합이다</h1>
+  <p class="q">판정 질문 — 어떤 스타일의 이름을 들었을 때,<br>
+  「이 구조는 어느 제약에서 무엇을 얻고 무엇을 포기하나」를 표의 한 줄로 말할 수 있나.<br>
+  말할 수 있으면 그 스타일을 아는 것이다. 정의를 외운 것과 다르다.</p>
   <p class="doc-lead">「계층형」「이벤트 드리븐」「마이크로서비스」처럼 이름이 붙은 구조를 스타일이라고 부른다.<br>
   스타일마다 따로 외우면 열 개다.<br>
   앞의 일곱 제약에 <strong>어떻게 값을 치렀나</strong>로 읽으면 하나의 표가 된다.<br>
   그 표가 이 절이다.</p>
-
-  <div class="note key">
-    <b>판정 질문</b> — 어떤 스타일의 이름을 들었을 때,<br>
-    「이 구조는 어느 제약에서 무엇을 얻고 무엇을 포기하나」를 표의 한 줄로 말할 수 있나.<br>
-    말할 수 있으면 그 스타일을 아는 것이다. 정의를 외운 것과 다르다.
-  </div>
 
   <h2>읽는 법</h2>
   <p>아래 표의 열은 앞 절의 번호다.<br>
@@ -2427,129 +2133,7 @@ public class JdbcOrderRepository implements OrderRepository { ... }</code></pre>
     CQRS 를 쓰고 있다면 읽기 모델이 얼마나 늦는지 아나</li>
   </ol>
 </article>
-<div class="pager" id="pager"></div>
 
-</div>
 </main>
-
-<script>
-(function(){
-  // 절은 있는 것만 넣는다 — go() 가 없는 id 를 만나면 예외로 죽는다
-  var GROUPS = [
-    { label:"바탕",   items:[ ["d1","1 · 트레이드오프"], ["d2","2 · 경계와 의존 방향"] ] },
-    { label:"시간",   items:[ ["d3","3 · 동시성"] ] },
-    { label:"거리",   items:[ ["d4","4 · 네트워크"], ["d5","5 · 사본과 일관성"], ["d6","6 · 용량과 대기열"] ] },
-    { label:"눈",     items:[ ["d7","7 · 관측"] ] },
-    { label:"종합",   items:[ ["d8","스타일 카탈로그"] ] }
-  ];
-
-  var FLAT = [];
-  GROUPS.forEach(function(g){ g.items.forEach(function(it){ FLAT.push(it); }); });
-
-  var nav     = document.getElementById("nav");
-  var sidebar = document.getElementById("sidebar");
-  var main    = document.getElementById("main");
-  var burger  = document.getElementById("burger");
-  var barHere = document.getElementById("barHere");
-  var pager   = document.getElementById("pager");
-  var links   = {};
-
-  // ── 목차 ─────────────────────────────
-  GROUPS.forEach(function(g){
-    var wrap = document.createElement("div");
-    wrap.className = "nav-group";
-    var lab = document.createElement("div");
-    lab.className = "nav-group-label";
-    lab.textContent = g.label;
-    wrap.appendChild(lab);
-
-    g.items.forEach(function(it){
-      var b = document.createElement("button");
-      b.type = "button";
-      b.className = "nav-link";
-      b.innerHTML = '<span class="dot"></span>';
-      b.appendChild(document.createTextNode(it[1]));
-      b.addEventListener("click", function(){ go(it[0], true); });
-      links[it[0]] = b;
-      wrap.appendChild(b);
-    });
-    nav.appendChild(wrap);
-  });
-
-  // ── 절 전환 ───────────────────────────
-  function go(id, fromClick){
-    FLAT.forEach(function(it){
-      var on = it[0] === id;
-      document.getElementById(it[0]).classList.toggle("on", on);
-      links[it[0]].setAttribute("aria-current", on ? "true" : "false");
-      if (on) barHere.textContent = it[1];
-    });
-
-    buildPager(id);
-    if (location.hash !== "#" + id) history.replaceState(null, "", "#" + id);
-    window.scrollTo({ top:0, behavior: fromClick ? "smooth" : "auto" });
-
-    // 본문이 통째로 바뀌었는데 초점이 목차에 남아 있으면
-    // 화면낭독기에는 아무 일도 안 일어난 것과 같다. 제목으로 옮긴다.
-    if (fromClick) {
-      var h = document.querySelector("#" + id + " h1");
-      if (h) { h.setAttribute("tabindex", "-1"); h.focus({ preventScroll:true }); }
-    }
-
-    // 좁은 화면에서는 고르고 나면 접는다. 넓은 화면은 열어 둔 채로 둔다.
-    if (fromClick && window.innerWidth < 1060) setNav(false);
-  }
-
-  // ── 이전 / 다음 ───────────────────────
-  function buildPager(id){
-    var i = FLAT.findIndex(function(it){ return it[0] === id; });
-    pager.innerHTML = "";
-
-    var prev = document.createElement("button");
-    prev.type = "button";
-    prev.innerHTML = "<span>이전</span>" + (i > 0 ? FLAT[i-1][1] : "—");
-    prev.disabled = i <= 0;
-    if (i > 0) prev.addEventListener("click", function(){ go(FLAT[i-1][0], true); });
-
-    var next = document.createElement("button");
-    next.type = "button";
-    next.className = "next";
-    next.innerHTML = "<span>다음</span>" + (i < FLAT.length-1 ? FLAT[i+1][1] : "—");
-    next.disabled = i >= FLAT.length - 1;
-    if (i < FLAT.length-1) next.addEventListener("click", function(){ go(FLAT[i+1][0], true); });
-
-    pager.appendChild(prev);
-    pager.appendChild(next);
-  }
-
-  // ── 사이드바 ──────────────────────────
-  // 스크림이 없다. 열려 있어도 본문 스크롤·클릭이 그대로 산다.
-  function setNav(open){
-    sidebar.classList.toggle("open", open);
-    main.classList.toggle("shifted", open);
-    burger.setAttribute("aria-expanded", open ? "true" : "false");
-    burger.setAttribute("aria-label", open ? "목차 닫기" : "목차 열기");
-    try { localStorage.setItem("arch-fund-nav", open ? "1" : "0"); } catch(e){}
-  }
-  burger.addEventListener("click", function(){ setNav(!sidebar.classList.contains("open")); });
-
-  document.addEventListener("keydown", function(e){
-    if (e.key === "Escape" && sidebar.classList.contains("open")) setNav(false);
-  });
-
-  // ── 첫 진입 ───────────────────────────
-  var saved;
-  try { saved = localStorage.getItem("arch-fund-nav"); } catch(e){}
-  setNav(saved !== null ? saved === "1" : window.innerWidth >= 1060);
-
-  var want = location.hash.slice(1);
-  go(FLAT.some(function(it){ return it[0] === want; }) ? want : "d1", false);
-
-  window.addEventListener("hashchange", function(){
-    var h = location.hash.slice(1);
-    if (FLAT.some(function(it){ return it[0] === h; })) go(h, false);
-  });
-})();
-</script>
 </body>
 </html>
