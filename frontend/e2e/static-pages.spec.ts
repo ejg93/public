@@ -6,6 +6,7 @@ import { isDeployNoise, isGenericResourceError } from './routes'
 // 매 이동마다 예외를 던지고 있었고, 화면은 멀쩡해 보였다.
 const PAGES = [
   '/study/ai-workflow-notes',
+  '/study/architecture-fundamentals',
   '/study/architecture-notes',
   '/study/nextjs-notes',
   '/study/projectshop-notes',
