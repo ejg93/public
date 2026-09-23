@@ -14,6 +14,8 @@
 # app/board·app/youtube 도 뺀다(2026-09-24) — 둘 다 남의 말이 화면을 채우는 구역이다.
 # 게시판은 다크 패턴을 재현하느라 다른 앱이 뱉는 문구를 옮겨 두었고, 유튜브 화면은 남의 댓글을 그대로 띄운다.
 # 내 글과 옮긴 말이 한 파일에 섞여서 줄 단위로는 못 가른다. 줄바꿈·경로 검사도 같이 빠진다.
+# about/qa-data.ts 도 뺀다 — 면접 질문에 답하는 자리라 읽는 쪽이 사람이고, 그 자리의 존댓말은
+# 규칙이 막으려던 문어체 늘어짐이 아니다. 같은 폴더의 page.tsx·layout.tsx 는 그대로 받는다.
 # md 와 study 는 백틱·「」 안을 걷어낸다(인용). 그 밖의 tsx·html 은 문자열이 곧 화면 문구라 안 걷는다.
 #
 # tsx·html 은 줄바꿈 규칙(7번)도 본다 — scripts/linebreak-lint.js 가 고친 줄만 센다.
@@ -34,6 +36,7 @@ in_scope() {
     */node_modules/*|*/.next/*|doc/design-standards/*|frontend/public/toolbox/db_docs/*) return 1 ;;
     frontend/public/notes/*|frontend/public/game/*|frontend/public/docrules/*) return 1 ;;
     frontend/app/board/*|frontend/app/youtube/*) return 1 ;;
+    frontend/app/about/qa-data.ts) return 1 ;;
     *.md|frontend/app/*.ts|frontend/app/*.tsx|frontend/components/*.tsx|frontend/public/toolbox/*.html|frontend/public/study/*.html) return 0 ;;
   esac
   return 1
