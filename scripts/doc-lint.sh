@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # 존댓말 금지(루트 CLAUDE.md 「글 작성 규칙」 4)를 기계로 잡는다.
-# 일곱 조항 중 금지어가 문자열로 정해진 유일한 조항이라 grep 으로 100% 잡힌다.
+# 여섯 조항 중 금지어가 문자열로 정해진 유일한 조항이라 grep 으로 100% 잡힌다.
 #
 #   bash scripts/doc-lint.sh <파일...>   그 파일들의 「고친 줄」만 본다(HEAD 대비 추가된 줄. 미추적이면 전체).
 #                                        hook 이 부른다(.claude/settings.json). 걸리면 exit 1.
@@ -11,38 +11,43 @@
 #
 # 대상: md(CLAUDE·README·doc), frontend/app·components 의 ts·tsx(화면 문구), toolbox 의 html·md.
 # public/notes·game·docrules 는 뺀다 — 요청받은 파일만 고치는 구역이라 여기서 규칙을 안 건다. study 는 2026-09-22 부터 든다.
+# app/board·app/youtube 도 뺀다(2026-09-24) — 둘 다 남의 말이 화면을 채우는 구역이다.
+# 게시판은 다크 패턴을 재현하느라 다른 앱이 뱉는 문구를 옮겨 두었고, 유튜브 화면은 남의 댓글을 그대로 띄운다.
+# 내 글과 옮긴 말이 한 파일에 섞여서 줄 단위로는 못 가른다. 줄바꿈·경로 검사도 같이 빠진다.
+# about/qa-data.ts 도 뺀다 — 면접 질문에 답하는 자리라 읽는 쪽이 사람이고, 그 자리의 존댓말은
+# 규칙이 막으려던 문어체 늘어짐이 아니다. 같은 폴더의 page.tsx·layout.tsx 는 그대로 받는다.
 # md 와 study 는 백틱·「」 안을 걷어낸다(인용). 그 밖의 tsx·html 은 문자열이 곧 화면 문구라 안 걷는다.
 #
 # tsx·html 은 줄바꿈 규칙(7번)도 본다 — scripts/linebreak-lint.js 가 고친 줄만 센다.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-PAT='(습니다|합니다|하세요|입니다)'
+# 존댓말은 두 갈래로 잡는다. 어느 쪽인지에 따라 종결 위치를 보는지가 갈린다.
+#  하십시오체(습니다·입니다…) 는 어느 명사에도 안 들어가서 줄 어디에 있든 잡아도 된다.
+#  해요체(어요·아요·죠…) 는 명사와 부딪힌다 — 「좋아요」「중요」「필요」「개요」.
+#  그래서 해요체만 문장부호 앞으로 묶는다. 이 저장소의 존댓말 15건 중 마침표가 없는 것은
+#  「좋아요」 하나뿐이었고 그것이 유일한 오탐이라, 묶으면 오탐만 빠지고 위반은 다 남는다.
+PAT_HON='(습니다|읍니다|합니다|입니다|하세요)'
+PAT_YO='(어요|아요|에요|예요|세요|셔요|지요|네요|군요|거든요|는데요|까요|나요|죠)[.!?…]'
+PAT="$PAT_HON|$PAT_YO"
 
 in_scope() {
   case "$1" in
     */node_modules/*|*/.next/*|doc/design-standards/*|frontend/public/toolbox/db_docs/*) return 1 ;;
     frontend/public/notes/*|frontend/public/game/*|frontend/public/docrules/*) return 1 ;;
+    frontend/app/board/*|frontend/app/youtube/*) return 1 ;;
+    frontend/app/about/qa-data.ts) return 1 ;;
     *.md|frontend/app/*.ts|frontend/app/*.tsx|frontend/components/*.tsx|frontend/public/toolbox/*.html|frontend/public/study/*.html) return 0 ;;
   esac
   return 1
 }
 
-# 존댓말 검사만 면제하는 자리. 줄바꿈·경로 검사는 그대로 받는다.
-# demos.tsx 는 다크 패턴을 보여 주려고 다른 앱이 뱉는 말을 그대로 옮겨 둔 데이터다 —
-# 내가 쓰는 글이 아니라 인용이고, md 에서 백틱으로 감싸 면제하는 것과 같은 성격이다.
-quotes_ui() {
-  case "$1" in
-    frontend/app/board/demos.tsx) return 0 ;;
-  esac
-  return 1
-}
 
-# md 와 학습 노트(study)는 인용을 걷어낸다 — 노트는 강의 제목을 「」로 옮긴 자리가 있다.
+# md 와 학습 노트(study)는 인용을 걷어낸다 — 노트는 강의 제목을 「」로, 면접 질문을 &quot; 로 옮긴 자리가 있다.
 # `sed 's/「[^」]*」//'` 는 멀티바이트를 바이트로 갈라서 조용히 안 먹는다 — perl 을 쓴다.
 strip() {
   case "$1" in
-    *.md|frontend/public/study/*.html) perl -CSD -pe 's/`[^`]*`//g; s/\x{300C}.*?\x{300D}//g' ;;
+    *.md|frontend/public/study/*.html) perl -CSD -pe 's/`[^`]*`//g; s/\x{300C}.*?\x{300D}//g; s/&quot;.*?&quot;//g; s/\x{201C}.*?\x{201D}//g' ;;
     *) cat ;;
   esac
 }
@@ -66,7 +71,7 @@ if [ $# -gt 0 ]; then
     else
       lines=$(cat "$f")
     fi
-    if quotes_ui "$f"; then hits=""; else hits=$(printf '%s\n' "$lines" | strip "$f" | grep -E "$PAT" || true); fi
+    hits=$(printf '%s\n' "$lines" | strip "$f" | grep -E "$PAT" || true)
     if [ -n "$hits" ]; then
       echo "[존댓말] $f — 고친 줄에 있다. 평서형으로 쓴다(CLAUDE.md 「글 작성 규칙」 4). 남의 말을 옮긴 것이면 md 는 백틱이나 「」로 감싼다:"
       printf '%s\n' "$hits" | sed 's/^/    /'
@@ -81,7 +86,7 @@ if [ $# -gt 0 ]; then
       if [ -n "$nums" ]; then
         lb=$(node scripts/linebreak-lint.js "$f" "$nums" || true)
         if [ -n "$lb" ]; then
-          echo "[줄바꿈] $f — 고친 줄이 규칙 7에 걸린다(CLAUDE.md 「글 작성 규칙」 7):"
+          echo "[줄바꿈] $f — 고친 줄이 규칙 6에 걸린다(CLAUDE.md 「글 작성 규칙」 6):"
           printf '%s\n' "$lb" | sed 's/^/    /'
           fail=1
         fi

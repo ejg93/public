@@ -26,7 +26,7 @@ lib/github.ts ProjectShop 저장소 숫자·최근 커밋을 GitHub API 로 받�
 | `/youtube` | `GET /api/youtube/{comments,replies}` | 유튜브 댓글 뷰어 |
 | `/public-data` | `GET /api/jobs` | 채용정보 목록 + 지도. Sidebar·홈에 없고 URL 직접 접근만 된다 |
 | `/projectshop` | - | 별도 저장소 [ProjectShop](https://github.com/ejg93/ProjectShop) 소개. 설계 결정·작업 방식·CI 체계를 정리한 화면. 숫자와 최근 커밋은 `lib/github.ts` 가 GitHub API 로 받아온다(ISR 15분). 호출이 실패하면 `page.tsx` 의 `FALLBACK` 배열로 떨어진다 |
-| `/workflow` | - | 작업 방식 소개. 세션 뼈대·강제 지점 여섯·chunkframe 템플릿. 막힐 때 찍히는 메시지는 `workflow/quotes.ts` 에 원문 그대로 둔다(줄바꿈 규칙 7의 대상이 아니다) |
+| `/workflow` | - | 작업 방식 소개. 세션 뼈대·강제 지점 여섯·chunkframe 템플릿. 막힐 때 찍히는 메시지는 `workflow/quotes.ts` 에 원문 그대로 둔다(줄바꿈 규칙 6의 대상이 아니다) |
 | `/toolbox` | - | 폐쇄망 단일 파일 도구 소개. 카드 목록은 `public/toolbox/toolbox.html` 의 런처 배열을 빌드 때 읽어 만든다. 도구 본체는 `/tools/:path*` rewrite 로 연다 |
 | `/study` | - | 학습 노트 색인. 목록은 `public/study/*.html` 의 메타에서 빌드 때 만들고 kind(배움·결정·계획)로 묶는다. 노트 추가 = HTML 한 장 + 메타 넷(description·keywords·date·kind). keywords 는 `page.tsx` 의 사전 안에서만 고른다 — 밖이면 build 가 실패한다. 본문은 `<main id="mainContent" data-title data-stages>` 안의 `<article class="doc" id data-stage>` 만 쓰고 셸(사이드바·진행률·테마·pager)은 `public/study/shell.js` 가 만든다. 절 안 스크립트 0줄 |
 | (없음) | `POST /api/battle/chat` | AI 배틀 화면은 `app/_ai-battle/` 로 내려 라우트에서 뺐다. `_` 로 시작하는 폴더는 Next 가 라우팅하지 않는다. 되살리려면 폴더명에서 `_` 를 뗀다 |
