@@ -600,6 +600,7 @@ select:focus, input:focus { border-color:var(--accent); }
       <span class="pageinfo" id="td_pageInfo">p.1/1</span>
       <button class="btn-g" id="td_btnNext">다음 ▶</button>
       <button class="btn-p" id="td_btnFullscreen">전체화면 보기</button>
+      <button class="btn-g" id="td_btnRotate" style="padding:4px 12px;font-size:16px;line-height:20px;">⟳</button>
       <span style="flex:1"></span>
     </div>
     <div class="canvasWrap">
@@ -1944,6 +1945,7 @@ var STORE_KEY = 'textDisplay.settings.v1';
 var canvas = document.getElementById('view');
 var ctx = canvas.getContext('2d');
 var currentPage = 0;
+var portrait = false;
 
 var els = {
 	codeInput: document.getElementById('codeInput'),
@@ -1979,7 +1981,8 @@ var els = {
 	hintRow: document.getElementById('td_hintRow'),
 	killHint: document.getElementById('td_killHint'),
 	stripInfo: document.getElementById('td_stripInfo'),
-	fitWarn: document.getElementById('fitWarn')
+	fitWarn: document.getElementById('fitWarn'),
+	btnRotate: document.getElementById('td_btnRotate')
 };
 
 var CMT_KEYWORD = /^(return|typeof|case|in|of|new|delete|do|else|instanceof|void|throw|yield|await)$/;
@@ -2516,9 +2519,17 @@ function loadSettings() {
 		if (s.showMarker != null) els.showMarker.checked = s.showMarker;
 		if (s.markerInterval != null) els.markerInterval.value = s.markerInterval;
 		if (s.screenInches != null) els.screenInches.value = s.screenInches;
+		if (s.portrait != null) portrait = s.portrait === true;
 		if (s.mode != null) setMode(s.mode);
 	} catch (e) {}
 	updateModeUI();
+}
+
+function syncRotateBtn() {
+	els.btnRotate.className = portrait ? 'btn-p' : 'btn-g';
+	els.btnRotate.title = portrait
+		? '가로 촬영으로 되돌린다 — 모니터 전체에 그린다'
+		: '세로 촬영으로 바꾼다 — 모니터 가운데에 3:4 페이지 한 장만 그린다';
 }
 
 function saveSettings() {
@@ -2534,6 +2545,7 @@ function saveSettings() {
 		showMarker: els.showMarker.checked,
 		markerInterval: els.markerInterval.value,
 		screenInches: els.screenInches.value,
+		portrait: portrait,
 		mode: getMode()
 	};
 	localStorage.setItem(STORE_KEY, JSON.stringify(s));
@@ -2579,19 +2591,27 @@ function paginate(nRows, H, topMargin, rowHeight) {
 }
 
 function render() {
-	var W = parseInt(els.canvasW.value, 10) || 1920;
-	var H = parseInt(els.canvasH.value, 10) || 1080;
+	var SW = parseInt(els.canvasW.value, 10) || 1920;
+	var SH = parseInt(els.canvasH.value, 10) || 1080;
+	var W = portrait ? Math.min(SW, Math.round(SH * 3 / 4)) : SW;
+	var H = SH;
+	var offX = Math.round((SW - W) / 2);
 	var dpr = window.devicePixelRatio || 1;
-	canvas.width = Math.round(W * dpr);
-	canvas.height = Math.round(H * dpr);
+	canvas.width = Math.round(SW * dpr);
+	canvas.height = Math.round(SH * dpr);
 	if (document.fullscreenElement === canvas) {
 		canvas.style.width = '';
 		canvas.style.height = '';
 	} else {
-		canvas.style.width = W + 'px';
-		canvas.style.height = H + 'px';
+		canvas.style.width = SW + 'px';
+		canvas.style.height = SH + 'px';
 	}
 	ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+	if (portrait) {
+		ctx.fillStyle = '#222';
+		ctx.fillRect(0, 0, SW, SH);
+	}
+	ctx.setTransform(dpr, 0, 0, dpr, offX * dpr, 0);
 
 	var fontSize = parseFloat(els.fontSize.value);
 	var lineHeightMul = parseFloat(els.lineHeight.value);
@@ -2736,11 +2756,12 @@ function render() {
 	els.capacity.innerHTML = '입력 가능한 글자수 ' + cells.toLocaleString() + '자<br>최대 컬럼 ' + cols + '컬럼';
 
 	var inches = parseFloat(els.screenInches.value);
-	var physW = Math.round(W * dpr), physH = Math.round(H * dpr);
+	var physW = Math.round(SW * dpr), physH = Math.round(SH * dpr);
+	var pagePhysW = Math.round(W * dpr);
 	var ppi = null, mmPerChar = null;
 	if (inches > 0) {
 		ppi = Math.sqrt(physW * physW + physH * physH) / inches;
-		mmPerChar = (physW / cols) / ppi * 25.4;
+		mmPerChar = (pagePhysW / cols) / ppi * 25.4;
 		els.ppiReadout.textContent = Math.round(ppi) + 'PPI';
 	} else {
 		els.ppiReadout.textContent = '-';
@@ -2764,7 +2785,7 @@ function render() {
 
 	els.charCount.textContent = rawText.length.toLocaleString() + '자';
 
-	if (!document.fullscreenElement && (window.innerWidth < W + 40 || window.innerHeight < H + 40)) {
+	if (!document.fullscreenElement && (window.innerWidth < SW + 40 || window.innerHeight < SH + 40)) {
 		els.fitWarn.style.display = 'block';
 		els.fitWarn.textContent = '현재 창 크기가 캔버스보다 작음 — 스크롤 없이 보려면 "전체화면 보기" 사용';
 	} else {
@@ -2826,6 +2847,13 @@ document.getElementById('td_btnFullscreen').addEventListener('click', function (
 	}
 });
 
+els.btnRotate.addEventListener('click', function () {
+	portrait = !portrait;
+	currentPage = 0;
+	syncRotateBtn();
+	renderDeferred();
+});
+
 document.addEventListener('fullscreenchange', function () {
 	if (document.fullscreenElement === canvas || isActiveTab()) renderDeferred();
 });
@@ -2840,6 +2868,7 @@ document.addEventListener('keydown', function (e) {
 window.addEventListener('resize', function () { if (isActiveTab()) renderDeferred(); });
 
 loadSettings();
+syncRotateBtn();
 render();
 })();
 </script>
