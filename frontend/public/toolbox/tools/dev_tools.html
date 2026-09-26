@@ -504,17 +504,22 @@ select:focus, input:focus { border-color:var(--accent); }
         <option value="js">JS · TS</option>
         <option value="jsx">JSX · TSX</option>
         <option value="sql">SQL (Oracle · Tibero)</option>
+        <option value="mysql">SQL (MySQL · MariaDB)</option>
         <option value="xml">XML · HTML</option>
         <option value="jsp">JSP</option>
-        <option value="mybatis">MyBatis XML</option>
+        <option value="mybatis">MyBatis · iBATIS XML</option>
         <option value="css">CSS</option>
-        <option value="props">프로퍼티 · 셸 (#)</option>
+        <option value="less">LESS · SCSS</option>
+        <option value="props">프로퍼티 (.properties)</option>
+        <option value="sh">셸 (#)</option>
+        <option value="yaml">YAML</option>
+        <option value="bat">배치 (.bat · .cmd)</option>
     </select>
     <div class="btn-row">
       <button class="btn-p" id="td_btnStrip" style="flex:1" title="왼쪽에서 고른 언어 규칙으로 입력칸의 주석을 찾아 지운다.&#10;문자열·정규식·CDATA 안의 주석 기호는 남긴다.">주석 삭제</button>
       <button class="btn-g" id="td_btnUndo" title="주석 삭제 직전 원문으로 입력칸을 되돌린다. 1단계만 보관한다" disabled style="padding:0 8px">↺</button>
     </div>
-    <label class="check-row" id="td_hintRow" style="display:none" title="Oracle·Tibero의 /*+ ... */ 와 --+ 는 주석 모양이지만 실행계획을 바꾸는 힌트다.&#10;끄면 남기고, 켜면 다른 주석과 같이 지운다.">
+    <label class="check-row" id="td_hintRow" style="display:none" title="힌트(/*+ ... */ · --+ · DB2 OPTGUIDELINES)는 주석 모양이지만 실행계획을 바꾼다.&#10;끄면 남기고, 켜면 다른 주석과 같이 지운다.&#10;MySQL·MariaDB 의 /*! */ · /*M! */ 는 실행되는 코드라 켜도 남긴다.">
       <input type="checkbox" id="td_killHint"> 실행계획 힌트도 삭제 (/*+ */ · --+)
     </label>
     <div class="legend" id="td_stripInfo">코드를 붙여넣으면 언어를 판별해 위 목록에 표시한다</div>
@@ -1987,13 +1992,17 @@ var els = {
 
 var CMT_KEYWORD = /^(return|typeof|case|in|of|new|delete|do|else|instanceof|void|throw|yield|await)$/;
 
+var CMT_HINTS = [/^\/\*\+/, /^--\+/, /^\/\*\s*<OPTGUIDELINES>/i];
+var CMT_EXEC = [/^\/\*M?!/];
+var CMT_HINT_BLOCK = [/^\/\*\+/];
+
 var CMT_PROFILE = {
 	java: {
-		line: ['//'], block: [['/*', '*/']],
+		line: ['//'], block: [['/*', '*/']], keep: CMT_HINT_BLOCK,
 		strings: [{ o: '"""', c: '"""' }, { o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }]
 	},
 	js: {
-		line: ['//'], block: [['/*', '*/']],
+		line: ['//'], block: [['/*', '*/']], keep: CMT_HINT_BLOCK,
 		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }],
 		template: true, regex: true
 	},
@@ -2001,19 +2010,46 @@ var CMT_PROFILE = {
 		line: ['--'], block: [['/*', '*/']],
 		strings: [{ o: "'", c: "'", dbl: true }, { o: '"', c: '"', dbl: true }],
 		qquote: true,
-		keep: [/^\/\*\+/, /^--\+/]          
+		keep: CMT_HINTS, keepAlways: CMT_EXEC
+	},
+	mysql: {
+		line: ['#', '--'], dashWs: true, hashParam: true, block: [['/*', '*/']],
+		strings: [{ o: "'", c: "'", esc: '\\', dbl: true }, { o: '"', c: '"', esc: '\\', dbl: true }, { o: '`', c: '`', dbl: true }],
+		keep: CMT_HINTS, keepAlways: CMT_EXEC
 	},
 	jsx: {
-		line: ['//'], block: [['/*', '*/']],
+		line: ['//'], block: [['/*', '*/']], keep: CMT_HINT_BLOCK,
 		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }],
 		template: true, regex: true, jsx: true
 	},
 	css: {
-		line: [], block: [['/*', '*/']],
+		line: [], block: [['/*', '*/']], keep: CMT_HINT_BLOCK,
 		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }]
 	},
+	less: {
+		line: ['//'], block: [['/*', '*/']], keep: CMT_HINT_BLOCK,
+		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", esc: '\\' }],
+		urlRaw: true
+	},
 	props: {
-		line: ['#'], lineBoundary: true, block: [], strings: []
+		lines: true,
+		cmt: function (t) { return t.charAt(0) === '#' || t.charAt(0) === '!'; },
+		cont: function (L) { return /(^|[^\\])(\\\\)*\\\r?$/.test(L); }
+	},
+	bat: {
+		lines: true,
+		cmt: function (t) { return /^::/.test(t) || /^@?rem(?=[ \t\r]|$)/i.test(t); },
+		cont: function (L) { return /(^|[^^])(\^\^)*\^\r?$/.test(L); }
+	},
+	sh: {
+		line: ['#'], lineBoundary: true, block: [],
+		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'" }],
+		shebang: true, heredoc: true, bsEsc: true
+	},
+	yaml: {
+		line: ['#'], lineBoundary: true, block: [],
+		strings: [{ o: '"', c: '"', esc: '\\' }, { o: "'", c: "'", dbl: true }],
+		yamlBlock: true
 	},
 	xml: { line: [], block: [['<!--', '-->']], strings: [], raw: [['<![CDATA[', ']]>']] }
 };
@@ -2022,6 +2058,9 @@ function CmtOut() {
 	this.lines = [];
 	this.cur = { t: '', code: false, cmt: false };
 	this.removed = 0;
+	this.hints = 0;
+	this.hintsKilled = 0;
+	this.execs = 0;
 }
 CmtOut.prototype._nl = function () {
 	this.lines.push(this.cur);
@@ -2044,25 +2083,26 @@ CmtOut.prototype.drop = function (s) {
 };
 CmtOut.prototype.finish = function (opts) {
 	this._nl();
-	var out = [], blank = 0;
+	var out = [], blank = 0, dropped = false;
 	for (var i = 0; i < this.lines.length; i++) {
 		var L = this.lines[i], t = L.t;
-		if (!L.code && L.cmt && opts.dropLine) continue;      
-		if (opts.trimEnd) t = t.replace(/[ \t\r]+$/, '');
+		if (!L.code && L.cmt && opts.dropLine) { dropped = true; continue; }
+		if (opts.trimEnd && L.cmt) t = t.replace(/[ \t]+(\r?)$/, '$1');
 		if (!t.replace(/[ \t\r]/g, '')) {
 			blank++;
-			if (opts.squeeze && blank > 1) continue;
-		} else blank = 0;
+			if (opts.squeeze && blank > 1 && dropped) continue;
+		} else { blank = 0; dropped = false; }
 		out.push(t);
 	}
 	while (out.length && !out[0].trim()) out.shift();
 	while (out.length && !out[out.length - 1].trim()) out.pop();
-	return { text: out.join('\n'), removed: this.removed, lines: out.length };
+	return { text: out.join('\n'), removed: this.removed, lines: out.length,
+		hints: this.hints, hintsKilled: this.hintsKilled, execs: this.execs };
 };
 
 function cmtKeepHere(src, i, keeps) {
 	if (!keeps) return false;
-	var head = src.substr(i, 4);
+	var head = src.substr(i, 40);
 	for (var k = 0; k < keeps.length; k++) if (keeps[k].test(head)) return true;
 	return false;
 }
@@ -2126,12 +2166,78 @@ function cmtJsx(src, from, prof, opts, out) {
 	return i;
 }
 
+function cmtYamlBlock(t) {
+	return /(?:^[ \t]*|^---[ \t]+|[:\-][ \t]+|![^\s]*[ \t]+)[|>][1-9+-]{0,2}[ \t]*\r?$/.test(t);
+}
+
+function cmtLines(src, prof, out) {
+	var lines = src.split('\n'), cont = false;
+	for (var li = 0; li < lines.length; li++) {
+		var L = lines[li], ws = /^[ \t\f]*/.exec(L)[0];
+		if (!cont && prof.cmt(L.slice(ws.length))) {
+			var body = L.slice(ws.length), cr = /\r$/.test(body) ? '\r' : '';
+			out.keep(ws);
+			out.drop(cr ? body.slice(0, -1) : body);
+			out.keep(cr);
+			cont = false;
+		} else {
+			out.keep(L);
+			cont = prof.cont(L);
+		}
+		if (li < lines.length - 1) out.keep('\n');
+	}
+}
+
 function cmtScan(src, prof, opts, out, from, untilBrace) {
-	var i = from || 0, n = src.length, depth = 0, tail = '';
+	var i = from || 0, n = src.length, depth = 0, tail = '', hd = [];
 	function K(s) { out.keep(s); tail = (tail + s).slice(-24); }
 
 	while (i < n) {
-		var c = src.charAt(i), j, e, k, hit;
+		var c = src.charAt(i), j, e, k, hit, m;
+
+		if (c === '\n' && hd.length) {
+			K('\n'); j = i + 1;
+			while (hd.length) {
+				var h = hd.shift(), done = false;
+				while (j < n && !done) {
+					e = src.indexOf('\n', j); if (e < 0) e = n;
+					var hl = src.slice(j, e).replace(/\r$/, '');
+					K(src.slice(j, e)); j = e;
+					if ((h.dash ? hl.replace(/^\t+/, '') : hl) === h.d) done = true;
+					else if (j < n) { K('\n'); j++; }
+				}
+				if (hd.length && j < n) { K('\n'); j++; }
+			}
+			i = j; continue;
+		}
+
+		if (c === '\n' && prof.yamlBlock && cmtYamlBlock(out.cur.t)) {
+			var ind = /^[ \t]*/.exec(out.cur.t)[0].length;
+			K('\n'); j = i + 1;
+			while (j < n) {
+				e = src.indexOf('\n', j); if (e < 0) e = n;
+				var yl = src.slice(j, e);
+				if (yl.trim() && /^[ \t]*/.exec(yl)[0].length <= ind) break;
+				K(yl); j = e;
+				if (j < n) { K('\n'); j++; }
+			}
+			i = j; continue;
+		}
+
+		if (prof.urlRaw && (c === 'u' || c === 'U') && /^url\(\s*[^'"\s)]/i.test(src.substr(i, 8))
+			&& !(i > 0 && /[\w-]/.test(src.charAt(i - 1)))) {
+			e = src.indexOf(')', i); e = e < 0 ? n : e + 1;
+			K(src.slice(i, e)); i = e; continue;
+		}
+
+		if (prof.hashParam && c === '#' && (m = /^#(?:\{[^}\n]*\}|[A-Za-z_][\w.]*#)/.exec(src.substr(i, 200)))) {
+			K(m[0]); i += m[0].length; continue;
+		}
+
+		if (prof.shebang && c === '#' && src.charAt(i + 1) === '!' && !src.slice(0, i).trim()) {
+			e = src.indexOf('\n', i); e = e < 0 ? n : e;
+			K(src.slice(i, e)); i = e; continue;
+		}
 
 		if (prof.raw) {
 			hit = false;
@@ -2145,10 +2251,17 @@ function cmtScan(src, prof, opts, out, from, untilBrace) {
 			if (hit) continue;
 		}
 
-		if (!opts.killHint && cmtKeepHere(src, i, prof.keep)) {
-			if (src.charAt(i + 1) === '*') { e = src.indexOf('*/', i + 2); e = e < 0 ? n : e + 2; }
-			else { e = src.indexOf('\n', i); e = e < 0 ? n : e; }
-			K(src.slice(i, e)); i = e; continue;
+		if (c === '/' || c === '-') {
+			var always = cmtKeepHere(src, i, prof.keepAlways);
+			if (always || cmtKeepHere(src, i, prof.keep)) {
+				if (always || !opts.killHint) {
+					if (always) out.execs++; else out.hints++;
+					if (src.charAt(i + 1) === '*') { e = src.indexOf('*/', i + 2); e = e < 0 ? n : e + 2; }
+					else { e = src.indexOf('\n', i); e = e < 0 ? n : e; }
+					K(src.slice(i, e)); i = e; continue;
+				}
+				out.hintsKilled++;
+			}
 		}
 
 		var bl = null;
@@ -2170,10 +2283,16 @@ function cmtScan(src, prof, opts, out, from, untilBrace) {
 		for (k = 0; k < prof.line.length; k++) {
 			if (src.substr(i, prof.line[k].length) !== prof.line[k]) continue;
 			if (prof.lineBoundary && i > 0 && !/\s/.test(src.charAt(i - 1))) continue;
+			if (prof.dashWs && prof.line[k] === '--') {
+				var dr = i; while (src.charAt(dr) === '-') dr++;
+				if (dr < n && !/[\s\x00-\x1f]/.test(src.charAt(dr))
+					&& !/(^|\n)[ \t]*$/.test(src.slice(Math.max(0, i - 120), i))) continue;
+			}
 			ln = prof.line[k]; break;
 		}
 		if (ln) {
 			e = src.indexOf('\n', i); if (e < 0) e = n;
+			if (e > i && src.charAt(e - 1) === '\r') e--;
 			out.drop(src.slice(i, e)); i = e; continue;      
 		}
 
@@ -2186,10 +2305,13 @@ function cmtScan(src, prof, opts, out, from, untilBrace) {
 			K(src.slice(i, e)); i = e; continue;
 		}
 
+		if (prof.bsEsc && c === '\\') { K(src.substr(i, 2)); i += 2; continue; }
+
 		var st = null;
 		for (k = 0; k < prof.strings.length; k++) {
 			if (src.substr(i, prof.strings[k].o.length) === prof.strings[k].o) { st = prof.strings[k]; break; }
 		}
+		if (st && prof.yamlBlock && !/(^|[\n:\-\[{,?])[ \t]*$/.test(tail)) st = null;
 		if (st) {
 			j = i + st.o.length;
 			while (j < n) {
@@ -2218,6 +2340,12 @@ function cmtScan(src, prof, opts, out, from, untilBrace) {
 				K(d2); j++;
 			}
 			i = j; continue;
+		}
+
+		if (prof.heredoc && c === '<' && src.charAt(i + 1) === '<' && src.charAt(i + 2) !== '<'
+			&& (m = /^<<(-?)[ \t]*(?:'([^'\n]*)'|"([^"\n]*)"|\\?([A-Za-z_][\w-]*))/.exec(src.substr(i, 200)))) {
+			hd.push({ dash: !!m[1], d: m[2] != null ? m[2] : (m[3] != null ? m[3] : m[4]) });
+			K(m[0]); i += m[0].length; continue;
 		}
 
 		if (prof.jsx && c === '<' && /[A-Za-z_$>]/.test(src.charAt(i + 1)) && cmtRegexOk(tail)) {
@@ -2344,6 +2472,7 @@ function cmtStrip(text, lang, opts) {
 	if (lang === 'jsp') cmtHtml(text, opts, out, true);
 	else if (lang === 'xml') cmtHtml(text, opts, out, false);
 	else if (lang === 'mybatis') cmtMyBatis(text, opts, out);
+	else if (CMT_PROFILE[lang] && CMT_PROFILE[lang].lines) cmtLines(text, CMT_PROFILE[lang], out);
 	else cmtScan(text, CMT_PROFILE[lang] || CMT_PROFILE.java, opts, out, 0, false);
 	var r = out.finish(opts);
 	r.before = text.length;
@@ -2355,20 +2484,49 @@ var CMT_SQLKW = '(SELECT|INSERT\\s+INTO|UPDATE|DELETE\\s+FROM|MERGE\\s+INTO|WITH
 	+ '|CREATE\\s+(OR\\s+REPLACE\\s+)?(TABLE|VIEW|INDEX|SEQUENCE|SYNONYM|PROCEDURE|FUNCTION|TRIGGER|PACKAGE)'
 	+ '|ALTER\\s+(TABLE|INDEX|SESSION)|DROP\\s+(TABLE|VIEW|INDEX|SEQUENCE)|COMMENT\\s+ON)';
 
+var CMT_MYSQL = /`[A-Za-z_][\w$]*`|\/\*M?!\d*|\bENGINE[ \t]*=|\bAUTO_INCREMENT\b|\bON[ \t]+DUPLICATE[ \t]+KEY\b|\bUNSIGNED\b|\b(?:TINYINT|MEDIUMINT|TINYTEXT|MEDIUMTEXT|LONGTEXT)\b|\bDEFAULT[ \t]+CHARSET\b|\bLOCK[ \t]+TABLES\b/im;
+var CMT_ORACLE = /\bVARCHAR2\b|\bNVL2?\s*\(|\bDECODE\s*\(|\bSYSDATE\b|\bROWNUM\b|:=|%(?:ROW)?TYPE\b|\bDBMS_[A-Za-z_]+\.|^[ \t]*\/[ \t]*\r?$|^[ \t]*(?:PROMPT|SPOOL)\b/im;
+
+function cmtPropsShape(s) {
+	if (/\bfunction\s*\(|=>|\}\)?;/.test(s)) return false;
+	var lines = s.split('\n'), cont = false, kv = 0;
+	for (var i = 0; i < lines.length; i++) {
+		var L = lines[i].replace(/\r$/, ''), t = L.replace(/^[ \t\f]+/, '');
+		var wasCont = cont;
+		cont = /(^|[^\\])(\\\\)*\\$/.test(L);
+		if (wasCont || !t || t.charAt(0) === '#' || t.charAt(0) === '!' || /^\[[^\]]+\]$/.test(t)) continue;
+		if (/^[@$]/.test(t)) return false;
+		if (/^[\w.\-\/\[\]À-￿]+[ \t\f]*[=:]/.test(t)) kv++;
+		else if (!/^[\w.\-\/\[\]À-￿]+$/.test(t)) return false;
+	}
+	return kv > 0;
+}
+
 function cmtDetect(src) {
 	var s = src.slice(0, 20000), m;
 	if (!s.replace(/\s/g, '')) return null;
+
+	if (/^\s*#!.*\b(?:ba|da|k|z)?sh\b/.test(s)) return { lang: 'sh', why: '#! 셸 지정 줄 발견' };
 
 	if ((m = s.match(/<%@/)) || (/<%/.test(s) && /^\s*</.test(s))) {
 		m = s.match(/<%--|<%@|<%=|<%!|<%/);
 		return { lang: 'jsp', why: m[0] + ' 발견' };
 	}
 	if (/<mapper\s+namespace=|DOCTYPE\s+mapper|<sqlMapConfig/i.test(s)) return { lang: 'mybatis', why: '<mapper> 발견' };
+	if (/<sqlMap[\s>]|DOCTYPE\s+sqlMap/i.test(s)) return { lang: 'mybatis', why: '<sqlMap> 발견' };
 	if (/^\s*</.test(s) && /<\/[A-Za-z][\w.:-]*>|\/>/.test(s)) return { lang: 'xml', why: '태그로 시작' };
+	if (/^\s*@?echo\s+off\b/im.test(s)) return { lang: 'bat', why: '@echo off 발견' };
+	if ((m = s.match(/\/\*M?!\d{5,6}\s/)) && new RegExp('^[ \\t]*' + CMT_SQLKW + '\\b', 'im').test(s))
+		return { lang: 'mysql', why: m[0].trim() + ' 실행 주석 발견' };
+	var top = s.split('\n').filter(function (x) { return x.trim() && !/^\s*#/.test(x) && !/^\s/.test(x); });
+	if (top.length && /^[ \t]+\S/m.test(s)
+		&& top.every(function (x) { return /^(?:[\w.\-"'\/]+[ \t]*:(?:[ \t]|\r?$)|-[ \t]|---|\.\.\.)/.test(x); }))
+		return { lang: 'yaml', why: '맨 앞 칸이 전부 key: 인 구조' };
+	if (cmtPropsShape(s)) return { lang: 'props', why: '모든 줄이 key=value · 주석 · 이어진 줄' };
 	if ((m = s.match(/^[ \t]*package\s+[\w.]+\s*;|^[ \t]*import\s+(java|javax|org|com)[\w.]*\s*;|\bpublic\s+(final\s+|abstract\s+)?(class|interface|enum)\s|@(?:Override|Autowired|Resource|RequestMapping|Service|Controller|RestController|Repository|Component|Transactional|SuppressWarnings)\b|\b(?:public|private|protected)\s+(?:static\s+)?(?:final\s+)?(?:void|int|long|boolean|double|float|char|byte|short|String|List|Map|Set|[A-Z]\w*)(?:<[^>\n]*>)?(?:\[\])?\s+\w+\s*\(|\bthrows\s+\w*Exception\b|\b(?:String|int|long|boolean|double|Integer|Long|Boolean|List|Map|Set|HashMap|ArrayList)(?:<[^>\n]*>)?(?:\[\])?\s+\w+\s*=/m)))
 		return { lang: 'java', why: m[0].trim().replace(/\s+/g, ' ').slice(0, 22) + ' 발견' };
 
-	var sc = { js: 0, css: 0, sql: 0, props: 0 }, why = {};
+	var sc = { js: 0, css: 0, sql: 0, props: 0, sh: 0, bat: 0, yaml: 0, less: 0 }, why = {};
 	function hit(k, re, pt, label) {
 		var mm = s.match(re);
 		if (!mm) return;
@@ -2389,37 +2547,84 @@ function cmtDetect(src) {
 	hit('css', /@media\b|@import\b|@charset\b|@font-face\b|@keyframes\b|!important/, 4);
 	hit('css', /\{[^{}]*[a-z-]+\s*:\s*[^{};]+[;}]/, 2, '선언 블록');   
 	hit('css', /\b(?:display|background(?:-[a-z]+)?|font-(?:family|size|weight)|margin|padding|border(?:-[a-z]+)?|color|width|height|position|z-index|visibility|overflow)\s*:/, 3);
-	hit('css', /^[\w.#*][^{};()=]*\{/m, 2, '셀렉터 {');                
+	hit('css', /^[\w.#*][^{};()=]*\{/m, 2, '셀렉터 {');
+
+	hit('less', /^[ \t]*@[\w-]+[ \t]*:/m, 4, '@변수:');
+	hit('less', /^[ \t]*\$[\w-]+[ \t]*:/m, 4, '$변수:');
+	hit('less', /@(?:include|mixin|extend|use|forward)\b/, 4);
+	hit('less', /&[:.\-_\[]|@\{[\w-]+\}|#\{\$/, 3);
+
+	hit('sh', /^[ \t]*(?:fi|done|esac)[ \t]*\r?$/m, 4);
+	hit('sh', /^[ \t]*(?:if|while|until|elif)[ \t]+\[\[?[ \t]/m, 4, 'if [');
+	hit('sh', /;[ \t]*(?:then|do)\b|^[ \t]*(?:then|do)[ \t]*\r?$/m, 3);
+	hit('sh', /^[ \t]*export[ \t]+[A-Za-z_]\w*=/m, 3);
+	hit('sh', /"[^"\n]*\$\{?[A-Za-z_]\w*|\$\{[A-Za-z_0-9]\w*[:#%\/]/, 2, '$변수');
+	hit('sh', /^[ \t]*(?:echo|cd|mkdir|rm|cp|mv|chmod|chown|source|exit|printf|shift|cat)[ \t]/m, 1);
+	hit('sh', />[ \t]*\/dev\/null|2>&1|>&2/, 3, '> /dev/null');
+	hit('sh', /\[\[?[ \t]+!?[ \t]*-[a-zA-Z][ \t]/, 3, '[ -f');
+	hit('sh', /^[ \t]*(?:local|readonly|declare)[ \t]+-?[A-Za-z_]/m, 2);
+	hit('sh', /^[ \t]*[A-Za-z_][\w-]*[ \t]+\(\)[ \t]*\{?[ \t]*\r?$/m, 2, 'name () {');
+	hit('sh', /\|[ \t]*(?:grep|awk|sed|wc|sort|uniq|head|tail|cut|xargs|tr)\b/, 3, '| grep');
+	hit('sh', /(?:^|[ \t])\$[1-9@#?*](?![\w])/m, 2, '$1');
+	hit('bat', /(?:^|[ \t])%[0-9*](?![\w%])/m, 2, '%1');
+	hit('bat', /^[ \t]*@(?:echo|rem|set|call|if|goto)\b/im, 3, '@echo');
+
+	hit('bat', /%~[a-z]*[0-9]|(?:^|[^'\w])%[A-Z_][A-Z0-9_]*%/m, 3, '%변수%');
+	hit('bat', /^[ \t]*@?(?:setlocal|endlocal|goto|call)\b|^[ \t]*@?set[ \t]+\/[ap]\b/im, 3);
+	hit('bat', /^[ \t]*(?:::|@?rem(?=[ \t\r]|$))/im, 3, 'REM');
+	hit('bat', /^[ \t]*if[ \t]+(?:not[ \t]+)?(?:exist|errorlevel|defined)\b/im, 3);
+	hit('bat', /^:[A-Za-z_]\w*[ \t]*\r?$/m, 2, ':레이블');
+
+	if (!/[{;][ \t]*\r?$/m.test(s)) {
+		hit('yaml', /^---[ \t]*\r?$/m, 3, '---');
+		hit('yaml', /^[ \t]+[\w.\-"']+:(?:[ \t]|\r?$)/m, 3, '들여쓴 key:');
+		hit('yaml', /^[ \t]*-[ \t]+[\w.\-"']+:(?:[ \t]|\r?$)/m, 3, '- key:');
+		hit('yaml', /^[\w.\-]+:[ \t]*\r?$/m, 2, 'key: 블록');
+	}
 
 	var head = s.replace(/\/\*[^]*?\*\//g, '').split('\n');
 	for (var hi = 0; hi < head.length; hi++) {
 		var hl = head[hi].trim();
-		if (!hl || hl.indexOf('--') === 0) continue;
+		if (!hl || hl === ';' || hl.indexOf('--') === 0 || /^#(?!\{)/.test(hl)) continue;
 		if (new RegExp('^' + CMT_SQLKW + '\\b', 'i').test(hl)) { sc.sql += 6; why.sql = { t: hl.slice(0, 18) + ' 로 시작', p: 6 }; }
 		break;
 	}
 	hit('sql', new RegExp('^[ \\t]*' + CMT_SQLKW + '\\b', 'im'), 2);
 	hit('sql', /\bFROM\s+[A-Za-z_][\w.]*|\bWHERE\s+[A-Za-z_]|\b(?:INNER|LEFT|RIGHT)\s+(?:OUTER\s+)?JOIN\b|\bGROUP\s+BY\b|\bORDER\s+BY\b/i, 2);
+	hit('sql', /^[ \t]*(?:PROMPT|SPOOL|UNDEFINE|COL(?:UMN)?|TTITLE|BTITLE|WHENEVER[ \t]+SQLERROR|VAR(?:IABLE)?[ \t]+\w+[ \t]+(?:NUMBER|VARCHAR2|CHAR|CLOB|REFCURSOR)|DEFINE[ \t]+\w+[ \t]*=|SET[ \t]+(?:SERVEROUTPUT|LINES(?:IZE)?|PAGES(?:IZE)?|FEEDBACK|VERIFY|ECHO|TERMOUT|HEADING|TIMING|LONG|TRIMSPOOL|TRIMOUT|DEFINE))(?=[ \t\r]|$)/im, 4, 'SQL*Plus 명령');
+	hit('sql', /\bDBMS_[A-Za-z_]+\.[A-Za-z_]+\s*\(|%(?:ROW)?TYPE\b|:=|^[ \t]*END[ \t]*\w*[ \t]*;/im, 3, 'PL/SQL');
+	hit('sql', /^[ \t]*\/[ \t]*\r?$/m, 2, '종결 줄(/)');
 	var lines = s.split('\n').filter(function (x) { return x.trim(); });
 	var dash = lines.filter(function (x) { return /^\s*--/.test(x); }).length;
 	if (dash) { sc.sql += (dash / lines.length > 0.3) ? 4 : 1; if (!why.sql) why.sql = { t: '-- 주석 줄 위주', p: 4 }; }
 
-	if (!/\{[^{}]*\}/.test(s)) {
-		var kv = lines.filter(function (x) { return /^\s*(#|!|[\w.$-]+\s*[=:])/.test(x); }).length;
-		if (lines.length >= 2 && kv / lines.length > 0.7) { sc.props += 6; why.props = { t: 'key=value 줄 위주', p: 6 }; }
+	if (!/\{[^{}]*\}/.test(s.replace(/\$\{[^{}\n]*\}|\{\d+(?:,[^{}\n]*)?\}/g, ''))) {
+		var kv = lines.filter(function (x) { return /^\s*(#|!|[\w.$-]+\s*[=:]|\/[\w.\/-]+\s*$)/.test(x); }).length;
+		var kvReal = lines.filter(function (x) { return /^\s*([\w.$-]+\s*[=:]|\/[\w.\/-]+\s*$)/.test(x); }).length;
+		if (kvReal && kv / lines.length > 0.7) { sc.props += 6; why.props = { t: 'key=value 줄 위주', p: 6 }; }
 	}
 
 	var best = null;
-	['js', 'css', 'sql', 'props'].forEach(function (k) { if (sc[k] > 0 && (!best || sc[k] > sc[best])) best = k; });
+	['js', 'css', 'sql', 'props', 'sh', 'bat', 'yaml', 'less'].forEach(function (k) { if (sc[k] > 0 && (!best || sc[k] > sc[best])) best = k; });
 	if (best === 'js' && /className=|\breturn\s*\(\s*<|=>\s*\(?\s*<[A-Za-z>]|<>[^]*<\/>|<[A-Z][\w.]*\s*(\/>|[\w-]+=)/.test(s))
 		return { lang: 'jsx', why: 'JSX 태그 발견 (' + sc.js + '점)' };
+	if (best === 'css' && (sc.less > 0 || /^[ \t]*\/\/|[;{}][ \t]*\/\//m.test(s)))
+		return { lang: 'less', why: (why.less ? why.less.t : '줄 주석(//)') + ' 발견 (' + (sc.css + sc.less) + '점)' };
+	if (best === 'props' && sc.yaml > 0) {
+		var eqN = lines.filter(function (x) { return /^\s*[\w.$-]+\s*=/.test(x); }).length;
+		var coN = lines.filter(function (x) { return /^\s*-?\s*[\w.\-"']+:(\s|$)/.test(x); }).length;
+		if (coN > eqN) return { lang: 'yaml', why: why.yaml.t + ' 발견 (' + sc.yaml + '점)' };
+	}
+	if (best === 'sql' && ((m = s.match(CMT_MYSQL)) || (!CMT_ORACLE.test(s) && (m = s.match(/^[ \t]*#(?!\{).*/m)))))
+		return { lang: 'mysql', why: m[0].trim().slice(0, 18) + ' 발견 (' + sc.sql + '점)' };
 	if (best) return { lang: best, why: (why[best] ? why[best].t + ' 발견' : '') + ' (' + sc[best] + '점)' };
 	return { lang: 'java', why: '판별 못 함 — 직접 고를 것' };
 }
 
 var CMT_LABEL = {
-	java: 'Java', js: 'JS · TS', jsx: 'JSX · TSX', sql: 'SQL', xml: 'XML · HTML',
-	jsp: 'JSP', mybatis: 'MyBatis XML', css: 'CSS', props: '프로퍼티 · 셸'
+	java: 'Java', js: 'JS · TS', jsx: 'JSX · TSX', sql: 'SQL (Oracle · Tibero)', mysql: 'SQL (MySQL · MariaDB)',
+	xml: 'XML · HTML', jsp: 'JSP', mybatis: 'MyBatis · iBATIS XML', css: 'CSS', less: 'LESS · SCSS',
+	props: '프로퍼티', sh: '셸', yaml: 'YAML', bat: '배치'
 };
 
 var stripUndo = null;                 
@@ -2431,7 +2636,7 @@ function stripSay(msg, warn) {
 
 function stripSyncUI() {
 	var l = els.lang.value;
-	els.hintRow.style.display = (l === 'sql' || l === 'mybatis') ? 'flex' : 'none';
+	els.hintRow.style.display = (l === 'sql' || l === 'mysql' || l === 'mybatis') ? 'flex' : 'none';
 }
 
 function stripDetect() {
@@ -2450,13 +2655,16 @@ function stripRun() {
 		dropLine: true, squeeze: true, trimEnd: true,
 		killHint: els.killHint.checked
 	});
-	if (!r.removed) { stripSay(CMT_LABEL[lang] + ' 규칙으로 훑었지만 지울 주석이 없다', true); return; }
+	var kept = (r.hints ? ' · 힌트 ' + r.hints + '개 남김' : '')
+		+ (r.hintsKilled ? ' · 힌트 ' + r.hintsKilled + '개 삭제' : '')
+		+ (r.execs ? ' · 실행 주석(/*! */) ' + r.execs + '개 남김' : '');
+	if (!r.removed) { stripSay(CMT_LABEL[lang] + ' 규칙으로 훑었지만 지울 주석이 없다' + kept, true); return; }
 	stripUndo = src;
 	els.codeInput.value = r.text;
 	els.btnUndo.disabled = false;
 	var cut = r.before ? Math.round((1 - r.after / r.before) * 100) : 0;
 	stripSay('주석 ' + r.removed + '개 삭제 · ' + r.before.toLocaleString() + '자 → '
-		+ r.after.toLocaleString() + '자 (' + cut + '% 줄어듦)');
+		+ r.after.toLocaleString() + '자 (' + cut + '% 줄어듦)' + kept);
 	currentPage = 0;
 	renderDeferred();
 }
