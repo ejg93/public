@@ -696,7 +696,7 @@ var SNIPPETS = {
           query: function(p) {
             var db = p.db_name2 ? "'" + p.db_name2 + "'" : "DATABASE()";
             var t = p.col_tbl || 'table_name';
-            return "SELECT TABLE_SCHEMA               AS OWNER\n     , TABLE_NAME\n     , ORDINAL_POSITION             AS COLUMN_ID\n     , COLUMN_NAME\n     , DATA_TYPE\n     , CHARACTER_MAXIMUM_LENGTH    AS DATA_LENGTH\n     , NUMERIC_SCALE                AS DATA_SCALE\n     , IS_NULLABLE                  AS NULLABLE\n     , COLUMN_TYPE\n     , COLUMN_DEFAULT\n     , COLUMN_KEY\n     , EXTRA\n     , COLUMN_COMMENT\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t + "'\nORDER BY ORDINAL_POSITION;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록» 업로드 양식과 맞춤 — 그대로 붙여넣기 가능";
+            return "SELECT TABLE_SCHEMA               AS OWNER\n     , TABLE_NAME\n     , ORDINAL_POSITION             AS COLUMN_ID\n     , COLUMN_NAME\n     , DATA_TYPE\n     , CHARACTER_MAXIMUM_LENGTH    AS DATA_LENGTH\n     , NUMERIC_SCALE                AS DATA_SCALE\n     , IS_NULLABLE                  AS NULLABLE\n     , COLUMN_TYPE\n     , COLUMN_DEFAULT\n     , COLUMN_KEY\n     , EXTRA\n     , COLUMN_COMMENT\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  LOWER(TABLE_NAME) = '" + t.toLowerCase() + "'\nORDER BY ORDINAL_POSITION;\n-- 열 순서는 논리명_변환기.html «3.컬럼 목록» 업로드 양식과 맞춤 — 그대로 붙여넣기 가능";
           }
         },
         {
@@ -716,7 +716,7 @@ var SNIPPETS = {
           query: function(p) {
             var db = p.db_fk ? "'" + p.db_fk + "'" : "DATABASE()";
             var t = p.fk_tbl || 'table_name';
-            return "SELECT K.CONSTRAINT_NAME\n     , K.TABLE_NAME             AS 참조하는테이블\n     , K.COLUMN_NAME            AS FK컬럼\n     , K.REFERENCED_TABLE_NAME  AS 참조당하는테이블\n     , K.REFERENCED_COLUMN_NAME AS 참조컬럼\n     , R.UPDATE_RULE\n     , R.DELETE_RULE\nFROM   INFORMATION_SCHEMA.KEY_COLUMN_USAGE K\nJOIN   INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R\n       ON K.CONSTRAINT_NAME = R.CONSTRAINT_NAME\n      AND K.TABLE_SCHEMA    = R.CONSTRAINT_SCHEMA\nWHERE  K.TABLE_SCHEMA = " + db + "\n  AND  K.REFERENCED_TABLE_NAME = '" + t + "'\nORDER BY K.TABLE_NAME;";
+            return "SELECT K.CONSTRAINT_NAME\n     , K.TABLE_NAME             AS 참조하는테이블\n     , K.COLUMN_NAME            AS FK컬럼\n     , K.REFERENCED_TABLE_NAME  AS 참조당하는테이블\n     , K.REFERENCED_COLUMN_NAME AS 참조컬럼\n     , R.UPDATE_RULE\n     , R.DELETE_RULE\nFROM   INFORMATION_SCHEMA.KEY_COLUMN_USAGE K\nJOIN   INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R\n       ON K.CONSTRAINT_NAME = R.CONSTRAINT_NAME\n      AND K.TABLE_SCHEMA    = R.CONSTRAINT_SCHEMA\nWHERE  K.TABLE_SCHEMA = " + db + "\n  AND  LOWER(K.REFERENCED_TABLE_NAME) = '" + t.toLowerCase() + "'\nORDER BY K.TABLE_NAME;";
           }
         },
         {
@@ -733,7 +733,7 @@ var SNIPPETS = {
           query: function(p) {
             var db = p.db_cm ? "'" + p.db_cm + "'" : "DATABASE()";
             var t = p.cm_tbl;
-            return "SELECT TABLE_NAME, TABLE_COMMENT\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = " + db + (t ? "\n  AND  TABLE_NAME = '" + t + "'" : "") + "\nORDER BY TABLE_NAME;\n\nSELECT TABLE_NAME, COLUMN_NAME, COLUMN_COMMENT\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + (t ? "\n  AND  TABLE_NAME = '" + t + "'" : "") + "\n  AND  COLUMN_COMMENT != ''\nORDER BY TABLE_NAME, ORDINAL_POSITION;";
+            return "SELECT TABLE_NAME, TABLE_COMMENT\nFROM   INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = " + db + (t ? "\n  AND  LOWER(TABLE_NAME) = '" + t.toLowerCase() + "'" : "") + "\nORDER BY TABLE_NAME;\n\nSELECT TABLE_NAME, COLUMN_NAME, COLUMN_COMMENT\nFROM   INFORMATION_SCHEMA.COLUMNS\nWHERE  TABLE_SCHEMA = " + db + (t ? "\n  AND  LOWER(TABLE_NAME) = '" + t.toLowerCase() + "'" : "") + "\n  AND  COLUMN_COMMENT != ''\nORDER BY TABLE_NAME, ORDINAL_POSITION;";
           }
         },
         {
@@ -769,7 +769,7 @@ var SNIPPETS = {
           query: function(p) {
             var db = p.db_idx ? "'" + p.db_idx + "'" : "DATABASE()";
             var t = p.idx_tbl || 'table_name';
-            return "SELECT INDEX_NAME\n     , COLUMN_NAME\n     , SEQ_IN_INDEX\n     , NON_UNIQUE\n     , INDEX_TYPE\n     , CARDINALITY\nFROM   INFORMATION_SCHEMA.STATISTICS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  TABLE_NAME   = '" + t + "'\nORDER BY INDEX_NAME, SEQ_IN_INDEX;";
+            return "SELECT INDEX_NAME\n     , COLUMN_NAME\n     , SEQ_IN_INDEX\n     , NON_UNIQUE\n     , INDEX_TYPE\n     , CARDINALITY\nFROM   INFORMATION_SCHEMA.STATISTICS\nWHERE  TABLE_SCHEMA = " + db + "\n  AND  LOWER(TABLE_NAME) = '" + t.toLowerCase() + "'\nORDER BY INDEX_NAME, SEQ_IN_INDEX;";
           }
         },
         {
@@ -798,7 +798,7 @@ var SNIPPETS = {
           params: [{id:'seq_name', label:'테이블명(MySQL) / 시퀀스명(MariaDB)', placeholder:'user_info', width:200}],
           query: function(p) {
             var n = p.seq_name || 'table_name';
-            return "-- MySQL: 다음 채번 예정값(참고용 — 동시성 환경에서 실제 채번값과 다를 수 있음)\nSELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = DATABASE() AND TABLE_NAME = '" + n + "';\n\n-- MariaDB 10.3+ 시퀀스\nSELECT NEXT VALUE FOR " + n + ";   -- 다음값(증가 발생)\nSELECT PREVIOUS VALUE FOR " + n + ";   -- 세션에서 마지막으로 뽑은 값(증가 없음)\nSHOW CREATE SEQUENCE " + n + ";   -- 현재 정의(현재값 포함) 확인";
+            return "-- MySQL: 다음 채번 예정값(참고용 — 동시성 환경에서 실제 채번값과 다를 수 있음)\nSELECT AUTO_INCREMENT FROM INFORMATION_SCHEMA.TABLES\nWHERE  TABLE_SCHEMA = DATABASE() AND LOWER(TABLE_NAME) = '" + n.toLowerCase() + "';\n\n-- MariaDB 10.3+ 시퀀스\nSELECT NEXT VALUE FOR " + n + ";   -- 다음값(증가 발생)\nSELECT PREVIOUS VALUE FOR " + n + ";   -- 세션에서 마지막으로 뽑은 값(증가 없음)\nSHOW CREATE SEQUENCE " + n + ";   -- 현재 정의(현재값 포함) 확인";
           }
         },
         {
