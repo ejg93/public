@@ -1084,7 +1084,7 @@ function genVal(col,idx,db,years){
   var t=col.type, sz=parseInt(col.size)||0;
   if(col.allowed && col.allowed.length) return col.allowed[idx % col.allowed.length];
   if(/^(CHAR|NCHAR)$/i.test(t) && sz===1 && /(_YN|_FLAG|_FL)$/i.test(col.name)) return idx%2?"'N'":"'Y'";
-  if(col.def && /^'.*'$/.test(col.def)) return col.def;
+  if(!col.pk && !col.uq && col.def && /^'.*'$/.test(col.def)) return col.def;
 
   if(/^(ENUM|SET)$/i.test(t) && col.size){
     var ev=col.size.split(',').map(function(v){ return v.trim(); }).filter(Boolean);
@@ -1120,13 +1120,14 @@ function genVal(col,idx,db,years){
   return "'VAL_"+String(idx+1)+"'";
 }
 function buildUpsert(db, parsed){
-  var tbl=parsed.tableName.toUpperCase();
+  var tbl=db==='mysql' ? parsed.tableName : parsed.tableName.toUpperCase();
   var cols=parsed.cols, U=function(c){ return c.name.toUpperCase(); };
   var pks=parsed.pkCols.length?parsed.pkCols:[cols[0].name];
   var pkNote=parsed.pkCols.length?'':'-- ⚠ DDL에서 PRIMARY KEY를 찾지 못해 첫 컬럼('+U(cols[0])+')을 키로 가정함\n';
   var insCols=cols;
   var nonPk=cols.filter(function(c){ return pks.indexOf(c.name)<0; });
   if(!nonPk.length) nonPk=cols.slice(1);
+  var allKeys=nonPk.every(function(c){ return pks.indexOf(c.name)>=0; });
   var bind=function(c){ return '#{'+toCamel(c.name)+'}'; };
   var onCond=pks.map(function(p){ return 'T.'+p.toUpperCase()+' = S.'+p.toUpperCase(); }).join(' AND ');
 
@@ -1136,8 +1137,8 @@ function buildUpsert(db, parsed){
       : '\tSELECT\n'+cols.map(function(c){ return '\t\t  '+bind(c)+' AS '+U(c); }).join(',\n');
     return pkNote+
       'MERGE INTO '+tbl+' T\nUSING (\n'+src+'\n) S ON ('+onCond+')\n'+
-      'WHEN MATCHED THEN\n\tUPDATE SET\n'+
-      nonPk.map(function(c,i){ return '\t\t'+(i?', ':'  ')+'T.'+U(c)+' = S.'+U(c); }).join('\n')+'\n'+
+      (allKeys ? '' : 'WHEN MATCHED THEN\n\tUPDATE SET\n'+
+      nonPk.map(function(c,i){ return '\t\t'+(i?', ':'  ')+'T.'+U(c)+' = S.'+U(c); }).join('\n')+'\n')+
       'WHEN NOT MATCHED THEN\n'+
       '\tINSERT (\n'+insCols.map(function(c){ return '\t\t  '+U(c); }).join(',\n')+'\n'+
       '\t) VALUES (\n'+insCols.map(function(c){ return '\t\t  S.'+U(c); }).join(',\n')+'\n\t);'+
