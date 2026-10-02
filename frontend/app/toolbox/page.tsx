@@ -20,8 +20,8 @@ function readTools(): Tool[] {
   while ((m = re.exec(html)) !== null) {
     tools.push({ file: m[1], icon: m[2], name: m[3], desc: m[4] })
   }
-  if (tools.length !== 7) {
-    throw new Error(`toolbox.html 에서 도구 ${tools.length}개를 뽑았다 — 7개여야 한다`)
+  if (tools.length !== 8) {
+    throw new Error(`toolbox.html 에서 도구 ${tools.length}개를 뽑았다 — 8개여야 한다`)
   }
   return tools
 }
